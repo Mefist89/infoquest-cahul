@@ -158,6 +158,11 @@ export const strings = {
     qrHint: "Scanează pentru a deschide jocul.",
     teamHint: "Lista echipei va fi completată înainte de prezentare.",
     demoHint: "Videoclipul demonstrativ va fi adăugat aici.",
+    footerCopyright: "© 2026 InfoQuest Cahul. Toate drepturile rezervate.",
+    footerHackathon: "Hackathonul Regional pentru coeziune socială și reziliență informațională",
+    footerAi: "AI fără granițe",
+    footerPrivacy: "Politica de confidențialitate",
+    footerTerms: "Termeni și condiții",
   },
   ru: {
     tagline: "Щит цифрового сообщества",
@@ -199,6 +204,11 @@ export const strings = {
     qrHint: "Отсканируй, чтобы открыть игру.",
     teamHint: "Список команды будет заполнен перед презентацией.",
     demoHint: "Демонстрационное видео появится здесь.",
+    footerCopyright: "© 2026 InfoQuest Cahul. Все права защищены.",
+    footerHackathon: "Региональный хакатон по социальной сплоченности и информационной устойчивости",
+    footerAi: "ИИ без границ",
+    footerPrivacy: "Политика конфиденциальности",
+    footerTerms: "Условия использования",
   },
 } as const;
 

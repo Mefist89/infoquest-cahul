@@ -398,6 +398,21 @@ export default function HomePage() {
             <BottomCard label={t.projectTeam} icon={<Users className="size-12 text-neon" aria-hidden="true" />} onClick={() => setOpenBlock("team")} />
             <BottomCard label={t.demo} icon={<PlayCircle className="size-12 text-gold" aria-hidden="true" />} onClick={() => setOpenBlock("demo")} />
           </div>
+
+          <div className="mt-16 border-t border-neon/10 pt-8 text-center text-xs text-muted-foreground">
+            <div className="mb-4 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6">
+              <span className="font-semibold text-foreground/80">{t.footerHackathon}</span>
+              <span className="hidden text-neon/30 sm:inline">•</span>
+              <span className="font-semibold text-neon/80">{t.footerAi}</span>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
+              <span>{t.footerCopyright}</span>
+              <div className="flex gap-4">
+                <a href="#" className="transition hover:text-neon">{t.footerPrivacy}</a>
+                <a href="#" className="transition hover:text-neon">{t.footerTerms}</a>
+              </div>
+            </div>
+          </div>
         </section>
       </footer>
 
