@@ -7,7 +7,6 @@ import {
   CircleUserRound,
   Download,
   Gift,
-  ImageIcon,
   Languages,
   Link2Off,
   Lock,
@@ -26,7 +25,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
 
@@ -239,7 +238,6 @@ export default function HomePage() {
   const [lang, setLangState] = useState<Lang>(routeLang);
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
-  const [logo, setLogo] = useState<string | null>(null);
   const [siteUrl, setSiteUrl] = useState("http://localhost:3000");
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
@@ -260,14 +258,6 @@ export default function HomePage() {
   const setLang = (nextLang: Lang) => {
     setLangState(nextLang);
     window.localStorage.setItem("infoquest.lang", nextLang);
-  };
-
-  const readLogo = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => setLogo(String(reader.result));
-    reader.readAsDataURL(file);
   };
 
   const downloadQr = () => {
@@ -384,14 +374,13 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <BottomCard label={t.teamLogo} onClick={() => setOpenBlock("logo")}>
-              {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt={t.teamLogo} className="size-20 rounded-full object-cover ring-2 ring-neon" />
-              ) : (
-                <span className="grid size-20 place-items-center rounded-full border-2 border-dashed border-neon/50">
-                  <ImageIcon className="size-7 text-neon" aria-hidden="true" />
-                </span>
-              )}
+              <Image
+                src="/patrol-shield.png"
+                alt={t.teamLogo}
+                width={80}
+                height={80}
+                className="size-20 rounded-xl object-cover ring-2 ring-neon/70"
+              />
             </BottomCard>
             <BottomCard label={t.qrCode} onClick={() => setOpenBlock("qr")}>
               <span className="grid size-[88px] place-items-center rounded-lg bg-white p-2">
@@ -442,16 +431,16 @@ export default function HomePage() {
           wide={openBlock === "demo"}
         >
           {openBlock === "logo" && (
-            <label className="focus-ring flex cursor-pointer flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-neon/50 p-6 text-center">
-              {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt={t.teamLogo} className="size-32 rounded-full object-cover ring-2 ring-neon" />
-              ) : (
-                <ImageIcon className="size-12 text-neon" aria-hidden="true" />
-              )}
-              <span className="text-sm text-muted-foreground">{t.logoHint}</span>
-              <input type="file" accept="image/*" className="sr-only" onChange={readLogo} />
-            </label>
+            <div className="overflow-hidden rounded-2xl border border-neon/35 bg-slate-950">
+              <Image
+                src="/patrol-shield.png"
+                alt={t.teamLogo}
+                width={1024}
+                height={1024}
+                className="h-auto w-full object-contain"
+                priority
+              />
+            </div>
           )}
 
           {openBlock === "qr" && (
