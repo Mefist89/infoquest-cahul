@@ -43,7 +43,7 @@ const icons: Record<Mission["icon"], LucideIcon> = {
 
 type BottomBlock = "logo" | "qr" | "team" | "demo";
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -65,7 +65,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="w-full max-w-lg rounded-3xl border border-neon/35 bg-popover p-6 shadow-[0_0_60px_rgba(0,214,255,0.14)]"
+        className={`${wide ? "max-w-3xl" : "max-w-lg"} w-full rounded-3xl border border-neon/35 bg-popover p-6 shadow-[0_0_60px_rgba(0,214,255,0.14)]`}
       >
         <div className="flex items-start justify-between gap-4">
           <h2 id="modal-title" className="text-lg font-bold text-foreground">
@@ -439,6 +439,7 @@ export default function HomePage() {
         <Modal
           title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : t.demo}
           onClose={() => setOpenBlock(null)}
+          wide={openBlock === "demo"}
         >
           {openBlock === "logo" && (
             <label className="focus-ring flex cursor-pointer flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-neon/50 p-6 text-center">
@@ -477,9 +478,18 @@ export default function HomePage() {
           )}
 
           {openBlock === "demo" && (
-            <div className="rounded-2xl border border-dashed border-gold/50 bg-card/70 p-6 text-center">
-              <PlayCircle className="mx-auto size-12 text-gold" aria-hidden="true" />
-              <p className="mt-4 text-sm text-muted-foreground">{t.demoHint}</p>
+            <div className="overflow-hidden rounded-2xl border border-gold/40 bg-slate-950">
+              <video
+                controls
+                playsInline
+                preload="metadata"
+                className="aspect-video w-full bg-black object-contain"
+                aria-label={t.demo}
+              >
+                <source src="/promo.mp4" type="video/mp4" />
+                {t.demoHint}
+              </video>
+              <p className="px-4 py-3 text-center text-sm text-muted-foreground">{t.demoHint}</p>
             </div>
           )}
         </Modal>
