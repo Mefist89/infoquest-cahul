@@ -170,7 +170,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   function selectFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    const hasAudioExtension = /\.(mp3|m4a|wav|webm|ogg|aac|flac)$/i.test(file.name);
+    const hasAudioExtension = /\.(mp3|m4a|wav|webm|weba|ogg|aac|flac)$/i.test(file.name);
     if ((!file.type.startsWith("audio/") && !hasAudioExtension) || file.size > 4 * 1024 * 1024) {
       setRequestError(t.fileError);
       event.target.value = "";
@@ -329,7 +329,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
               <div className="flex items-end gap-2 rounded-2xl border border-border bg-card/85 p-2 focus-within:border-neon/60">
                 <label title={t.attach} className="focus-ring grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-muted-foreground transition hover:bg-secondary hover:text-neon">
                   <Paperclip className="size-5" aria-hidden="true" />
-                  <input type="file" accept="audio/*,.mp3,.m4a,.wav,.webm,.ogg,.aac,.flac" onChange={selectFile} className="sr-only" />
+                  <input type="file" accept="audio/*,.mp3,.m4a,.wav,.webm,.weba,.ogg,.aac,.flac" onChange={selectFile} className="sr-only" />
                 </label>
                 <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} rows={1} placeholder={t.placeholder} className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground" />
                 <button type="button" onClick={toggleMicrophone} aria-pressed={listening} title={listening ? t.micStop : t.micStart} className={`focus-ring grid size-11 shrink-0 place-items-center rounded-xl transition ${listening ? "bg-danger text-white" : "bg-success/15 text-success hover:bg-success/25"}`}>

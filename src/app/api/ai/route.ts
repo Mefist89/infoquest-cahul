@@ -14,6 +14,7 @@ const ALLOWED_AUDIO_TYPES = new Set([
   "audio/wav",
   "audio/x-wav",
   "audio/webm",
+  "audio/weba",
   "audio/ogg",
 ]);
 
@@ -132,7 +133,11 @@ function isFraudAnalysis(value: unknown): value is FraudAnalysis {
 
 async function transcribeAudio(file: File, config: AiConfig, locale: Locale) {
   const body = new FormData();
-  body.append("file", file, file.name || "recording.webm");
+  const isWeba = file.name.toLowerCase().endsWith(".weba") || file.type === "audio/weba";
+  const uploadFile = isWeba
+    ? new File([file], file.name.replace(/\.weba$/i, ".webm"), { type: "audio/webm" })
+    : file;
+  body.append("file", uploadFile, uploadFile.name || "recording.webm");
   body.append("model", config.transcriptionModel);
   body.append("language", locale);
   body.append("prompt", "InfoQuest, Chrono, operator, cod SMS, parolă, card bancar, мошенничество, оператор, SMS-код, пароль, банковская карта");
