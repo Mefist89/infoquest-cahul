@@ -156,7 +156,7 @@ export const strings = {
     missionSoon: "Misiunea se deschide în curând.",
     logoHint: "Alege o imagine pentru sigla echipei.",
     qrHint: "Scanează pentru a deschide jocul.",
-    teamHint: "Lista echipei va fi completată înainte de prezentare.",
+    teamHint: "Membrii echipei InfoQuest.",
     demoHint: "Videoclip demonstrativ în limba română.",
     footerCopyright: "© 2026 InfoQuest. Toate drepturile rezervate.",
     footerHackathon: "Hackathonul Regional pentru coeziune socială și reziliență informațională",
@@ -202,7 +202,7 @@ export const strings = {
     missionSoon: "Миссия откроется скоро.",
     logoHint: "Выбери изображение для логотипа команды.",
     qrHint: "Отсканируй, чтобы открыть игру.",
-    teamHint: "Список команды будет заполнен перед презентацией.",
+    teamHint: "Участники команды InfoQuest.",
     demoHint: "Демонстрационное видео на русском языке.",
     footerCopyright: "© 2026 InfoQuest. Все права защищены.",
     footerHackathon: "Региональный хакатон по социальной сплоченности и информационной устойчивости",
@@ -213,8 +213,9 @@ export const strings = {
 } as const;
 
 export const teamMembers = [
-  "Имя Фамилия — Координатор",
-  "Имя Фамилия — Дизайнер",
-  "Имя Фамилия — Разработчик",
-  "Имя Фамилия — Исследование",
+  "Икизли Михаил",
+  "Пукал Мария",
+  "Хицюк Елена",
+  "Чебанова Анна",
+  "Бортник Евгений",
 ];
