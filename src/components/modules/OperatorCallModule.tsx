@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -35,7 +36,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   const initialCompleted = initialStages.filter((stage) => stage.status === "completed").map((stage) => stage.stage_index);
   const firstOpenStage = Array.from({ length: 8 }, (_, index) => index + 1).find((stage) => !initialCompleted.includes(stage)) ?? 8;
   const [completedStages, setCompletedStages] = useState(() => new Set(initialCompleted));
-  const [currentStage, setCurrentStage] = useState(firstOpenStage);
+  const [currentStage, setCurrentStage] = useState(initialCompleted.length === 0 ? 0 : firstOpenStage);
   const [moduleXp, setModuleXp] = useState(initialModule?.xp ?? 0);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
@@ -81,7 +82,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   }
 
   function chooseStage(stage: number) {
-    if (stage <= unlockedThrough || completedStages.has(stage)) {
+    if (stage === 0 || stage <= unlockedThrough || completedStages.has(stage)) {
       setCurrentStage(stage);
       setFeedback(null);
       setNotice(null);
@@ -158,6 +159,10 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
         <div className="mt-6 grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
           <aside className="rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
             <p className="px-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
+            <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
+              <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
+              <span className="min-w-0"><span className="block text-xs text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
+            </button>
             <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {t.stages.map((stage, index) => {
                 const number = index + 1;
@@ -178,8 +183,13 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
           </aside>
 
           <section className="min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
-            <StageHeading number={currentStage} title={t.stages[currentStage - 1].title} subtitle={t.stages[currentStage - 1].subtitle} done={completedStages.has(currentStage)} />
+            {currentStage === 0 ? (
+              <StageHeading number={0} title={t.intro.title} subtitle={t.intro.subtitle} done={false} />
+            ) : (
+              <StageHeading number={currentStage} title={t.stages[currentStage - 1].title} subtitle={t.stages[currentStage - 1].subtitle} done={completedStages.has(currentStage)} />
+            )}
             <div className="mt-7">
+              {currentStage === 0 && <IntroStage content={t.intro} onFinish={() => setCurrentStage(firstOpenStage)} />}
               {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => completeStage(1)} />}
               {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
               {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
@@ -208,7 +218,35 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
 }
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
-  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number}</span><div><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{number}/8</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+}
+
+function IntroStage({ content, onFinish }: { content: (typeof operatorCallContent)["ru"]["intro"] | (typeof operatorCallContent)["ro"]["intro"]; onFinish: () => void }) {
+  const [lineIndex, setLineIndex] = useState(0);
+  const lastLine = lineIndex === content.lines.length - 1;
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-neon/25 bg-[radial-gradient(circle_at_25%_60%,rgba(0,217,255,0.13),transparent_42%),rgba(2,10,30,0.72)]">
+      <div className="grid min-h-[31rem] items-end gap-2 px-5 pt-6 sm:grid-cols-[minmax(13rem,0.75fr)_minmax(18rem,1.25fr)] sm:px-8">
+        <div className="relative mx-auto h-72 w-full max-w-64 self-end sm:h-[30rem] sm:max-w-sm">
+          <Image src="/characters/02_woman_glasses_book_left.png" alt={content.name} fill sizes="(max-width: 640px) 256px, 384px" className="object-contain object-bottom drop-shadow-[0_0_28px_rgba(0,217,255,0.22)]" priority />
+        </div>
+        <div className="relative z-10 self-center pb-8 sm:pb-0">
+          <div className="rounded-3xl rounded-bl-md border border-neon/35 bg-card/95 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] sm:p-7">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{content.name}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{content.role}</p>
+            <p key={lineIndex} className="mt-5 min-h-20 text-base font-semibold leading-relaxed text-foreground sm:text-lg">{content.lines[lineIndex]}</p>
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="flex gap-1.5" aria-label={`${lineIndex + 1}/${content.lines.length}`}>{content.lines.map((_, index) => <span key={index} className={`h-1.5 rounded-full transition-all ${index === lineIndex ? "w-7 bg-neon" : index < lineIndex ? "w-3 bg-success" : "w-3 bg-secondary"}`} />)}</div>
+              <button type="button" onClick={() => lastLine ? onFinish() : setLineIndex((index) => index + 1)} className="focus-ring inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground">
+                {lastLine ? content.start : content.next}<ChevronRight className="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ActionButton({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {

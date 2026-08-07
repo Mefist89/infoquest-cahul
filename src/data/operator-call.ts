@@ -17,6 +17,20 @@ export const operatorCallContent = {
     check: "Проверить ответ",
     saved: "Прогресс сохранён в Supabase",
     saveError: "Не удалось сохранить прогресс. Проверь соединение и повтори.",
+    intro: {
+      title: "Вступление",
+      subtitle: "Знакомство с наставником",
+      name: "Наталья",
+      role: "Наставник по цифровой безопасности",
+      next: "Дальше",
+      start: "Начать теорию",
+      lines: [
+        "Привет! Я Наталья, и сегодня мы разберём опасный телефонный звонок.",
+        "Мошенник представится сотрудником оператора и попробует заставить тебя спешить.",
+        "Запомни: настоящий сотрудник никогда не просит пароль или код из SMS.",
+        "Будь внимателен, проверяй каждую деталь — и останови атаку Тени.",
+      ],
+    },
     stages: [
       { title: "Теория", subtitle: "Как устроен звонок мошенника" },
       { title: "Видеообъяснение", subtitle: "Пять признаков опасного звонка" },
@@ -125,6 +139,20 @@ export const operatorCallContent = {
     check: "Verifică răspunsul",
     saved: "Progres salvat în Supabase",
     saveError: "Progresul nu a putut fi salvat. Verifică conexiunea și repetă.",
+    intro: {
+      title: "Introducere",
+      subtitle: "Cunoaște mentorul",
+      name: "Natalia",
+      role: "Mentor în siguranță digitală",
+      next: "Continuă",
+      start: "Începe teoria",
+      lines: [
+        "Salut! Sunt Natalia și astăzi vom analiza un apel telefonic periculos.",
+        "Escrocul se va prezenta drept operator și va încerca să te facă să te grăbești.",
+        "Reține: un angajat real nu solicită niciodată parola sau codul din SMS.",
+        "Fii atent, verifică fiecare detaliu și oprește atacul Umbrei.",
+      ],
+    },
     stages: [
       { title: "Teorie", subtitle: "Cum funcționează apelul fraudulos" },
       { title: "Explicație video", subtitle: "Cinci semne ale unui apel periculos" },
