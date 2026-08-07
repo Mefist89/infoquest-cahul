@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Bot,
   FileAudio,
-  ImagePlus,
   Mic,
   Paperclip,
   Send,
@@ -19,8 +18,11 @@ import {
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type AiLocale = "ro" | "ru";
-type Attachment = { name: string; kind: "image" | "audio"; url: string };
-type ChatMessage = { id: string; role: "assistant" | "user"; text: string; attachment?: Attachment };
+type Attachment = { name: string; url: string; file: File };
+type Verdict = "likely_scam" | "suspicious" | "unclear" | "likely_safe";
+type FraudAnalysis = { verdict: Verdict; risk: number; summary: string; signals: string[]; actions: string[]; reply: string; disclaimer: string };
+type ChatMessage = { id: string; role: "assistant" | "user"; text: string; attachment?: Attachment; analysis?: FraudAnalysis; transcript?: string };
+type ApiResult = { analysis?: FraudAnalysis; transcript?: string; error?: string };
 
 type SpeechResultEvent = {
   results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }>;
@@ -48,8 +50,7 @@ const content = {
     intro: "Salut! Sunt Chrono, ghidul tău digital. Întreabă-mă despre apeluri suspecte, linkuri false sau siguranța contului.",
     placeholder: "Scrie întrebarea ta…",
     send: "Trimite",
-    attach: "Atașează o imagine sau un fișier audio",
-    image: "Imagine",
+    attach: "Atașează un fișier audio (maximum 4 MB)",
     audio: "Audio",
     listenOn: "Oprește vocea răspunsurilor",
     listenOff: "Pornește vocea răspunsurilor",
@@ -57,14 +58,15 @@ const content = {
     micStop: "Oprește microfonul",
     listening: "Te ascult în timp real…",
     unsupported: "Recunoașterea vocală nu este disponibilă în acest browser.",
-    attachmentImage: "Am primit imaginea. Nu publica date personale, coduri sau parole. Spune-mi ce element ți se pare suspect și îl analizăm împreună.",
-    attachmentAudio: "Am primit fișierul audio. Nu pot verifica încă vocea automat, dar te pot ajuta să identifici presiunea, urgența sau cererile de coduri și bani.",
-    generic: "Într-o situație suspectă, oprește conversația, nu divulga parole sau coduri SMS și verifică informația folosind canalul oficial. Spune-mi mai multe și îți propun pașii exacți.",
-    call: "Dacă un «operator» cere codul din SMS, parola sau bani, închide apelul. Sună apoi compania folosind numărul oficial de pe site sau contract.",
-    link: "Nu deschide linkul imediat. Verifică domeniul literă cu literă și intră pe site tastând singur adresa oficială.",
-    privacy: "Nu trimite în chat parole, coduri SMS, date bancare sau acte de identitate. Poți ascunde aceste informații înainte de a încărca imaginea.",
-    demo: "Mod demonstrativ",
-    demoHint: "Interfața și funcțiile vocale sunt active. Conectarea la un model AI extern va fi adăugată separat.",
+    fileError: "Alege un fișier audio de maximum 4 MB.",
+    networkError: "Chrono nu poate analiza mesajul acum. Încearcă din nou.",
+    transcript: "Transcriere audio",
+    signals: "Semnale detectate",
+    actions: "Ce trebuie să faci",
+    risk: "Risc",
+    verdicts: { likely_scam: "Probabil fraudă", suspicious: "Suspect", unclear: "Neclar", likely_safe: "Probabil sigur" },
+    demo: "Analiză AI",
+    demoHint: "Chrono transcrie înregistrarea, explică semnalele de fraudă și recomandă pași siguri.",
   },
   ru: {
     title: "Онлайн-помощник AI",
@@ -74,8 +76,7 @@ const content = {
     intro: "Привет! Я Chrono, твой цифровой помощник. Спроси меня о подозрительных звонках, ложных ссылках или защите аккаунта.",
     placeholder: "Напишите вопрос…",
     send: "Отправить",
-    attach: "Прикрепить изображение или аудиофайл",
-    image: "Изображение",
+    attach: "Прикрепить аудиофайл (не больше 4 МБ)",
     audio: "Аудио",
     listenOn: "Выключить озвучивание ответов",
     listenOff: "Включить озвучивание ответов",
@@ -83,14 +84,15 @@ const content = {
     micStop: "Остановить микрофон",
     listening: "Слушаю вас в реальном времени…",
     unsupported: "Распознавание речи недоступно в этом браузере.",
-    attachmentImage: "Я получил изображение. Не публикуйте личные данные, коды и пароли. Расскажите, какой элемент кажется подозрительным, и мы разберём его вместе.",
-    attachmentAudio: "Я получил аудиофайл. Пока я не могу автоматически проверить голос, но помогу заметить давление, срочность или просьбы сообщить код и перевести деньги.",
-    generic: "В подозрительной ситуации остановите разговор, не сообщайте пароли и SMS-коды, затем проверьте информацию через официальный канал. Расскажите подробнее — я предложу точные шаги.",
-    call: "Если «оператор» просит SMS-код, пароль или деньги, завершите звонок. Затем сами позвоните компании по официальному номеру с сайта или договора.",
-    link: "Не открывайте ссылку сразу. Проверьте домен по буквам и зайдите на сайт, самостоятельно набрав официальный адрес.",
-    privacy: "Не отправляйте в чат пароли, SMS-коды, банковские данные и документы. Перед загрузкой изображения эти данные можно скрыть.",
-    demo: "Демонстрационный режим",
-    demoHint: "Интерфейс и голосовые функции активны. Подключение внешней AI-модели будет добавлено отдельно.",
+    fileError: "Выберите аудиофайл размером не больше 4 МБ.",
+    networkError: "Chrono сейчас не может выполнить анализ. Попробуйте ещё раз.",
+    transcript: "Расшифровка аудио",
+    signals: "Обнаруженные признаки",
+    actions: "Что нужно сделать",
+    risk: "Риск",
+    verdicts: { likely_scam: "Вероятно мошенничество", suspicious: "Подозрительно", unclear: "Недостаточно данных", likely_safe: "Вероятно безопасно" },
+    demo: "AI-анализ",
+    demoHint: "Chrono расшифрует запись, объяснит признаки мошенничества и предложит безопасные действия.",
   },
 } as const;
 
@@ -113,18 +115,19 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const [listening, setListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const fileUrlsRef = useRef<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const robotImage = useMemo(() => {
-    if (speechError) return "/characters/chrono/03_warning.png";
+    if (speechError || requestError) return "/characters/chrono/03_warning.png";
     if (listening) return "/characters/chrono/02_happy.png";
     if (thinking) return "/characters/chrono/04_sad_thinking.png";
     if (voiceEnabled) return "/characters/chrono/06_confident.png";
     return "/characters/chrono/01_neutral.png";
-  }, [listening, speechError, thinking, voiceEnabled]);
+  }, [listening, requestError, speechError, thinking, voiceEnabled]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -145,17 +148,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     window.speechSynthesis.speak(utterance);
   }
 
-  function buildReply(text: string, item: Attachment | null) {
-    if (item?.kind === "image") return t.attachmentImage;
-    if (item?.kind === "audio") return t.attachmentAudio;
-    const normalized = text.toLocaleLowerCase(locale);
-    if (/parol|cod|sms|date|парол|код|данн/.test(normalized)) return t.privacy;
-    if (/apel|sunat|operator|звон|оператор/.test(normalized)) return t.call;
-    if (/link|site|qr|ссыл|сайт/.test(normalized)) return t.link;
-    return t.generic;
-  }
-
-  function submit(event?: FormEvent) {
+  async function submit(event?: FormEvent) {
     event?.preventDefault();
     const cleanText = input.trim();
     if ((!cleanText && !attachment) || thinking) return;
@@ -170,24 +163,42 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     setMessages((current) => [...current, userMessage]);
     setInput("");
     setAttachment(null);
+    setRequestError(null);
     setThinking(true);
 
-    window.setTimeout(() => {
-      const reply = buildReply(cleanText, currentAttachment);
-      setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", text: reply }]);
+    try {
+      const body = new FormData();
+      body.append("locale", locale);
+      if (cleanText) body.append("message", cleanText);
+      if (currentAttachment) body.append("audio", currentAttachment.file, currentAttachment.name);
+      const response = await fetch("/api/ai", { method: "POST", body });
+      const result = await response.json() as ApiResult;
+      if (!response.ok || !result.analysis) throw new Error(result.error || t.networkError);
+      const reply = result.analysis.reply;
+      setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", text: reply, analysis: result.analysis, transcript: result.transcript }]);
       setThinking(false);
       if (voiceEnabled) speak(reply);
-    }, 650);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t.networkError;
+      setRequestError(message);
+      setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", text: message }]);
+      setThinking(false);
+    }
   }
 
   function selectFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    const kind = file.type.startsWith("image/") ? "image" : file.type.startsWith("audio/") ? "audio" : null;
-    if (!kind) return;
+    const hasAudioExtension = /\.(mp3|m4a|wav|webm|ogg|aac|flac)$/i.test(file.name);
+    if ((!file.type.startsWith("audio/") && !hasAudioExtension) || file.size > 4 * 1024 * 1024) {
+      setRequestError(t.fileError);
+      event.target.value = "";
+      return;
+    }
     const url = URL.createObjectURL(file);
     fileUrlsRef.current.push(url);
-    setAttachment({ name: file.name, kind, url });
+    setRequestError(null);
+    setAttachment({ name: file.name, url, file });
     event.target.value = "";
   }
 
@@ -273,9 +284,22 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                   <article className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed sm:max-w-[75%] ${message.role === "user" ? "rounded-br-md bg-neon text-primary-foreground" : "rounded-bl-md border border-border bg-background/55 text-foreground"}`}>
-                    {message.attachment?.kind === "image" && <Image src={message.attachment.url} alt={message.attachment.name} width={420} height={280} unoptimized className="mb-3 max-h-56 w-auto rounded-xl object-contain" />}
-                    {message.attachment?.kind === "audio" && <audio src={message.attachment.url} controls className="mb-3 max-w-full" />}
+                    {message.attachment && <audio src={message.attachment.url} controls className="mb-3 max-w-full" />}
                     {message.text && <p>{message.text}</p>}
+                    {message.analysis && (
+                      <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className={`rounded-full border px-3 py-1 text-xs font-black ${message.analysis.verdict === "likely_scam" ? "border-danger/45 bg-danger/10 text-danger" : message.analysis.verdict === "suspicious" ? "border-gold/45 bg-gold/10 text-gold" : message.analysis.verdict === "likely_safe" ? "border-success/45 bg-success/10 text-success" : "border-border bg-secondary text-muted-foreground"}`}>{t.verdicts[message.analysis.verdict]}</span>
+                          <span className="font-display text-xs font-black text-gold">{t.risk}: {message.analysis.risk}%</span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full rounded-full ${message.analysis.risk >= 70 ? "bg-danger" : message.analysis.risk >= 40 ? "bg-gold" : "bg-success"}`} style={{ width: `${message.analysis.risk}%` }} /></div>
+                        <p className="text-xs text-muted-foreground">{message.analysis.summary}</p>
+                        {message.analysis.signals.length > 0 && <div><strong className="text-xs text-neon">{t.signals}</strong><ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-muted-foreground">{message.analysis.signals.map((signal) => <li key={signal}>{signal}</li>)}</ul></div>}
+                        <div><strong className="text-xs text-success">{t.actions}</strong><ol className="mt-1 list-decimal space-y-1 pl-5 text-xs text-muted-foreground">{message.analysis.actions.map((action) => <li key={action}>{action}</li>)}</ol></div>
+                        <p className="rounded-lg border border-border bg-card/60 px-3 py-2 text-[11px] text-muted-foreground">{message.analysis.disclaimer}</p>
+                      </div>
+                    )}
+                    {message.transcript && <details className="mt-3 rounded-lg border border-border bg-card/50 px-3 py-2 text-xs"><summary className="cursor-pointer font-bold text-neon">{t.transcript}</summary><p className="mt-2 text-muted-foreground">{message.transcript}</p></details>}
                     {message.role === "assistant" && <button type="button" onClick={() => speak(message.text)} className="focus-ring mt-2 inline-flex items-center gap-1 text-xs font-bold text-neon"><Volume2 className="size-3.5" aria-hidden="true" />{locale === "ro" ? "Ascultă" : "Прослушать"}</button>}
                   </article>
                 </div>
@@ -286,18 +310,19 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
 
             <form onSubmit={submit} className="border-t border-border/70 bg-background/30 p-4 sm:p-5">
               {speechError && <p className="mb-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-xs text-danger">{speechError}</p>}
+              {requestError && <p className="mb-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-xs text-danger">{requestError}</p>}
               {listening && <p className="mb-3 flex items-center gap-2 text-xs font-bold text-success"><span className="size-2 animate-pulse rounded-full bg-success" />{t.listening}</p>}
               {attachment && (
                 <div className="mb-3 flex items-center gap-3 rounded-xl border border-neon/25 bg-card/70 p-2">
-                  {attachment.kind === "image" ? <Image src={attachment.url} alt="" width={48} height={48} unoptimized className="size-12 rounded-lg object-cover" /> : <span className="grid size-12 place-items-center rounded-lg bg-success/10 text-success"><FileAudio className="size-6" /></span>}
-                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{attachment.name}</p><p className="text-xs text-muted-foreground">{attachment.kind === "image" ? t.image : t.audio}</p></div>
+                  <span className="grid size-12 place-items-center rounded-lg bg-success/10 text-success"><FileAudio className="size-6" /></span>
+                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{attachment.name}</p><p className="text-xs text-muted-foreground">{t.audio} · {(attachment.file.size / 1024 / 1024).toFixed(1)} MB</p></div>
                   <button type="button" onClick={() => setAttachment(null)} className="focus-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
                 </div>
               )}
               <div className="flex items-end gap-2 rounded-2xl border border-border bg-card/85 p-2 focus-within:border-neon/60">
                 <label title={t.attach} className="focus-ring grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-muted-foreground transition hover:bg-secondary hover:text-neon">
                   <Paperclip className="size-5" aria-hidden="true" />
-                  <input type="file" accept="image/*,audio/*" onChange={selectFile} className="sr-only" />
+                  <input type="file" accept="audio/*,.mp3,.m4a,.wav,.webm,.ogg,.aac,.flac" onChange={selectFile} className="sr-only" />
                 </label>
                 <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} rows={1} placeholder={t.placeholder} className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground" />
                 <button type="button" onClick={toggleMicrophone} aria-pressed={listening} title={listening ? t.micStop : t.micStart} className={`focus-ring grid size-11 shrink-0 place-items-center rounded-xl transition ${listening ? "bg-danger text-white" : "bg-success/15 text-success hover:bg-success/25"}`}>
@@ -305,7 +330,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                 </button>
                 <button type="submit" disabled={thinking || (!input.trim() && !attachment)} title={t.send} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl bg-neon text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"><Send className="size-5" aria-hidden="true" /></button>
               </div>
-              <div className="mt-2 flex items-center gap-3 px-1 text-[11px] text-muted-foreground"><ImagePlus className="size-3.5" aria-hidden="true" />{t.attach}</div>
+              <div className="mt-2 flex items-center gap-3 px-1 text-[11px] text-muted-foreground"><FileAudio className="size-3.5" aria-hidden="true" />{t.attach}</div>
             </form>
           </section>
         </div>
