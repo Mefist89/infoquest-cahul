@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Award, Check, ChevronRight, Clock3, Gift, Link2Off, Medal, PhoneCall, ScanFace, ShieldCheck, Sparkles, UserLock, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Award, Check, ChevronRight, Clock3, Gift, Languages, Link2Off, Lock, MapPin, Medal, PhoneCall, ScanFace, ShieldAlert, ShieldCheck, Sparkles, UserLock, type LucideIcon } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
@@ -13,24 +13,27 @@ type ProgressStatus = "not_started" | "in_progress" | "completed";
 type ProgressRow = { module_id: string; status: ProgressStatus; score: number; xp: number; attempts: number };
 
 const modules = [
-  { id: "operator-call", icon: PhoneCall, color: "var(--neon)", title: { ru: "Фальшивый звонок оператора", ro: "Apelul fals de la operator" } },
-  { id: "fake-link", icon: Link2Off, color: "var(--gold)", title: { ru: "Ловушка фальшивой ссылки", ro: "Capcana linkului fals" } },
-  { id: "hacked-account", icon: UserLock, color: "var(--danger)", title: { ru: "Взломанный аккаунт", ro: "Contul compromis" } },
-  { id: "scam-or-real", icon: Gift, color: "var(--gold)", title: { ru: "Скам или реальное предложение?", ro: "Scam sau ofertă reală?" } },
-  { id: "deepfake-detective", icon: ScanFace, color: "var(--violet)", title: { ru: "Детектив дипфейков", ro: "Detectivul deepfake" } },
-] satisfies Array<{ id: string; icon: LucideIcon; color: string; title: Record<ProfileLocale, string> }>;
+  { id: "operator-call", icon: PhoneCall, color: "var(--neon)", locked: false, title: { ru: "Фальшивый звонок оператора", ro: "Apelul fals de la operator" } },
+  { id: "fake-link", icon: Link2Off, color: "var(--gold)", locked: true, title: { ru: "Ловушка фальшивой ссылки", ro: "Capcana linkului fals" } },
+  { id: "hacked-account", icon: UserLock, color: "var(--danger)", locked: true, title: { ru: "Взломанный аккаунт", ro: "Contul compromis" } },
+  { id: "scam-or-real", icon: Gift, color: "var(--gold)", locked: true, title: { ru: "Скам или реальное предложение?", ro: "Scam sau ofertă reală?" } },
+  { id: "deepfake-detective", icon: ScanFace, color: "var(--violet)", locked: true, title: { ru: "Детектив дипфейков", ro: "Detectivul deepfake" } },
+  { id: "bilingual-detective", icon: Languages, color: "var(--success)", locked: true, title: { ru: "Двуязычный детектив", ro: "Detectivul bilingv" } },
+  { id: "rumor-city", icon: MapPin, color: "var(--neon-soft)", locked: true, title: { ru: "Город под осадой слухов", ro: "Orașul sub asediul zvonurilor" } },
+  { id: "community-trolls", icon: ShieldAlert, color: "var(--violet)", locked: true, title: { ru: "Защити сообщество от троллей", ro: "Apără comunitatea de troli" } },
+] satisfies Array<{ id: string; icon: LucideIcon; color: string; locked: boolean; title: Record<ProfileLocale, string> }>;
 
 const copy = {
   ru: {
     title: "Профиль детектива", description: "Очки, достижения и прогресс по цифровым расследованиям.", back: "На главную", signOut: "Выйти", detective: "Детектив-стажёр",
-    xp: "Всего XP", completed: "Пройдено", bestScore: "Лучший результат", shield: "Целостность щита", progressText: "Завершите пять расследований, чтобы восстановить цифровой щит сообщества.",
-    modules: "Прохождение модулей", moduleHint: "Каждая миссия приносит до 100 XP.", open: "К карте миссий", score: "Результат", noScore: "—",
+    xp: "Всего XP", completed: "Пройдено", bestScore: "Лучший результат", shield: "Целостность щита", progressText: "Завершите восемь расследований, чтобы восстановить цифровой щит сообщества.",
+    modules: "Прохождение модулей", moduleHint: "Сейчас доступна первая миссия. Остальные откроются позже.", open: "Открыть модуль", locked: "Скоро", score: "Результат", noScore: "—",
     statuses: { not_started: "Не начато", in_progress: "В процессе", completed: "Пройдено" },
   },
   ro: {
     title: "Profilul detectivului", description: "Puncte, realizări și progresul investigațiilor digitale.", back: "Pagina principală", signOut: "Ieșire", detective: "Detectiv stagiar",
-    xp: "XP total", completed: "Finalizate", bestScore: "Cel mai bun rezultat", shield: "Integritatea scutului", progressText: "Finalizează cele cinci investigații pentru a reface scutul digital al comunității.",
-    modules: "Progresul modulelor", moduleHint: "Fiecare misiune oferă până la 100 XP.", open: "Harta misiunilor", score: "Rezultat", noScore: "—",
+    xp: "XP total", completed: "Finalizate", bestScore: "Cel mai bun rezultat", shield: "Integritatea scutului", progressText: "Finalizează cele opt investigații pentru a reface scutul digital al comunității.",
+    modules: "Progresul modulelor", moduleHint: "Acum este disponibilă prima misiune. Celelalte se vor deschide mai târziu.", open: "Deschide modulul", locked: "În curând", score: "Rezultat", noScore: "—",
     statuses: { not_started: "Neînceput", in_progress: "În desfășurare", completed: "Finalizat" },
   },
 };
@@ -59,9 +62,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
 
   const progress = (progressData ?? []) as ProgressRow[];
   const byModule = new Map(progress.map((item) => [item.module_id, item]));
-  const completedCount = progress.filter((item) => item.status === "completed").length;
-  const totalXp = progress.reduce((sum, item) => sum + item.xp, 0);
-  const bestScore = progress.reduce((best, item) => Math.max(best, item.score), 0);
+  const moduleIds = new Set(modules.map((module) => module.id));
+  const relevantProgress = progress.filter((item) => moduleIds.has(item.module_id));
+  const completedCount = relevantProgress.filter((item) => item.status === "completed").length;
+  const totalXp = relevantProgress.reduce((sum, item) => sum + item.xp, 0);
+  const bestScore = relevantProgress.reduce((best, item) => Math.max(best, item.score), 0);
   const completionPercent = Math.round((completedCount / modules.length) * 100);
   const metadata = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string };
   const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || "Detective";
@@ -108,7 +113,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-gold/30 bg-gold/5 px-5 py-4">
               <Medal className="size-8 text-gold" aria-hidden="true" />
-              <div><p className="text-xs uppercase tracking-wider text-muted-foreground">{t.xp}</p><p className="font-display text-2xl font-black text-gold">{totalXp} / 500</p></div>
+              <div><p className="text-xs uppercase tracking-wider text-muted-foreground">{t.xp}</p><p className="font-display text-2xl font-black text-gold">{totalXp} / 800</p></div>
             </div>
           </div>
 
@@ -137,14 +142,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
           <h2 className="text-2xl font-black">{t.modules}</h2><p className="mt-2 text-sm text-muted-foreground">{t.moduleHint}</p>
           <div className="mt-5 grid gap-4">
             {modules.map((module, index) => {
-              const item = byModule.get(module.id) ?? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 };
+              const item = module.locked ? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 } : byModule.get(module.id) ?? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 };
               const Icon = module.icon;
               const statusStyles = item.status === "completed" ? "border-success/45 bg-success/10 text-success" : item.status === "in_progress" ? "border-gold/45 bg-gold/10 text-gold" : "border-border bg-secondary/55 text-muted-foreground";
               return (
-                <article key={module.id} className="group grid gap-4 rounded-2xl border border-border bg-card/70 p-4 transition hover:border-neon/40 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5">
+                <article key={module.id} className={`group grid gap-4 rounded-2xl border bg-card/70 p-4 transition sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-5 ${module.locked ? "border-border/60 opacity-65" : "border-neon/30 hover:border-neon/60"}`}>
                   <div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-full border border-gold/50 font-display text-xs font-bold text-gold">{index + 1}</span><span className="grid size-12 place-items-center rounded-2xl bg-background/60" style={{ boxShadow: `0 0 18px color-mix(in oklab, ${module.color} 28%, transparent)` }}><Icon className="size-6" style={{ color: module.color }} aria-hidden="true" /></span></div>
                   <div className="min-w-0"><h3 className="font-bold">{module.title[locale]}</h3><div className="mt-2 flex flex-wrap items-center gap-2 text-xs"><span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-semibold ${statusStyles}`}>{item.status === "completed" ? <Check className="size-3" aria-hidden="true" /> : <Clock3 className="size-3" aria-hidden="true" />}{t.statuses[item.status]}</span><span className="text-muted-foreground">{item.xp} XP</span><span className="text-muted-foreground">{t.score}: {item.attempts ? `${item.score}%` : t.noScore}</span></div></div>
-                  <Link href={`/${locale}#missions`} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-4 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">{t.open}<ChevronRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden="true" /></Link>
+                  {module.locked ? <span className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 text-sm font-bold text-muted-foreground"><Lock className="size-4" aria-hidden="true" />{t.locked}</span> : <Link href={`/${locale}/modules/operator-call`} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-4 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">{t.open}<ChevronRight className="size-4 transition group-hover:translate-x-0.5" aria-hidden="true" /></Link>}
                 </article>
               );
             })}
