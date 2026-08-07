@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../globals.css";
 import { Orbitron, Rubik } from "next/font/google";
 
 const orbitron = Orbitron({
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Двуязычная образовательная игра о цифровой безопасности, мошенничестве, дипфейках и дезинформации.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${orbitron.variable} ${rubik.variable}`}>
       <body>{children}</body>

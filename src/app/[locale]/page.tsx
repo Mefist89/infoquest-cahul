@@ -26,7 +26,7 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 
-import { missions, strings, teamMembers, type Lang, type Mission } from "../home-data";
+import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
 
 const icons: Record<Mission["icon"], LucideIcon> = {
   "user-lock": UserLock,
@@ -223,7 +223,7 @@ function BottomCard({ label, icon, onClick, children }: { label: string; icon?: 
   );
 }
 
-export function HomePage() {
+export default function HomePage() {
   const [lang, setLangState] = useState<Lang>("ru");
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
