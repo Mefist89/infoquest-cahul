@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowDown,
   ArrowRight,
   Download,
   Gift,
@@ -25,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 
 import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
@@ -225,7 +225,9 @@ function BottomCard({ label, icon, onClick, children }: { label: string; icon?: 
 }
 
 export default function HomePage() {
-  const [lang, setLangState] = useState<Lang>("ru");
+  const params = useParams<{ locale: string }>();
+  const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
+  const [lang, setLangState] = useState<Lang>(routeLang);
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
@@ -236,8 +238,6 @@ export default function HomePage() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const saved = window.localStorage.getItem("infoquest.lang");
-      if (saved === "ro" || saved === "ru") setLangState(saved);
       setSiteUrl(window.location.origin);
     }, 0);
 
@@ -274,12 +274,6 @@ export default function HomePage() {
     URL.revokeObjectURL(href);
   };
 
-  const beginInvestigation = () => {
-    const firstMission = document.querySelector<HTMLButtonElement>("[data-mission-id='1']");
-    firstMission?.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.setTimeout(() => firstMission?.focus(), 500);
-  };
-
   return (
     <>
       <Header lang={lang} setLang={setLang} />
@@ -291,14 +285,13 @@ export default function HomePage() {
           <p className="mt-2 font-display text-sm uppercase tracking-[0.25em] text-neon sm:text-base">{t.tagline}</p>
           <p className="mx-auto mt-4 inline-block rounded-full border border-gold/50 px-5 py-2 text-sm font-semibold text-gold">{t.motto}</p>
           <div>
-            <button
-              type="button"
-              onClick={beginInvestigation}
+            <Link
+              href={`/${lang}/login`}
               className="focus-ring group mt-6 inline-flex min-h-12 items-center gap-3 rounded-xl bg-neon px-6 text-sm font-extrabold text-primary-foreground shadow-[0_0_28px_color-mix(in_oklab,var(--neon)_38%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--neon)_55%,transparent)]"
             >
               {t.startInvestigation}
-              <ArrowDown className="size-4 transition group-hover:translate-y-1" aria-hidden="true" />
-            </button>
+              <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
+            </Link>
           </div>
         </section>
 

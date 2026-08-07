@@ -22,11 +22,15 @@ export type LegalDocument = {
 const sharedLinks = {
   ro: [
     { label: "Centrul Național pentru Protecția Datelor cu Caracter Personal", href: "https://datepersonale.md/" },
+    { label: "Politica de confidențialitate Supabase", href: "https://supabase.com/privacy" },
+    { label: "Politica de confidențialitate Google", href: "https://policies.google.com/privacy" },
     { label: "Politica de confidențialitate Vercel", href: "https://vercel.com/legal/privacy-policy" },
     { label: "Proiectul InfoQuest Cahul pe GitHub", href: "https://github.com/Mefist89/infoquest-cahul" },
   ],
   ru: [
     { label: "Национальный центр защиты персональных данных Молдовы", href: "https://datepersonale.md/" },
+    { label: "Политика конфиденциальности Supabase", href: "https://supabase.com/privacy" },
+    { label: "Политика конфиденциальности Google", href: "https://policies.google.com/privacy" },
     { label: "Политика конфиденциальности Vercel", href: "https://vercel.com/legal/privacy-policy" },
     { label: "Проект InfoQuest Cahul на GitHub", href: "https://github.com/Mefist89/infoquest-cahul" },
   ],
@@ -46,12 +50,14 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "1. Cine administrează proiectul",
           paragraphs: [
             "InfoQuest Cahul este un prototip educațional bilingv realizat de echipa proiectului InfoQuest Cahul pentru Hackathonul Regional pentru coeziune socială și reziliență informațională.",
-            "Versiunea publică actuală nu permite crearea unui cont și nu solicită numele, adresa de e-mail, numărul de telefon sau date de plată.",
+            "Pentru acces la investigație, utilizatorul poate crea un cont prin autentificarea Google administrată de Supabase. Nu solicităm numărul de telefon sau date de plată.",
           ],
         },
         {
           title: "2. Ce informații sunt prelucrate",
           bullets: [
+            "La autentificarea cu Google, primim prin Supabase datele de bază aprobate de utilizator: identificatorul contului, numele, adresa de e-mail și, dacă există, imaginea de profil. InfoQuest Cahul nu primește parola contului Google.",
+            "Supabase folosește cookie-uri strict necesare pentru păstrarea și securizarea sesiunii de autentificare.",
             "Limba aleasă (RO sau RU) este salvată local în browser, sub cheia «infoquest.lang», pentru a păstra preferința la următoarea vizită.",
             "O imagine selectată în blocul «Sigla echipei» este citită numai în memoria browserului. Nu este încărcată pe server și dispare după reîncărcarea sau închiderea paginii.",
             "Codul QR este generat direct în browser din adresa publică a site-ului; conținutul său nu este trimis de aplicație către un serviciu extern de generare QR.",
@@ -61,7 +67,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
         {
           title: "3. Ce nu facem",
           bullets: [
-            "Nu folosim conturi de utilizator, publicitate comportamentală sau profilare.",
+            "Nu folosim datele contului pentru publicitate comportamentală sau profilare.",
             "Nu instalăm cookie-uri proprii de marketing și nu folosim instrumente de analiză a audienței în versiunea actuală.",
             "Nu vindem și nu închiriem date personale.",
             "Nu solicităm încărcarea conversațiilor private, a documentelor de identitate sau a imaginilor sensibile.",
@@ -70,13 +76,15 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
         {
           title: "4. Scopuri și temeiuri",
           paragraphs: [
-            "Preferința de limbă este folosită pentru furnizarea funcției solicitate de utilizator. Datele tehnice de găzduire pot fi prelucrate pentru funcționarea, securitatea și prevenirea abuzurilor, în baza interesului legitim și a obligațiilor tehnice ale furnizorului.",
-            "Dacă proiectul va introduce în viitor conturi, formulare, analiză de audiență, servicii AI sau stocare online a progresului, această politică va fi actualizată înainte de activarea lor.",
+            "Datele contului și cookie-urile de sesiune sunt folosite pentru autentificare, controlul accesului și, când funcția este activă, asocierea progresului cu utilizatorul. Prelucrarea este necesară pentru furnizarea serviciului solicitat și securitatea contului.",
+            "Preferința de limbă este folosită pentru furnizarea funcției solicitate. Datele tehnice de găzduire pot fi prelucrate pentru funcționarea, securitatea și prevenirea abuzurilor, în baza interesului legitim și a obligațiilor tehnice ale furnizorului.",
           ],
         },
         {
           title: "5. Păstrarea și ștergerea datelor",
           bullets: [
+            "Datele contului sunt păstrate în Supabase cât timp contul este activ sau cât este necesar pentru furnizarea și securizarea serviciului; utilizatorul poate solicita ștergerea lor.",
+            "Cookie-urile de autentificare sunt păstrate până la expirarea sesiunii, deconectare sau ștergerea datelor site-ului, în funcție de situație.",
             "Preferința de limbă rămâne în browser până când utilizatorul șterge datele site-ului sau schimbă setarea.",
             "Imaginea siglei nu este păstrată după reîncărcarea paginii.",
             "Jurnalele tehnice sunt păstrate de furnizorul de găzduire conform termenelor și măsurilor sale de securitate.",
@@ -86,12 +94,13 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "6. Furnizori și transferuri",
           paragraphs: [
             "Site-ul este găzduit prin Vercel. În măsura necesară furnizării și protejării site-ului, datele tehnice pot fi prelucrate pe infrastructura furnizorului și în alte jurisdicții, cu garanțiile descrise în politica sa de confidențialitate.",
+            "Autentificarea și stocarea contului sunt furnizate de Supabase, iar verificarea identității este realizată de Google. Acești furnizori pot prelucra datele în conformitate cu propriile politici și garanții privind transferurile internaționale.",
           ],
         },
         {
           title: "7. Copii și adolescenți",
           paragraphs: [
-            "Proiectul are scop educațional și poate fi folosit de elevi. Nu solicităm minorilor date personale. Recomandăm utilizarea împreună cu un profesor, părinte sau tutore și evitarea introducerii datelor reale în exemplele de joc.",
+            "Proiectul are scop educațional și poate fi folosit de elevi. Autentificarea prelucrează datele de bază ale contului Google; minorii trebuie să folosească serviciul cu acordul și îndrumarea părintelui, tutorelui sau instituției de învățământ, atunci când legea o cere. Nu introduce date reale în exemplele de joc.",
           ],
         },
         {
@@ -204,12 +213,14 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "1. Кто управляет проектом",
           paragraphs: [
             "InfoQuest Cahul — двуязычный образовательный прототип, созданный командой проекта InfoQuest Cahul для Регионального хакатона по социальной сплочённости и информационной устойчивости.",
-            "Текущая публичная версия не позволяет создавать аккаунты и не запрашивает имя, электронную почту, номер телефона или платёжные данные.",
+            "Для доступа к расследованию пользователь может создать аккаунт через Google-вход, обслуживаемый Supabase. Мы не запрашиваем номер телефона или платёжные данные.",
           ],
         },
         {
           title: "2. Какие сведения обрабатываются",
           bullets: [
+            "При входе через Google мы получаем через Supabase одобренные пользователем основные данные: идентификатор аккаунта, имя, адрес электронной почты и, при наличии, изображение профиля. InfoQuest Cahul не получает пароль от Google.",
+            "Supabase использует строго необходимые cookie-файлы для сохранения и защиты сеанса авторизации.",
             "Выбранный язык (RO или RU) сохраняется локально в браузере под ключом «infoquest.lang», чтобы запомнить настройку для следующего посещения.",
             "Изображение, выбранное в блоке «Логотип команды», читается только в памяти браузера. Оно не отправляется на сервер и исчезает после перезагрузки или закрытия страницы.",
             "QR-код создаётся непосредственно в браузере из публичного адреса сайта; приложение не отправляет его содержимое внешнему сервису генерации QR-кодов.",
@@ -219,7 +230,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
         {
           title: "3. Чего мы не делаем",
           bullets: [
-            "Не используем пользовательские аккаунты, поведенческую рекламу или профилирование.",
+            "Не используем данные аккаунта для поведенческой рекламы или профилирования.",
             "Не устанавливаем собственные маркетинговые cookie-файлы и не используем системы веб-аналитики в текущей версии.",
             "Не продаём и не сдаём в аренду персональные данные.",
             "Не просим загружать личную переписку, документы или чувствительные изображения.",
@@ -228,13 +239,15 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
         {
           title: "4. Цели и основания обработки",
           paragraphs: [
-            "Настройка языка используется для предоставления выбранной пользователем функции. Технические данные хостинга могут обрабатываться для работы сайта, обеспечения безопасности и предотвращения злоупотреблений на основании законного интереса и технических обязанностей провайдера.",
-            "Если в будущем появятся аккаунты, формы, веб-аналитика, AI-сервисы или онлайн-хранение прогресса, политика будет обновлена до включения этих функций.",
+            "Данные аккаунта и cookie-файлы сеанса используются для авторизации, контроля доступа и, когда функция будет включена, привязки игрового прогресса к пользователю. Обработка необходима для предоставления запрошенного сервиса и защиты аккаунта.",
+            "Настройка языка используется для предоставления выбранной функции. Технические данные хостинга могут обрабатываться для работы сайта, обеспечения безопасности и предотвращения злоупотреблений на основании законного интереса и технических обязанностей провайдера.",
           ],
         },
         {
           title: "5. Срок хранения и удаление",
           bullets: [
+            "Данные аккаунта хранятся в Supabase, пока аккаунт активен или пока это необходимо для предоставления и защиты сервиса; пользователь может запросить их удаление.",
+            "Cookie-файлы авторизации хранятся до завершения срока сеанса, выхода из аккаунта или удаления данных сайта — в зависимости от ситуации.",
             "Настройка языка хранится в браузере, пока пользователь не очистит данные сайта или не изменит язык.",
             "Изображение логотипа не сохраняется после перезагрузки страницы.",
             "Технические журналы хранятся хостинг-провайдером в соответствии с его сроками хранения и мерами безопасности.",
@@ -244,12 +257,13 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "6. Поставщики и международная обработка",
           paragraphs: [
             "Сайт размещён на Vercel. В объёме, необходимом для работы и защиты сайта, технические данные могут обрабатываться на инфраструктуре провайдера и в других юрисдикциях с гарантиями, описанными в его политике конфиденциальности.",
+            "Авторизацию и хранение аккаунта обеспечивает Supabase, а проверку личности выполняет Google. Эти поставщики могут обрабатывать данные согласно собственным политикам и гарантиям международной передачи данных.",
           ],
         },
         {
           title: "7. Дети и подростки",
           paragraphs: [
-            "Проект имеет образовательную направленность и может использоваться школьниками. Мы не просим несовершеннолетних предоставлять персональные данные. Рекомендуем пользоваться проектом вместе с учителем, родителем или опекуном и не вводить реальные данные в игровые примеры.",
+            "Проект имеет образовательную направленность и может использоваться школьниками. При авторизации обрабатываются основные данные Google-аккаунта; несовершеннолетним следует пользоваться сервисом с согласием и под руководством родителя, опекуна или образовательного учреждения, когда этого требует закон. Не вводите реальные данные в игровые примеры.",
           ],
         },
         {
