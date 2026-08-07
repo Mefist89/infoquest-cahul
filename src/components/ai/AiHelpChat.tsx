@@ -24,23 +24,6 @@ type FraudAnalysis = { verdict: Verdict; risk: number; summary: string; signals:
 type ChatMessage = { id: string; role: "assistant" | "user"; text: string; attachment?: Attachment; analysis?: FraudAnalysis; transcript?: string };
 type ApiResult = { analysis?: FraudAnalysis; transcript?: string; error?: string };
 
-type SpeechResultEvent = {
-  results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }>;
-};
-
-type SpeechRecognitionInstance = {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start: () => void;
-  stop: () => void;
-  onresult: ((event: SpeechResultEvent) => void) | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
-};
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
-
 const content = {
   ro: {
     title: "Ajutor online AI",
@@ -54,10 +37,11 @@ const content = {
     audio: "Audio",
     listenOn: "Oprește vocea răspunsurilor",
     listenOff: "Pornește vocea răspunsurilor",
-    micStart: "Vorbește cu Chrono",
-    micStop: "Oprește microfonul",
-    listening: "Te ascult în timp real…",
-    unsupported: "Recunoașterea vocală nu este disponibilă în acest browser.",
+    micStart: "Înregistrează un mesaj vocal",
+    micStop: "Oprește înregistrarea",
+    listening: "Înregistrare în curs… Apasă din nou pentru a opri.",
+    unsupported: "Înregistrarea audio nu este disponibilă în acest browser.",
+    permission: "Permite accesul la microfon pentru a înregistra mesajul.",
     fileError: "Alege un fișier audio de maximum 4 MB.",
     networkError: "Chrono nu poate analiza mesajul acum. Încearcă din nou.",
     transcript: "Transcriere audio",
@@ -80,10 +64,11 @@ const content = {
     audio: "Аудио",
     listenOn: "Выключить озвучивание ответов",
     listenOff: "Включить озвучивание ответов",
-    micStart: "Говорить с Chrono",
-    micStop: "Остановить микрофон",
-    listening: "Слушаю вас в реальном времени…",
-    unsupported: "Распознавание речи недоступно в этом браузере.",
+    micStart: "Записать голосовое сообщение",
+    micStop: "Остановить запись",
+    listening: "Идёт запись… Нажмите ещё раз, чтобы остановить.",
+    unsupported: "Запись аудио недоступна в этом браузере.",
+    permission: "Разрешите доступ к микрофону, чтобы записать сообщение.",
     fileError: "Выберите аудиофайл размером не больше 4 МБ.",
     networkError: "Chrono сейчас не может выполнить анализ. Попробуйте ещё раз.",
     transcript: "Расшифровка аудио",
@@ -95,15 +80,6 @@ const content = {
     demoHint: "Chrono расшифрует запись, объяснит признаки мошенничества и предложит безопасные действия.",
   },
 } as const;
-
-function getSpeechRecognition(): SpeechRecognitionConstructor | null {
-  if (typeof window === "undefined") return null;
-  const speechWindow = window as typeof window & {
-    SpeechRecognition?: SpeechRecognitionConstructor;
-    webkitSpeechRecognition?: SpeechRecognitionConstructor;
-  };
-  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition ?? null;
-}
 
 export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const t = content[locale];
@@ -117,7 +93,10 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileUrlsRef = useRef<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -134,7 +113,9 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   }, [messages, thinking]);
 
   useEffect(() => () => {
-    recognitionRef.current?.stop();
+    if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
+    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     window.speechSynthesis?.cancel();
     fileUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
   }, []);
@@ -202,37 +183,63 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     event.target.value = "";
   }
 
-  function toggleMicrophone() {
+  async function toggleMicrophone() {
     setSpeechError(null);
     if (listening) {
-      recognitionRef.current?.stop();
-      setListening(false);
+      if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
       return;
     }
 
-    const Recognition = getSpeechRecognition();
-    if (!Recognition) {
+    if (!navigator.mediaDevices?.getUserMedia || !("MediaRecorder" in window)) {
       setSpeechError(t.unsupported);
       return;
     }
 
-    const recognition = new Recognition();
-    recognition.lang = locale === "ro" ? "ro-RO" : "ru-RU";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let index = 0; index < event.results.length; index += 1) transcript += event.results[index][0].transcript;
-      setInput(transcript.trimStart());
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferredType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, preferredType ? { mimeType: preferredType } : undefined);
+      mediaStreamRef.current = stream;
+      mediaRecorderRef.current = recorder;
+      recordedChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) recordedChunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
+        recordingTimeoutRef.current = null;
+        stream.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+        setListening(false);
+        const mimeType = recorder.mimeType || "audio/webm";
+        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
+        recordedChunksRef.current = [];
+        if (!blob.size || blob.size > 4 * 1024 * 1024) {
+          setSpeechError(t.fileError);
+          return;
+        }
+        const extension = mimeType.includes("mp4") ? "m4a" : "webm";
+        const file = new File([blob], `chrono-${Date.now()}.${extension}`, { type: mimeType });
+        const url = URL.createObjectURL(file);
+        fileUrlsRef.current.push(url);
+        setAttachment({ name: file.name, url, file });
+      };
+      recorder.onerror = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        setListening(false);
+        setSpeechError(t.unsupported);
+      };
+      recorder.start(1000);
+      setListening(true);
+      recordingTimeoutRef.current = setTimeout(() => {
+        if (recorder.state === "recording") recorder.stop();
+      }, 60_000);
+    } catch {
       setListening(false);
-      setSpeechError(t.unsupported);
-    };
-    recognitionRef.current = recognition;
-    recognition.start();
-    setListening(true);
+      setSpeechError(t.permission);
+    }
   }
 
   function toggleVoice() {
