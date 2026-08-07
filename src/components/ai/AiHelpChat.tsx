@@ -146,10 +146,10 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const highRisk = (latestAnalysis?.risk ?? 0) > 70;
 
   const robotImage = useMemo(() => {
+    if (thinking) return "/characters/chrono/04_sad_thinking.png";
     if (highRisk) return "/characters/chrono/03_warning.png";
     if (speechError || requestError) return "/characters/chrono/03_warning.png";
     if (listening) return "/characters/chrono/02_happy.png";
-    if (thinking) return "/characters/chrono/04_sad_thinking.png";
     if (voiceEnabled) return "/characters/chrono/06_confident.png";
     return "/characters/chrono/01_neutral.png";
   }, [highRisk, listening, requestError, speechError, thinking, voiceEnabled]);
