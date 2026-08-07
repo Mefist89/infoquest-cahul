@@ -124,7 +124,7 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
 
           <Link href={progress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`} className="focus-ring flex items-center gap-1 rounded-full border border-border bg-card/70 px-2.5 py-2 text-xs text-muted-foreground transition hover:border-gold/60 sm:px-3" aria-label={lang === "ru" ? "Награды" : "Recompense"}>
             <Medal className="size-3.5 text-gold" aria-hidden="true" />
-            <strong className="text-foreground">{progress.rewards}</strong>/5
+            <strong className="text-foreground">{progress.rewards}</strong>/8
           </Link>
 
           {progress.loading ? (
@@ -238,8 +238,8 @@ function ShieldProgress({ lang }: { lang: Lang }) {
         />
       </div>
       <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
-      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={5} aria-label={strings[lang].shieldProgress}>
-        {Array.from({ length: 5 }).map((_, index) => (
+      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={8} aria-label={strings[lang].shieldProgress}>
+        {Array.from({ length: 8 }).map((_, index) => (
           <span key={index} className="h-2 flex-1 rounded-full bg-secondary" />
         ))}
       </div>
