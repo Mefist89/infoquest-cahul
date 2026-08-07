@@ -36,7 +36,7 @@ export const operatorCallContent = {
     stages: [
       { title: "Теория", subtitle: "Как устроен звонок мошенника" },
       { title: "Видеообъяснение", subtitle: "Пять признаков опасного звонка" },
-      { title: "Видеопример", subtitle: "Разговор с «оператором CahulTel»" },
+      { title: "Видеопример", subtitle: "Разговор с «оператором MinTel»" },
       { title: "Игра: найди сигналы", subtitle: "Отметь подозрительные детали" },
       { title: "Игра: классификация", subtitle: "Безопасная или опасная фраза" },
       { title: "Игра: диалог", subtitle: "Выбери правильный ответ" },
@@ -46,8 +46,12 @@ export const operatorCallContent = {
     theory: {
       lead: "Мошенник старается не убедить фактами, а заставить действовать быстро. Настоящему оператору не нужен код из твоего SMS.",
       cards: [
-        { title: "Срочность и Давление", text: "«Сейчас отключим номер» — мошенник давит, чтобы ты не успел подумать. Настоящий оператор не торопит." },
-        { title: "Коды и Ссылки", text: "Код из SMS — это ключ от аккаунта. Никогда не сообщай его и не открывай ссылки от звонящего." },
+        { title: "Срочность и Давление", text: "Мошенник всегда торопит и пугает отключением номера. Настоящий оператор дает время подумать." },
+        { title: "Коды из SMS", text: "Никогда не диктуй код из SMS. Это ключ к твоему личному кабинету или банку." },
+        { title: "Переход по ссылкам", text: "Не открывай ссылки из сообщений, которые присылает звонящий." },
+        { title: "Личные данные", text: "Настоящий оператор не будет по телефону запрашивать пароли или полные паспортные данные." },
+        { title: "Проверка номера", text: "Номер на экране может быть поддельным (спуфинг). Не доверяй ему вслепую." },
+        { title: "Самостоятельный перезвон", text: "Положи трубку и сам перезвони по официальному номеру поддержки MinTel." },
       ],
       rule: "Главное правило: положи трубку, ничего не сообщай и проверь информацию через официальный канал.",
     },
@@ -58,7 +62,7 @@ export const operatorCallContent = {
       points: ["Не доверяй номеру на экране — его можно подменить.", "Код из SMS, пароль и PIN никогда не называют по телефону.", "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
     },
     videoExample: {
-      title: "Учебный звонок от вымышленного оператора CahulTel",
+      title: "Учебный звонок от вымышленного оператора MinTel",
       placeholder: "Место для видеопримера",
       hint: "В примере нет реальных телефонов, брендов или данных.",
       transcript: [
@@ -89,7 +93,7 @@ export const operatorCallContent = {
         {
           id: 2,
           phrases: [
-            { text: "Здравствуйте, меня зовут Иван, компания CahulTel.", isThreat: false },
+            { text: "Здравствуйте, меня зовут Иван, компания MinTel.", isThreat: false },
             { text: "Мы зафиксировали сбой. Для безопасности продиктуйте пароль от личного кабинета.", isThreat: true }
           ]
         },
@@ -112,7 +116,7 @@ export const operatorCallContent = {
         {
           id: 5,
           phrases: [
-            { text: "Добрый день, это уведомление CahulTel.", isThreat: false },
+            { text: "Добрый день, это уведомление MinTel.", isThreat: false },
             { text: "Напоминаем о необходимости пополнить счет до конца месяца.", isThreat: false },
             { text: "Вы можете сделать это через официальное приложение. Всего доброго!", isThreat: false }
           ]
@@ -120,24 +124,99 @@ export const operatorCallContent = {
       ]
     },
     classify: {
-      prompt: "Для каждой фразы выбери категорию.",
+      prompt: "Смахивай карточки! Влево — Опасно (Мошенник), Вправо — Безопасно (Настоящий оператор).",
       safe: "Безопасно",
       danger: "Опасно",
+      completeMessage: "Все карточки разобраны!",
       items: [
-        { id: "a", text: "Назовите шестизначный код, чтобы сохранить номер", answer: "danger" },
-        { id: "b", text: "Завершите звонок и свяжитесь с нами по номеру из приложения", answer: "safe" },
-        { id: "c", text: "Не кладите трубку — предложение действует две минуты", answer: "danger" },
-        { id: "d", text: "Мы никогда не запрашиваем пароль или код из SMS", answer: "safe" },
+        { id: "c1", text: "Назовите код из SMS для отмены операции.", answer: "danger" },
+        { id: "c2", text: "Ваш номер заблокирован, перейдите по ссылке для разблокировки.", answer: "danger" },
+        { id: "c3", text: "Здравствуйте, меня зовут Анна, компания MinTel.", answer: "safe" },
+        { id: "c4", text: "Продиктуйте ваши паспортные данные для подтверждения.", answer: "danger" },
+        { id: "c5", text: "Служба поддержки слушает вас. Чем могу помочь?", answer: "safe" },
+        { id: "c6", text: "Для оценки качества обслуживания после разговора нажмите 1.", answer: "safe" },
+        { id: "c7", text: "Мы зафиксировали взлом. Срочно скачайте антивирус по ссылке в SMS.", answer: "danger" },
+        { id: "c8", text: "Спасибо за звонок, все детали есть в вашем официальном приложении.", answer: "safe" },
+        { id: "c9", text: "Оставайтесь на линии! У вас есть всего одна минута, чтобы согласиться!", answer: "danger" },
+        { id: "c10", text: "Мы меняем ваш тариф. Чтобы отказаться, продиктуйте старый пароль.", answer: "danger" },
+        { id: "c11", text: "Ваш баланс ниже нуля. Пополните счет удобным способом до конца дня.", answer: "safe" },
+        { id: "c12", text: "Это автоинформатор. Ваша заявка на смену номера принята. Если это не вы — оставайтесь на линии.", answer: "danger" },
+        { id: "c13", text: "Для вашей защиты мы прислали системный код. Просто введите его на клавиатуре телефона во время звонка.", answer: "danger" },
+        { id: "c14", text: "Если вы сомневаетесь, что я оператор — положите трубку и перезвоните нам сами.", answer: "safe" },
+        { id: "c15", text: "Мы не просим пароли. Просто скажите чётко «ДА», чтобы подтвердить продление договора.", answer: "danger" }
       ],
     },
     dialogue: {
-      prompt: "«Оператор» говорит: “Продиктуйте код, иначе SIM-карта будет заблокирована”. Что ответить?",
-      choices: [
-        { id: "give", label: "Назвать код, чтобы не потерять номер", score: 0 },
-        { id: "delay", label: "Попросить перезвонить через час", score: 30 },
-        { id: "safe", label: "Завершить звонок и самому набрать официальный номер", score: 100 },
-      ],
-      result: "Безопасное решение — прекратить разговор и начать независимую проверку.",
+      prompt: "Выдели все уловки мошенника маркером (кликай на фразы).",
+      levelText: "Уровень",
+      verifyBtn: "Проверить",
+      error: "Ты пропустил уловку или выделил лишнее. Попробуй еще раз!",
+      win: "Отлично! Ты нашел все манипуляции.",
+      levels: [
+        {
+          id: 1,
+          liesCount: 1,
+          parts: [
+            { id: "p1", text: "Здравствуйте! Компания MinTel информирует о новых тарифах. ", isLie: false },
+            { id: "p2", text: "Продиктуйте SMS-код для их активации", isLie: true },
+            { id: "p3", text: ". Спасибо за доверие.", isLie: false },
+          ]
+        },
+        {
+          id: 2,
+          liesCount: 2,
+          parts: [
+            { id: "p1", text: "Служба безопасности MinTel. ", isLie: false },
+            { id: "p2", text: "Ваша сим-карта заблокирована.", isLie: true },
+            { id: "p3", text: " Чтобы отменить блокировку, ", isLie: false },
+            { id: "p4", text: "перейдите по ссылке www.mintel-support.com", isLie: true },
+            { id: "p5", text: ". Ждем вашего ответа.", isLie: false },
+          ]
+        },
+        {
+          id: 3,
+          liesCount: 3,
+          parts: [
+            { id: "p1", text: "Это автоинформатор MinTel. ", isLie: false },
+            { id: "p2", text: "Поступила заявка на смену вашего номера.", isLie: true },
+            { id: "p3", text: " ", isLie: false },
+            { id: "p4", text: "Если это не вы, нажмите цифру 1 прямо сейчас.", isLie: true },
+            { id: "p5", text: " Затем ", isLie: false },
+            { id: "p6", text: "назовите пароль от личного кабинета", isLie: true },
+            { id: "p7", text: " ответившему оператору.", isLie: false },
+          ]
+        },
+        {
+          id: 4,
+          liesCount: 4,
+          parts: [
+            { id: "p1", text: "Важная информация! ", isLie: false },
+            { id: "p2", text: "Срок действия вашего договора истекает сегодня.", isLie: true },
+            { id: "p3", text: " ", isLie: false },
+            { id: "p4", text: "Для срочного продления назовите паспортные данные.", isLie: true },
+            { id: "p5", text: " ", isLie: false },
+            { id: "p6", text: "Иначе номер будет передан другому абоненту.", isLie: true },
+            { id: "p7", text: " ", isLie: false },
+            { id: "p8", text: "Ни в коем случае не кладите трубку, пока я проверяю ваши данные.", isLie: true }
+          ]
+        },
+        {
+          id: 5,
+          liesCount: 5,
+          parts: [
+            { id: "p1", text: "Добрый день. ", isLie: false },
+            { id: "p2", text: "Мы зафиксировали взлом вашего аккаунта MinTel.", isLie: true },
+            { id: "p3", text: " ", isLie: false },
+            { id: "p4", text: "Прямо сейчас мошенники пытаются украсть ваши деньги.", isLie: true },
+            { id: "p5", text: " ", isLie: false },
+            { id: "p6", text: "Срочно продиктуйте код из сообщения, которое мы отправили.", isLie: true },
+            { id: "p7", text: " ", isLie: false },
+            { id: "p8", text: "Не вздумайте перезванивать в поддержку, иначе система заблокирует телефон.", isLie: true },
+            { id: "p9", text: " ", isLie: false },
+            { id: "p10", text: "Для надежности откройте банковское приложение, пока мы на связи.", isLie: true }
+          ]
+        }
+      ]
     },
     ordering: {
       prompt: "Нажимай действия в правильном порядке.",
@@ -150,7 +229,7 @@ export const operatorCallContent = {
       correct: ["end", "open", "contact", "secure"],
     },
     final: {
-      intro: "Тень звонит жителям от имени CahulTel. Ответь минимум на 4 из 5 вопросов, чтобы остановить атаку.",
+      intro: "Тень звонит жителям от имени MinTel. Ответь минимум на 4 из 5 вопросов, чтобы остановить атаку.",
       questions: [
         { id: "q1", text: "Кто может попросить код из SMS?", options: ["Сотрудник оператора", "Никто", "Только курьер"], answer: 1 },
         { id: "q2", text: "Что делать при угрозе срочной блокировки?", options: ["Поторопиться", "Завершить звонок и проверить отдельно", "Назвать паспортные данные"], answer: 1 },
@@ -197,7 +276,7 @@ export const operatorCallContent = {
     stages: [
       { title: "Teorie", subtitle: "Cum funcționează apelul fraudulos" },
       { title: "Explicație video", subtitle: "Cinci semne ale unui apel periculos" },
-      { title: "Exemplu video", subtitle: "Discuția cu „operatorul CahulTel”" },
+      { title: "Exemplu video", subtitle: "Discuția cu „operatorul MinTel”" },
       { title: "Joc: găsește semnele", subtitle: "Marchează detaliile suspecte" },
       { title: "Joc: clasificare", subtitle: "Frază sigură sau periculoasă" },
       { title: "Joc: dialog", subtitle: "Alege răspunsul corect" },
@@ -207,8 +286,12 @@ export const operatorCallContent = {
     theory: {
       lead: "Escrocul nu încearcă să convingă prin fapte, ci să te facă să acționezi rapid. Un operator real nu are nevoie de codul tău SMS.",
       cards: [
-        { title: "Urgență și Presiune", text: "„Numărul va fi dezactivat acum” — escrocul te presează să nu gândești rațional. Un operator real nu te grăbește." },
-        { title: "Coduri și Linkuri", text: "Codul SMS este cheia contului tău. Nu-l comunica niciodată și nu accesa linkuri primite de la apelant." },
+        { title: "Urgență și Presiune", text: "Escrocul te grăbește mereu și te sperie cu blocarea numărului. Un operator real îți oferă timp." },
+        { title: "Coduri din SMS", text: "Nu dicta niciodată codul din SMS. Acesta este cheia contului sau a băncii tale." },
+        { title: "Accesarea linkurilor", text: "Nu deschide linkurile din mesajele pe care ți le trimite apelantul." },
+        { title: "Date personale", text: "Un operator real nu va solicita parole sau date din buletin prin telefon." },
+        { title: "Verificarea numărului", text: "Numărul de pe ecran poate fi falsificat (spoofing). Nu avea încredere oarbă în el." },
+        { title: "Apelul independent", text: "Închide și sună personal la numărul oficial de suport MinTel." },
       ],
       rule: "Regula principală: închide, nu comunica nimic și verifică informația printr-un canal oficial.",
     },
@@ -219,7 +302,7 @@ export const operatorCallContent = {
       points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", "Codul SMS, parola și PIN-ul nu se comunică telefonic.", "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
     },
     videoExample: {
-      title: "Apel educațional de la operatorul fictiv CahulTel",
+      title: "Apel educațional de la operatorul fictiv MinTel",
       placeholder: "Loc pentru exemplul video",
       hint: "Exemplul nu folosește telefoane, mărci sau date reale.",
       transcript: [
@@ -250,7 +333,7 @@ export const operatorCallContent = {
         {
           id: 2,
           phrases: [
-            { text: "Bună ziua, mă numesc Ion, de la compania CahulTel.", isThreat: false },
+            { text: "Bună ziua, mă numesc Ion, de la compania MinTel.", isThreat: false },
             { text: "Am detectat o eroare. Pentru siguranță, dictați parola contului personal.", isThreat: true }
           ]
         },
@@ -273,7 +356,7 @@ export const operatorCallContent = {
         {
           id: 5,
           phrases: [
-            { text: "Bună ziua, este o notificare CahulTel.", isThreat: false },
+            { text: "Bună ziua, este o notificare MinTel.", isThreat: false },
             { text: "Îți reamintim să suplinești contul până la sfârșitul lunii.", isThreat: false },
             { text: "O poți face oricând prin aplicația oficială. O zi bună!", isThreat: false }
           ]
@@ -281,24 +364,99 @@ export const operatorCallContent = {
       ]
     },
     classify: {
-      prompt: "Alege categoria pentru fiecare frază.",
+      prompt: "Glisează cardurile! La stânga — Periculos (Escroc), La dreapta — Sigur (Operator real).",
       safe: "Sigur",
       danger: "Periculos",
+      completeMessage: "Toate cardurile au fost sortate!",
       items: [
-        { id: "a", text: "Spuneți codul din șase cifre pentru a păstra numărul", answer: "danger" },
-        { id: "b", text: "Încheiați apelul și contactați-ne la numărul din aplicație", answer: "safe" },
-        { id: "c", text: "Nu închideți — oferta este valabilă două minute", answer: "danger" },
-        { id: "d", text: "Nu solicităm niciodată parola sau codul SMS", answer: "safe" },
+        { id: "c1", text: "Spuneți codul din SMS pentru a anula operațiunea.", answer: "danger" },
+        { id: "c2", text: "Numărul dvs. este blocat, accesați linkul pentru deblocare.", answer: "danger" },
+        { id: "c3", text: "Bună ziua, mă numesc Ana, compania MinTel.", answer: "safe" },
+        { id: "c4", text: "Dictați datele din buletin pentru confirmare.", answer: "danger" },
+        { id: "c5", text: "Serviciul de asistență vă ascultă. Cu ce vă pot ajuta?", answer: "safe" },
+        { id: "c6", text: "Pentru a evalua calitatea deservirii, apăsați tasta 1.", answer: "safe" },
+        { id: "c7", text: "Am detectat o spargere. Descărcați urgent antivirusul din linkul SMS.", answer: "danger" },
+        { id: "c8", text: "Vă mulțumim pentru apel, detaliile le găsiți în aplicația oficială.", answer: "safe" },
+        { id: "c9", text: "Rămâneți pe fir! Aveți la dispoziție doar un minut pentru a accepta!", answer: "danger" },
+        { id: "c10", text: "Vă schimbăm tariful. Pentru a refuza, dictați vechea parolă.", answer: "danger" },
+        { id: "c11", text: "Soldul dvs. este negativ. Supliniți contul până la sfârșitul zilei.", answer: "safe" },
+        { id: "c12", text: "Sistem automat. Cererea de schimbare a numărului a fost acceptată. Dacă nu sunteți dvs. — rămâneți pe fir.", answer: "danger" },
+        { id: "c13", text: "Pentru protecție, v-am trimis un cod de sistem. Doar introduceți-l de pe tastatura telefonului în timpul apelului.", answer: "danger" },
+        { id: "c14", text: "Dacă aveți dubii că sunt operator — închideți și sunați-ne personal.", answer: "safe" },
+        { id: "c15", text: "Nu cerem parole. Doar spuneți clar „DA” pentru a confirma prelungirea contractului.", answer: "danger" }
       ],
     },
     dialogue: {
-      prompt: "„Operatorul” spune: «Dictați codul sau cartela SIM va fi blocată». Ce răspunzi?",
-      choices: [
-        { id: "give", label: "Spun codul ca să nu pierd numărul", score: 0 },
-        { id: "delay", label: "Îl rog să sune din nou peste o oră", score: 30 },
-        { id: "safe", label: "Închei apelul și sun singur la numărul oficial", score: 100 },
-      ],
-      result: "Decizia sigură este să oprești discuția și să începi o verificare independentă.",
+      prompt: "Evidențiază toate capcanele escrocului cu markerul (dă click pe fraze).",
+      levelText: "Nivelul",
+      verifyBtn: "Verifică",
+      error: "Ai ratat o capcană sau ai evidențiat ceva în plus. Mai încearcă!",
+      win: "Excelent! Ai găsit toate manipulările.",
+      levels: [
+        {
+          id: 1,
+          liesCount: 1,
+          parts: [
+            { id: "p1", text: "Bună ziua! Compania MinTel vă informează despre noile tarife. ", isLie: false },
+            { id: "p2", text: "Dictați codul SMS pentru a le activa", isLie: true },
+            { id: "p3", text: ". Vă mulțumim pentru încredere.", isLie: false },
+          ]
+        },
+        {
+          id: 2,
+          liesCount: 2,
+          parts: [
+            { id: "p1", text: "Serviciul de securitate MinTel. ", isLie: false },
+            { id: "p2", text: "Cartela dvs. SIM este blocată.", isLie: true },
+            { id: "p3", text: " Pentru a anula blocarea, ", isLie: false },
+            { id: "p4", text: "accesați linkul www.mintel-support.com", isLie: true },
+            { id: "p5", text: ". Așteptăm răspunsul dvs.", isLie: false },
+          ]
+        },
+        {
+          id: 3,
+          liesCount: 3,
+          parts: [
+            { id: "p1", text: "Sistem automatizat MinTel. ", isLie: false },
+            { id: "p2", text: "A fost recepționată o cerere de schimbare a numărului.", isLie: true },
+            { id: "p3", text: " ", isLie: false },
+            { id: "p4", text: "Dacă nu sunteți dvs., apăsați cifra 1 chiar acum.", isLie: true },
+            { id: "p5", text: " Apoi ", isLie: false },
+            { id: "p6", text: "dictați parola contului personal", isLie: true },
+            { id: "p7", text: " operatorului.", isLie: false },
+          ]
+        },
+        {
+          id: 4,
+          liesCount: 4,
+          parts: [
+            { id: "p1", text: "Informație importantă! ", isLie: false },
+            { id: "p2", text: "Contractul dvs. expiră astăzi.", isLie: true },
+            { id: "p3", text: " ", isLie: false },
+            { id: "p4", text: "Pentru o prelungire urgentă, dictați datele din buletin.", isLie: true },
+            { id: "p5", text: " ", isLie: false },
+            { id: "p6", text: "Altfel, numărul va și transferat altui abonat.", isLie: true },
+            { id: "p7", text: " ", isLie: false },
+            { id: "p8", text: "Sub nicio formă nu închideți, cât timp verific datele.", isLie: true }
+          ]
+        },
+        {
+          id: 5,
+          liesCount: 5,
+          parts: [
+            { id: "p1", text: "Bună ziua. ", isLie: false },
+            { id: "p2", text: "Am detectat o spargere a contului dvs. MinTel.", isLie: true },
+            { id: "p3", text: " ", isLie: false },
+            { id: "p4", text: "Chiar acum escrocii încearcă să vă fure banii.", isLie: true },
+            { id: "p5", text: " ", isLie: false },
+            { id: "p6", text: "Dictați urgent codul din mesajul primit.", isLie: true },
+            { id: "p7", text: " ", isLie: false },
+            { id: "p8", text: "Nu cumva să sunați la suport, altfel sistemul va bloca telefonul.", isLie: true },
+            { id: "p9", text: " ", isLie: false },
+            { id: "p10", text: "Pentru siguranță, deschideți aplicația bancară cât timp suntem pe fir.", isLie: true }
+          ]
+        }
+      ]
     },
     ordering: {
       prompt: "Apasă acțiunile în ordinea corectă.",
@@ -311,7 +469,7 @@ export const operatorCallContent = {
       correct: ["end", "open", "contact", "secure"],
     },
     final: {
-      intro: "Umbra sună locuitorii în numele CahulTel. Răspunde corect la cel puțin 4 din 5 întrebări.",
+      intro: "Umbra sună locuitorii în numele MinTel. Răspunde corect la cel puțin 4 din 5 întrebări.",
       questions: [
         { id: "q1", text: "Cine poate solicita codul SMS?", options: ["Operatorul", "Nimeni", "Doar curierul"], answer: 1 },
         { id: "q2", text: "Ce faci la amenințarea unei blocări urgente?", options: ["Mă grăbesc", "Închei și verific separat", "Spun datele din buletin"], answer: 1 },

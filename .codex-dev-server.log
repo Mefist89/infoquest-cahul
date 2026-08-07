@@ -206,3 +206,4 @@
  GET /ru/ai-help 200 in 54ms (next.js: 14ms, proxy.ts: 7ms, application-code: 33ms)
  GET /ru/modules/operator-call 307 in 350ms (next.js: 116ms, proxy.ts: 31ms, application-code: 203ms)
  GET /ru/login?next=%2Fru%2Fmodules%2Foperator-call 200 in 245ms (next.js: 33ms, proxy.ts: 8ms, application-code: 204ms)
+✓ Finished filesystem cache database compaction in 14.1s

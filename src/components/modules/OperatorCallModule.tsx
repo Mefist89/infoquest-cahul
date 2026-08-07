@@ -23,6 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
 import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import { createClient } from "@/lib/supabase/client";
@@ -43,7 +44,6 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
-  const [dialogueChoice, setDialogueChoice] = useState<string | null>(null);
   const [orderedActions, setOrderedActions] = useState<string[]>([]);
   const [finalAnswers, setFinalAnswers] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
@@ -100,10 +100,8 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   }
 
   async function submitDialogue() {
-    const choice = t.dialogue.choices.find((item) => item.id === dialogueChoice);
-    if (!choice) return;
-    setFeedback({ stage: 6, score: choice.score });
-    await completeStage(6, choice.score);
+    setFeedback({ stage: 6, score: 100 });
+    await completeStage(6, 100);
   }
 
   async function submitOrdering() {
@@ -164,7 +162,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
                 const number = index + 1;
                 const Icon = stageIcons[index];
                 const done = completedStages.has(number);
-                const locked = false; // Все этапы открыты для MVP/тестирования
+                const locked = false;
                 const active = currentStage === number;
                 return (
                   <li key={stage.title}>
@@ -191,7 +189,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
               {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
               {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.continue} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
               {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
-              {currentStage === 6 && <DialogueStage content={t.dialogue} selected={dialogueChoice} setSelected={setDialogueChoice} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
+              {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.continue} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
               {currentStage === 7 && <OrderingStage content={t.ordering} ordered={orderedActions} setOrdered={setOrderedActions} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
               {currentStage === 8 && <FinalStage content={t.final} answers={finalAnswers} setAnswers={setFinalAnswers} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
             </div>
@@ -318,7 +316,7 @@ function ScoreFeedback({ score }: { score: number }) {
 }
 
 function TheoryStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["theory"] | (typeof operatorCallContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
-  return <div><p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p><div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-6 sm:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-4 text-xl sm:text-2xl font-black text-foreground">{card.title}</h3><p className="mt-3 text-base sm:text-lg leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div><p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
+  return <div><p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p><div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div><p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
 }
 
 function VideoExplanationStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExplanation"] | (typeof operatorCallContent)["ro"]["videoExplanation"]; button: string; saving: boolean; onComplete: () => void }) {
@@ -359,7 +357,6 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
   const level = content.levels[currentLevelIndex];
   const phrase = level?.phrases[currentPhraseIndex];
 
-  // Таймер игры
   useEffect(() => {
     if (status !== "playing") return;
     const timer = window.setInterval(() => {
@@ -371,11 +368,10 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
         }
         return prev - 1; 
       });
-    }, 70); // 70ms * 100 = 7 seconds per phrase
+    }, 100);
     return () => window.clearInterval(timer);
   }, [status, content.timeout, currentPhraseIndex]);
 
-  // Воспроизведение аудио
   useEffect(() => {
     if (status !== "playing" || !phrase) {
       if (audioRef.current) {
@@ -518,11 +514,212 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
 }
 
 function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["classify"] | (typeof operatorCallContent)["ro"]["classify"]; answers: Record<string, "safe" | "danger">; setAnswers: React.Dispatch<React.SetStateAction<Record<string, "safe" | "danger">>>; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
-  return <div><p className="font-semibold">{content.prompt}</p><div className="mt-5 space-y-3">{content.items.map((item) => <div key={item.id} className="grid gap-3 rounded-2xl border border-border bg-background/35 p-4 sm:grid-cols-[1fr_auto]"><p className="text-sm">{item.text}</p><div className="flex gap-2">{(["safe", "danger"] as const).map((answer) => <button key={answer} type="button" onClick={() => setAnswers((previous) => ({ ...previous, [item.id]: answer }))} className={`focus-ring min-h-10 rounded-xl border px-3 text-xs font-bold ${answers[item.id] === answer ? answer === "safe" ? "border-success bg-success/15 text-success" : "border-danger bg-danger/15 text-danger" : "border-border text-muted-foreground"}`}>{answer === "safe" ? content.safe : content.danger}</button>)}</div></div>)}</div>{feedback && <ScoreFeedback score={feedback.score} />}<ActionButton disabled={saving || Object.keys(answers).length !== content.items.length} onClick={onSubmit}>{check}</ActionButton></div>;
+  const answeredCount = Object.keys(answers).length;
+  const isComplete = answeredCount >= content.items.length;
+  
+  const currentItem = content.items[answeredCount];
+
+  const handleSwipe = (direction: "left" | "right") => {
+    if (!currentItem) return;
+    const answer = direction === "left" ? "danger" : "safe";
+    setAnswers(prev => ({ ...prev, [currentItem.id]: answer }));
+  };
+
+  return (
+    <div className="flex flex-col items-center w-full overflow-hidden pb-10">
+      <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-8">{content.prompt}</p>
+      
+      {!isComplete ? (
+        <div className="relative w-full max-w-sm aspect-[4/5] sm:aspect-square flex items-center justify-center">
+          <AnimatePresence mode="popLayout">
+             {currentItem && (
+               <SwipeCard 
+                  key={currentItem.id} 
+                  item={currentItem} 
+                  onSwipe={handleSwipe}
+                  safeText={content.safe}
+                  dangerText={content.danger}
+               />
+             )}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+           <CheckCircle2 className="size-16 text-neon mb-4" />
+           <p className="text-2xl font-black mb-8 text-foreground">{content.completeMessage}</p>
+           {feedback && <ScoreFeedback score={feedback.score} />}
+           <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+        </div>
+      )}
+      
+      {!isComplete && (
+         <div className="flex justify-between w-full max-w-sm mt-8 px-4">
+            <button onClick={() => handleSwipe("left")} className="flex flex-col items-center gap-2 text-danger hover:scale-110 transition">
+              <div className="size-16 rounded-full border-2 border-danger flex items-center justify-center bg-danger/10 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                 <ShieldAlert className="size-8" />
+              </div>
+              <span className="font-bold text-xs uppercase tracking-wider">{content.danger}</span>
+            </button>
+            <button onClick={() => handleSwipe("right")} className="flex flex-col items-center gap-2 text-success hover:scale-110 transition">
+              <div className="size-16 rounded-full border-2 border-success flex items-center justify-center bg-success/10 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                 <Check className="size-8" />
+              </div>
+              <span className="font-bold text-xs uppercase tracking-wider">{content.safe}</span>
+            </button>
+         </div>
+      )}
+    </div>
+  );
 }
 
-function DialogueStage({ content, selected, setSelected, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; selected: string | null; setSelected: (value: string) => void; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
-  return <div><div className="rounded-2xl border border-danger/30 bg-danger/5 p-5"><p className="text-sm font-semibold leading-relaxed">{content.prompt}</p></div><div className="mt-5 grid gap-3">{content.choices.map((choice) => <button key={choice.id} type="button" onClick={() => setSelected(choice.id)} className={`focus-ring min-h-14 rounded-2xl border p-4 text-left text-sm transition ${selected === choice.id ? "border-neon/60 bg-neon/10" : "border-border bg-background/35"}`}>{choice.label}</button>)}</div>{feedback && <><ScoreFeedback score={feedback.score} /><p className="mt-3 text-sm text-muted-foreground">{content.result}</p></>}<ActionButton disabled={saving || !selected} onClick={onSubmit}>{check}</ActionButton></div>;
+function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: any, onSwipe: (dir: "left" | "right") => void, safeText: string, dangerText: string }) {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 200], [-15, 15]);
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+  
+  const dangerOpacity = useTransform(x, [0, -100], [0, 1]);
+  const safeOpacity = useTransform(x, [0, 100], [0, 1]);
+
+  return (
+    <motion.div
+      style={{ x, rotate, opacity }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragSnapToOrigin={true}
+      onDragEnd={(e, { offset, velocity }) => {
+        const swipeThreshold = 80;
+        if (offset.x > swipeThreshold || velocity.x > 400) {
+          onSwipe("right");
+        } else if (offset.x < -swipeThreshold || velocity.x < -400) {
+          onSwipe("left");
+        }
+      }}
+      initial={{ scale: 0.8, opacity: 0, y: 50 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      exit={{ scale: 0.8, opacity: 0, transition: { duration: 0.2 } }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="absolute w-full h-full border border-border rounded-3xl bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-6 sm:p-8 flex flex-col items-center justify-center text-center select-none cursor-grab active:cursor-grabbing overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/20 pointer-events-none" />
+      <p className="text-xl sm:text-3xl font-black leading-tight z-10 text-foreground">{item.text}</p>
+      
+      <motion.div style={{ opacity: dangerOpacity }} className="absolute inset-0 bg-danger/10 pointer-events-none flex items-center justify-center">
+         <div className="absolute top-6 right-6 border-4 border-danger bg-background/50 backdrop-blur-sm text-danger font-black text-xl uppercase px-3 py-1 rounded-xl transform rotate-12 shadow-lg">
+           {dangerText}
+         </div>
+      </motion.div>
+      
+      <motion.div style={{ opacity: safeOpacity }} className="absolute inset-0 bg-success/10 pointer-events-none flex items-center justify-center">
+         <div className="absolute top-6 left-6 border-4 border-success bg-background/50 backdrop-blur-sm text-success font-black text-xl uppercase px-3 py-1 rounded-xl transform -rotate-12 shadow-lg">
+           {safeText}
+         </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function DialogueStage({ content, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+  const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  const level = content.levels?.[currentLevelIndex];
+  
+  if (!level) {
+    return (
+      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+         <CheckCircle2 className="size-16 text-neon mb-4" />
+         <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
+         {feedback && <ScoreFeedback score={feedback.score} />}
+         <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+      </div>
+    );
+  }
+
+  const togglePart = (id: string) => {
+    setErrorText(null);
+    setSelectedParts(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const verify = () => {
+    let correct = true;
+    let selectedLies = 0;
+    
+    level.parts.forEach(part => {
+      const isSelected = selectedParts.has(part.id);
+      if (part.isLie && isSelected) {
+        selectedLies++;
+      }
+      if (!part.isLie && isSelected) {
+        correct = false;
+      }
+    });
+
+    if (correct && selectedLies === level.liesCount) {
+      setCurrentLevelIndex(prev => prev + 1);
+      setSelectedParts(new Set());
+      setErrorText(null);
+    } else {
+      setErrorText(content.error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-10">
+      <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-6">{content.prompt}</p>
+      
+      <div className="w-full flex justify-between items-center mb-4 px-2">
+        <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
+          {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
+        </span>
+        <span className="text-xs font-black text-muted-foreground">
+          {selectedParts.size} / {level.liesCount}
+        </span>
+      </div>
+
+      <div className="relative w-full bg-slate-900 border border-border rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.3)] mb-8 text-left leading-relaxed text-lg sm:text-xl">
+        <div className="absolute -bottom-3 left-8 w-6 h-6 bg-slate-900 border-b border-l border-border transform -rotate-45" />
+        
+        {level.parts.map(part => {
+          const isSelected = selectedParts.has(part.id);
+          const selectedStyle = "bg-danger/30 text-danger-foreground border-b-2 border-danger";
+          const hoverStyle = "hover:bg-foreground/10";
+          const baseStyle = "transition-colors duration-200 cursor-pointer rounded px-1 -mx-1 select-none";
+          
+          return (
+             <span 
+               key={part.id} 
+               onClick={() => togglePart(part.id)}
+               className={`${baseStyle} ${isSelected ? selectedStyle : hoverStyle}`}
+             >
+               {part.text}
+             </span>
+          );
+        })}
+      </div>
+
+      <div className="h-8 mb-6">
+        {errorText && (
+          <p className="text-danger font-bold animate-in slide-in-from-top-2 text-center">{errorText}</p>
+        )}
+      </div>
+
+      <button 
+        onClick={verify}
+        className="rounded-xl bg-neon px-12 py-4 text-sm font-black text-primary-foreground focus-ring hover:scale-105 transition shadow-[0_0_20px_rgba(0,217,255,0.4)]"
+      >
+        {content.verifyBtn}
+      </button>
+    </div>
+  );
 }
 
 function OrderingStage({ content, ordered, setOrdered, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; ordered: string[]; setOrdered: React.Dispatch<React.SetStateAction<string[]>>; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
