@@ -136,6 +136,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
+  const [welcoming, setWelcoming] = useState(true);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -153,8 +154,14 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     if (listening) return "/characters/chrono/02_happy.png";
     if (lowRisk) return "/characters/chrono/06_confident.png";
     if (voiceEnabled) return "/characters/chrono/06_confident.png";
+    if (welcoming) return "/characters/chrono/02_happy.png";
     return "/characters/chrono/01_neutral.png";
-  }, [highRisk, listening, lowRisk, requestError, speechError, thinking, voiceEnabled]);
+  }, [highRisk, listening, lowRisk, requestError, speechError, thinking, voiceEnabled, welcoming]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setWelcoming(false), 3_000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
