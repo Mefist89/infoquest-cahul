@@ -43,7 +43,7 @@ const icons: Record<Mission["icon"], LucideIcon> = {
 };
 
 type BottomBlock = "logo" | "qr" | "team" | "demo";
-type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number };
+type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number; displayName: string | null; avatarUrl: string | null };
 
 function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   useEffect(() => {
@@ -131,9 +131,16 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
             <Link
               href={`/${lang}/profile`}
               aria-label={lang === "ru" ? "Профиль" : "Profil"}
-              className="focus-ring grid size-10 shrink-0 place-items-center rounded-full border border-neon/35 bg-neon/10 text-neon transition hover:border-neon hover:bg-neon/20"
+              className="focus-ring inline-flex min-h-10 min-w-10 shrink-0 items-center gap-2 rounded-full border border-neon/35 bg-neon/10 p-1 pr-2 text-neon transition hover:border-neon hover:bg-neon/20 sm:pr-3"
             >
-              <CircleUserRound className="size-5" aria-hidden="true" />
+              <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background/70">
+                {progress.avatarUrl ? (
+                  <Image src={progress.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
+                ) : (
+                  <CircleUserRound className="size-5" aria-hidden="true" />
+                )}
+              </span>
+              {progress.displayName && <span className="hidden max-w-36 truncate text-sm font-semibold text-foreground md:inline">{progress.displayName}</span>}
             </Link>
           ) : (
             <Link
@@ -256,7 +263,7 @@ export default function HomePage() {
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
   const [siteUrl, setSiteUrl] = useState("http://localhost:3000");
-  const [headerProgress, setHeaderProgress] = useState<HeaderProgress>({ isAuthenticated: false, loading: true, xp: 0, rewards: 0 });
+  const [headerProgress, setHeaderProgress] = useState<HeaderProgress>({ isAuthenticated: false, loading: true, xp: 0, rewards: 0, displayName: null, avatarUrl: null });
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
   const rightMissions = useMemo(() => missions.filter((mission) => mission.side === "right"), []);
@@ -283,22 +290,28 @@ export default function HomePage() {
       if (!active) return;
 
       if (!user) {
-        setHeaderProgress({ isAuthenticated: false, loading: false, xp: 0, rewards: 0 });
+        setHeaderProgress({ isAuthenticated: false, loading: false, xp: 0, rewards: 0, displayName: null, avatarUrl: null });
         return;
       }
 
-      const { data: progressData } = await supabase
-        .from("module_progress")
-        .select("status, xp")
-        .eq("user_id", user.id);
+      const [{ data: progressData }, { data: profile }] = await Promise.all([
+        supabase.from("module_progress").select("status, xp").eq("user_id", user.id),
+        supabase.from("profiles").select("display_name, avatar_url").eq("id", user.id).maybeSingle(),
+      ]);
 
       if (!active) return;
       const progressRows = progressData ?? [];
+      const metadata = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string };
+      const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || null;
+      const candidateAvatar = profile?.avatar_url || metadata.avatar_url;
+      const avatarUrl = typeof candidateAvatar === "string" && candidateAvatar.startsWith("https://lh3.googleusercontent.com/") ? candidateAvatar : null;
       setHeaderProgress({
         isAuthenticated: true,
         loading: false,
         xp: progressRows.reduce((sum, item) => sum + Number(item.xp ?? 0), 0),
         rewards: progressRows.filter((item) => item.status === "completed").length,
+        displayName,
+        avatarUrl,
       });
     }
 
