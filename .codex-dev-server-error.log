@@ -1,0 +1,161 @@
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <LoadingBoundary name="ai-help/" loading={null}>
+      <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <InnerLayoutRouter url="/ro/ai-help" tree={[...]} params={{locale:"ro"}} cacheNode={{rsc:{...}, ...}} ...>
+              <SegmentViewNode type="page" pagePath="[locale]/a...">
+                <SegmentTrieNode>
+                <AiHelpPage>
+                  <AiHelpChat locale="ro">
+                    <main className="circuit-bg...">
+                      <div>
+                      <div className="relative m...">
+                        <header>
+                        <div className="grid min-h...">
+                          <aside>
+                          <section className="flex min-h...">
+                            <div>
+                            <div>
+                            <form onSubmit={function submit} className="border-t b...">
+                              <div className="flex items...">
+                                <label title="Atașează o..." className="focus-ring...">
+                                  <Paperclip>
+                                  <input
+                                    type="file"
+                                    accept="image/*,audio/*"
+                                    onChange={function selectFile}
+                                    className="sr-only"
+-                                   style={{caret-color:"transparent"}}
+                                  >
+                                <textarea
+                                  value=""
+                                  onChange={function onChange}
+                                  onKeyDown={function onKeyDown}
+                                  rows={1}
+                                  placeholder="Scrie întrebarea ta…"
+                                  className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-3 text-sm tex..."
+-                                 style={{caret-color:"transparent"}}
+                                >
+                                ...
+                              ...
+              ...
+            ...
+ 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/ru/login" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head headCacheNode={{rsc:{...}, ...}}>
+                    <__next_viewport_boundary__>
+                    <MetadataWrapper>
+                      <div
+                        hidden={true}
+-                       bis_skin_checked="1"
+                      >
+                    ...
+                  ...
+                    <RedirectErrorBoundary router={{...}}>
+                      <InnerLayoutRouter url="/ru/login?..." tree={[...]} params={{locale:"ru"}} ...>
+                        <SegmentViewNode type="layout" pagePath="[locale]/l...">
+                          <SegmentTrieNode>
+                          <link>
+                          <RootLayout>
+                            <html lang="ru" className="orbitron_d...">
+                              <body
+-                               __processed_b6450180-23f5-4338-a492-6feb28b75c3d__="true"
+-                               bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImVwcGlvY2VtaG1ubGJoanBsY2drb2Zj..."
+-                               cz-shortcut-listen="true"
+                              >
+                                ...
+                                  <SegmentViewNode type="page" pagePath="[locale]/l...">
+                                    <SegmentTrieNode>
+                                    <LoginPage>
+                                      <main className="circuit-bg...">
+                                        <div
+                                          className="pointer-events-none absolute left-1/2 top-24 size-80 -translate-x..."
+                                          aria-hidden="true"
+-                                         bis_skin_checked="1"
+                                        >
+                                        <div
+                                          className="relative mx-auto max-w-5xl"
+-                                         bis_skin_checked="1"
+                                        >
+                                          <header>
+                                          <section className="mt-8 grid ...">
+                                            <div
+                                              className="relative border-b border-border/70 p-7 sm:p-10 md:border-b-0 ..."
+-                                             bis_skin_checked="1"
+                                            >
+                                              <div
+                                                className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,colo..."
+                                                aria-hidden="true"
+-                                               bis_skin_checked="1"
+                                              >
+                                              <div
+                                                className="relative"
+-                                               bis_skin_checked="1"
+                                              >
+                                                <div
+                                                  className="grid size-14 place-items-center rounded-2xl border border..."
+-                                                 bis_skin_checked="1"
+                                                >
+                                                ...
+                                            <div
+                                              className="flex flex-col justify-center p-7 sm:p-10"
+-                                             bis_skin_checked="1"
+                                            >
+                                              <div
+                                                className="mx-auto w-full max-w-sm"
+-                                               bis_skin_checked="1"
+                                              >
+                                                <div
+                                                  className="mx-auto grid size-12 place-items-center rounded-2xl bg-ne..."
+-                                                 bis_skin_checked="1"
+                                                >
+                                                <h2>
+                                                <p>
+                                                <div
+                                                  className="mt-7"
+-                                                 bis_skin_checked="1"
+                                                >
+                                                  <GoogleSignInButton locale="ru" initialError={false}>
+                                                    <div
+-                                                     bis_skin_checked="1"
+                                                    >
+                                                ...
+                                  ...
+                      ...
+                  ...
+ 

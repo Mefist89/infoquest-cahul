@@ -46,10 +46,8 @@ export const operatorCallContent = {
     theory: {
       lead: "Мошенник старается не убедить фактами, а заставить действовать быстро. Настоящему оператору не нужен код из твоего SMS.",
       cards: [
-        { title: "Срочность", text: "«Сейчас отключим номер» — давление мешает спокойно проверить информацию." },
-        { title: "Секретный код", text: "Код из SMS подтверждает действие от твоего имени. Его нельзя сообщать никому." },
-        { title: "Ссылка в сообщении", text: "Не открывай ссылку звонящего. Найди официальный сайт или приложение самостоятельно." },
-        { title: "Обратная проверка", text: "Заверши звонок и сам набери официальный номер оператора." },
+        { title: "Срочность и Давление", text: "«Сейчас отключим номер» — мошенник давит, чтобы ты не успел подумать. Настоящий оператор не торопит." },
+        { title: "Коды и Ссылки", text: "Код из SMS — это ключ от аккаунта. Никогда не сообщай его и не открывай ссылки от звонящего." },
       ],
       rule: "Главное правило: положи трубку, ничего не сообщай и проверь информацию через официальный канал.",
     },
@@ -70,17 +68,56 @@ export const operatorCallContent = {
         { speaker: "Мария", text: "Я завершу звонок и сама свяжусь с оператором по официальному номеру." },
       ],
     },
-    flags: {
-      prompt: "Выбери все признаки мошенничества в звонке.",
-      options: [
-        { id: "urgency", label: "Угроза отключить номер через 10 минут", correct: true },
-        { id: "code", label: "Просьба назвать код из SMS", correct: true },
-        { id: "link", label: "Ссылка, присланная звонящим", correct: true },
-        { id: "independent", label: "Предложение самому набрать официальный номер", correct: false },
-        { id: "pressure", label: "Запрет класть трубку и проверять информацию", correct: true },
-        { id: "greeting", label: "Вежливое приветствие", correct: false },
-      ],
-      result: "Опасны срочность, запрос кода, чужая ссылка и запрет на независимую проверку.",
+    callSimulator: {
+      prompt: "Выслушай звонящего. Если фраза подозрительная — жми ТРЕВОГА. Если обычная — ВСЁ НОРМАЛЬНО.",
+      safeBtn: "Всё нормально",
+      dangerBtn: "ТРЕВОГА! (Сброс)",
+      startBtn: "Начать звонок",
+      retryBtn: "Попробовать снова",
+      levelText: "Уровень",
+      win: "Отличная реакция! Ты отбил все атаки.",
+      loseThreat: "Ошибка! Это был мошенник. Нужно было сбросить звонок.",
+      loseSafe: "Ошибка! Ты сбросил звонок реального оператора. Здесь не было угрозы.",
+      timeout: "Время вышло! Мошенник успел тебя запутать.",
+      levels: [
+        {
+          id: 1,
+          phrases: [
+            { text: "Ваш номер блокируется через 5 минут, срочно назовите код из SMS!", isThreat: true }
+          ]
+        },
+        {
+          id: 2,
+          phrases: [
+            { text: "Здравствуйте, меня зовут Иван, компания CahulTel.", isThreat: false },
+            { text: "Мы зафиксировали сбой. Для безопасности продиктуйте пароль от личного кабинета.", isThreat: true }
+          ]
+        },
+        {
+          id: 3,
+          phrases: [
+            { text: "Добрый день. Служба поддержки.", isThreat: false },
+            { text: "Мы меняем вышки связи в вашем районе.", isThreat: false },
+            { text: "Нужно обновить договор. Перейдите по ссылке, которую я вам скинул.", isThreat: true }
+          ]
+        },
+        {
+          id: 4,
+          phrases: [
+            { text: "Здравствуйте! Это техподдержка. Ваш номер работает нормально?", isThreat: false },
+            { text: "Отлично. Хотите подключить бесплатный антиспам?", isThreat: false },
+            { text: "Тогда не кладите трубку, сейчас придет SMS-код подтверждения, назовите его.", isThreat: true }
+          ]
+        },
+        {
+          id: 5,
+          phrases: [
+            { text: "Добрый день, это уведомление CahulTel.", isThreat: false },
+            { text: "Напоминаем о необходимости пополнить счет до конца месяца.", isThreat: false },
+            { text: "Вы можете сделать это через официальное приложение. Всего доброго!", isThreat: false }
+          ]
+        }
+      ]
     },
     classify: {
       prompt: "Для каждой фразы выбери категорию.",
@@ -170,10 +207,8 @@ export const operatorCallContent = {
     theory: {
       lead: "Escrocul nu încearcă să convingă prin fapte, ci să te facă să acționezi rapid. Un operator real nu are nevoie de codul tău SMS.",
       cards: [
-        { title: "Urgență", text: "„Numărul va fi dezactivat acum” — presiunea împiedică verificarea calmă." },
-        { title: "Cod secret", text: "Codul SMS confirmă o acțiune în numele tău. Nu îl comunica nimănui." },
-        { title: "Link în mesaj", text: "Nu deschide linkul apelantului. Găsește singur site-ul sau aplicația oficială." },
-        { title: "Verificare separată", text: "Încheie apelul și sună personal la numărul oficial al operatorului." },
+        { title: "Urgență și Presiune", text: "„Numărul va fi dezactivat acum” — escrocul te presează să nu gândești rațional. Un operator real nu te grăbește." },
+        { title: "Coduri și Linkuri", text: "Codul SMS este cheia contului tău. Nu-l comunica niciodată și nu accesa linkuri primite de la apelant." },
       ],
       rule: "Regula principală: închide, nu comunica nimic și verifică informația printr-un canal oficial.",
     },
@@ -194,17 +229,56 @@ export const operatorCallContent = {
         { speaker: "Maria", text: "Închei apelul și contactez singură operatorul la numărul oficial." },
       ],
     },
-    flags: {
-      prompt: "Selectează toate semnele fraudei din apel.",
-      options: [
-        { id: "urgency", label: "Amenințarea că numărul va fi oprit în 10 minute", correct: true },
-        { id: "code", label: "Solicitarea codului din SMS", correct: true },
-        { id: "link", label: "Link trimis de apelant", correct: true },
-        { id: "independent", label: "Propunerea de a suna personal la numărul oficial", correct: false },
-        { id: "pressure", label: "Interdicția de a închide și verifica informația", correct: true },
-        { id: "greeting", label: "Salutul politicos", correct: false },
-      ],
-      result: "Sunt periculoase urgența, solicitarea codului, linkul străin și interdicția verificării independente.",
+    callSimulator: {
+      prompt: "Ascultă apelantul. Dacă fraza este suspectă — apasă ALARMĂ. Dacă este normală — TOTUL E BINE.",
+      safeBtn: "Totul e bine",
+      dangerBtn: "ALARMĂ! (Închide)",
+      startBtn: "Începe apelul",
+      retryBtn: "Încearcă din nou",
+      levelText: "Nivelul",
+      win: "Reacție excelentă! Ai respins toate atacurile.",
+      loseThreat: "Greșeală! Era un escroc. Trebuia să închizi apelul.",
+      loseSafe: "Greșeală! Ai închis unui operator real. Aici nu era nicio amenințare.",
+      timeout: "Timpul a expirat! Escrocul a reușit să te deruteze.",
+      levels: [
+        {
+          id: 1,
+          phrases: [
+            { text: "Numărul tău va fi blocat în 5 minute, spune-mi urgent codul din SMS!", isThreat: true }
+          ]
+        },
+        {
+          id: 2,
+          phrases: [
+            { text: "Bună ziua, mă numesc Ion, de la compania CahulTel.", isThreat: false },
+            { text: "Am detectat o eroare. Pentru siguranță, dictați parola contului personal.", isThreat: true }
+          ]
+        },
+        {
+          id: 3,
+          phrases: [
+            { text: "Bună ziua. Serviciul de asistență.", isThreat: false },
+            { text: "Schimbăm turnurile de comunicație din zona ta.", isThreat: false },
+            { text: "Trebuie să actualizăm contractul. Accesează linkul pe care ți l-am trimis.", isThreat: true }
+          ]
+        },
+        {
+          id: 4,
+          phrases: [
+            { text: "Bună ziua! Suport tehnic. Numărul funcționează normal?", isThreat: false },
+            { text: "Perfect. Vrei să activezi un sistem anti-spam gratuit?", isThreat: false },
+            { text: "Atunci nu închide, vei primi acum un cod SMS de confirmare, spune-mi-l.", isThreat: true }
+          ]
+        },
+        {
+          id: 5,
+          phrases: [
+            { text: "Bună ziua, este o notificare CahulTel.", isThreat: false },
+            { text: "Îți reamintim să suplinești contul până la sfârșitul lunii.", isThreat: false },
+            { text: "O poți face oricând prin aplicația oficială. O zi bună!", isThreat: false }
+          ]
+        }
+      ]
     },
     classify: {
       prompt: "Alege categoria pentru fiecare frază.",

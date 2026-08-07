@@ -22,7 +22,7 @@ import {
   Volume2,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 
 import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import { createClient } from "@/lib/supabase/client";
@@ -42,7 +42,6 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
-  const [selectedFlags, setSelectedFlags] = useState<Set<string>>(new Set());
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
   const [dialogueChoice, setDialogueChoice] = useState<string | null>(null);
   const [orderedActions, setOrderedActions] = useState<string[]>([]);
@@ -83,18 +82,14 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   }
 
   function chooseStage(stage: number) {
-    if (stage === 0 || stage <= unlockedThrough || completedStages.has(stage)) {
-      setCurrentStage(stage);
-      setFeedback(null);
-      setNotice(null);
-    }
+    setCurrentStage(stage);
+    setFeedback(null);
+    setNotice(null);
   }
 
-  async function submitFlags() {
-    const mistakes = t.flags.options.filter((option) => selectedFlags.has(option.id) !== option.correct).length;
-    const score = Math.round(((t.flags.options.length - mistakes) / t.flags.options.length) * 100);
-    setFeedback({ stage: 4, score });
-    await completeStage(4, score);
+  async function submitCallSimulator() {
+    setFeedback({ stage: 4, score: 100 });
+    await completeStage(4, 100);
   }
 
   async function submitClassification() {
@@ -169,7 +164,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
                 const number = index + 1;
                 const Icon = stageIcons[index];
                 const done = completedStages.has(number);
-                const locked = number > unlockedThrough && !done;
+                const locked = false; // Все этапы открыты для MVP/тестирования
                 const active = currentStage === number;
                 return (
                   <li key={stage.title}>
@@ -194,7 +189,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
               {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => completeStage(1)} />}
               {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
               {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
-              {currentStage === 4 && <FlagsStage content={t.flags} selected={selectedFlags} setSelected={setSelectedFlags} check={t.check} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitFlags} />}
+              {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.continue} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
               {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
               {currentStage === 6 && <DialogueStage content={t.dialogue} selected={dialogueChoice} setSelected={setDialogueChoice} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
               {currentStage === 7 && <OrderingStage content={t.ordering} ordered={orderedActions} setOrdered={setOrderedActions} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
@@ -323,7 +318,7 @@ function ScoreFeedback({ score }: { score: number }) {
 }
 
 function TheoryStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["theory"] | (typeof operatorCallContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
-  return <div><p className="text-base leading-relaxed text-foreground/90">{content.lead}</p><div className="mt-5 grid gap-3 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-2xl border border-border bg-background/35 p-5"><span className="text-xs font-black text-neon">0{index + 1}</span><h3 className="mt-3 font-bold">{card.title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div><p className="mt-5 rounded-2xl border border-neon/30 bg-neon/10 p-5 font-semibold text-neon">{content.rule}</p><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
+  return <div><p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p><div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-6 sm:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.15)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-4 text-xl sm:text-2xl font-black text-foreground">{card.title}</h3><p className="mt-3 text-base sm:text-lg leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div><p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
 }
 
 function VideoExplanationStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExplanation"] | (typeof operatorCallContent)["ro"]["videoExplanation"]; button: string; saving: boolean; onComplete: () => void }) {
@@ -335,11 +330,191 @@ function VideoExampleStage({ content, button, saving, onComplete }: { content: (
 }
 
 function VideoPlaceholder({ title, placeholder, hint }: { title: string; placeholder: string; hint: string }) {
-  return <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950"><div className="grid aspect-video place-items-center bg-[radial-gradient(circle_at_center,rgba(0,217,255,0.16),transparent_55%)] p-6 text-center"><div><span className="mx-auto grid size-16 place-items-center rounded-full border border-neon/40 bg-neon/10 text-neon"><Play className="size-7" /></span><p className="mt-4 font-bold">{placeholder}</p></div></div><div className="border-t border-border p-4"><h3 className="font-bold">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{hint}</p></div></div>;
+  return (
+    <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
+      <video 
+        className="aspect-video w-full bg-black object-cover" 
+        controls 
+        preload="metadata"
+      >
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+        <p>Your browser doesn't support HTML5 video.</p>
+      </video>
+      <div className="border-t border-border bg-card p-4">
+        <h3 className="font-bold">{title}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{placeholder} — {hint}</p>
+      </div>
+    </div>
+  );
 }
 
-function FlagsStage({ content, selected, setSelected, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["flags"] | (typeof operatorCallContent)["ro"]["flags"]; selected: Set<string>; setSelected: React.Dispatch<React.SetStateAction<Set<string>>>; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
-  return <div><p className="font-semibold">{content.prompt}</p><div className="mt-5 grid gap-3 sm:grid-cols-2">{content.options.map((option) => { const active = selected.has(option.id); return <button key={option.id} type="button" onClick={() => setSelected((previous) => { const next = new Set(previous); if (next.has(option.id)) next.delete(option.id); else next.add(option.id); return next; })} className={`focus-ring flex min-h-20 items-center gap-3 rounded-2xl border p-4 text-left text-sm transition ${active ? "border-neon/60 bg-neon/10" : "border-border bg-background/35 hover:border-neon/30"}`}><span className={`grid size-6 shrink-0 place-items-center rounded-md border ${active ? "border-neon bg-neon text-primary-foreground" : "border-border"}`}>{active && <Check className="size-4" />}</span>{option.label}</button>; })}</div>{feedback && <><ScoreFeedback score={feedback.score} /><p className="mt-3 text-sm text-muted-foreground">{content.result}</p></>}<ActionButton disabled={saving || selected.size === 0} onClick={onSubmit}>{check}</ActionButton></div>;
+function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [status, setStatus] = useState<"idle" | "playing" | "failed" | "won">("idle");
+  const [failReason, setFailReason] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(100);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const level = content.levels[currentLevelIndex];
+  const phrase = level?.phrases[currentPhraseIndex];
+
+  // Таймер игры
+  useEffect(() => {
+    if (status !== "playing") return;
+    const timer = window.setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 0) {
+          setStatus("failed");
+          setFailReason(content.timeout);
+          return 0;
+        }
+        return prev - 1; 
+      });
+    }, 70); // 70ms * 100 = 7 seconds per phrase
+    return () => window.clearInterval(timer);
+  }, [status, content.timeout, currentPhraseIndex]);
+
+  // Воспроизведение аудио
+  useEffect(() => {
+    if (status !== "playing" || !phrase) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      return;
+    }
+    
+    const levelNum = currentLevelIndex + 1;
+    const phraseNum = currentPhraseIndex + 1;
+    const audioSrc = levelNum === 1 
+      ? `/audio/${levelNum}/${locale}.mp3` 
+      : `/audio/${levelNum}/${locale}${phraseNum}.mp3`;
+      
+    const audio = new Audio(audioSrc);
+    audioRef.current = audio;
+    audio.play().catch(e => console.error("Audio play failed:", e));
+    
+    return () => {
+      audio.pause();
+    };
+  }, [status, currentLevelIndex, currentPhraseIndex, locale, phrase]);
+
+  function handleAction(isDangerAction: boolean) {
+    if (status !== "playing" || !phrase) return;
+    if (phrase.isThreat) {
+      if (isDangerAction) advanceLevel();
+      else { setStatus("failed"); setFailReason(content.loseThreat); }
+    } else {
+      if (isDangerAction) { setStatus("failed"); setFailReason(content.loseSafe); }
+      else {
+        if (currentPhraseIndex < level.phrases.length - 1) {
+          setCurrentPhraseIndex((prev) => prev + 1);
+          setTimeLeft(100);
+        } else advanceLevel();
+      }
+    }
+  }
+
+  function advanceLevel() {
+    if (currentLevelIndex < content.levels.length - 1) {
+      setCurrentLevelIndex((prev) => prev + 1);
+      setCurrentPhraseIndex(0);
+      setTimeLeft(100);
+    } else {
+      setStatus("won");
+    }
+  }
+
+  function start() {
+    setCurrentLevelIndex(0);
+    setCurrentPhraseIndex(0);
+    setTimeLeft(100);
+    setStatus("playing");
+    setFailReason(null);
+  }
+
+  return (
+    <div>
+      <p className="font-semibold text-foreground/90 sm:text-lg">{content.prompt}</p>
+      
+      <div className="mt-6 overflow-hidden rounded-3xl border border-neon/30 bg-slate-950 shadow-2xl relative">
+        <div className="absolute top-0 w-full h-1.5 bg-secondary/50">
+           <div className={`h-full ${timeLeft < 30 ? 'bg-danger' : 'bg-neon'} transition-all duration-75`} style={{ width: `${timeLeft}%` }} />
+        </div>
+        
+        <div className="p-6 sm:p-8 text-center min-h-[340px] flex flex-col justify-center items-center relative">
+          {status === "idle" && (
+            <div className="animate-in fade-in">
+              <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-neon/10 border border-neon/40 text-neon animate-pulse">
+                <Volume2 className="size-10" />
+              </div>
+              <button onClick={start} className="mt-8 rounded-xl bg-neon px-8 py-3 text-sm font-black text-primary-foreground focus-ring hover:scale-105 transition">{content.startBtn}</button>
+            </div>
+          )}
+          
+          {status === "playing" && phrase && (
+            <div className="w-full max-w-lg animate-in fade-in zoom-in-95">
+              <div className="mb-6 text-xs font-black text-neon/60 uppercase tracking-widest">
+                {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
+              </div>
+              <div className="flex flex-col items-center gap-5">
+                <div className="relative size-20 rounded-full bg-slate-800 flex items-center justify-center border border-border shadow-[0_0_25px_rgba(0,0,0,0.5)]">
+                   <div className="absolute inset-0 rounded-full border border-neon/20 animate-ping opacity-50"></div>
+                   <Volume2 className="size-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-semibold leading-relaxed text-foreground min-h-[96px] flex items-center justify-center px-4">
+                  «{phrase.text}»
+                </h3>
+              </div>
+              
+              <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+                <button 
+                  onClick={() => handleAction(false)}
+                  className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-sm font-black text-success transition hover:bg-success/20 hover:border-success/60 focus-ring"
+                >
+                  {content.safeBtn}
+                </button>
+                <button 
+                  onClick={() => handleAction(true)}
+                  className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-sm font-black text-danger transition hover:bg-danger/20 hover:border-danger/60 focus-ring"
+                >
+                  {content.dangerBtn}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {status === "failed" && (
+            <div className="w-full max-w-sm animate-in fade-in zoom-in">
+               <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-danger/10 text-danger border border-danger/30 mb-5">
+                 <ShieldAlert className="size-10" />
+               </div>
+               <p className="text-lg font-bold text-danger">{failReason}</p>
+               <button onClick={start} className="mt-8 rounded-xl border-2 border-danger/40 bg-danger/10 px-8 py-3 text-sm font-black text-danger focus-ring hover:bg-danger/20 transition">
+                 {content.retryBtn}
+               </button>
+            </div>
+          )}
+
+          {status === "won" && (
+            <div className="w-full max-w-sm animate-in fade-in zoom-in">
+               <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-success/10 text-success border border-success/30 mb-5">
+                 <CheckCircle2 className="size-10" />
+               </div>
+               <p className="text-xl font-bold text-success">{content.win}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {status === "won" && (
+        <div className="mt-6 flex justify-end animate-in fade-in slide-in-from-bottom-4">
+          <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["classify"] | (typeof operatorCallContent)["ro"]["classify"]; answers: Record<string, "safe" | "danger">; setAnswers: React.Dispatch<React.SetStateAction<Record<string, "safe" | "danger">>>; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
