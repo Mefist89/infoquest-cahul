@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
@@ -234,8 +234,9 @@ function BottomCard({ label, icon, onClick, children }: { label: string; icon?: 
 
 export default function HomePage() {
   const params = useParams<{ locale: string }>();
+  const router = useRouter();
   const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
-  const [lang, setLangState] = useState<Lang>(routeLang);
+  const lang = routeLang;
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
   const [siteUrl, setSiteUrl] = useState("http://localhost:3000");
@@ -256,8 +257,9 @@ export default function HomePage() {
   }, [lang]);
 
   const setLang = (nextLang: Lang) => {
-    setLangState(nextLang);
+    if (nextLang === lang) return;
     window.localStorage.setItem("infoquest.lang", nextLang);
+    router.push(`/${nextLang}`);
   };
 
   const downloadQr = () => {
