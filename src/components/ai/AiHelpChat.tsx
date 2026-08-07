@@ -142,14 +142,17 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileUrlsRef = useRef<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const latestAnalysis = useMemo(() => [...messages].reverse().find((message) => message.analysis)?.analysis, [messages]);
+  const highRisk = (latestAnalysis?.risk ?? 0) > 70;
 
   const robotImage = useMemo(() => {
+    if (highRisk) return "/characters/chrono/03_warning.png";
     if (speechError || requestError) return "/characters/chrono/03_warning.png";
     if (listening) return "/characters/chrono/02_happy.png";
     if (thinking) return "/characters/chrono/04_sad_thinking.png";
     if (voiceEnabled) return "/characters/chrono/06_confident.png";
     return "/characters/chrono/01_neutral.png";
-  }, [listening, requestError, speechError, thinking, voiceEnabled]);
+  }, [highRisk, listening, requestError, speechError, thinking, voiceEnabled]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -349,7 +352,8 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
             <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-6" aria-live="polite">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <article className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed sm:max-w-[75%] ${message.role === "user" ? "rounded-br-md bg-neon text-primary-foreground" : "rounded-bl-md border border-border bg-background/55 text-foreground"}`}>
+                  <article className={`relative max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed sm:max-w-[75%] ${message.role === "user" ? "rounded-br-md bg-neon text-primary-foreground" : "rounded-bl-md border border-border bg-background/55 text-foreground"}`}>
+                    {message.analysis && message.analysis.risk > 70 && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-danger/90 shadow-[0_0_24px_rgba(255,60,80,0.35)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
                     {message.attachment && <audio src={message.attachment.url} controls className="mb-3 max-w-full" />}
                     {message.text && <p>{message.text}</p>}
                     {message.analysis && (
