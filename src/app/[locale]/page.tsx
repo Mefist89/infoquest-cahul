@@ -369,7 +369,7 @@ export default function HomePage() {
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
               {leftMissions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => setSelectedMission(mission)} />
+                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => mission.id === 1 ? router.push(`/${lang}/modules/operator-call`) : setSelectedMission(mission)} />
               ))}
             </div>
             <div className="relative">
@@ -388,7 +388,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => setSelectedMission(mission)} />
+                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => mission.id === 1 ? router.push(`/${lang}/modules/operator-call`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -397,7 +397,7 @@ export default function HomePage() {
             <ShieldProgress lang={lang} />
             <div className="mt-8 space-y-3">
               {missions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => setSelectedMission(mission)} />
+                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => mission.id === 1 ? router.push(`/${lang}/modules/operator-call`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
