@@ -5,6 +5,7 @@ import { ArrowLeft, BarChart3, CheckCircle2, Layers3, ShieldCheck, Users, type L
 import { notFound, redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { ADMIN_EMAILS, isAdminEmail } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type AdminLocale = "ru" | "ro";
@@ -30,8 +31,6 @@ type AdminUser = {
   total_xp: number;
   module_breakdown: ModuleBreakdown[];
 };
-
-const ADMIN_EMAIL = "jeniabortnic@gmail.com";
 
 const modules = [
   { id: "operator-call", ru: "Ложный звонок", ro: "Apel fals" },
@@ -107,7 +106,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) redirect(`/${locale}/login`);
-  if (authData.user.email?.toLowerCase() !== ADMIN_EMAIL) redirect(`/${locale}/profile`);
+  if (!isAdminEmail(authData.user.email)) redirect(`/${locale}/profile`);
 
   const { data, error } = await supabase.rpc("get_admin_dashboard");
   if (error) redirect(`/${locale}/profile`);
@@ -144,7 +143,9 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               <h1 className="mt-4 text-3xl font-black sm:text-5xl">{t.title}</h1>
               <p className="mt-3 text-sm text-muted-foreground">{t.description}</p>
             </div>
-            <p className="rounded-xl border border-border bg-background/35 px-4 py-3 text-sm text-muted-foreground">{ADMIN_EMAIL}</p>
+            <div className="flex flex-col gap-2">
+              {ADMIN_EMAILS.map((email) => <p key={email} className="rounded-xl border border-border bg-background/35 px-4 py-2 text-sm text-muted-foreground">{email}</p>)}
+            </div>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

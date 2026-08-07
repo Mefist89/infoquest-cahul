@@ -5,6 +5,7 @@ import { ArrowLeft, Award, Check, ChevronRight, Clock3, Gift, Link2Off, Medal, P
 import { notFound, redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { isAdminEmail } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type ProfileLocale = "ru" | "ro";
@@ -83,7 +84,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
                 <Link key={language} href={`/${language}/profile`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-full px-3 py-2 text-xs font-bold uppercase transition ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{language}</Link>
               ))}
             </nav>
-            {user.email?.toLowerCase() === "jeniabortnic@gmail.com" && (
+            {isAdminEmail(user.email) && (
               <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-xs font-bold text-neon transition hover:border-neon hover:bg-neon/20">
                 <ShieldCheck className="size-4" aria-hidden="true" />
                 <span className="hidden sm:inline">{locale === "ro" ? "Administrare" : "Админ"}</span>
