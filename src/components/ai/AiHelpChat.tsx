@@ -363,6 +363,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                 <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                   <article className={`relative max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed sm:max-w-[75%] ${message.role === "user" ? "rounded-br-md bg-neon text-primary-foreground" : "rounded-bl-md border border-border bg-background/55 text-foreground"}`}>
                     {message.analysis && message.analysis.risk > 70 && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-danger/90 shadow-[0_0_24px_rgba(255,60,80,0.35)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
+                    {message.analysis && message.analysis.risk >= 30 && message.analysis.risk <= 70 && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-gold/90 shadow-[0_0_24px_rgba(255,195,60,0.32)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
                     {message.attachment && <audio src={message.attachment.url} controls className="mb-3 max-w-full" />}
                     {message.text && <p>{message.text}</p>}
                     {message.analysis && (
