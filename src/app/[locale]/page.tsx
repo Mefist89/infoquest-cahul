@@ -44,7 +44,7 @@ const icons: Record<Mission["icon"], LucideIcon> = {
   "link-2-off": Link2Off,
 };
 
-type BottomBlock = "logo" | "qr" | "team" | "demo" | "ai";
+type BottomBlock = "logo" | "qr" | "team" | "demo";
 type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number; displayName: string | null; avatarUrl: string | null };
 
 function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
@@ -364,14 +364,13 @@ export default function HomePage() {
               {t.startInvestigation}
               <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
             </Link>
-            <button
-              type="button"
-              onClick={() => setOpenBlock("ai")}
+            <Link
+              href={`/${lang}/ai-help`}
               className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-success px-6 text-sm font-extrabold text-slate-950 shadow-[0_0_28px_color-mix(in_oklab,var(--success)_32%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--success)_50%,transparent)]"
             >
               <Bot className="size-5" aria-hidden="true" />
               {t.aiHelp}
-            </button>
+            </Link>
           </div>
         </section>
 
@@ -507,7 +506,7 @@ export default function HomePage() {
 
       {openBlock && (
         <Modal
-          title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : openBlock === "ai" ? t.aiHelp : t.demo}
+          title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : t.demo}
           onClose={() => setOpenBlock(null)}
           wide={openBlock === "demo"}
         >
@@ -544,15 +543,6 @@ export default function HomePage() {
                   <li key={member} className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-foreground">{member}</li>
                 ))}
               </ul>
-            </div>
-          )}
-
-          {openBlock === "ai" && (
-            <div className="flex flex-col items-center rounded-2xl border border-success/35 bg-success/10 p-6 text-center">
-              <span className="grid size-16 place-items-center rounded-2xl bg-success/15 text-success">
-                <Bot className="size-9" aria-hidden="true" />
-              </span>
-              <p className="mt-4 text-sm leading-relaxed text-foreground">{t.aiHelpHint}</p>
             </div>
           )}
 
