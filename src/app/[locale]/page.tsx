@@ -480,13 +480,14 @@ export default function HomePage() {
           {openBlock === "demo" && (
             <div className="overflow-hidden rounded-2xl border border-gold/40 bg-slate-950">
               <video
+                key={lang}
                 controls
                 playsInline
                 preload="metadata"
                 className="aspect-video w-full bg-black object-contain"
                 aria-label={t.demo}
               >
-                <source src="/promo.mp4" type="video/mp4" />
+                <source src={lang === "ro" ? "/promo_ro.mp4" : "/promo.mp4"} type="video/mp4" />
                 {t.demoHint}
               </video>
               <p className="px-4 py-3 text-center text-sm text-muted-foreground">{t.demoHint}</p>

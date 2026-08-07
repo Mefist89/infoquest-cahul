@@ -157,7 +157,7 @@ export const strings = {
     logoHint: "Alege o imagine pentru sigla echipei.",
     qrHint: "Scanează pentru a deschide jocul.",
     teamHint: "Lista echipei va fi completată înainte de prezentare.",
-    demoHint: "Videoclipul demonstrativ este în limba rusă.",
+    demoHint: "Videoclip demonstrativ în limba română.",
     footerCopyright: "© 2026 InfoQuest Cahul. Toate drepturile rezervate.",
     footerHackathon: "Hackathonul Regional pentru coeziune socială și reziliență informațională",
     footerAi: "AI fără granițe",
