@@ -28,6 +28,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
 import { createClient } from "@/lib/supabase/client";
 
@@ -128,20 +129,23 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
           {progress.loading ? (
             <span className="size-10 shrink-0 animate-pulse rounded-full border border-border bg-card/70" aria-label={lang === "ru" ? "Загрузка профиля" : "Se încarcă profilul"} />
           ) : progress.isAuthenticated ? (
-            <Link
-              href={`/${lang}/profile`}
-              aria-label={lang === "ru" ? "Профиль" : "Profil"}
-              className="focus-ring inline-flex min-h-10 min-w-10 shrink-0 items-center gap-2 rounded-full border border-neon/35 bg-neon/10 p-1 pr-2 text-neon transition hover:border-neon hover:bg-neon/20 sm:pr-3"
-            >
-              <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background/70">
-                {progress.avatarUrl ? (
-                  <Image src={progress.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
-                ) : (
-                  <CircleUserRound className="size-5" aria-hidden="true" />
-                )}
-              </span>
-              {progress.displayName && <span className="hidden max-w-36 truncate text-sm font-semibold text-foreground md:inline">{progress.displayName}</span>}
-            </Link>
+            <>
+              <Link
+                href={`/${lang}/profile`}
+                aria-label={lang === "ru" ? "Профиль" : "Profil"}
+                className="focus-ring inline-flex min-h-10 min-w-10 shrink-0 items-center gap-2 rounded-full border border-neon/35 bg-neon/10 p-1 pr-2 text-neon transition hover:border-neon hover:bg-neon/20 sm:pr-3"
+              >
+                <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background/70">
+                  {progress.avatarUrl ? (
+                    <Image src={progress.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
+                  ) : (
+                    <CircleUserRound className="size-5" aria-hidden="true" />
+                  )}
+                </span>
+                {progress.displayName && <span className="hidden max-w-36 truncate text-sm font-semibold text-foreground md:inline">{progress.displayName}</span>}
+              </Link>
+              <SignOutButton locale={lang} label={lang === "ru" ? "Выйти" : "Ieșire"} />
+            </>
           ) : (
             <Link
               href={`/${lang}/login`}
