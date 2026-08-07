@@ -41,7 +41,7 @@ export function GoogleSignInButton({ locale, initialError = false }: { locale: A
 
     try {
       const callbackUrl = new URL("/auth/callback", window.location.origin);
-      callbackUrl.searchParams.set("next", `/${locale}#missions`);
+      callbackUrl.searchParams.set("next", `/${locale}/profile`);
 
       const { error: authError } = await createClient().auth.signInWithOAuth({
         provider: "google",

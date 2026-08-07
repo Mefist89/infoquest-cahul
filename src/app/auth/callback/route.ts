@@ -5,8 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { origin, searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const requestedNext = searchParams.get("next") ?? "/ru#missions";
-  const next = /^\/(ru|ro)(?:\/|#|$)/.test(requestedNext) ? requestedNext : "/ru#missions";
+  const requestedNext = searchParams.get("next") ?? "/ru/profile";
+  const next = /^\/(ru|ro)(?:\/|#|$)/.test(requestedNext) ? requestedNext : "/ru/profile";
   const locale = next.startsWith("/ro") ? "ro" : "ru";
 
   if (code) {
