@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  Bot,
   CircleUserRound,
   Download,
   Gift,
@@ -43,7 +44,7 @@ const icons: Record<Mission["icon"], LucideIcon> = {
   "link-2-off": Link2Off,
 };
 
-type BottomBlock = "logo" | "qr" | "team" | "demo";
+type BottomBlock = "logo" | "qr" | "team" | "demo" | "ai";
 type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number; displayName: string | null; avatarUrl: string | null };
 
 function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
@@ -355,14 +356,22 @@ export default function HomePage() {
           </h1>
           <p className="mt-2 font-display text-sm uppercase tracking-[0.25em] text-neon sm:text-base">{t.tagline}</p>
           <p className="mx-auto mt-4 inline-block rounded-full border border-gold/50 px-5 py-2 text-sm font-semibold text-gold">{t.motto}</p>
-          <div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href={`/${lang}/login`}
-              className="focus-ring group mt-6 inline-flex min-h-12 items-center gap-3 rounded-xl bg-neon px-6 text-sm font-extrabold text-primary-foreground shadow-[0_0_28px_color-mix(in_oklab,var(--neon)_38%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--neon)_55%,transparent)]"
+              className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-neon px-6 text-sm font-extrabold text-primary-foreground shadow-[0_0_28px_color-mix(in_oklab,var(--neon)_38%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--neon)_55%,transparent)]"
             >
               {t.startInvestigation}
               <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
             </Link>
+            <button
+              type="button"
+              onClick={() => setOpenBlock("ai")}
+              className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-success px-6 text-sm font-extrabold text-slate-950 shadow-[0_0_28px_color-mix(in_oklab,var(--success)_32%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--success)_50%,transparent)]"
+            >
+              <Bot className="size-5" aria-hidden="true" />
+              {t.aiHelp}
+            </button>
           </div>
         </section>
 
@@ -498,7 +507,7 @@ export default function HomePage() {
 
       {openBlock && (
         <Modal
-          title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : t.demo}
+          title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : openBlock === "ai" ? t.aiHelp : t.demo}
           onClose={() => setOpenBlock(null)}
           wide={openBlock === "demo"}
         >
@@ -535,6 +544,15 @@ export default function HomePage() {
                   <li key={member} className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-foreground">{member}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {openBlock === "ai" && (
+            <div className="flex flex-col items-center rounded-2xl border border-success/35 bg-success/10 p-6 text-center">
+              <span className="grid size-16 place-items-center rounded-2xl bg-success/15 text-success">
+                <Bot className="size-9" aria-hidden="true" />
+              </span>
+              <p className="mt-4 text-sm leading-relaxed text-foreground">{t.aiHelpHint}</p>
             </div>
           )}
 
