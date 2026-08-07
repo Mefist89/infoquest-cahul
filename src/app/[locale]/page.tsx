@@ -97,7 +97,7 @@ function Header({ lang, setLang }: { lang: Lang; setLang: (lang: Lang) => void }
           </span>
           <span className="min-w-0 leading-tight">
             <span className="block whitespace-nowrap font-display text-[10px] font-bold tracking-wider sm:text-base">
-              INFOQUEST
+              <span className="text-white">INFO</span><span className="text-[#00D9FF]">QUEST</span>
             </span>
             <span className="hidden text-xs text-neon sm:block">{t.tagline}</span>
           </span>
@@ -281,7 +281,7 @@ export default function HomePage() {
       <main id="top" className="circuit-bg overflow-hidden">
         <section className="relative mx-auto max-w-6xl px-4 pt-10 text-center sm:pt-12">
           <h1 className="font-display text-3xl font-black uppercase tracking-tight sm:text-5xl">
-            InfoQuest <span className="text-neon text-glow">Cahul</span>
+            <span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span>
           </h1>
           <p className="mt-2 font-display text-sm uppercase tracking-[0.25em] text-neon sm:text-base">{t.tagline}</p>
           <p className="mx-auto mt-4 inline-block rounded-full border border-gold/50 px-5 py-2 text-sm font-semibold text-gold">{t.motto}</p>
