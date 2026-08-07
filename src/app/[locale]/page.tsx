@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowDown,
   ArrowRight,
@@ -408,8 +409,8 @@ export default function HomePage() {
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
               <span>{t.footerCopyright}</span>
               <div className="flex gap-4">
-                <a href="#" className="transition hover:text-neon">{t.footerPrivacy}</a>
-                <a href="#" className="transition hover:text-neon">{t.footerTerms}</a>
+                <Link href={`/${lang}/privacy`} className="transition hover:text-neon">{t.footerPrivacy}</Link>
+                <Link href={`/${lang}/terms`} className="transition hover:text-neon">{t.footerTerms}</Link>
               </div>
             </div>
           </div>
