@@ -9,6 +9,7 @@ import {
   Gift,
   Languages,
   Link2Off,
+  LogIn,
   Lock,
   MapPin,
   Medal,
@@ -28,6 +29,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
+import { createClient } from "@/lib/supabase/client";
 
 const icons: Record<Mission["icon"], LucideIcon> = {
   "user-lock": UserLock,
@@ -41,6 +43,7 @@ const icons: Record<Mission["icon"], LucideIcon> = {
 };
 
 type BottomBlock = "logo" | "qr" | "team" | "demo";
+type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number };
 
 function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   useEffect(() => {
@@ -85,8 +88,9 @@ function Modal({ title, onClose, children, wide = false }: { title: string; onCl
   );
 }
 
-function Header({ lang, setLang }: { lang: Lang; setLang: (lang: Lang) => void }) {
+function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang) => void; progress: HeaderProgress }) {
   const t = strings[lang];
+  const xpPercent = Math.min(100, Math.round((progress.xp / 500) * 100));
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -109,25 +113,37 @@ function Header({ lang, setLang }: { lang: Lang; setLang: (lang: Lang) => void }
               <span className="flex items-center gap-1">
                 <Sparkles className="size-3 text-gold" aria-hidden="true" /> {t.xp}
               </span>
-              <span className="font-semibold text-foreground">0</span>
+              <span className="font-semibold text-foreground">{progress.xp}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={360} aria-label="XP">
-              <div className="h-full w-0 rounded-full bg-gold" />
+            <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={500} aria-label="XP">
+              <div className="h-full rounded-full bg-gold transition-[width] duration-500" style={{ width: `${xpPercent}%` }} />
             </div>
           </div>
 
-          <span className="flex items-center gap-1 rounded-full border border-border bg-card/70 px-2.5 py-2 text-xs text-muted-foreground sm:px-3">
+          <Link href={progress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`} className="focus-ring flex items-center gap-1 rounded-full border border-border bg-card/70 px-2.5 py-2 text-xs text-muted-foreground transition hover:border-gold/60 sm:px-3" aria-label={lang === "ru" ? "Награды" : "Recompense"}>
             <Medal className="size-3.5 text-gold" aria-hidden="true" />
-            <strong className="text-foreground">0</strong>/5
-          </span>
-
-          <Link
-            href={`/${lang}/profile`}
-            aria-label={lang === "ru" ? "Профиль" : "Profil"}
-            className="focus-ring grid size-10 shrink-0 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground transition hover:border-neon/60 hover:text-neon"
-          >
-            <CircleUserRound className="size-5" aria-hidden="true" />
+            <strong className="text-foreground">{progress.rewards}</strong>/5
           </Link>
+
+          {progress.loading ? (
+            <span className="size-10 shrink-0 animate-pulse rounded-full border border-border bg-card/70" aria-label={lang === "ru" ? "Загрузка профиля" : "Se încarcă profilul"} />
+          ) : progress.isAuthenticated ? (
+            <Link
+              href={`/${lang}/profile`}
+              aria-label={lang === "ru" ? "Профиль" : "Profil"}
+              className="focus-ring grid size-10 shrink-0 place-items-center rounded-full border border-neon/35 bg-neon/10 text-neon transition hover:border-neon hover:bg-neon/20"
+            >
+              <CircleUserRound className="size-5" aria-hidden="true" />
+            </Link>
+          ) : (
+            <Link
+              href={`/${lang}/login`}
+              className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-xs font-bold text-neon transition hover:border-neon hover:bg-neon/20 sm:px-4 sm:text-sm"
+            >
+              <LogIn className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">{lang === "ru" ? "Войти" : "Autentificare"}</span>
+            </Link>
+          )}
 
           <div className="flex rounded-full border border-border bg-card/70 p-1" role="group" aria-label="Language">
             {(["ro", "ru"] as const).map((item) => (
@@ -240,6 +256,7 @@ export default function HomePage() {
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
   const [siteUrl, setSiteUrl] = useState("http://localhost:3000");
+  const [headerProgress, setHeaderProgress] = useState<HeaderProgress>({ isAuthenticated: false, loading: true, xp: 0, rewards: 0 });
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
   const rightMissions = useMemo(() => missions.filter((mission) => mission.side === "right"), []);
@@ -255,6 +272,41 @@ export default function HomePage() {
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  useEffect(() => {
+    let active = true;
+    const supabase = createClient();
+
+    async function loadHeaderProgress() {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+      if (!active) return;
+
+      if (!user) {
+        setHeaderProgress({ isAuthenticated: false, loading: false, xp: 0, rewards: 0 });
+        return;
+      }
+
+      const { data: progressData } = await supabase
+        .from("module_progress")
+        .select("status, xp")
+        .eq("user_id", user.id);
+
+      if (!active) return;
+      const progressRows = progressData ?? [];
+      setHeaderProgress({
+        isAuthenticated: true,
+        loading: false,
+        xp: progressRows.reduce((sum, item) => sum + Number(item.xp ?? 0), 0),
+        rewards: progressRows.filter((item) => item.status === "completed").length,
+      });
+    }
+
+    void loadHeaderProgress();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const setLang = (nextLang: Lang) => {
     if (nextLang === lang) return;
@@ -277,7 +329,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Header lang={lang} setLang={setLang} />
+      <Header lang={lang} setLang={setLang} progress={headerProgress} />
       <main id="top" className="circuit-bg overflow-hidden">
         <section className="relative mx-auto max-w-6xl px-4 pt-10 text-center sm:pt-12">
           <h1 className="font-display text-3xl font-black uppercase tracking-tight sm:text-5xl">
