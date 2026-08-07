@@ -19,9 +19,10 @@ import {
   ShieldAlert,
   Sparkles,
   Video,
+  Volume2,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import { createClient } from "@/lib/supabase/client";
@@ -189,7 +190,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
               <StageHeading number={currentStage} title={t.stages[currentStage - 1].title} subtitle={t.stages[currentStage - 1].subtitle} done={completedStages.has(currentStage)} />
             )}
             <div className="mt-7">
-              {currentStage === 0 && <IntroStage content={t.intro} onFinish={() => setCurrentStage(firstOpenStage)} />}
+              {currentStage === 0 && <IntroStage content={t.intro} locale={locale} onFinish={() => setCurrentStage(firstOpenStage)} />}
               {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => completeStage(1)} />}
               {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
               {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
@@ -221,9 +222,40 @@ function StageHeading({ number, title, subtitle, done }: { number: number; title
   return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
 }
 
-function IntroStage({ content, onFinish }: { content: (typeof operatorCallContent)["ru"]["intro"] | (typeof operatorCallContent)["ro"]["intro"]; onFinish: () => void }) {
+function IntroStage({ content, locale, onFinish }: { content: (typeof operatorCallContent)["ru"]["intro"] | (typeof operatorCallContent)["ro"]["intro"]; locale: OperatorLocale; onFinish: () => void }) {
   const [lineIndex, setLineIndex] = useState(0);
+  const [typingDone, setTypingDone] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const lastLine = lineIndex === content.lines.length - 1;
+  const fullText = content.lines[lineIndex];
+  const finishTyping = useCallback(() => setTypingDone(true), []);
+
+  useEffect(() => () => {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  }, []);
+
+  function listen() {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(fullText);
+    utterance.lang = locale === "ru" ? "ru-RU" : "ro-RO";
+    utterance.rate = 0.95;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function advance() {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    setSpeaking(false);
+    if (lastLine) {
+      onFinish();
+      return;
+    }
+    setTypingDone(false);
+    setLineIndex((index) => index + 1);
+  }
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-neon/25 bg-[radial-gradient(circle_at_25%_60%,rgba(0,217,255,0.13),transparent_42%),rgba(2,10,30,0.72)]">
@@ -235,17 +267,50 @@ function IntroStage({ content, onFinish }: { content: (typeof operatorCallConten
           <div className="rounded-3xl rounded-bl-md border border-neon/35 bg-card/95 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] sm:p-7">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{content.name}</p>
             <p className="mt-1 text-xs text-muted-foreground">{content.role}</p>
-            <p key={lineIndex} className="mt-5 min-h-20 text-base font-semibold leading-relaxed text-foreground sm:text-lg">{content.lines[lineIndex]}</p>
+            <p className="sr-only">{fullText}</p>
+            <TypewriterText key={lineIndex} text={fullText} onDone={finishTyping} />
             <div className="mt-5 flex items-center justify-between gap-4">
               <div className="flex gap-1.5" aria-label={`${lineIndex + 1}/${content.lines.length}`}>{content.lines.map((_, index) => <span key={index} className={`h-1.5 rounded-full transition-all ${index === lineIndex ? "w-7 bg-neon" : index < lineIndex ? "w-3 bg-success" : "w-3 bg-secondary"}`} />)}</div>
-              <button type="button" onClick={() => lastLine ? onFinish() : setLineIndex((index) => index + 1)} className="focus-ring inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground">
-                {lastLine ? content.start : content.next}<ChevronRight className="size-4" aria-hidden="true" />
-              </button>
+              {typingDone && (
+                <div className="flex flex-wrap justify-end gap-2">
+                  <button type="button" onClick={listen} disabled={speaking} className="focus-ring inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-4 text-sm font-bold text-neon disabled:opacity-60">
+                    <Volume2 className={`size-4 ${speaking ? "animate-pulse" : ""}`} aria-hidden="true" />{speaking ? content.listening : content.listen}
+                  </button>
+                  <button type="button" onClick={advance} className="focus-ring inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground">
+                    {lastLine ? content.start : content.next}<ChevronRight className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function TypewriterText({ text, onDone }: { text: string; onDone: () => void }) {
+  const [visibleCharacters, setVisibleCharacters] = useState(0);
+
+  useEffect(() => {
+    let character = 0;
+    const timer = window.setInterval(() => {
+      character += 1;
+      setVisibleCharacters(character);
+      if (character >= text.length) {
+        window.clearInterval(timer);
+        onDone();
+      }
+    }, 28);
+    return () => window.clearInterval(timer);
+  }, [onDone, text]);
+
+  const done = visibleCharacters >= text.length;
+  return (
+    <p aria-hidden="true" className="mt-5 min-h-20 text-base font-semibold leading-relaxed text-foreground sm:text-lg">
+      {text.slice(0, visibleCharacters)}
+      {!done && <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-neon align-middle" />}
+    </p>
   );
 }
 

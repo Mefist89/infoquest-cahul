@@ -24,6 +24,8 @@ export const operatorCallContent = {
       role: "Наставник по цифровой безопасности",
       next: "Дальше",
       start: "Начать теорию",
+      listen: "Прослушать текст",
+      listening: "Воспроизведение…",
       lines: [
         "Привет! Я Наталья, и сегодня мы разберём опасный телефонный звонок.",
         "Мошенник представится сотрудником оператора и попробует заставить тебя спешить.",
@@ -146,6 +148,8 @@ export const operatorCallContent = {
       role: "Mentor în siguranță digitală",
       next: "Continuă",
       start: "Începe teoria",
+      listen: "Ascultă textul",
+      listening: "Se redă…",
       lines: [
         "Salut! Sunt Natalia și astăzi vom analiza un apel telefonic periculos.",
         "Escrocul se va prezenta drept operator și va încerca să te facă să te grăbești.",
