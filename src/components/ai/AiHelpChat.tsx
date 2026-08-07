@@ -379,7 +379,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                       </div>
                     )}
                     {message.transcript && <details className="mt-3 rounded-lg border border-border bg-card/50 px-3 py-2 text-xs"><summary className="cursor-pointer font-bold text-neon">{t.transcript}</summary><p className="mt-2 text-muted-foreground">{message.transcript}</p></details>}
-                    {message.role === "assistant" && <button type="button" onClick={() => speak(message.text)} className="focus-ring mt-2 inline-flex items-center gap-1 text-xs font-bold text-neon"><Volume2 className="size-3.5" aria-hidden="true" />{locale === "ro" ? "Ascultă" : "Прослушать"}</button>}
+                    {message.role === "assistant" && <button type="button" onClick={() => speak(message.text)} className="focus-ring mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-success/60 bg-success px-4 py-2 text-sm font-black text-primary-foreground shadow-[0_0_18px_rgba(43,214,123,0.22)] transition hover:brightness-110"><Volume2 className="size-5" aria-hidden="true" />{locale === "ro" ? "Ascultă" : "Прослушать"}</button>}
                   </article>
                 </div>
               ))}
