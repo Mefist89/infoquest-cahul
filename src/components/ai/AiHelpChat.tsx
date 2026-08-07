@@ -81,6 +81,49 @@ const content = {
   },
 } as const;
 
+function writeAscii(view: DataView, offset: number, value: string) {
+  for (let index = 0; index < value.length; index += 1) view.setUint8(offset + index, value.charCodeAt(index));
+}
+
+async function convertToWhisperWav(source: Blob) {
+  const context = new AudioContext();
+  try {
+    const decoded = await context.decodeAudioData(await source.arrayBuffer());
+    const targetRate = 16_000;
+    const sampleCount = Math.ceil(decoded.duration * targetRate);
+    const samples = new Float32Array(sampleCount);
+    for (let index = 0; index < sampleCount; index += 1) {
+      const sourceIndex = Math.min(decoded.length - 1, Math.floor(index * decoded.sampleRate / targetRate));
+      let mixed = 0;
+      for (let channel = 0; channel < decoded.numberOfChannels; channel += 1) mixed += decoded.getChannelData(channel)[sourceIndex];
+      samples[index] = mixed / decoded.numberOfChannels;
+    }
+
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+    writeAscii(view, 0, "RIFF");
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeAscii(view, 8, "WAVE");
+    writeAscii(view, 12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, targetRate, true);
+    view.setUint32(28, targetRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeAscii(view, 36, "data");
+    view.setUint32(40, samples.length * 2, true);
+    for (let index = 0; index < samples.length; index += 1) {
+      const sample = Math.max(-1, Math.min(1, samples[index]));
+      view.setInt16(44 + index * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    }
+    return new Blob([buffer], { type: "audio/wav" });
+  } finally {
+    await context.close();
+  }
+}
+
 export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const t = content[locale];
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -167,7 +210,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     }
   }
 
-  function selectFile(event: ChangeEvent<HTMLInputElement>) {
+  async function selectFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     const hasAudioExtension = /\.(mp3|m4a|wav|webm|weba|ogg|aac|flac)$/i.test(file.name);
@@ -176,10 +219,21 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
       event.target.value = "";
       return;
     }
-    const url = URL.createObjectURL(file);
+    let preparedFile = file;
+    if (/\.weba?m?$/i.test(file.name) || file.type.includes("webm") || file.type === "audio/weba") {
+      try {
+        const wav = await convertToWhisperWav(file);
+        preparedFile = new File([wav], file.name.replace(/\.web[am]$/i, ".wav"), { type: "audio/wav" });
+      } catch {
+        setRequestError(t.fileError);
+        event.target.value = "";
+        return;
+      }
+    }
+    const url = URL.createObjectURL(preparedFile);
     fileUrlsRef.current.push(url);
     setRequestError(null);
-    setAttachment({ name: file.name, url, file });
+    setAttachment({ name: preparedFile.name, url, file: preparedFile });
     event.target.value = "";
   }
 
@@ -207,24 +261,29 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) recordedChunksRef.current.push(event.data);
       };
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
         recordingTimeoutRef.current = null;
         stream.getTracks().forEach((track) => track.stop());
         mediaStreamRef.current = null;
         setListening(false);
         const mimeType = recorder.mimeType || "audio/webm";
-        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
+        const recordedBlob = new Blob(recordedChunksRef.current, { type: mimeType });
         recordedChunksRef.current = [];
-        if (!blob.size || blob.size > 4 * 1024 * 1024) {
+        if (!recordedBlob.size) {
           setSpeechError(t.fileError);
           return;
         }
-        const extension = mimeType.includes("mp4") ? "m4a" : "webm";
-        const file = new File([blob], `chrono-${Date.now()}.${extension}`, { type: mimeType });
-        const url = URL.createObjectURL(file);
-        fileUrlsRef.current.push(url);
-        setAttachment({ name: file.name, url, file });
+        try {
+          const wav = await convertToWhisperWav(recordedBlob);
+          if (wav.size > 4 * 1024 * 1024) throw new Error("Recording is too large");
+          const file = new File([wav], `chrono-${Date.now()}.wav`, { type: "audio/wav" });
+          const url = URL.createObjectURL(file);
+          fileUrlsRef.current.push(url);
+          setAttachment({ name: file.name, url, file });
+        } catch {
+          setSpeechError(t.fileError);
+        }
       };
       recorder.onerror = () => {
         stream.getTracks().forEach((track) => track.stop());
