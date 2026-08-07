@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  CircleUserRound,
   Download,
   Gift,
   ImageIcon,
@@ -120,6 +121,14 @@ function Header({ lang, setLang }: { lang: Lang; setLang: (lang: Lang) => void }
             <Medal className="size-3.5 text-gold" aria-hidden="true" />
             <strong className="text-foreground">0</strong>/5
           </span>
+
+          <Link
+            href={`/${lang}/profile`}
+            aria-label={lang === "ru" ? "Профиль" : "Profil"}
+            className="focus-ring grid size-10 shrink-0 place-items-center rounded-full border border-border bg-card/70 text-muted-foreground transition hover:border-neon/60 hover:text-neon"
+          >
+            <CircleUserRound className="size-5" aria-hidden="true" />
+          </Link>
 
           <div className="flex rounded-full border border-border bg-card/70 p-1" role="group" aria-label="Language">
             {(["ro", "ru"] as const).map((item) => (
