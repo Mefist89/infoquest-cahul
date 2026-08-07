@@ -5,6 +5,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   Bot,
+  ChevronLeft,
+  ChevronRight,
   CircleUserRound,
   Download,
   Gift,
@@ -14,8 +16,10 @@ import {
   Lock,
   MapPin,
   Medal,
+  Pause,
   PhoneCall,
   PlayCircle,
+  Play,
   ScanFace,
   ShieldAlert,
   ShieldCheck,
@@ -30,7 +34,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
+import { caseSlides, missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
 import { createClient } from "@/lib/supabase/client";
 
 const icons: Record<Mission["icon"], LucideIcon> = {
@@ -248,6 +252,68 @@ function ShieldProgress({ lang }: { lang: Lang }) {
   );
 }
 
+function CaseSlider({ lang }: { lang: Lang }) {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const slide = caseSlides[active];
+  const mission = missions[active];
+  const Icon = icons[mission.icon];
+  const t = strings[lang];
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = window.setInterval(() => setActive((index) => (index + 1) % caseSlides.length), 7000);
+    return () => window.clearInterval(timer);
+  }, [paused]);
+
+  function move(direction: number) {
+    setActive((index) => (index + direction + caseSlides.length) % caseSlides.length);
+  }
+
+  return (
+    <section
+      className="relative mx-auto max-w-3xl px-4"
+      aria-roledescription="carousel"
+      aria-label={t.storyTitle}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}
+    >
+      <div className="overflow-hidden rounded-3xl border border-neon/30 bg-card/75 shadow-[0_20px_70px_rgba(0,0,0,0.25)] backdrop-blur">
+        <div className="flex items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
+          <span className="grid size-10 place-items-center rounded-xl border border-neon/35 bg-neon/10 text-neon"><ShieldAlert className="size-5" aria-hidden="true" /></span>
+          <div><h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2><p className="text-xs text-muted-foreground">{lang === "ro" ? "8 dosare ale rețelei Umbra" : "8 дел сети Тени"}</p></div>
+          <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? (lang === "ro" ? "Pornește rotația" : "Запустить слайдер") : (lang === "ro" ? "Oprește rotația" : "Остановить слайдер")} className="focus-ring ml-auto grid size-10 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon">
+            {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+          </button>
+        </div>
+
+        <div key={slide.id} className="animate-in fade-in slide-in-from-right-4 grid min-h-64 gap-5 p-5 duration-500 sm:grid-cols-[120px_1fr] sm:items-center sm:p-7" aria-live="polite">
+          <div className="flex items-center gap-3 sm:flex-col sm:justify-center">
+            <span className="grid size-16 place-items-center rounded-2xl border bg-background/60 sm:size-20" style={{ borderColor: `color-mix(in oklab, ${mission.color} 55%, transparent)`, boxShadow: `0 0 24px color-mix(in oklab, ${mission.color} 25%, transparent)` }}><Icon className="size-8 sm:size-10" style={{ color: mission.color }} aria-hidden="true" /></span>
+            <span className="font-display text-sm font-black text-gold">{String(active + 1).padStart(2, "0")} / 08</span>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-gold">{lang === "ro" ? `Dosarul ${active + 1}` : `Дело ${active + 1}`}</p>
+            <h3 className="mt-2 text-xl font-black text-foreground sm:text-2xl">{mission.title[lang]}</h3>
+            <p className="mt-4 text-sm leading-relaxed text-foreground">{slide.description[lang]}</p>
+            <p className="mt-3 rounded-xl border border-neon/20 bg-neon/5 px-4 py-3 text-sm leading-relaxed text-muted-foreground"><strong className="text-neon">{lang === "ro" ? "Obiectiv: " : "Цель: "}</strong>{slide.objective[lang]}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 border-t border-border/70 px-5 py-4 sm:px-6">
+          <button type="button" onClick={() => move(-1)} aria-label={lang === "ro" ? "Dosarul anterior" : "Предыдущее дело"} className="focus-ring grid size-10 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronLeft className="size-5" aria-hidden="true" /></button>
+          <div className="flex flex-1 justify-center gap-1.5" role="tablist" aria-label={lang === "ro" ? "Alege dosarul" : "Выберите дело"}>
+            {caseSlides.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={active === index} aria-label={`${index + 1}`} onClick={() => setActive(index)} className={`focus-ring h-2 rounded-full transition-all ${active === index ? "w-7 bg-neon" : "w-2 bg-secondary hover:bg-muted-foreground"}`} />)}
+          </div>
+          <button type="button" onClick={() => move(1)} aria-label={lang === "ro" ? "Dosarul următor" : "Следующее дело"} className="focus-ring grid size-10 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronRight className="size-5" aria-hidden="true" /></button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BottomCard({ label, icon, onClick, children }: { label: string; icon?: ReactNode; onClick: () => void; children?: ReactNode }) {
   return (
     <button
@@ -412,13 +478,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="relative mx-auto max-w-3xl px-4">
-          <div className="rounded-2xl border border-neon/30 bg-card/70 p-6 backdrop-blur">
-            <h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-foreground">{t.story}</p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.story2}</p>
-          </div>
-        </section>
+        <CaseSlider lang={lang} />
 
         <section className="relative mx-auto mt-10 max-w-3xl px-4" aria-label={t.badges}>
           <h2 className="text-lg font-bold text-gold">{t.badges}</h2>

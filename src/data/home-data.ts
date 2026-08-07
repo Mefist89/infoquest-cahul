@@ -117,6 +117,97 @@ export const missions: Mission[] = [
   },
 ];
 
+export const caseSlides = [
+  {
+    id: 1,
+    description: {
+      ro: "Umbra sună locuitorii în numele operatorului și cere codul primit prin SMS.",
+      ru: "Тень звонит жителям от имени оператора и просит сообщить код из SMS.",
+    },
+    objective: {
+      ro: "Recunoaște presiunea, protejează codurile și verifică apelul prin canalul oficial.",
+      ru: "Распознай давление, защити коды и проверь звонок через официальный канал.",
+    },
+  },
+  {
+    id: 2,
+    description: {
+      ro: "Un link sau un cod QR conduce spre o copie aproape perfectă a unei pagini cunoscute.",
+      ru: "Ссылка или QR-код ведёт на почти идеальную копию знакомой страницы.",
+    },
+    objective: {
+      ro: "Verifică domeniul, adresa și semnele unei pagini create pentru furtul datelor.",
+      ru: "Проверь домен, адрес и признаки страницы, созданной для кражи данных.",
+    },
+  },
+  {
+    id: 3,
+    description: {
+      ro: "Parola unui membru al comunității apare într-o scurgere, iar contul începe să trimită mesaje stranii.",
+      ru: "Пароль участника сообщества попадает в утечку, а аккаунт начинает отправлять странные сообщения.",
+    },
+    objective: {
+      ro: "Recuperează contul, schimbă parola și activează autentificarea în doi pași.",
+      ru: "Верни доступ, смени пароль и включи двухэтапную проверку.",
+    },
+  },
+  {
+    id: 4,
+    description: {
+      ro: "Un premiu, un loc de muncă și un grant apar în aceeași zi, dar numai o ofertă este reală.",
+      ru: "Приз, вакансия и грант появляются в один день, но настоящее предложение только одно.",
+    },
+    objective: {
+      ro: "Compară sursele și separă oportunitatea reală de promisiunile frauduloase.",
+      ru: "Сравни источники и отличи реальную возможность от мошеннических обещаний.",
+    },
+  },
+  {
+    id: 5,
+    description: {
+      ro: "În oraș circulă un videoclip în care o persoană cunoscută pare să facă o declarație șocantă.",
+      ru: "По городу распространяется видео, где известный человек будто бы делает шокирующее заявление.",
+    },
+    objective: {
+      ro: "Caută artefacte vizuale, verifică sursa și confirmă contextul videoclipului.",
+      ru: "Найди визуальные артефакты, проверь источник и контекст видео.",
+    },
+  },
+  {
+    id: 6,
+    description: {
+      ro: "Același mesaj este distribuit în română și rusă, dar traducerile provoacă reacții foarte diferite.",
+      ru: "Одно сообщение распространяют на русском и румынском, но переводы вызывают разные реакции.",
+    },
+    objective: {
+      ro: "Compară sensul, tonul și formulările pentru a descoperi manipularea prin traducere.",
+      ru: "Сравни смысл, тон и формулировки, чтобы раскрыть манипуляцию переводом.",
+    },
+  },
+  {
+    id: 7,
+    description: {
+      ro: "Un zvon pornit într-un grup local se răspândește rapid și începe să influențeze întregul oraș.",
+      ru: "Слух из местного чата быстро распространяется и начинает влиять на весь город.",
+    },
+    objective: {
+      ro: "Urmărește traseul informației și oprește distribuirea înainte ca zvonul să devină panică.",
+      ru: "Проследи путь информации и останови распространение до того, как слух вызовет панику.",
+    },
+  },
+  {
+    id: 8,
+    description: {
+      ro: "Conturi coordonate atacă discuțiile comunității și încearcă să transforme dezacordul în conflict.",
+      ru: "Скоординированные аккаунты атакуют обсуждения сообщества и превращают разногласия в конфликт.",
+    },
+    objective: {
+      ro: "Răspunde calm, documentează atacul și protejează comunitatea fără să alimentezi provocarea.",
+      ru: "Отвечай спокойно, фиксируй атаку и защищай сообщество, не поддаваясь на провокацию.",
+    },
+  },
+] as const;
+
 export const strings = {
   ro: {
     tagline: "Scutul comunității digitale",
