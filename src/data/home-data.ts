@@ -33,7 +33,7 @@ export const missions: Mission[] = [
   },
   {
     id: 2,
-    status: "playable",
+    status: "soon",
     color: "var(--gold)",
     icon: "link-2-off",
     side: "left",
@@ -45,7 +45,7 @@ export const missions: Mission[] = [
   },
   {
     id: 3,
-    status: "playable",
+    status: "soon",
     color: "var(--danger)",
     icon: "user-lock",
     side: "left",
@@ -57,7 +57,7 @@ export const missions: Mission[] = [
   },
   {
     id: 4,
-    status: "playable",
+    status: "soon",
     color: "var(--gold)",
     icon: "gift",
     side: "left",
@@ -69,7 +69,7 @@ export const missions: Mission[] = [
   },
   {
     id: 5,
-    status: "playable",
+    status: "soon",
     color: "var(--violet)",
     icon: "scan-face",
     side: "right",

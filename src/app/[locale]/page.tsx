@@ -185,10 +185,11 @@ function MissionCard({ mission, lang, onClick }: { mission: Mission; lang: Lang;
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={locked ? undefined : onClick}
+      disabled={locked}
       data-mission-id={mission.id}
-      className={`focus-ring group flex w-full items-center gap-3 rounded-2xl border-2 bg-card/85 p-3 text-left backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-card ${
-        locked ? "border-dashed opacity-85 hover:opacity-100" : "opacity-100"
+      className={`focus-ring group flex w-full items-center gap-3 rounded-2xl border-2 bg-card/85 p-3 text-left backdrop-blur transition-all duration-300 ${
+        locked ? "cursor-not-allowed border-dashed opacity-65" : "opacity-100 hover:-translate-y-1 hover:bg-card"
       }`}
       style={{
         borderColor: `color-mix(in oklab, ${mission.color} ${locked ? "48%" : "100%"}, transparent)`,
