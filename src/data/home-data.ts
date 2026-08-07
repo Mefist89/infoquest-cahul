@@ -212,10 +212,7 @@ export const strings = {
   },
 } as const;
 
-export const teamMembers = [
-  "Икизли Михаил",
-  "Пукал Мария",
-  "Хицюк Елена",
-  "Чебанова Анна",
-  "Бортник Евгений",
-];
+export const teamMembers = {
+  ru: ["Икизли Михаил", "Пукал Мария", "Хицюк Елена", "Чебанова Анна", "Бортник Евгений"],
+  ro: ["Ichizli Mihail", "Pucal Maria", "Hițiuc Elena", "Cebanova Ana", "Bortnic Eugeniu"],
+} as const;

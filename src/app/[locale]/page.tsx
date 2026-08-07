@@ -530,7 +530,7 @@ export default function HomePage() {
             <div>
               <p className="mb-4 text-sm text-muted-foreground">{t.teamHint}</p>
               <ul className="space-y-2">
-                {teamMembers.map((member) => (
+                {teamMembers[lang].map((member) => (
                   <li key={member} className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-foreground">{member}</li>
                 ))}
               </ul>
