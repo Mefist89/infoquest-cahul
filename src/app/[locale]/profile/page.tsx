@@ -39,7 +39,7 @@ function isLocale(locale: string): locale is ProfileLocale { return locale === "
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const lang: ProfileLocale = locale === "ro" ? "ro" : "ru";
-  return { title: `${copy[lang].title} — InfoQuest Cahul`, description: copy[lang].description };
+  return { title: `${copy[lang].title} — InfoQuest`, description: copy[lang].description };
 }
 
 export default async function ProfilePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -121,7 +121,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
             </div>
             <div className="flex min-h-64 flex-col items-center justify-center rounded-3xl border border-neon/25 bg-background/40 p-6 text-center">
               <div className="relative"><div className="absolute inset-0 rounded-full bg-neon/20 blur-2xl" aria-hidden="true" /><ShieldCheck className="relative size-24 text-neon" strokeWidth={1.25} aria-hidden="true" /></div>
-              <p className="mt-4 font-display text-sm font-bold uppercase tracking-[0.18em] text-neon">InfoQuest Cahul</p><p className="mt-2 text-sm text-muted-foreground">{completedCount}/{modules.length}</p>
+              <p className="mt-4 font-display text-sm font-bold uppercase tracking-[0.18em] text-neon">InfoQuest</p><p className="mt-2 text-sm text-muted-foreground">{completedCount}/{modules.length}</p>
             </div>
           </div>
         </section>

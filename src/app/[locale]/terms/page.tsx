@@ -14,11 +14,11 @@ function getLocale(locale: string): LegalLocale {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const locale = getLocale((await params).locale);
   return {
-    title: locale === "ro" ? "Termeni și condiții — InfoQuest Cahul" : "Условия использования — InfoQuest Cahul",
+    title: locale === "ro" ? "Termeni și condiții — InfoQuest" : "Условия использования — InfoQuest",
     description:
       locale === "ro"
-        ? "Regulile de utilizare a prototipului educațional InfoQuest Cahul."
-        : "Правила использования образовательного прототипа InfoQuest Cahul.",
+        ? "Regulile de utilizare a prototipului educațional InfoQuest."
+        : "Правила использования образовательного прототипа InfoQuest.",
   };
 }
 

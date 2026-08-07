@@ -16,7 +16,7 @@ export function LegalDocumentPage({ locale, kind }: { locale: LegalLocale; kind:
               <ShieldCheck className="size-5 text-neon" aria-hidden="true" />
             </span>
             <span className="font-display text-xs font-bold tracking-wider text-foreground sm:text-sm">
-              INFOQUEST CAHUL
+              INFOQUEST
             </span>
           </Link>
 
@@ -110,7 +110,7 @@ export function LegalDocumentPage({ locale, kind }: { locale: LegalLocale; kind:
         </article>
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
-          <span>© 2026 InfoQuest Cahul</span>
+          <span>© 2026 InfoQuest</span>
           <Link href={`/${alternateLocale}/${kind}`} className="focus-ring rounded font-semibold text-neon hover:text-foreground">
             {alternateLocale.toUpperCase()}
           </Link>

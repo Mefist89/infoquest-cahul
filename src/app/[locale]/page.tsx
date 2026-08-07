@@ -91,13 +91,13 @@ function Header({ lang, setLang }: { lang: Lang; setLang: (lang: Lang) => void }
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-        <a href="#top" className="focus-ring flex min-w-0 items-center gap-2 rounded-lg" aria-label="InfoQuest Cahul">
+        <a href="#top" className="focus-ring flex min-w-0 items-center gap-2 rounded-lg" aria-label="InfoQuest">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon">
             <ShieldCheck className="size-5 text-neon" aria-hidden="true" />
           </span>
           <span className="min-w-0 leading-tight">
             <span className="block whitespace-nowrap font-display text-[10px] font-bold tracking-wider sm:text-base">
-              INFOQUEST CAHUL
+              INFOQUEST
             </span>
             <span className="hidden text-xs text-neon sm:block">{t.tagline}</span>
           </span>

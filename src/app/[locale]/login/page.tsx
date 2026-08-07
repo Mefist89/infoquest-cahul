@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const lang: AuthLocale = locale === "ro" ? "ro" : "ru";
   return {
-    title: `${content[lang].title} — InfoQuest Cahul`,
+    title: `${content[lang].title} — InfoQuest`,
     description: content[lang].description as string,
   };
 }

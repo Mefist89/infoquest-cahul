@@ -13,7 +13,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "InfoQuest Cahul — Щит цифрового сообщества",
+  title: "InfoQuest — Щит цифрового сообщества",
   description:
     "Двуязычная образовательная игра о цифровой безопасности, мошенничестве, дипфейках и дезинформации.",
 };
