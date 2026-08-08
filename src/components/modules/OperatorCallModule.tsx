@@ -908,7 +908,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
   const [currentLevel, setCurrentLevel] = useState(0);
   const [foundDetails, setFoundDetails] = useState<Set<string>>(new Set());
   const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
-  const [blitzTimeLeft, setBlitzTimeLeft] = useState(7);
+  const [blitzTimeLeft, setBlitzTimeLeft] = useState(12);
   const [shake, setShake] = useState(false);
 
   const takeDamage = () => {
@@ -933,7 +933,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
         setStatus("win");
       }
     }
-    setBlitzTimeLeft(7); 
+    setBlitzTimeLeft(12); 
   };
 
   useEffect(() => {
@@ -1002,7 +1002,7 @@ const handleBlitzClick = (optionIndex: number) => {
     setCurrentPhase(0);
     setCurrentLevel(0);
     setStatus("playing");
-    setBlitzTimeLeft(7);
+    setBlitzTimeLeft(12);
     setFoundDetails(new Set());
   };
 

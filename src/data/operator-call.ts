@@ -289,7 +289,7 @@ export const operatorCallContent = {
       gameOver: "Увы, твои жизни иссякли... Тень победила. Начни сначала!",
       win: "Победа! Тень повержена, а твой номер в безопасности.",
       phase1Intro: "Фаза 1: Визуальный тест. Кликни на деталь, которая выдает мошенника.",
-      phase2Intro: "Фаза 2: Блиц. У тебя 7 секунд на ответ!",
+      phase2Intro: "Фаза 2: Блиц. У тебя 12 секунд на ответ!",
       phase3Intro: "Фаза 3: Битва с Боссом. Парируй его уловки!",
       phase1: [
         { id: "p1_1", type: "sms", sender: "MinTel", text: "Ваш тариф истекает. Продлите по ссылке:", fakeLink: "mintei-support.com", realLink: "mintel.md", correctTargets: ["fakeLink"] },
@@ -515,7 +515,7 @@ export const operatorCallContent = {
       gameOver: "Din păcate, ai rămas fără vieți... Umbra a învins. Începe din nou!",
       win: "Victorie! Umbra a fost învinsă, iar numărul tău este în siguranță.",
       phase1Intro: "Faza 1: Test vizual. Dă click pe detaliul care trădează escrocul.",
-      phase2Intro: "Faza 2: Blitz. Ai 7 secunde pentru a răspunde!",
+      phase2Intro: "Faza 2: Blitz. Ai 12 secunde pentru a răspunde!",
       phase3Intro: "Faza 3: Lupta cu Boss-ul. Parează atacurile lui!",
       phase1: [
         {
