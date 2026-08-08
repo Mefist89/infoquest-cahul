@@ -20,6 +20,11 @@ import {
   Sparkles,
   Video,
   Volume2,
+  User,
+  Phone,
+  MessageCircle,
+  XCircle,
+  Skull,
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -44,7 +49,6 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
-  const [orderedActions, setOrderedActions] = useState<string[]>([]);
   const [finalAnswers, setFinalAnswers] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
 
@@ -105,18 +109,13 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
   }
 
   async function submitOrdering() {
-    const correctPositions = orderedActions.filter((action, index) => action === t.ordering.correct[index]).length;
-    const score = Math.round((correctPositions / t.ordering.correct.length) * 100);
-    setFeedback({ stage: 7, score });
-    await completeStage(7, score);
+    setFeedback({ stage: 7, score: 100 });
+    await completeStage(7, 100);
   }
 
   async function submitFinal() {
-    const correct = t.final.questions.filter((question) => finalAnswers[question.id] === question.answer).length;
-    const score = correct * 20;
-    const passed = score >= 80;
-    setFeedback({ stage: 8, score, passed });
-    if (passed) await completeStage(8, score);
+    setFeedback({ stage: 8, score: 100 });
+    await completeStage(8, 100);
   }
 
   return (
@@ -162,7 +161,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
                 const number = index + 1;
                 const Icon = stageIcons[index];
                 const done = completedStages.has(number);
-                const locked = false;
+                const locked = number > unlockedThrough;
                 const active = currentStage === number;
                 return (
                   <li key={stage.title}>
@@ -190,8 +189,8 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
               {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.continue} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
               {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
               {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.continue} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
-              {currentStage === 7 && <OrderingStage content={t.ordering} ordered={orderedActions} setOrdered={setOrderedActions} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
-              {currentStage === 8 && <FinalStage content={t.final} answers={finalAnswers} setAnswers={setFinalAnswers} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
+              {currentStage === 7 && <OrderingStage content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
+              {currentStage === 8 && <FinalStage content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
             </div>
 
             {notice && <p className={`mt-6 rounded-xl border px-4 py-3 text-sm ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>{notice.text}</p>}
@@ -316,7 +315,22 @@ function ScoreFeedback({ score }: { score: number }) {
 }
 
 function TheoryStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["theory"] | (typeof operatorCallContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
-  return <div><p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p><div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div><p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
+  return <div>
+    <p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p>
+    <div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div>
+    <p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p>
+    
+    {'bookletText' in content && 'bookletFile' in content && content.bookletText && content.bookletFile && (
+      <div className="mt-8 flex justify-center sm:justify-start">
+        <a href={content.bookletFile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-2xl bg-slate-900 border-2 border-slate-700 p-4 transition-colors hover:border-neon hover:bg-slate-800 text-foreground group focus-ring">
+          <BookOpen className="text-neon size-6 group-hover:scale-110 transition-transform" />
+          <span className="font-bold text-sm sm:text-base">{content.bookletText}</span>
+        </a>
+      </div>
+    )}
+
+    <ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton>
+  </div>;
 }
 
 function VideoExplanationStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExplanation"] | (typeof operatorCallContent)["ro"]["videoExplanation"]; button: string; saving: boolean; onComplete: () => void }) {
@@ -324,10 +338,10 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 }
 
 function VideoExampleStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExample"] | (typeof operatorCallContent)["ro"]["videoExample"]; button: string; saving: boolean; onComplete: () => void }) {
-  return <div><VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} /><div className="mt-5 space-y-3">{content.transcript.map((line, index) => <div key={`${line.speaker}-${index}`} className={`max-w-[88%] rounded-2xl border p-4 ${index % 2 === 0 ? "border-danger/25 bg-danger/5" : "ml-auto border-neon/25 bg-neon/5"}`}><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{line.speaker}</p><p className="mt-1 text-sm">{line.text}</p></div>)}</div><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
+  return <div><VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} src="/3video.mp4" /><div className="mt-5 space-y-3">{content.transcript.map((line, index) => <div key={`${line.speaker}-${index}`} className={`max-w-[88%] rounded-2xl border p-4 ${index % 2 === 0 ? "border-danger/25 bg-danger/5" : "ml-auto border-neon/25 bg-neon/5"}`}><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{line.speaker}</p><p className="mt-1 text-sm">{line.text}</p></div>)}</div><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
 }
 
-function VideoPlaceholder({ title, placeholder, hint }: { title: string; placeholder: string; hint: string }) {
+function VideoPlaceholder({ title, placeholder, hint, src }: { title: string; placeholder: string; hint: string; src?: string }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
       <video 
@@ -335,7 +349,7 @@ function VideoPlaceholder({ title, placeholder, hint }: { title: string; placeho
         controls 
         preload="metadata"
       >
-        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+        <source src={src || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"} type="video/mp4" />
         <p>Your browser doesn't support HTML5 video.</p>
       </video>
       <div className="border-t border-border bg-card p-4">
@@ -722,11 +736,376 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
   );
 }
 
-function OrderingStage({ content, ordered, setOrdered, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; ordered: string[]; setOrdered: React.Dispatch<React.SetStateAction<string[]>>; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
-  const shuffled = [content.actions[2], content.actions[0], content.actions[3], content.actions[1]];
-  return <div><p className="font-semibold">{content.prompt}</p><div className="mt-5 grid gap-3 sm:grid-cols-2">{shuffled.map((action) => { const position = ordered.indexOf(action.id); return <button key={action.id} type="button" disabled={position >= 0} onClick={() => setOrdered((previous) => [...previous, action.id])} className="focus-ring flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-background/35 p-4 text-left text-sm disabled:opacity-40"><span className="grid size-7 shrink-0 place-items-center rounded-full border border-neon/40 text-xs font-bold text-neon">{position >= 0 ? position + 1 : "?"}</span>{action.label}</button>; })}</div>{ordered.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{ordered.map((id, index) => <span key={id} className="rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-xs text-neon">{index + 1}. {content.actions.find((action) => action.id === id)?.label}</span>)}</div>}{feedback && <ScoreFeedback score={feedback.score} />}<div className="flex flex-wrap gap-3"><ActionButton disabled={saving || ordered.length !== content.actions.length} onClick={onSubmit}>{check}</ActionButton><button type="button" onClick={() => setOrdered([])} className="focus-ring mt-6 min-h-12 rounded-xl border border-border px-5 text-sm font-bold text-muted-foreground">{retry}</button></div></div>;
+function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+  const [status, setStatus] = useState<"playing" | "failed" | "won">("playing");
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  
+  const [orderedIds, setOrderedIds] = useState<string[]>([]);
+  const [shuffledSteps, setShuffledSteps] = useState<{id: string, text: string}[]>([]);
+  const [flashError, setFlashError] = useState(false);
+  
+  const level = content.levels?.[currentLevelIndex];
+
+  useEffect(() => {
+    if (level && status === "playing") {
+      setTimeLeft(level.time);
+      setOrderedIds([]);
+      setShuffledSteps([...level.steps].sort(() => Math.random() - 0.5));
+    }
+  }, [currentLevelIndex, level, status]);
+
+  useEffect(() => {
+    if (status !== "playing" || !level) return;
+    
+    if (timeLeft <= 0) {
+      setStatus("failed");
+      return;
+    }
+    
+    const timer = window.setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+    
+    return () => window.clearInterval(timer);
+  }, [status, timeLeft, level]);
+
+  if (!level) {
+    return (
+      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+         <CheckCircle2 className="size-16 text-neon mb-4" />
+         <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
+         {feedback && <ScoreFeedback score={feedback.score} />}
+         <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+      </div>
+    );
+  }
+
+  const handleStepClick = (stepId: string) => {
+    if (status !== "playing") return;
+    if (orderedIds.includes(stepId)) return;
+
+    const expectedNextId = level.steps[orderedIds.length].id;
+    
+    if (stepId === expectedNextId) {
+      const newOrderedIds = [...orderedIds, stepId];
+      setOrderedIds(newOrderedIds);
+      
+      if (newOrderedIds.length === level.steps.length) {
+        if (currentLevelIndex === content.levels.length - 1) {
+          setCurrentLevelIndex(prev => prev + 1); 
+        } else {
+          setCurrentLevelIndex(prev => prev + 1);
+        }
+      }
+    } else {
+      setTimeLeft(prev => Math.max(0, prev - 3));
+      setFlashError(true);
+      setTimeout(() => setFlashError(false), 300);
+    }
+  };
+
+  const restartLevel = () => {
+    setStatus("playing");
+    setTimeLeft(level.time);
+    setOrderedIds([]);
+    setShuffledSteps([...level.steps].sort(() => Math.random() - 0.5));
+  };
+
+  if (status === "failed") {
+    return (
+      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
+         <XCircle className="size-16 text-danger mb-4" />
+         <p className="text-2xl font-black mb-8 text-foreground">{content.fail}</p>
+         <button onClick={restartLevel} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
+      </div>
+    );
+  }
+
+  const isLowTime = timeLeft <= 5;
+  const isErrorState = isLowTime || flashError;
+
+  return (
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-10">
+      <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-6">{content.prompt}</p>
+      
+      <div className="w-full flex justify-between items-center mb-4 px-2">
+        <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
+          {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
+        </span>
+        <span className={`text-2xl font-black tabular-nums transition-colors duration-200 ${isErrorState ? 'text-danger animate-pulse scale-110' : 'text-neon'}`}>
+          0:{timeLeft.toString().padStart(2, '0')}
+        </span>
+      </div>
+
+      <div className={`w-full rounded-3xl p-6 sm:p-8 border-2 transition-all duration-300 ${isErrorState ? 'border-danger bg-danger/5 shadow-[0_0_50px_rgba(255,0,0,0.3)]' : 'border-border bg-slate-900 shadow-[0_10px_30px_rgba(0,0,0,0.3)]'}`}>
+        
+        <div className="flex flex-col gap-3">
+          {shuffledSteps.map((step) => {
+            const isSelected = orderedIds.includes(step.id);
+            const indexNumber = isSelected ? orderedIds.indexOf(step.id) + 1 : null;
+            
+            return (
+              <button
+                key={step.id}
+                onClick={() => handleStepClick(step.id)}
+                disabled={isSelected}
+                className={`relative flex items-center p-4 rounded-2xl border-2 text-left transition-all duration-300
+                  ${isSelected 
+                    ? 'border-neon/50 bg-neon/10 text-foreground/80 scale-[0.98] opacity-60' 
+                    : 'border-border bg-background/50 hover:bg-background/80 hover:border-neon/30 active:scale-[0.99]'
+                  }
+                `}
+              >
+                {isSelected && (
+                   <div className="absolute -left-3 -top-3 w-8 h-8 rounded-full bg-neon text-background font-black flex items-center justify-center shadow-lg border-2 border-background z-10">
+                     {indexNumber}
+                   </div>
+                )}
+                <span className="text-sm sm:text-base font-medium">{step.text}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function FinalStage({ content, answers, setAnswers, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; answers: Record<string, number>; setAnswers: React.Dispatch<React.SetStateAction<Record<string, number>>>; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: () => void }) {
-  return <div><div className="rounded-2xl border border-gold/35 bg-gold/10 p-5"><ShieldAlert className="size-7 text-gold" /><p className="mt-3 font-semibold leading-relaxed">{content.intro}</p></div><div className="mt-5 space-y-4">{content.questions.map((question, questionIndex) => <fieldset key={question.id} className="rounded-2xl border border-border bg-background/35 p-5"><legend className="px-2 text-sm font-bold">{questionIndex + 1}. {question.text}</legend><div className="mt-3 grid gap-2">{question.options.map((option, optionIndex) => <label key={option} className={`focus-within:ring-2 focus-within:ring-neon/50 flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${answers[question.id] === optionIndex ? "border-neon/50 bg-neon/10" : "border-border"}`}><input type="radio" name={question.id} checked={answers[question.id] === optionIndex} onChange={() => setAnswers((previous) => ({ ...previous, [question.id]: optionIndex }))} className="accent-cyan-400" />{option}</label>)}</div></fieldset>)}</div>{feedback && <div className={`mt-5 rounded-2xl border p-5 ${feedback.passed ? "border-success/35 bg-success/10 text-success" : "border-danger/35 bg-danger/10 text-danger"}`}><p className="font-display text-2xl font-black">{feedback.score}%</p><p className="mt-2 text-sm">{feedback.passed ? content.win : content.lose}</p></div>}<div className="flex flex-wrap gap-3"><ActionButton disabled={saving || Object.keys(answers).length !== content.questions.length} onClick={onSubmit}>{check}</ActionButton>{feedback && !feedback.passed && <button type="button" onClick={() => setAnswers({})} className="focus-ring mt-6 min-h-12 rounded-xl border border-border px-5 text-sm font-bold text-muted-foreground">{retry}</button>}</div></div>;
+function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: () => void }) {
+  const MAX_PLAYER_HP = 3;
+  const MAX_BOSS_HP = 3;
+  
+  const [playerHp, setPlayerHp] = useState(MAX_PLAYER_HP);
+  const [bossHp, setBossHp] = useState(MAX_BOSS_HP);
+  const [currentPhase, setCurrentPhase] = useState(0);
+  const [currentLevel, setCurrentLevel] = useState(0);
+  const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
+  const [blitzTimeLeft, setBlitzTimeLeft] = useState(7);
+  const [shake, setShake] = useState(false);
+
+  const takeDamage = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+    setPlayerHp(prev => {
+      const next = prev - 1;
+      if (next <= 0) setStatus("gameover");
+      return next;
+    });
+  };
+
+  const advanceLevel = () => {
+    if (currentLevel < 2) {
+      setCurrentLevel(prev => prev + 1);
+    } else {
+      if (currentPhase < 2) {
+        setCurrentPhase(prev => prev + 1);
+        setCurrentLevel(0);
+      } else {
+        setStatus("win");
+      }
+    }
+    setBlitzTimeLeft(7); 
+  };
+
+  useEffect(() => {
+    if (status !== "playing" || currentPhase !== 1) return;
+    
+    if (blitzTimeLeft <= 0) {
+      takeDamage();
+      advanceLevel();
+      return;
+    }
+    
+    const timer = window.setInterval(() => {
+      setBlitzTimeLeft(prev => prev - 1);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [status, currentPhase, blitzTimeLeft]);
+
+  const handleVisualClick = (isCorrect: boolean) => {
+    if (isCorrect) {
+      advanceLevel();
+    } else {
+      takeDamage();
+    }
+  };
+
+  const handleBlitzClick = (optionIndex: number) => {
+    const isCorrect = optionIndex === content.phase2[currentLevel].answer;
+    if (isCorrect) {
+      advanceLevel();
+    } else {
+      takeDamage();
+      advanceLevel();
+    }
+  };
+
+  const handleBossClick = (optionIndex: number) => {
+    const isCorrect = optionIndex === content.phase3[currentLevel].answer;
+    if (isCorrect) {
+      setBossHp(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          setStatus("win");
+        } else {
+          advanceLevel();
+        }
+        return next;
+      });
+    } else {
+      takeDamage();
+    }
+  };
+
+  const restart = () => {
+    setPlayerHp(MAX_PLAYER_HP);
+    setBossHp(MAX_BOSS_HP);
+    setCurrentPhase(0);
+    setCurrentLevel(0);
+    setStatus("playing");
+    setBlitzTimeLeft(7);
+  };
+
+  if (status === "gameover") {
+    return (
+      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
+         <XCircle className="size-16 text-danger mb-4" />
+         <p className="text-2xl font-black mb-8 text-foreground">{content.gameOver}</p>
+         <button onClick={restart} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
+      </div>
+    );
+  }
+
+  if (status === "win") {
+    return (
+      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+         <CheckCircle2 className="size-16 text-neon mb-4" />
+         <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
+         <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+      </div>
+    );
+  }
+
+  const renderHP = (hp: number, max: number, colorClass: string) => (
+    <div className="flex gap-1">
+      {Array.from({ length: max }).map((_, i) => (
+        <div key={i} className={`h-3 w-8 sm:w-12 rounded-full border-2 transition-all duration-300 ${i < hp ? colorClass + ' border-transparent' : 'bg-transparent border-foreground/20'}`} />
+      ))}
+    </div>
+  );
+
+  return (
+    <div className={`flex flex-col items-center w-full max-w-2xl mx-auto pb-10 transition-transform ${shake ? 'animate-shake' : ''}`}>
+      <div className="w-full flex justify-between items-center mb-8 px-4 bg-slate-900/50 p-4 rounded-2xl border border-border">
+        <div>
+          <p className="text-xs font-black tracking-widest text-muted-foreground uppercase mb-1">HP</p>
+          {renderHP(playerHp, MAX_PLAYER_HP, "bg-success shadow-[0_0_10px_rgba(34,197,94,0.5)]")}
+        </div>
+        {currentPhase === 2 && (
+          <div className="text-right">
+            <p className="text-xs font-black tracking-widest text-muted-foreground uppercase mb-1">Boss HP</p>
+            {renderHP(bossHp, MAX_BOSS_HP, "bg-danger shadow-[0_0_10px_rgba(239,68,68,0.5)]")}
+          </div>
+        )}
+      </div>
+
+      {currentPhase === 0 && (
+        <div className="w-full flex flex-col items-center animate-in fade-in">
+          <p className="font-bold text-center text-lg text-neon mb-6">{content.phase1Intro}</p>
+          <div className="w-full max-w-sm bg-slate-100 dark:bg-slate-900 border-4 border-slate-300 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl relative">
+            <div className="bg-slate-200 dark:bg-slate-950 px-6 py-2 flex justify-between items-center text-[10px] text-slate-500 font-bold border-b border-slate-300 dark:border-slate-800">
+              <span>09:41</span>
+              <div className="flex gap-1"><span className="w-4 h-2 bg-slate-400 rounded-sm"></span></div>
+            </div>
+            <div className="p-4 flex flex-col gap-4 min-h-[300px]">
+              {currentLevel === 0 && (
+                <div className="flex flex-col gap-4">
+                  <p className="text-center text-xs font-bold text-slate-500 uppercase tracking-wider mt-2" onClick={() => handleVisualClick(false)}>MinTel</p>
+                  <div className="bg-blue-500 text-white p-4 rounded-2xl rounded-tl-sm shadow-md text-sm leading-relaxed" onClick={() => handleVisualClick(false)}>
+                    {content.phase1[0].text}
+                    <br/><br/>
+                    <button onClick={(e) => { e.stopPropagation(); handleVisualClick(true); }} className="text-blue-200 underline font-bold w-full text-left break-all">{content.phase1[0].fakeLink}</button>
+                  </div>
+                </div>
+              )}
+              {currentLevel === 1 && (
+                <div className="flex flex-col items-center justify-center h-full pt-10">
+                  <div className="w-20 h-20 bg-slate-300 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4" onClick={() => handleVisualClick(false)}>
+                    <User className="size-10 text-slate-500" />
+                  </div>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1" onClick={() => handleVisualClick(false)}>{content.phase1[1].caller}</p>
+                  <button onClick={() => handleVisualClick(true)} className="text-danger font-black text-lg tracking-wider bg-danger/10 px-3 py-1 rounded-lg border border-danger/20">{content.phase1[1].number}</button>
+                  <div className="flex gap-8 mt-12 w-full justify-center" onClick={() => handleVisualClick(false)}>
+                    <div className="w-14 h-14 bg-danger rounded-full flex items-center justify-center shadow-lg"><Phone className="text-white transform rotate-[135deg]" /></div>
+                    <div className="w-14 h-14 bg-success rounded-full flex items-center justify-center shadow-lg"><Phone className="text-white" /></div>
+                  </div>
+                </div>
+              )}
+              {currentLevel === 2 && (
+                <div className="flex flex-col items-center pt-8">
+                  <div className="w-24 h-24 bg-neon/20 rounded-full flex items-center justify-center mb-4 border-2 border-neon" onClick={() => handleVisualClick(false)}>
+                    <CheckCircle2 className="size-12 text-neon" />
+                  </div>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2" onClick={() => handleVisualClick(false)}>{content.phase1[2].name}</p>
+                  <button onClick={() => handleVisualClick(true)} className="text-sm font-bold text-slate-500 bg-slate-200 dark:bg-slate-800 px-4 py-2 rounded-xl mb-6">
+                    {content.phase1[2].accountType}
+                  </button>
+                  <div className="w-full flex justify-around border-t border-slate-300 dark:border-slate-800 pt-4" onClick={() => handleVisualClick(false)}>
+                     <div className="flex flex-col items-center text-neon"><Phone className="size-6 mb-1"/><span className="text-xs">Apel</span></div>
+                     <div className="flex flex-col items-center text-neon"><MessageCircle className="size-6 mb-1"/><span className="text-xs">Mesaj</span></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {currentPhase === 1 && (
+        <div className="w-full flex flex-col items-center animate-in fade-in">
+          <p className="font-bold text-center text-lg text-warning mb-6">{content.phase2Intro}</p>
+          <div className="w-full bg-slate-900 border-2 border-warning/50 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+            <div className="flex justify-between items-center mb-6">
+               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{currentLevel + 1} / 3</span>
+               <span className={`text-3xl font-black tabular-nums transition-colors ${blitzTimeLeft <= 3 ? 'text-danger animate-pulse' : 'text-warning'}`}>0:0{blitzTimeLeft}</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold mb-8 text-foreground">{content.phase2[currentLevel].text}</p>
+            <div className="flex flex-col gap-3">
+              {content.phase2[currentLevel].options.map((opt, i) => (
+                <button key={i} onClick={() => handleBlitzClick(i)} className="w-full text-left p-4 rounded-xl border border-border bg-background/50 hover:bg-background/80 hover:border-warning/50 transition font-medium text-lg focus-ring">
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {currentPhase === 2 && (
+        <div className="w-full flex flex-col items-center animate-in zoom-in-95">
+          <p className="font-bold text-center text-lg text-danger mb-6">{content.phase3Intro}</p>
+          <div className="w-full bg-slate-950 border-2 border-danger rounded-3xl p-6 shadow-[0_0_50px_rgba(239,68,68,0.3)] relative overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-danger/20 blur-[100px] rounded-full pointer-events-none" />
+            <div className="flex items-center gap-6 mb-8">
+               <div className="w-24 h-24 flex items-center justify-center rounded-2xl border-2 border-danger/50 shadow-lg bg-slate-900">
+                 <Skull className="size-12 text-danger animate-pulse" />
+               </div>
+               <div className="relative bg-danger/10 border border-danger/30 rounded-2xl p-4 w-full">
+                  <div className="absolute top-1/2 -left-3 w-4 h-4 bg-slate-950 border-t border-l border-danger/30 transform -rotate-45 -translate-y-1/2" />
+                  <p className="text-lg font-bold text-danger-foreground">{content.phase3[currentLevel].bossText}</p>
+               </div>
+            </div>
+            <div className="flex flex-col gap-3 relative z-10">
+              {content.phase3[currentLevel].options.map((opt, i) => (
+                <button key={i} onClick={() => handleBossClick(i)} className="w-full text-left p-4 rounded-xl border border-danger/20 bg-background/50 hover:bg-danger/20 hover:border-danger/50 transition font-medium text-lg focus-ring">
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

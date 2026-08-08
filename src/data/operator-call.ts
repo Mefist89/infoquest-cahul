@@ -54,6 +54,8 @@ export const operatorCallContent = {
         { title: "Самостоятельный перезвон", text: "Положи трубку и сам перезвони по официальному номеру поддержки MinTel." },
       ],
       rule: "Главное правило: положи трубку, ничего не сообщай и проверь информацию через официальный канал.",
+      bookletText: "Скачать буклет (PDF)",
+      bookletFile: "/ghid_ru.pdf",
     },
     videoExplanation: {
       title: "Как распознать социальную инженерию",
@@ -64,7 +66,7 @@ export const operatorCallContent = {
     videoExample: {
       title: "Учебный звонок от вымышленного оператора MinTel",
       placeholder: "Место для видеопримера",
-      hint: "В примере нет реальных телефонов, брендов или данных.",
+      hint: "Никакой сотовый оператор не просит подтверждение СМС. В примере нет реальных телефонов, брендов или данных.",
       transcript: [
         { speaker: "Звонящий", text: "Здравствуйте! Ваш номер будет заблокирован через десять минут." },
         { speaker: "Мария", text: "Почему? Как я могу это проверить?" },
@@ -219,26 +221,134 @@ export const operatorCallContent = {
       ]
     },
     ordering: {
-      prompt: "Нажимай действия в правильном порядке.",
-      actions: [
-        { id: "end", label: "Завершить подозрительный звонок" },
-        { id: "open", label: "Самостоятельно открыть официальное приложение" },
-        { id: "contact", label: "Связаться с оператором через официальный канал" },
-        { id: "secure", label: "Если код уже сообщён — сменить пароль и обратиться в поддержку" },
-      ],
-      correct: ["end", "open", "contact", "secure"],
+      prompt: "Выстраивай шаги в правильном хронологическом порядке. Спеши, время идет! Ошибка отнимет 3 секунды.",
+      levelText: "Уровень",
+      win: "Бомба обезврежена! Отличная работа.",
+      fail: "Время вышло! Вы не успели.",
+      levels: [
+        {
+          id: 1,
+          time: 15,
+          steps: [
+            { id: "s1", text: "Положить трубку." },
+            { id: "s2", text: "Никому не сообщать код из SMS." },
+            { id: "s3", text: "Заблокировать номер звонившего." }
+          ]
+        },
+        {
+          id: 2,
+          time: 20,
+          steps: [
+            { id: "s1", text: "Отказаться от быстрого решения по телефону." },
+            { id: "s2", text: "Завершить звонок." },
+            { id: "s3", text: "Открыть официальное приложение «MinTel»." },
+            { id: "s4", text: "Самостоятельно проверить наличие новых тарифов." }
+          ]
+        },
+        {
+          id: 3,
+          time: 25,
+          steps: [
+            { id: "s1", text: "Не поддаваться панике." },
+            { id: "s2", text: "Прервать телефонный разговор." },
+            { id: "s3", text: "Найти официальный номер поддержки MinTel." },
+            { id: "s4", text: "Позвонить настоящему оператору." },
+            { id: "s5", text: "Уточнить реальный статус своего номера." }
+          ]
+        },
+        {
+          id: 4,
+          time: 30,
+          steps: [
+            { id: "s1", text: "Отказаться от установки любых программ." },
+            { id: "s2", text: "Положить трубку." },
+            { id: "s3", text: "Удалить SMS со странными ссылками." },
+            { id: "s4", text: "Проверить телефон встроенным антивирусом." },
+            { id: "s5", text: "Сменить пароль от личного кабинета MinTel." },
+            { id: "s6", text: "Включить двухфакторную авторизацию." }
+          ]
+        },
+        {
+          id: 5,
+          time: 40,
+          steps: [
+            { id: "s1", text: "Немедленно завершить разговор." },
+            { id: "s2", text: "Зайти в официальное приложение оператора." },
+            { id: "s3", text: "Завершить все активные сессии (выйти со всех устройств)." },
+            { id: "s4", text: "Изменить пароль для входа." },
+            { id: "s5", text: "Связаться с банком, чтобы заблокировать переводы с баланса телефона." },
+            { id: "s6", text: "Позвонить в настоящую поддержку MinTel." },
+            { id: "s7", text: "Сообщить о факте утечки данных." }
+          ]
+        }
+      ]
     },
     final: {
-      intro: "Тень звонит жителям от имени MinTel. Ответь минимум на 4 из 5 вопросов, чтобы остановить атаку.",
-      questions: [
-        { id: "q1", text: "Кто может попросить код из SMS?", options: ["Сотрудник оператора", "Никто", "Только курьер"], answer: 1 },
-        { id: "q2", text: "Что делать при угрозе срочной блокировки?", options: ["Поторопиться", "Завершить звонок и проверить отдельно", "Назвать паспортные данные"], answer: 1 },
-        { id: "q3", text: "Можно ли доверять номеру на экране?", options: ["Всегда", "Только местному", "Нет, номер можно подменить"], answer: 2 },
-        { id: "q4", text: "Куда переходить для проверки аккаунта?", options: ["По ссылке звонящего", "В официальное приложение, открытое самостоятельно", "В первый результат рекламы"], answer: 1 },
-        { id: "q5", text: "Ты уже сообщил код. Первое действие?", options: ["Ждать", "Удалить SMS", "Срочно сменить пароль и связаться с поддержкой"], answer: 2 },
+      intro: "Финальная схватка. У тебя 3 жизни (HP) на все фазы. Ошибка = минус 1 жизнь.",
+      gameOver: "Увы, твои жизни иссякли... Тень победила. Начни сначала!",
+      win: "Победа! Тень повержена, а твой номер в безопасности.",
+      phase1Intro: "Фаза 1: Визуальный тест. Кликни на деталь, которая выдает мошенника.",
+      phase2Intro: "Фаза 2: Блиц. У тебя 7 секунд на ответ!",
+      phase3Intro: "Фаза 3: Битва с Боссом. Парируй его уловки!",
+      phase1: [
+        {
+          id: "p1_1",
+          type: "sms",
+          sender: "MinTel",
+          text: "Ваш тариф истекает. Продлите по ссылке:",
+          fakeLink: "mintei-support.com",
+          realLink: "mintel.md",
+          correctTarget: "fakeLink"
+        },
+        {
+          id: "p1_2",
+          type: "call",
+          caller: "Служба безопасности MinTel",
+          number: "+44 20 7123 4567",
+          correctTarget: "number"
+        },
+        {
+          id: "p1_3",
+          type: "profile",
+          name: "Поддержка MinTel",
+          accountType: "Обычный аккаунт",
+          correctTarget: "accountType"
+        }
       ],
-      win: "Атака остановлена! Ты получаешь награду «Безопасная линия».",
-      lose: "Тень пока сильнее. Повтори правила и попробуй ещё раз.",
+      phase2: [
+        { id: "p2_1", text: "Оператор срочно просит код из SMS для отмены блокировки.", options: ["Назвать", "Сбросить вызов", "Продиктовать половину"], answer: 1 },
+        { id: "p2_2", text: "Номер звонящего совпадает с номером на сайте. Можно верить?", options: ["Да", "Нет, номер можно подменить", "Только если это +373"], answer: 1 },
+        { id: "p2_3", text: "Куда переходить для проверки состояния счета?", options: ["По ссылке из SMS", "Самому открыть оф. приложение", "Ввести в Google и кликнуть первую ссылку"], answer: 1 }
+      ],
+      phase3: [
+        { 
+          id: "p3_1", 
+          bossText: "Если не назовешь код, через 5 минут спишутся все деньги с баланса!", 
+          options: [
+            "Я сейчас сам перезвоню в поддержку.", 
+            "Хорошо, диктую: 4-5-2..."
+          ], 
+          answer: 0 
+        },
+        { 
+          id: "p3_2", 
+          bossText: "Я следователь. Оператор MinTel украл ваши данные, помогите следствию поимке преступника!", 
+          options: [
+            "Что мне нужно сделать для помощи?", 
+            "Вызывайте меня официальной повесткой. До свидания."
+          ], 
+          answer: 1 
+        },
+        { 
+          id: "p3_3", 
+          bossText: "Ладно, просто скачайте наше защитное приложение по ссылке, чтобы обезопасить телефон!", 
+          options: [
+            "Ничего скачивать не буду, мой телефон защищен.", 
+            "Давайте ссылку, я установлю."
+          ], 
+          answer: 0 
+        }
+      ]
     },
   },
   ro: {
@@ -294,6 +404,8 @@ export const operatorCallContent = {
         { title: "Apelul independent", text: "Închide și sună personal la numărul oficial de suport MinTel." },
       ],
       rule: "Regula principală: închide, nu comunica nimic și verifică informația printr-un canal oficial.",
+      bookletText: "Descarcă pliantul (PDF)",
+      bookletFile: "/ghid_ro.pdf",
     },
     videoExplanation: {
       title: "Cum recunoști ingineria socială",
@@ -304,7 +416,7 @@ export const operatorCallContent = {
     videoExample: {
       title: "Apel educațional de la operatorul fictiv MinTel",
       placeholder: "Loc pentru exemplul video",
-      hint: "Exemplul nu folosește telefoane, mărci sau date reale.",
+      hint: "Niciun operator de telefonie mobilă nu cere confirmare prin SMS. Exemplul nu folosește telefoane, mărci sau date reale.",
       transcript: [
         { speaker: "Apelant", text: "Bună ziua! Numărul dvs. va fi blocat în zece minute." },
         { speaker: "Maria", text: "De ce? Cum pot verifica acest lucru?" },
@@ -386,6 +498,73 @@ export const operatorCallContent = {
         { id: "c15", text: "Nu cerem parole. Doar spuneți clar „DA” pentru a confirma prelungirea contractului.", answer: "danger" }
       ],
     },
+    final: {
+      intro: "Confruntarea finală. Ai 3 vieți (HP) pentru toate fazele. O greșeală = minus 1 viață.",
+      gameOver: "Din păcate, ai rămas fără vieți... Umbra a învins. Începe din nou!",
+      win: "Victorie! Umbra a fost învinsă, iar numărul tău este în siguranță.",
+      phase1Intro: "Faza 1: Test vizual. Dă click pe detaliul care trădează escrocul.",
+      phase2Intro: "Faza 2: Blitz. Ai 7 secunde pentru a răspunde!",
+      phase3Intro: "Faza 3: Lupta cu Boss-ul. Parează atacurile lui!",
+      phase1: [
+        {
+          id: "p1_1",
+          type: "sms",
+          sender: "MinTel",
+          text: "Tariful dvs. expiră. Prelungiți accesând linkul:",
+          fakeLink: "mintei-support.com",
+          realLink: "mintel.md",
+          correctTarget: "fakeLink"
+        },
+        {
+          id: "p1_2",
+          type: "call",
+          caller: "Serviciul de securitate MinTel",
+          number: "+44 20 7123 4567",
+          correctTarget: "number"
+        },
+        {
+          id: "p1_3",
+          type: "profile",
+          name: "Suport MinTel",
+          accountType: "Cont obișnuit",
+          correctTarget: "accountType"
+        }
+      ],
+      phase2: [
+        { id: "p2_1", text: "Operatorul vă cere urgent codul din SMS pentru a anula blocarea.", options: ["Îl dictez", "Închid apelul", "Dictez doar o jumătate"], answer: 1 },
+        { id: "p2_2", text: "Numărul apelantului coincide cu cel de pe site. E de încredere?", options: ["Da", "Nu, numărul poate fi falsificat", "Doar dacă este +373"], answer: 1 },
+        { id: "p2_3", text: "Unde accesați pentru a verifica starea contului?", options: ["Pe linkul din SMS", "Deschid singur aplicația oficială", "Caut pe Google și dau click pe prima reclamă"], answer: 1 }
+      ],
+      phase3: [
+        { 
+          id: "p3_1", 
+          bossText: "Dacă nu-mi spui codul, în 5 minute ți se vor retrage toți banii de pe cont!", 
+          options: [
+            "Voi suna eu însumi la suport acum.", 
+            "Bine, dictez: 4-5-2..."
+          ], 
+          answer: 0 
+        },
+        { 
+          id: "p3_2", 
+          bossText: "Sunt anchetator. Operatorul MinTel v-a furat datele, ajutați ancheta să prindă infractorul!", 
+          options: [
+            "Ce trebuie să fac pentru a vă ajuta?", 
+            "Chemați-mă oficial prin citație. La revedere."
+          ], 
+          answer: 1 
+        },
+        { 
+          id: "p3_3", 
+          bossText: "Bine, doar descărcați aplicația noastră de protecție de pe link pentru a vă securiza telefonul!", 
+          options: [
+            "Nu descarc nimic, telefonul meu este protejat.", 
+            "Dați-mi linkul, o instalez."
+          ], 
+          answer: 0 
+        }
+      ]
+    },
     dialogue: {
       prompt: "Evidențiază toate capcanele escrocului cu markerul (dă click pe fraze).",
       levelText: "Nivelul",
@@ -459,14 +638,67 @@ export const operatorCallContent = {
       ]
     },
     ordering: {
-      prompt: "Apasă acțiunile în ordinea corectă.",
-      actions: [
-        { id: "end", label: "Încheie apelul suspect" },
-        { id: "open", label: "Deschide singur aplicația oficială" },
-        { id: "contact", label: "Contactează operatorul prin canalul oficial" },
-        { id: "secure", label: "Dacă ai spus codul, schimbă parola și contactează suportul" },
-      ],
-      correct: ["end", "open", "contact", "secure"],
+      prompt: "Apasă acțiunile în ordinea cronologică corectă. Grăbește-te, timpul trece! O greșeală scade 3 secunde.",
+      levelText: "Nivelul",
+      win: "Bomba a fost dezamorsată! O treabă excelentă.",
+      fail: "Timpul a expirat! Nu ai reușit.",
+      levels: [
+        {
+          id: 1,
+          time: 15,
+          steps: [
+            { id: "s1", text: "Închideți apelul." },
+            { id: "s2", text: "Nu comunicați nimănui codul din SMS." },
+            { id: "s3", text: "Blocați numărul apelantului." }
+          ]
+        },
+        {
+          id: 2,
+          time: 20,
+          steps: [
+            { id: "s1", text: "Refuzați luarea unei decizii rapide la telefon." },
+            { id: "s2", text: "Încheiați apelul." },
+            { id: "s3", text: "Deschideți aplicația oficială «MinTel»." },
+            { id: "s4", text: "Verificați personal dacă există tarife noi." }
+          ]
+        },
+        {
+          id: 3,
+          time: 25,
+          steps: [
+            { id: "s1", text: "Nu intrați în panică." },
+            { id: "s2", text: "Întrerupeți conversația telefonică." },
+            { id: "s3", text: "Găsiți numărul oficial de suport MinTel." },
+            { id: "s4", text: "Sunați operatorul real." },
+            { id: "s5", text: "Clarificați statutul real al numărului dvs." }
+          ]
+        },
+        {
+          id: 4,
+          time: 30,
+          steps: [
+            { id: "s1", text: "Refuzați instalarea oricăror programe." },
+            { id: "s2", text: "Închideți apelul." },
+            { id: "s3", text: "Ștergeți SMS-urile cu linkuri dubioase." },
+            { id: "s4", text: "Verificați telefonul cu antivirusul integrat." },
+            { id: "s5", text: "Schimbați parola contului personal MinTel." },
+            { id: "s6", text: "Activați autentificarea cu doi factori." }
+          ]
+        },
+        {
+          id: 5,
+          time: 40,
+          steps: [
+            { id: "s1", text: "Încheiați imediat conversația." },
+            { id: "s2", text: "Accesați aplicația oficială a operatorului." },
+            { id: "s3", text: "Închideți toate sesiunile active (ieșiți de pe toate dispozitivele)." },
+            { id: "s4", text: "Schimbați parola de acces." },
+            { id: "s5", text: "Contactați banca pentru a bloca transferurile de pe soldul telefonului." },
+            { id: "s6", text: "Sunați la suportul real MinTel." },
+            { id: "s7", text: "Raportați scurgerea de date." }
+          ]
+        }
+      ]
     },
     final: {
       intro: "Umbra sună locuitorii în numele MinTel. Răspunde corect la cel puțin 4 din 5 întrebări.",
