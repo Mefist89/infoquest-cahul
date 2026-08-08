@@ -63,10 +63,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
 
   const unlockedThrough = useMemo(() => {
-    for (let stage = 1; stage <= 8; stage += 1) {
-      if (!completedStages.has(stage)) return stage;
-    }
-    return 8;
+    return 8; // Unlock all stages for testing
   }, [completedStages]);
 
   const completionPercent = Math.round((completedStages.size / 8) * 100);
