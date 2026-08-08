@@ -119,7 +119,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const activeUsers = users.filter((user) => user.completed_modules > 0 || user.in_progress_modules > 0 || user.completed_stages > 0).length;
   const completedModules = users.reduce((sum, user) => sum + Number(user.completed_modules), 0);
   const completedStages = users.reduce((sum, user) => sum + Number(user.completed_stages), 0);
-  const availableStages = users.reduce((sum, user) => sum + Number(user.total_stages), 0);
+  const availableStages = users.length * 64;
   const dateFormatter = new Intl.DateTimeFormat(locale === "ro" ? "ro-MD" : "ru-MD", { dateStyle: "medium", timeStyle: "short" });
 
   return (
@@ -181,7 +181,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               const displayName = user.display_name || user.email?.split("@")[0] || "User";
               const avatarIsSafe = typeof user.avatar_url === "string" && user.avatar_url.startsWith("https://lh3.googleusercontent.com/");
               const moduleMap = new Map((user.module_breakdown ?? []).map((module) => [module.module_id, module]));
-              const stagePercent = Math.round((Number(user.completed_stages) / Math.max(Number(user.total_stages), 1)) * 100);
+              const stagePercent = Math.round((Number(user.completed_stages) / 64) * 100);
 
               return (
                 <article key={user.user_id} className="overflow-hidden rounded-3xl border border-border bg-card/75 p-5 transition hover:border-neon/35 sm:p-6">
