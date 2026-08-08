@@ -1066,7 +1066,7 @@ const restart = () => {
   const renderHP = (hp: number, max: number, colorClass: string) => (
     <div className="flex gap-1">
       {Array.from({ length: max }).map((_, i) => (
-        <div key={i} className={`h-3 w-8 sm:w-12 rounded-full border-2 transition-all duration-300 ${i < hp ? colorClass + ' border-transparent' : 'bg-transparent border-foreground/20'}`} />
+        <div key={i} className={`h-3 w-[35px] sm:w-[53px] rounded-full border-2 transition-all duration-300 ${i < hp ? colorClass + ' border-transparent' : 'bg-transparent border-foreground/20'}`} />
       ))}
     </div>
   );
