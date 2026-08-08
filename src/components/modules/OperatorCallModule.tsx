@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+
+const playSound = (type: "correct" | "wrong" | "timeout") => {
+  if (typeof window !== "undefined") {
+    const audio = new Audio(`/audio/${type}.mp3`);
+    audio.play().catch(() => {});
+  }
+};
 import {
   ArrowLeft,
   BookOpen,
@@ -433,15 +440,15 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
   function handleAction(isDangerAction: boolean) {
     if (status !== "playing" || !phrase) return;
     if (phrase.isThreat) {
-      if (isDangerAction) advanceLevel();
-      else { setStatus("failed"); setFailReason(content.loseThreat); }
+      if (isDangerAction) { playSound("correct"); advanceLevel(); }
+      else { playSound("wrong"); setStatus("failed"); setFailReason(content.loseThreat); }
     } else {
-      if (isDangerAction) { setStatus("failed"); setFailReason(content.loseSafe); }
+      if (isDangerAction) { playSound("wrong"); setStatus("failed"); setFailReason(content.loseSafe); }
       else {
         if (currentPhraseIndex < level.phrases.length - 1) {
           setCurrentPhraseIndex((prev) => prev + 1);
           setTimeLeft(100);
-        } else advanceLevel();
+        } else { playSound("correct"); advanceLevel(); }
       }
     }
   }
@@ -554,6 +561,8 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
   const handleSwipe = (direction: "left" | "right") => {
     if (!currentItem) return;
     const answer = direction === "left" ? "danger" : "safe";
+    if (answer === (currentItem as any).answer) playSound("correct");
+    else playSound("wrong");
     setAnswers(prev => ({ ...prev, [currentItem.id]: answer }));
   };
 
@@ -698,10 +707,12 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
     });
 
     if (correct && selectedLies === level.liesCount) {
+      playSound("correct");
       setCurrentLevelIndex(prev => prev + 1);
       setSelectedParts(new Set());
       setErrorText(null);
     } else {
+      playSound("wrong");
       setErrorText(content.error);
     }
   };
@@ -811,6 +822,7 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
     const expectedNextId = level.steps[orderedIds.length].id;
     
     if (stepId === expectedNextId) {
+      playSound("correct");
       const newOrderedIds = [...orderedIds, stepId];
       setOrderedIds(newOrderedIds);
       
@@ -822,6 +834,7 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
         }
       }
     } else {
+      playSound("wrong");
       setTimeLeft(prev => Math.max(0, prev - 3));
       setFlashError(true);
       setTimeout(() => setFlashError(false), 300);
@@ -943,6 +956,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
     if (status !== "playing" || currentPhase !== 1) return;
     
     if (blitzTimeLeft <= 0) {
+      playSound("timeout");
       takeDamage();
       advanceLevel();
       return;
@@ -956,6 +970,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
 
   const handleVisualClick = (targetId: string, isCorrect: boolean) => {
     if (isCorrect) {
+      playSound("correct");
       setFoundDetails(prev => {
         const next = new Set(prev);
         next.add(targetId);
@@ -968,6 +983,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
         return next;
       });
     } else {
+      playSound("wrong");
       takeDamage();
     }
   };
@@ -975,8 +991,10 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
 const handleBlitzClick = (optionIndex: number) => {
     const isCorrect = optionIndex === content.phase2[currentLevel].answer;
     if (isCorrect) {
+      playSound("correct");
       advanceLevel();
     } else {
+      playSound("wrong");
       takeDamage();
       advanceLevel();
     }
@@ -987,6 +1005,7 @@ const handleBlitzClick = (optionIndex: number) => {
     const isCorrect = answers.includes(optionIndex);
     
     if (isCorrect) {
+      playSound("correct");
       setBossSelected(prev => {
         const next = new Set(prev);
         next.add(optionIndex);
@@ -1008,6 +1027,7 @@ const handleBlitzClick = (optionIndex: number) => {
         return next;
       });
     } else {
+      playSound("wrong");
       takeDamage();
       setBossSelected(new Set());
     }
