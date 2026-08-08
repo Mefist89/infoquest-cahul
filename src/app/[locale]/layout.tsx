@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../globals.css";
 import { Orbitron, Rubik } from "next/font/google";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -21,7 +22,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${orbitron.variable} ${rubik.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ScrollToTop />
+      </body>
     </html>
   );
 }
