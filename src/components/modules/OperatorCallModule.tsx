@@ -900,13 +900,14 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
 
 function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: () => void }) {
   const MAX_PLAYER_HP = 3;
-  const MAX_BOSS_HP = 3;
+  const MAX_BOSS_HP = 10;
   
   const [playerHp, setPlayerHp] = useState(MAX_PLAYER_HP);
   const [bossHp, setBossHp] = useState(MAX_BOSS_HP);
   const [currentPhase, setCurrentPhase] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [foundDetails, setFoundDetails] = useState<Set<string>>(new Set());
+  const [bossSelected, setBossSelected] = useState<Set<number>>(new Set());
   const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
   const [blitzTimeLeft, setBlitzTimeLeft] = useState(12);
   const [shake, setShake] = useState(false);
@@ -923,6 +924,8 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
 
   const advanceLevel = () => {
     setFoundDetails(new Set());
+    setBossSelected(new Set());
+    setBossSelected(new Set());
     if (currentLevel < 9) {
       setCurrentLevel(prev => prev + 1);
     } else {
@@ -980,23 +983,37 @@ const handleBlitzClick = (optionIndex: number) => {
   };
 
   const handleBossClick = (optionIndex: number) => {
-    const isCorrect = optionIndex === content.phase3[currentLevel].answer;
+    const answers = (content.phase3[currentLevel] as any).answers;
+    const isCorrect = answers.includes(optionIndex);
+    
     if (isCorrect) {
-      setBossHp(prev => {
-        const next = prev - 1;
-        if (next <= 0) {
-          setStatus("win");
-        } else {
-          advanceLevel();
+      setBossSelected(prev => {
+        const next = new Set(prev);
+        next.add(optionIndex);
+        
+        if (next.size >= answers.length) {
+          setBossHp(hp => {
+            const nextHp = hp - 1;
+            setTimeout(() => {
+              if (nextHp <= 0) {
+                setStatus("win");
+              } else {
+                advanceLevel();
+              }
+            }, 300);
+            return nextHp;
+          });
+          return new Set();
         }
         return next;
       });
     } else {
       takeDamage();
+      setBossSelected(new Set());
     }
   };
 
-  const restart = () => {
+const restart = () => {
     setPlayerHp(MAX_PLAYER_HP);
     setBossHp(MAX_BOSS_HP);
     setCurrentPhase(0);
@@ -1143,7 +1160,7 @@ const handleBlitzClick = (optionIndex: number) => {
             </div>
             <div className="flex flex-col gap-3 relative z-10">
               {content.phase3[currentLevel].options.map((opt, i) => (
-                <button key={i} onClick={() => handleBossClick(i)} className="w-full text-left p-4 rounded-xl border border-danger/20 bg-background/50 hover:bg-danger/20 hover:border-danger/50 transition font-medium text-lg focus-ring">
+                <button key={i} onClick={() => handleBossClick(i)} className={`w-full text-left p-4 rounded-xl border transition font-medium text-lg focus-ring ${bossSelected.has(i) ? 'border-success bg-success/20 text-success shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'border-danger/20 bg-background/50 hover:bg-danger/20 hover:border-danger/50'}`}>
                   {opt}
                 </button>
               ))}
