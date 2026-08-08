@@ -699,18 +699,6 @@ export const operatorCallContent = {
           ]
         }
       ]
-    },
-    final: {
-      intro: "Umbra sună locuitorii în numele MinTel. Răspunde corect la cel puțin 4 din 5 întrebări.",
-      questions: [
-        { id: "q1", text: "Cine poate solicita codul SMS?", options: ["Operatorul", "Nimeni", "Doar curierul"], answer: 1 },
-        { id: "q2", text: "Ce faci la amenințarea unei blocări urgente?", options: ["Mă grăbesc", "Închei și verific separat", "Spun datele din buletin"], answer: 1 },
-        { id: "q3", text: "Poți avea încredere în numărul afișat?", options: ["Întotdeauna", "Doar dacă este local", "Nu, poate fi falsificat"], answer: 2 },
-        { id: "q4", text: "Unde verifici contul?", options: ["În linkul apelantului", "În aplicația oficială deschisă personal", "În prima reclamă"], answer: 1 },
-        { id: "q5", text: "Ai comunicat deja codul. Ce faci prima dată?", options: ["Aștept", "Șterg SMS-ul", "Schimb urgent parola și contactez suportul"], answer: 2 },
-      ],
-      win: "Atacul a fost oprit! Primești recompensa „Linie sigură”.",
-      lose: "Umbra este încă puternică. Recitește regulile și încearcă din nou.",
-    },
-  },
+    }
+  }
 } as const;
