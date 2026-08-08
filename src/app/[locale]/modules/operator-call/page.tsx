@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
+import { SiteFooter } from "@/components/SiteFooter";
 import type { OperatorLocale } from "@/data/operator-call";
 import { createClient } from "@/lib/supabase/server";
 
@@ -32,10 +33,13 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
   ]);
 
   return (
-    <OperatorCallModule
-      locale={locale}
-      initialStages={(stages ?? []) as Array<{ stage_index: number; status: "not_started" | "in_progress" | "completed"; score: number }>}
-      initialModule={moduleProgress as { status: "not_started" | "in_progress" | "completed"; xp: number; score: number } | null}
-    />
+    <>
+      <OperatorCallModule
+        locale={locale}
+        initialStages={(stages ?? []) as Array<{ stage_index: number; status: "not_started" | "in_progress" | "completed"; score: number }>}
+        initialModule={moduleProgress as { status: "not_started" | "in_progress" | "completed"; xp: number; score: number } | null}
+      />
+      <SiteFooter lang={locale} />
+    </>
   );
 }

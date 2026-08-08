@@ -36,6 +36,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { caseSlides, missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
 import { createClient } from "@/lib/supabase/client";
+import { Modal } from "@/components/Modal";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const icons: Record<Mission["icon"], LucideIcon> = {
   "user-lock": UserLock,
@@ -50,49 +52,6 @@ const icons: Record<Mission["icon"], LucideIcon> = {
 
 type BottomBlock = "logo" | "qr" | "team" | "demo";
 type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number; displayName: string | null; avatarUrl: string | null };
-
-function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm"
-      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        className={`${wide ? "max-w-3xl" : "max-w-lg"} w-full rounded-3xl border border-neon/35 bg-popover p-6 shadow-[0_0_60px_rgba(0,214,255,0.14)]`}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <h2 id="modal-title" className="text-lg font-bold text-foreground">
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="focus-ring grid size-10 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-neon/60 hover:text-neon"
-            aria-label="Close"
-          >
-            <X className="size-5" aria-hidden="true" />
-          </button>
-        </div>
-        <div className="mt-5">{children}</div>
-      </section>
-    </div>
-  );
-}
 
 function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang) => void; progress: HeaderProgress }) {
   const t = strings[lang];
@@ -314,19 +273,6 @@ function CaseSlider({ lang }: { lang: Lang }) {
   );
 }
 
-function BottomCard({ label, icon, onClick, children }: { label: string; icon?: ReactNode; onClick: () => void; children?: ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="focus-ring flex min-h-36 flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-neon/40 bg-card/60 p-4 text-center transition hover:border-neon hover:bg-card"
-    >
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</span>
-      {children ?? icon}
-    </button>
-  );
-}
-
 export default function HomePage() {
   const params = useParams<{ locale: string }>();
   const router = useRouter();
@@ -506,47 +452,7 @@ export default function HomePage() {
 
       </main>
 
-      <footer className="relative border-t border-neon/15 bg-slate-950/35">
-        <section className="mx-auto max-w-6xl px-4 py-14">
-          <div className="mb-7 text-center">
-            <h2 className="text-lg font-bold text-neon">{t.projectMaterials}</h2>
-            <p className="mt-2 text-sm text-muted-foreground">{t.projectMaterialsHint}</p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <BottomCard label={t.teamLogo} onClick={() => setOpenBlock("logo")}>
-              <Image
-                src="/patrol-shield.png"
-                alt={t.teamLogo}
-                width={80}
-                height={80}
-                className="size-20 rounded-xl object-cover ring-2 ring-neon/70"
-              />
-            </BottomCard>
-            <BottomCard label={t.qrCode} onClick={() => setOpenBlock("qr")}>
-              <span className="grid size-[88px] place-items-center rounded-lg bg-white p-2">
-                <QRCodeSVG value={siteUrl} size={72} bgColor="#ffffff" fgColor="#071328" />
-              </span>
-            </BottomCard>
-            <BottomCard label={t.projectTeam} icon={<Users className="size-12 text-neon" aria-hidden="true" />} onClick={() => setOpenBlock("team")} />
-            <BottomCard label={t.demo} icon={<PlayCircle className="size-12 text-gold" aria-hidden="true" />} onClick={() => setOpenBlock("demo")} />
-          </div>
-
-          <div className="mt-16 border-t border-neon/10 pt-8 text-center text-xs text-muted-foreground">
-            <div className="mb-4 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6">
-              <span className="font-semibold text-foreground/80">{t.footerHackathon}</span>
-              <span className="hidden text-neon/30 sm:inline">•</span>
-              <span className="font-semibold text-neon/80">{t.footerAi}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
-              <span>{t.footerCopyright}</span>
-              <div className="flex gap-4">
-                <Link href={`/${lang}/privacy`} className="transition hover:text-neon">{t.footerPrivacy}</Link>
-                <Link href={`/${lang}/terms`} className="transition hover:text-neon">{t.footerTerms}</Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      </footer>
+      <SiteFooter lang={lang} />
 
       {selectedMission && (
         <Modal title={selectedMission.title[lang]} onClose={() => setSelectedMission(null)}>
@@ -561,67 +467,6 @@ export default function HomePage() {
               </p>
             </div>
           </div>
-        </Modal>
-      )}
-
-      {openBlock && (
-        <Modal
-          title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : t.demo}
-          onClose={() => setOpenBlock(null)}
-          wide={openBlock === "demo"}
-        >
-          {openBlock === "logo" && (
-            <div className="overflow-hidden rounded-2xl border border-neon/35 bg-slate-950">
-              <Image
-                src="/patrol-shield.png"
-                alt={t.teamLogo}
-                width={1024}
-                height={1024}
-                className="h-auto w-full object-contain"
-                priority
-              />
-            </div>
-          )}
-
-          {openBlock === "qr" && (
-            <div className="flex flex-col items-center gap-4">
-              <span className="grid size-[272px] place-items-center rounded-2xl bg-white p-4">
-                <QRCodeSVG id="infoquest-qr-large" value={siteUrl} size={240} bgColor="#ffffff" fgColor="#071328" />
-              </span>
-              <p className="text-sm text-muted-foreground">{t.qrHint}</p>
-              <button type="button" onClick={downloadQr} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-semibold text-primary-foreground">
-                <Download className="size-4" aria-hidden="true" /> SVG
-              </button>
-            </div>
-          )}
-
-          {openBlock === "team" && (
-            <div>
-              <p className="mb-4 text-sm text-muted-foreground">{t.teamHint}</p>
-              <ul className="space-y-2">
-                {teamMembers[lang].map((member) => (
-                  <li key={member} className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-foreground">{member}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {openBlock === "demo" && (
-            <div className="overflow-hidden rounded-2xl border border-gold/40 bg-slate-950">
-              <video
-                key={lang}
-                controls
-                playsInline
-                preload="metadata"
-                className="aspect-video w-full bg-black object-contain"
-                aria-label={t.demo}
-              >
-                <source src={lang === "ro" ? "/promo_ro.mp4" : "/promo.mp4"} type="video/mp4" />
-                {t.demoHint}
-              </video>
-              <p className="px-4 py-3 text-center text-sm text-muted-foreground">{t.demoHint}</p>
-            </div>
-          )}
         </Modal>
       )}
     </>
