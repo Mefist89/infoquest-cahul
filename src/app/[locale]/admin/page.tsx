@@ -38,6 +38,9 @@ const modules = [
   { id: "hacked-account", ru: "Взломанный аккаунт", ro: "Cont compromis" },
   { id: "scam-or-real", ru: "Скам или реальность", ro: "Scam sau real" },
   { id: "deepfake-detective", ru: "Детектив дипфейков", ro: "Detectiv deepfake" },
+  { id: "bilingual-detective", ru: "Двуязычный детектив", ro: "Detectivul bilingv" },
+  { id: "rumors", ru: "Город под осадой слухов", ro: "Orașul sub asediul zvonurilor" },
+  { id: "trolls", ru: "Защити сообщество от троллей", ro: "Apără comunitatea de troli" },
 ] as const;
 
 const copy = {
@@ -52,7 +55,7 @@ const copy = {
     modulesDone: "Модулей завершено",
     stagesDone: "Этапов завершено",
     structure: "Структура каждого модуля",
-    structureHint: "В каждом из пяти модулей предусмотрено восемь обязательных этапов.",
+    structureHint: "В каждом из восьми модулей предусмотрено восемь обязательных этапов.",
     stages: ["Теория", "Видеообъяснение", "Видеопример", "Игра: выбор", "Игра: анализ", "Игра: проверка", "Игра: решение", "Финальная схватка"],
     list: "Список пользователей",
     listHint: "Данные авторизации и прогресс загружаются из Supabase.",
@@ -75,7 +78,7 @@ const copy = {
     modulesDone: "Module finalizate",
     stagesDone: "Etape finalizate",
     structure: "Structura fiecărui modul",
-    structureHint: "Fiecare dintre cele cinci module conține opt etape obligatorii.",
+    structureHint: "Fiecare dintre cele opt module conține opt etape obligatorii.",
     stages: ["Teorie", "Explicație video", "Exemplu video", "Joc: alegere", "Joc: analiză", "Joc: verificare", "Joc: decizie", "Confruntarea finală"],
     list: "Lista utilizatorilor",
     listHint: "Datele de autentificare și progresul sunt încărcate din Supabase.",
@@ -151,7 +154,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
           <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard icon={Users} label={t.users} value={String(users.length)} color="text-neon" />
             <StatCard icon={BarChart3} label={t.active} value={String(activeUsers)} color="text-gold" />
-            <StatCard icon={CheckCircle2} label={t.modulesDone} value={`${completedModules} / ${users.length * 5}`} color="text-success" />
+            <StatCard icon={CheckCircle2} label={t.modulesDone} value={`${completedModules} / ${users.length * 8}`} color="text-success" />
             <StatCard icon={Layers3} label={t.stagesDone} value={`${completedStages} / ${availableStages}`} color="text-violet" />
           </div>
         </section>
@@ -194,7 +197,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {modules.map((module) => {
                         const progress = moduleMap.get(module.id);
                         const done = Number(progress?.completed_stages ?? 0);
@@ -208,8 +211,8 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 xl:min-w-72">
-                      <MiniStat label={t.modules} value={`${user.completed_modules}/5`} />
-                      <MiniStat label={t.stagesLabel} value={`${user.completed_stages}/40`} />
+                      <MiniStat label={t.modules} value={`${user.completed_modules}/8`} />
+                      <MiniStat label={t.stagesLabel} value={`${user.completed_stages}/64`} />
                       <MiniStat label={t.xp} value={String(user.total_xp)} />
                       <div className="col-span-3 mt-1">
                         <div className="flex justify-between text-xs text-muted-foreground"><span>{t.lastLogin}</span><span>{stagePercent}%</span></div>
