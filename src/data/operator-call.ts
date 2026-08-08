@@ -56,6 +56,8 @@ export const operatorCallContent = {
       rule: "Главное правило: положи трубку, ничего не сообщай и проверь информацию через официальный канал.",
       bookletText: "Скачать буклет (PDF)",
       bookletFile: "/ghid_ru.pdf",
+      audioText: "Прослушать текст",
+      audioFile: "/audio/1_teoria_ru.mp3",
     },
     videoExplanation: {
       title: "Как распознать социальную инженерию",
@@ -385,6 +387,8 @@ export const operatorCallContent = {
       rule: "Regula principală: închide, nu comunica nimic și verifică informația printr-un canal oficial.",
       bookletText: "Descarcă pliantul (PDF)",
       bookletFile: "/ghid_ro.pdf",
+      audioText: "Ascultă textul",
+      audioFile: "/audio/1_teoria_ro.mp3",
     },
     videoExplanation: {
       title: "Cum recunoști ingineria socială",
