@@ -318,10 +318,10 @@ function TypewriterText({ text, onDone }: { text: string; onDone: () => void }) 
   );
 }
 
-function ActionButton({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
+function ActionButton({ children, disabled, onClick, center }: { children: React.ReactNode; disabled?: boolean; onClick: () => void; center?: boolean }) {
   const nextBtn = useContext(NextButtonContext);
   return (
-    <div className="mt-6 flex w-full flex-wrap items-center justify-between gap-4">
+    <div className={`mt-6 flex w-full flex-wrap items-center gap-4 ${center ? "justify-center" : "justify-between"}`}>
       <button type="button" disabled={disabled} onClick={onClick} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50">
         {disabled ? <Loader2 className="size-4 animate-spin" /> : null}{children}<ChevronRight className="size-4" />
       </button>
@@ -1021,7 +1021,7 @@ const handleBlitzClick = (optionIndex: number) => {
       <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
          <CheckCircle2 className="size-16 text-neon mb-4" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
-         <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+         <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
       </div>
     );
   }
