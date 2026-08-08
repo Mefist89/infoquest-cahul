@@ -72,6 +72,8 @@ export const operatorCallContent = {
       title: "Учебный звонок от вымышленного оператора MinTel",
       placeholder: "Место для видеопримера",
       hint: "Никакой сотовый оператор не просит подтверждение СМС. В примере нет реальных телефонов, брендов или данных.",
+      audioText: "Прослушать текст",
+      audioFile: "/module/3_exemple_ru.mp3",
       transcript: [
         { speaker: "Звонящий", text: "Здравствуйте! Ваш номер будет заблокирован через десять минут." },
         { speaker: "Мария", text: "Почему? Как я могу это проверить?" },
@@ -405,6 +407,8 @@ export const operatorCallContent = {
       title: "Apel educațional de la operatorul fictiv MinTel",
       placeholder: "Loc pentru exemplul video",
       hint: "Niciun operator de telefonie mobilă nu cere confirmare prin SMS. Exemplul nu folosește telefoane, mărci sau date reale.",
+      audioText: "Ascultă textul",
+      audioFile: "/module/3_exemple_ro.mp3",
       transcript: [
         { speaker: "Apelant", text: "Bună ziua! Numărul dvs. va fi blocat în zece minute." },
         { speaker: "Maria", text: "De ce? Cum pot verifica acest lucru?" },
