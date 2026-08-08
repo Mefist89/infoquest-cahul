@@ -27,8 +27,10 @@ import {
   Skull,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef, createContext, useContext } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+
+const NextButtonContext = createContext<React.ReactNode>(null);
 
 import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import { createClient } from "@/lib/supabase/client";
@@ -181,24 +183,27 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
             ) : (
               <StageHeading number={currentStage} title={t.stages[currentStage - 1].title} subtitle={t.stages[currentStage - 1].subtitle} done={completedStages.has(currentStage)} />
             )}
-            <div className="mt-7">
-              {currentStage === 0 && <IntroStage content={t.intro} locale={locale} onFinish={() => setCurrentStage(firstOpenStage)} />}
-              {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => completeStage(1)} />}
-              {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
-              {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
-              {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.continue} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
-              {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
-              {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.continue} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
-              {currentStage === 7 && <OrderingStage content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
-              {currentStage === 8 && <FinalStage content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
-            </div>
+            <NextButtonContext.Provider value={
+              completedStages.has(currentStage) && currentStage < 8 ? (
+                <button type="button" onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20">
+                  {t.next}<ChevronRight className="size-4" aria-hidden="true" />
+                </button>
+              ) : null
+            }>
+              <div className="mt-7">
+                {currentStage === 0 && <IntroStage content={t.intro} locale={locale} onFinish={() => setCurrentStage(firstOpenStage)} />}
+                {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => completeStage(1)} />}
+                {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
+                {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
+                {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.continue} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
+                {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
+                {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.continue} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
+                {currentStage === 7 && <OrderingStage content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
+                {currentStage === 8 && <FinalStage content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
+              </div>
+            </NextButtonContext.Provider>
 
             {notice && <p className={`mt-6 rounded-xl border px-4 py-3 text-sm ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>{notice.text}</p>}
-            {completedStages.has(currentStage) && currentStage < 8 && (
-              <button type="button" onClick={() => chooseStage(currentStage + 1)} className="focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20">
-                {t.next}<ChevronRight className="size-4" aria-hidden="true" />
-              </button>
-            )}
           </section>
         </div>
       </div>
@@ -307,7 +312,15 @@ function TypewriterText({ text, onDone }: { text: string; onDone: () => void }) 
 }
 
 function ActionButton({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick: () => void }) {
-  return <button type="button" disabled={disabled} onClick={onClick} className="focus-ring mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50">{disabled ? <Loader2 className="size-4 animate-spin" /> : null}{children}<ChevronRight className="size-4" /></button>;
+  const nextBtn = useContext(NextButtonContext);
+  return (
+    <div className="mt-6 flex w-full flex-wrap items-center justify-between gap-4">
+      <button type="button" disabled={disabled} onClick={onClick} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50">
+        {disabled ? <Loader2 className="size-4 animate-spin" /> : null}{children}<ChevronRight className="size-4" />
+      </button>
+      {nextBtn}
+    </div>
+  );
 }
 
 function ScoreFeedback({ score }: { score: number }) {
@@ -519,7 +532,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
       </div>
       
       {status === "won" && (
-        <div className="mt-6 flex justify-end animate-in fade-in slide-in-from-bottom-4">
+        <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
           <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
         </div>
       )}
