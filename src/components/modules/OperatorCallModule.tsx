@@ -184,8 +184,8 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
               <StageHeading number={currentStage} title={t.stages[currentStage - 1].title} subtitle={t.stages[currentStage - 1].subtitle} done={completedStages.has(currentStage)} />
             )}
             <NextButtonContext.Provider value={
-              completedStages.has(currentStage) && currentStage < 8 ? (
-                <button type="button" onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20">
+              currentStage < 8 ? (
+                <button type="button" disabled={!completedStages.has(currentStage)} onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-neon/40 disabled:hover:bg-neon/10">
                   {t.next}<ChevronRight className="size-4" aria-hidden="true" />
                 </button>
               ) : null
@@ -531,11 +531,9 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
         </div>
       </div>
       
-      {status === "won" && (
-        <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
-          <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
-        </div>
-      )}
+      <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
+        <ActionButton disabled={saving || status !== "won"} onClick={onSubmit}>{check}</ActionButton>
+      </div>
     </div>
   );
 }
@@ -575,7 +573,6 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
            <CheckCircle2 className="size-16 text-neon mb-4" />
            <p className="text-2xl font-black mb-8 text-foreground">{content.completeMessage}</p>
            {feedback && <ScoreFeedback score={feedback.score} />}
-           <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
         </div>
       )}
       
@@ -595,6 +592,9 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
             </button>
          </div>
       )}
+      <div className="mt-6 w-full">
+         <ActionButton disabled={saving || !isComplete} onClick={onSubmit}>{check}</ActionButton>
+      </div>
     </div>
   );
 }
@@ -745,6 +745,9 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
       >
         {content.verifyBtn}
       </button>
+      <div className="mt-6 w-full">
+        <ActionButton disabled={true} onClick={() => {}}>{check}</ActionButton>
+      </div>
     </div>
   );
 }
@@ -880,6 +883,9 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
             )
           })}
         </div>
+      </div>
+      <div className="mt-6 w-full">
+        <ActionButton disabled={true} onClick={() => {}}>{check}</ActionButton>
       </div>
     </div>
   );
@@ -1119,6 +1125,9 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
           </div>
         </div>
       )}
+      <div className="mt-6 w-full">
+        <ActionButton disabled={true} onClick={() => {}}>{check}</ActionButton>
+      </div>
     </div>
   );
 }
