@@ -62,6 +62,7 @@ export const operatorCallContent = {
       placeholder: "Место для видеообъяснения",
       hint: "Видео будет подключено отдельным MP4. Пока используй краткий конспект.",
       points: ["Не доверяй номеру на экране — его можно подменить.", "Код из SMS, пароль и PIN никогда не называют по телефону.", "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
+      videoUrl: "/video/2-video_ru.mp4"
     },
     videoExample: {
       title: "Учебный звонок от вымышленного оператора MinTel",
@@ -412,6 +413,7 @@ export const operatorCallContent = {
       placeholder: "Loc pentru explicația video",
       hint: "Videoclipul va fi conectat ca MP4 separat. Până atunci folosește rezumatul.",
       points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", "Codul SMS, parola și PIN-ul nu se comunică telefonic.", "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
+      videoUrl: "/video/2-video_ro.mp4"
     },
     videoExample: {
       title: "Apel educațional de la operatorul fictiv MinTel",

@@ -347,7 +347,7 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
 }
 
 function VideoExplanationStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExplanation"] | (typeof operatorCallContent)["ro"]["videoExplanation"]; button: string; saving: boolean; onComplete: () => void }) {
-  return <div><VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} /><ul className="mt-5 grid gap-3 sm:grid-cols-2">{content.points.map((point) => <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-neon" />{point}</li>)}</ul><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
+  return <div><VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} src={content.videoUrl} /><ul className="mt-5 grid gap-3 sm:grid-cols-2">{content.points.map((point) => <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm"><CheckCircle2 className="mt-0.5 size-4 shrink-0 text-neon" />{point}</li>)}</ul><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
 }
 
 function VideoExampleStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExample"] | (typeof operatorCallContent)["ro"]["videoExample"]; button: string; saving: boolean; onComplete: () => void }) {
