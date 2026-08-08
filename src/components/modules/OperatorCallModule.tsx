@@ -921,7 +921,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
   };
 
   const advanceLevel = () => {
-    if (currentLevel < 2) {
+    if (currentLevel < 9) {
       setCurrentLevel(prev => prev + 1);
     } else {
       if (currentPhase < 2) {
@@ -1045,37 +1045,37 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
               <div className="flex gap-1"><span className="w-4 h-2 bg-slate-400 rounded-sm"></span></div>
             </div>
             <div className="p-4 flex flex-col gap-4 min-h-[300px]">
-              {currentLevel === 0 && (
+              {content.phase1[currentLevel].type === "sms" && (
                 <div className="flex flex-col gap-4">
                   <p className="text-center text-xs font-bold text-slate-500 uppercase tracking-wider mt-2" onClick={() => handleVisualClick(false)}>MinTel</p>
                   <div className="bg-blue-500 text-white p-4 rounded-2xl rounded-tl-sm shadow-md text-sm leading-relaxed" onClick={() => handleVisualClick(false)}>
-                    {content.phase1[0].text}
+                    {content.phase1[currentLevel].text}
                     <br/><br/>
-                    <button onClick={(e) => { e.stopPropagation(); handleVisualClick(true); }} className="text-blue-200 underline font-bold w-full text-left break-all">{content.phase1[0].fakeLink}</button>
+                    <button onClick={(e) => { e.stopPropagation(); handleVisualClick(true); }} className="text-blue-200 underline font-bold w-full text-left break-all">{(content.phase1[currentLevel] as any).fakeLink}</button>
                   </div>
                 </div>
               )}
-              {currentLevel === 1 && (
+              {content.phase1[currentLevel].type === "call" && (
                 <div className="flex flex-col items-center justify-center h-full pt-10">
                   <div className="w-20 h-20 bg-slate-300 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4" onClick={() => handleVisualClick(false)}>
                     <User className="size-10 text-slate-500" />
                   </div>
-                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1" onClick={() => handleVisualClick(false)}>{content.phase1[1].caller}</p>
-                  <button onClick={() => handleVisualClick(true)} className="text-danger font-black text-lg tracking-wider bg-danger/10 px-3 py-1 rounded-lg border border-danger/20">{content.phase1[1].number}</button>
+                  <p className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1" onClick={() => handleVisualClick(false)}>{(content.phase1[currentLevel] as any).caller}</p>
+                  <button onClick={() => handleVisualClick(true)} className="text-danger font-black text-lg tracking-wider bg-danger/10 px-3 py-1 rounded-lg border border-danger/20">{(content.phase1[currentLevel] as any).number}</button>
                   <div className="flex gap-8 mt-12 w-full justify-center" onClick={() => handleVisualClick(false)}>
                     <div className="w-14 h-14 bg-danger rounded-full flex items-center justify-center shadow-lg"><Phone className="text-white transform rotate-[135deg]" /></div>
                     <div className="w-14 h-14 bg-success rounded-full flex items-center justify-center shadow-lg"><Phone className="text-white" /></div>
                   </div>
                 </div>
               )}
-              {currentLevel === 2 && (
+              {content.phase1[currentLevel].type === "profile" && (
                 <div className="flex flex-col items-center pt-8">
                   <div className="w-24 h-24 bg-neon/20 rounded-full flex items-center justify-center mb-4 border-2 border-neon" onClick={() => handleVisualClick(false)}>
                     <CheckCircle2 className="size-12 text-neon" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2" onClick={() => handleVisualClick(false)}>{content.phase1[2].name}</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2" onClick={() => handleVisualClick(false)}>{(content.phase1[currentLevel] as any).name}</p>
                   <button onClick={() => handleVisualClick(true)} className="text-sm font-bold text-slate-500 bg-slate-200 dark:bg-slate-800 px-4 py-2 rounded-xl mb-6">
-                    {content.phase1[2].accountType}
+                    {(content.phase1[currentLevel] as any).accountType}
                   </button>
                   <div className="w-full flex justify-around border-t border-slate-300 dark:border-slate-800 pt-4" onClick={() => handleVisualClick(false)}>
                      <div className="flex flex-col items-center text-neon"><Phone className="size-6 mb-1"/><span className="text-xs">Apel</span></div>
@@ -1093,7 +1093,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
           <p className="font-bold text-center text-lg text-warning mb-6">{content.phase2Intro}</p>
           <div className="w-full bg-slate-900 border-2 border-warning/50 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
             <div className="flex justify-between items-center mb-6">
-               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{currentLevel + 1} / 3</span>
+               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{currentLevel + 1} / 10</span>
                <span className={`text-3xl font-black tabular-nums transition-colors ${blitzTimeLeft <= 3 ? 'text-danger animate-pulse' : 'text-warning'}`}>0:0{blitzTimeLeft}</span>
             </div>
             <p className="text-xl sm:text-2xl font-bold mb-8 text-foreground">{content.phase2[currentLevel].text}</p>
@@ -1132,9 +1132,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
           </div>
         </div>
       )}
-      <div className="mt-6 w-full">
-        <ActionButton disabled={true} onClick={() => {}}>{check}</ActionButton>
-      </div>
+
     </div>
   );
 }
