@@ -57,14 +57,16 @@ export const operatorCallContent = {
       bookletText: "Скачать буклет (PDF)",
       bookletFile: "/ghid_ru.pdf",
       audioText: "Прослушать текст",
-      audioFile: "/audio/1_teoria_ru.mp3",
+      audioFile: "/module/1_teoria_ru.mp3",
     },
     videoExplanation: {
       title: "Как распознать социальную инженерию",
       placeholder: "Место для видеообъяснения",
       hint: "Видео будет подключено отдельным MP4. Пока используй краткий конспект.",
       points: ["Не доверяй номеру на экране — его можно подменить.", "Код из SMS, пароль и PIN никогда не называют по телефону.", "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
-      videoUrl: "/video/2-video_ru.mp4"
+      videoUrl: "/video/2-video_ru.mp4",
+      audioText: "Прослушать текст",
+      audioFile: "/module/2_video_ru.mp3",
     },
     videoExample: {
       title: "Учебный звонок от вымышленного оператора MinTel",
@@ -388,14 +390,16 @@ export const operatorCallContent = {
       bookletText: "Descarcă pliantul (PDF)",
       bookletFile: "/ghid_ro.pdf",
       audioText: "Ascultă textul",
-      audioFile: "/audio/1_teoria_ro.mp3",
+      audioFile: "/module/1_teorie_ro.mp3",
     },
     videoExplanation: {
       title: "Cum recunoști ingineria socială",
       placeholder: "Loc pentru explicația video",
       hint: "Videoclipul va fi conectat ca MP4 separat. Până atunci folosește rezumatul.",
       points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", "Codul SMS, parola și PIN-ul nu se comunică telefonic.", "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
-      videoUrl: "/video/2-video_ro.mp4"
+      videoUrl: "/video/2-video_ro.mp4",
+      audioText: "Ascultă textul",
+      audioFile: "/module/2_video_ro.mp3",
     },
     videoExample: {
       title: "Apel educațional de la operatorul fictiv MinTel",
