@@ -351,7 +351,7 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 }
 
 function VideoExampleStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExample"] | (typeof operatorCallContent)["ro"]["videoExample"]; button: string; saving: boolean; onComplete: () => void }) {
-  return <div><VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} src="/3video.mp4" /><div className="mt-5 space-y-3">{content.transcript.map((line, index) => <div key={`${line.speaker}-${index}`} className={`max-w-[88%] rounded-2xl border p-4 ${index % 2 === 0 ? "border-danger/25 bg-danger/5" : "ml-auto border-neon/25 bg-neon/5"}`}><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{line.speaker}</p><p className="mt-1 text-sm">{line.text}</p></div>)}</div><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
+  return <div><VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} src="/video/3video.mp4" /><div className="mt-5 space-y-3">{content.transcript.map((line, index) => <div key={`${line.speaker}-${index}`} className={`max-w-[88%] rounded-2xl border p-4 ${index % 2 === 0 ? "border-danger/25 bg-danger/5" : "ml-auto border-neon/25 bg-neon/5"}`}><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{line.speaker}</p><p className="mt-1 text-sm">{line.text}</p></div>)}</div><ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton></div>;
 }
 
 function VideoPlaceholder({ title, placeholder, hint, src }: { title: string; placeholder: string; hint: string; src?: string }) {
