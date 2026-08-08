@@ -209,9 +209,9 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => completeStage(1)} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
                 {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
-                {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.continue} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
+                {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.check} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
                 {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
-                {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.continue} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
+                {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
                 {currentStage === 7 && <OrderingStage content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
                 {currentStage === 8 && <FinalStage content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
               </div>
@@ -545,9 +545,11 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
         </div>
       </div>
       
-      <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
-        <ActionButton disabled={saving || status !== "won"} onClick={onSubmit}>{check}</ActionButton>
-      </div>
+      {status === "won" && (
+        <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
+          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+        </div>
+      )}
     </div>
   );
 }
@@ -608,9 +610,11 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
             </button>
          </div>
       )}
-      <div className="mt-6 w-full">
-         <ActionButton disabled={saving || !isComplete} onClick={onSubmit}>{check}</ActionButton>
-      </div>
+      {isComplete && (
+        <div className="mt-6 w-full">
+          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+        </div>
+      )}
     </div>
   );
 }
@@ -674,7 +678,7 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
          <CheckCircle2 className="size-16 text-neon mb-4" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
-         <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+         <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
       </div>
     );
   }
@@ -763,9 +767,7 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
       >
         {content.verifyBtn}
       </button>
-      <div className="mt-6 w-full">
-        <ActionButton disabled={true} onClick={() => {}}>{check}</ActionButton>
-      </div>
+      
     </div>
   );
 }
@@ -810,7 +812,7 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
          <CheckCircle2 className="size-16 text-neon mb-4" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
-         <ActionButton disabled={saving} onClick={onSubmit}>{check}</ActionButton>
+         <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
       </div>
     );
   }
