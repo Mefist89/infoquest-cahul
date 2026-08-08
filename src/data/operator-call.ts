@@ -229,7 +229,7 @@ export const operatorCallContent = {
       levels: [
         {
           id: 1,
-          time: 15,
+          time: 30,
           steps: [
             { id: "s1", text: "Положить трубку." },
             { id: "s2", text: "Никому не сообщать код из SMS." },
@@ -238,7 +238,7 @@ export const operatorCallContent = {
         },
         {
           id: 2,
-          time: 20,
+          time: 35,
           steps: [
             { id: "s1", text: "Отказаться от быстрого решения по телефону." },
             { id: "s2", text: "Завершить звонок." },
@@ -248,7 +248,7 @@ export const operatorCallContent = {
         },
         {
           id: 3,
-          time: 25,
+          time: 40,
           steps: [
             { id: "s1", text: "Не поддаваться панике." },
             { id: "s2", text: "Прервать телефонный разговор." },
@@ -259,7 +259,7 @@ export const operatorCallContent = {
         },
         {
           id: 4,
-          time: 30,
+          time: 45,
           steps: [
             { id: "s1", text: "Отказаться от установки любых программ." },
             { id: "s2", text: "Положить трубку." },
@@ -271,7 +271,7 @@ export const operatorCallContent = {
         },
         {
           id: 5,
-          time: 40,
+          time: 55,
           steps: [
             { id: "s1", text: "Немедленно завершить разговор." },
             { id: "s2", text: "Зайти в официальное приложение оператора." },
@@ -647,7 +647,7 @@ export const operatorCallContent = {
       levels: [
         {
           id: 1,
-          time: 15,
+          time: 30,
           steps: [
             { id: "s1", text: "Închideți apelul." },
             { id: "s2", text: "Nu comunicați nimănui codul din SMS." },
@@ -656,7 +656,7 @@ export const operatorCallContent = {
         },
         {
           id: 2,
-          time: 20,
+          time: 35,
           steps: [
             { id: "s1", text: "Refuzați luarea unei decizii rapide la telefon." },
             { id: "s2", text: "Încheiați apelul." },
@@ -666,7 +666,7 @@ export const operatorCallContent = {
         },
         {
           id: 3,
-          time: 25,
+          time: 40,
           steps: [
             { id: "s1", text: "Nu intrați în panică." },
             { id: "s2", text: "Întrerupeți conversația telefonică." },
@@ -677,7 +677,7 @@ export const operatorCallContent = {
         },
         {
           id: 4,
-          time: 30,
+          time: 45,
           steps: [
             { id: "s1", text: "Refuzați instalarea oricăror programe." },
             { id: "s2", text: "Închideți apelul." },
@@ -689,7 +689,7 @@ export const operatorCallContent = {
         },
         {
           id: 5,
-          time: 40,
+          time: 55,
           steps: [
             { id: "s1", text: "Încheiați imediat conversația." },
             { id: "s2", text: "Accesați aplicația oficială a operatorului." },
