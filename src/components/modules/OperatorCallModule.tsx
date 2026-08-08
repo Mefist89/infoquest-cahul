@@ -25,6 +25,7 @@ import {
   MessageCircle,
   XCircle,
   Skull,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, useRef, createContext, useContext } from "react";
@@ -40,7 +41,7 @@ type ModuleProgress = { status: "not_started" | "in_progress" | "completed"; xp:
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
 
-export function OperatorCallModule({ locale, initialStages, initialModule }: { locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress }) {
+export function OperatorCallModule({ locale, initialStages, initialModule, isAdmin }: { locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
   const t = operatorCallContent[locale];
   const initialCompleted = initialStages.filter((stage) => stage.status === "completed").map((stage) => stage.stage_index);
   const firstOpenStage = Array.from({ length: 8 }, (_, index) => index + 1).find((stage) => !initialCompleted.includes(stage)) ?? 8;
@@ -128,6 +129,12 @@ export function OperatorCallModule({ locale, initialStages, initialModule }: { l
             <ArrowLeft className="size-4" aria-hidden="true" /> {t.back}
           </Link>
           <Link href={`/${locale}/profile`} className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-muted-foreground transition hover:border-neon/60 hover:text-foreground">{t.profile}</Link>
+          {isAdmin && (
+            <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-xs font-bold text-neon transition hover:border-neon hover:bg-neon/20">
+              <ShieldCheck className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">{locale === "ro" ? "Administrare" : "Админ"}</span>
+            </Link>
+          )}
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/modules/operator-call`} className={`focus-ring rounded-full px-3 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
           </nav>

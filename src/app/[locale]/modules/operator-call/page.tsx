@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
 import { SiteFooter } from "@/components/SiteFooter";
 import type { OperatorLocale } from "@/data/operator-call";
+import { isAdminEmail } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 function isLocale(locale: string): locale is OperatorLocale {
@@ -38,6 +39,7 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
         locale={locale}
         initialStages={(stages ?? []) as Array<{ stage_index: number; status: "not_started" | "in_progress" | "completed"; score: number }>}
         initialModule={moduleProgress as { status: "not_started" | "in_progress" | "completed"; xp: number; score: number } | null}
+        isAdmin={isAdminEmail(authData.user.email)}
       />
       <SiteFooter lang={locale} />
     </>
