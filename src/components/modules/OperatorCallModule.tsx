@@ -41,6 +41,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 const NextButtonContext = createContext<React.ReactNode>(null);
 
 import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
+import { MODULE_IDS } from "@/data/module-catalog";
 import { createClient } from "@/lib/supabase/client";
 
 type StageProgress = { stage_index: number; status: "not_started" | "in_progress" | "completed"; score: number };
@@ -74,7 +75,7 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
     setNotice(null);
     const supabase = createClient();
     const { data, error } = await supabase.rpc("complete_module_stage", {
-      p_module_id: "operator-call",
+      p_module_id: MODULE_IDS.operatorCall,
       p_stage_index: stageIndex,
       p_score: Math.max(0, Math.min(100, Math.round(score))),
     });

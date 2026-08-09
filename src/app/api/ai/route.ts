@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { createClient } from "@/lib/supabase/server";
+
 export const runtime = "nodejs";
 
 const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
@@ -41,6 +43,12 @@ type AiConfig = {
   transcriptionModel: string;
 };
 
+type QuotaDecision = {
+  decision: "acquired" | "audio_limit" | "busy";
+  audio_used: number;
+  audio_limit: number;
+};
+
 type ChatCompletionResponse = {
   choices?: Array<{ message?: { content?: string | Array<{ type?: string; text?: string }> } }>;
   error?: { message?: string };
@@ -61,7 +69,7 @@ const fraudAnalysisSchema = {
   required: ["verdict", "risk", "summary", "signals", "actions", "reply", "disclaimer"],
 } as const;
 
-function errorText(locale: Locale, code: "key" | "input" | "audio" | "service" | "rate") {
+function errorText(locale: Locale, code: "key" | "input" | "audio" | "service" | "rate" | "consent" | "auth" | "audioQuota" | "busy" | "quotaService") {
   const messages = {
     ro: {
       key: "Serviciul AI nu este configurat încă. Adaugă AI_API_KEY în variabilele de mediu.",
@@ -69,6 +77,11 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "service" |
       audio: "Fișierul audio trebuie să aibă maximum 4 MB și un format acceptat.",
       service: "Chrono nu poate analiza mesajul acum. Încearcă din nou peste puțin timp.",
       rate: "Ai trimis prea multe solicitări. Încearcă din nou peste câteva minute.",
+      consent: "Confirmă acordul privind prelucrarea datelor înainte de trimitere.",
+      auth: "Autentifică-te în contul InfoQuest pentru a folosi Chrono.",
+      audioQuota: "Ai folosit cele 3 analize audio disponibile astăzi. Limita se resetează la miezul nopții UTC.",
+      busy: "Chrono analizează deja o altă solicitare a ta. Așteaptă finalizarea ei.",
+      quotaService: "Chrono nu poate verifica limita de utilizare acum. Încearcă din nou peste puțin timp.",
     },
     ru: {
       key: "AI-сервис пока не настроен. Добавьте AI_API_KEY в переменные окружения.",
@@ -76,14 +89,24 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "service" |
       audio: "Аудиофайл должен быть не больше 4 МБ и иметь поддерживаемый формат.",
       service: "Chrono сейчас не может выполнить анализ. Попробуйте ещё раз немного позже.",
       rate: "Отправлено слишком много запросов. Попробуйте снова через несколько минут.",
+      consent: "Подтвердите согласие на обработку данных перед отправкой.",
+      auth: "Войдите в аккаунт InfoQuest, чтобы пользоваться Chrono.",
+      audioQuota: "Сегодня вы уже использовали 3 доступных аудиоанализа. Лимит обновится в полночь по UTC.",
+      busy: "Chrono уже обрабатывает другой ваш запрос. Дождитесь его завершения.",
+      quotaService: "Сейчас Chrono не может проверить лимит использования. Попробуйте немного позже.",
     },
   } as const;
   return messages[locale][code];
 }
 
-function isRateLimited(request: Request) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const key = forwarded || request.headers.get("x-real-ip") || "local";
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
+function isRateLimited(key: string) {
   const now = Date.now();
   const current = requestCounts.get(key);
   if (!current || current.resetAt <= now) {
@@ -189,20 +212,48 @@ async function analyzeContent(input: string, config: AiConfig, locale: Locale) {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    const locale: Locale = request.headers.get("x-infoquest-locale") === "ro" ? "ro" : "ru";
+    return jsonResponse({ error: errorText(locale, "auth"), code: "authentication_required" }, 401);
+  }
+
   const form = await request.formData();
   const locale: Locale = form.get("locale") === "ro" ? "ro" : "ru";
-  if (isRateLimited(request)) return NextResponse.json({ error: errorText(locale, "rate") }, { status: 429 });
+  if (form.get("dataConsent") !== "accepted") {
+    return jsonResponse({ error: errorText(locale, "consent"), code: "consent_required" }, 400);
+  }
+
+  if (isRateLimited(`user:${authData.user.id}`)) return jsonResponse({ error: errorText(locale, "rate") }, 429);
   const config = getAiConfig();
-  if (!config) return NextResponse.json({ error: errorText(locale, "key"), code: "not_configured" }, { status: 503 });
+  if (!config) return jsonResponse({ error: errorText(locale, "key"), code: "not_configured" }, 503);
 
   const messageValue = form.get("message");
   const message = typeof messageValue === "string" ? messageValue.trim().slice(0, 4000) : "";
   const audioValue = form.get("audio");
   const audio = audioValue instanceof File && audioValue.size > 0 ? audioValue : null;
 
-  if (!message && !audio) return NextResponse.json({ error: errorText(locale, "input") }, { status: 400 });
+  if (!message && !audio) return jsonResponse({ error: errorText(locale, "input") }, 400);
   if (audio && (audio.size > MAX_AUDIO_BYTES || !ALLOWED_AUDIO_TYPES.has(audio.type))) {
-    return NextResponse.json({ error: errorText(locale, "audio") }, { status: 400 });
+    return jsonResponse({ error: errorText(locale, "audio") }, 400);
+  }
+
+  const requestId = crypto.randomUUID();
+  const { data: quotaData, error: quotaError } = await supabase
+    .rpc("acquire_ai_request", { p_has_audio: Boolean(audio), p_request_id: requestId })
+    .single();
+  const quota = quotaData as QuotaDecision | null;
+
+  if (quotaError || !quota || !["acquired", "audio_limit", "busy"].includes(quota.decision)) {
+    console.error("Chrono quota acquisition failed", quotaError?.message || "Invalid quota response");
+    return jsonResponse({ error: errorText(locale, "quotaService"), code: "quota_unavailable" }, 503);
+  }
+  if (quota.decision === "audio_limit") {
+    return jsonResponse({ error: errorText(locale, "audioQuota"), code: "audio_daily_limit", limit: quota.audio_limit }, 429);
+  }
+  if (quota.decision === "busy") {
+    return jsonResponse({ error: errorText(locale, "busy"), code: "request_in_progress" }, 409);
   }
 
   try {
@@ -212,9 +263,16 @@ export async function POST(request: Request) {
       transcript ? `Audio transcript:\n${transcript}` : "",
     ].filter(Boolean).join("\n\n");
     const analysis = await analyzeContent(combinedInput, config, locale);
-    return NextResponse.json({ analysis, transcript });
+    return jsonResponse({
+      analysis,
+      transcript,
+      audioRemaining: audio ? Math.max(0, quota.audio_limit - quota.audio_used) : undefined,
+    });
   } catch (error) {
     console.error("Chrono AI analysis failed", error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: errorText(locale, "service") }, { status: 502 });
+    return jsonResponse({ error: errorText(locale, "service") }, 502);
+  } finally {
+    const { error: releaseError } = await supabase.rpc("release_ai_request", { p_request_id: requestId });
+    if (releaseError) console.error("Chrono quota release failed", releaseError.message);
   }
 }

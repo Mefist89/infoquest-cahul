@@ -25,5 +25,8 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/${locale}/login?error=oauth`);
+  const loginUrl = new URL(`/${locale}/login`, origin);
+  loginUrl.searchParams.set("error", "oauth");
+  loginUrl.searchParams.set("next", next);
+  return NextResponse.redirect(loginUrl);
 }

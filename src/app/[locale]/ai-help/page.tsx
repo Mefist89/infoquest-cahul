@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { AiHelpChat } from "@/components/ai/AiHelpChat";
+import { createClient } from "@/lib/supabase/server";
 
 type AiLocale = "ro" | "ru";
 
@@ -21,5 +22,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function AiHelpPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    const next = encodeURIComponent(`/${locale}/ai-help`);
+    redirect(`/${locale}/login?next=${next}`);
+  }
+
   return <AiHelpChat locale={locale} />;
 }

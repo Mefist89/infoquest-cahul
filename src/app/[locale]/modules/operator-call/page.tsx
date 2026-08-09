@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
 import { SiteFooter } from "@/components/SiteFooter";
+import { MODULE_IDS } from "@/data/module-catalog";
 import type { OperatorLocale } from "@/data/operator-call";
 import { isAdminEmail } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -29,8 +30,8 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
   if (authError || !authData.user) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/modules/operator-call`)}`);
 
   const [{ data: stages }, { data: moduleProgress }] = await Promise.all([
-    supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", "operator-call").order("stage_index"),
-    supabase.from("module_progress").select("status, xp, score").eq("user_id", authData.user.id).eq("module_id", "operator-call").maybeSingle(),
+    supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.operatorCall).order("stage_index"),
+    supabase.from("module_progress").select("status, xp, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.operatorCall).maybeSingle(),
   ]);
 
   return (

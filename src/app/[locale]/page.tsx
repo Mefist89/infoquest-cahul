@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleUserRound,
-  Download,
   Gift,
   Languages,
   Link2Off,
@@ -18,23 +17,20 @@ import {
   Medal,
   Pause,
   PhoneCall,
-  PlayCircle,
   Play,
   ScanFace,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
   UserLock,
-  Users,
-  X,
   type LucideIcon,
 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { caseSlides, missions, strings, teamMembers, type Lang, type Mission } from "@/data/home-data";
+import { caseSlides, missions, strings, type Lang, type Mission } from "@/data/home-data";
+import { MODULE_COUNT, TOTAL_MAX_XP } from "@/data/module-catalog";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -50,12 +46,11 @@ const icons: Record<Mission["icon"], LucideIcon> = {
   "link-2-off": Link2Off,
 };
 
-type BottomBlock = "logo" | "qr" | "team" | "demo";
 type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number; displayName: string | null; avatarUrl: string | null };
 
 function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang) => void; progress: HeaderProgress }) {
   const t = strings[lang];
-  const xpPercent = Math.min(100, Math.round((progress.xp / 500) * 100));
+  const xpPercent = Math.min(100, Math.round((progress.xp / TOTAL_MAX_XP) * 100));
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -80,14 +75,14 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
               </span>
               <span className="font-semibold text-foreground">{progress.xp}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={500} aria-label="XP">
+            <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={TOTAL_MAX_XP} aria-label="XP">
               <div className="h-full rounded-full bg-gold transition-[width] duration-500" style={{ width: `${xpPercent}%` }} />
             </div>
           </div>
 
           <Link href={progress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`} className="focus-ring flex items-center gap-1 rounded-full border border-border bg-card/70 px-2.5 py-2 text-xs text-muted-foreground transition hover:border-gold/60 sm:px-3" aria-label={lang === "ru" ? "Награды" : "Recompense"}>
             <Medal className="size-3.5 text-gold" aria-hidden="true" />
-            <strong className="text-foreground">{progress.rewards}</strong>/8
+            <strong className="text-foreground">{progress.rewards}</strong>/{MODULE_COUNT}
           </Link>
 
           {progress.loading ? (
@@ -201,8 +196,8 @@ function ShieldProgress({ lang }: { lang: Lang }) {
         />
       </div>
       <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
-      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={8} aria-label={strings[lang].shieldProgress}>
-        {Array.from({ length: 8 }).map((_, index) => (
+      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={MODULE_COUNT} aria-label={strings[lang].shieldProgress}>
+        {Array.from({ length: MODULE_COUNT }).map((_, index) => (
           <span key={index} className="h-2 flex-1 rounded-full bg-secondary" />
         ))}
       </div>
@@ -242,7 +237,7 @@ function CaseSlider({ lang }: { lang: Lang }) {
       <div className="overflow-hidden rounded-3xl border border-neon/30 bg-card/75 shadow-[0_20px_70px_rgba(0,0,0,0.25)] backdrop-blur">
         <div className="flex items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
           <span className="grid size-10 place-items-center rounded-xl border border-neon/35 bg-neon/10 text-neon"><ShieldAlert className="size-5" aria-hidden="true" /></span>
-          <div><h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2><p className="text-xs text-muted-foreground">{lang === "ro" ? "8 dosare ale rețelei Umbra" : "8 дел сети Тени"}</p></div>
+          <div><h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2><p className="text-xs text-muted-foreground">{lang === "ro" ? `${MODULE_COUNT} dosare ale rețelei Umbra` : `${MODULE_COUNT} дел сети Тени`}</p></div>
           <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? (lang === "ro" ? "Pornește rotația" : "Запустить слайдер") : (lang === "ro" ? "Oprește rotația" : "Остановить слайдер")} className="focus-ring ml-auto grid size-10 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon">
             {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
           </button>
@@ -251,7 +246,7 @@ function CaseSlider({ lang }: { lang: Lang }) {
         <div key={slide.id} className="animate-in fade-in slide-in-from-right-4 grid min-h-64 gap-5 p-5 duration-500 sm:grid-cols-[120px_1fr] sm:items-center sm:p-7" aria-live="polite">
           <div className="flex items-center gap-3 sm:flex-col sm:justify-center">
             <span className="grid size-16 place-items-center rounded-2xl border bg-background/60 sm:size-20" style={{ borderColor: `color-mix(in oklab, ${mission.color} 55%, transparent)`, boxShadow: `0 0 24px color-mix(in oklab, ${mission.color} 25%, transparent)` }}><Icon className="size-8 sm:size-10" style={{ color: mission.color }} aria-hidden="true" /></span>
-            <span className="font-display text-sm font-black text-gold">{String(active + 1).padStart(2, "0")} / 08</span>
+            <span className="font-display text-sm font-black text-gold">{String(active + 1).padStart(2, "0")} / {String(MODULE_COUNT).padStart(2, "0")}</span>
           </div>
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-gold">{lang === "ro" ? `Dosarul ${active + 1}` : `Дело ${active + 1}`}</p>
@@ -279,20 +274,10 @@ export default function HomePage() {
   const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
   const lang = routeLang;
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-  const [openBlock, setOpenBlock] = useState<BottomBlock | null>(null);
-  const [siteUrl, setSiteUrl] = useState("http://localhost:3000");
   const [headerProgress, setHeaderProgress] = useState<HeaderProgress>({ isAuthenticated: false, loading: true, xp: 0, rewards: 0, displayName: null, avatarUrl: null });
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
   const rightMissions = useMemo(() => missions.filter((mission) => mission.side === "right"), []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSiteUrl(window.location.origin);
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -345,19 +330,6 @@ export default function HomePage() {
     router.push(`/${nextLang}`);
   };
 
-  const downloadQr = () => {
-    const svg = document.getElementById("infoquest-qr-large");
-    if (!svg) return;
-    const data = new XMLSerializer().serializeToString(svg);
-    const blob = new Blob([data], { type: "image/svg+xml" });
-    const href = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = href;
-    link.download = "infoquest-qr.svg";
-    link.click();
-    URL.revokeObjectURL(href);
-  };
-
   return (
     <>
       <Header lang={lang} setLang={setLang} progress={headerProgress} />
@@ -390,7 +362,7 @@ export default function HomePage() {
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
               {leftMissions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => mission.id === 1 ? router.push(`/${lang}/modules/operator-call`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
             <div className="relative">
@@ -409,7 +381,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => mission.id === 1 ? router.push(`/${lang}/modules/operator-call`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -418,7 +390,7 @@ export default function HomePage() {
             <ShieldProgress lang={lang} />
             <div className="mt-8 space-y-3">
               {missions.map((mission) => (
-                <MissionCard key={mission.id} mission={mission} lang={lang} onClick={() => mission.id === 1 ? router.push(`/${lang}/modules/operator-call`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -429,7 +401,7 @@ export default function HomePage() {
         <section className="relative mx-auto mt-10 max-w-3xl px-4" aria-label={t.badges}>
           <h2 className="text-lg font-bold text-gold">{t.badges}</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {t.badgeNames.map((badge) => (
+            {missions.map((mission) => mission.badge[lang]).map((badge) => (
               <div key={badge} className="flex items-center gap-3 rounded-2xl border border-border bg-card/60 p-4 opacity-70">
                 <Medal className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <span className="text-sm font-medium text-foreground">{badge}</span>

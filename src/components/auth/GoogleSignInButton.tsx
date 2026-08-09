@@ -31,7 +31,15 @@ function GoogleMark() {
   );
 }
 
-export function GoogleSignInButton({ locale, initialError = false }: { locale: AuthLocale; initialError?: boolean }) {
+export function GoogleSignInButton({
+  locale,
+  initialError = false,
+  nextPath,
+}: {
+  locale: AuthLocale;
+  initialError?: boolean;
+  nextPath?: string;
+}) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(initialError ? copy[locale].error : "");
 
@@ -41,7 +49,8 @@ export function GoogleSignInButton({ locale, initialError = false }: { locale: A
 
     try {
       const callbackUrl = new URL("/auth/callback", window.location.origin);
-      callbackUrl.searchParams.set("next", `/${locale}/profile`);
+      const safeNext = nextPath?.startsWith(`/${locale}/`) ? nextPath : `/${locale}/profile`;
+      callbackUrl.searchParams.set("next", safeNext);
 
       const { error: authError } = await createClient().auth.signInWithOAuth({
         provider: "google",

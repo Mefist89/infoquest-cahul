@@ -1,5 +1,45 @@
 export type OperatorLocale = "ru" | "ro";
 
+type FinalVisualScenario = {
+  id: string;
+  type: "sms" | "call" | "profile";
+  sender?: string;
+  text?: string;
+  fakeLink?: string;
+  realLink?: string;
+  caller?: string;
+  number?: string;
+  name?: string;
+  accountType?: string;
+  correctTargets: readonly string[];
+};
+
+type FinalQuizScenario = {
+  id: string;
+  text: string;
+  options: readonly string[];
+  answer: number;
+};
+
+type FinalBossScenario = {
+  id: string;
+  bossText: string;
+  options: readonly string[];
+  answers: readonly number[];
+};
+
+type OperatorFinalContent = {
+  intro: string;
+  gameOver: string;
+  win: string;
+  phase1Intro: string;
+  phase2Intro: string;
+  phase3Intro: string;
+  phase1: readonly FinalVisualScenario[];
+  phase2: readonly FinalQuizScenario[];
+  phase3: readonly FinalBossScenario[];
+};
+
 export const operatorCallContent = {
   ru: {
     title: "Фальшивый звонок оператора",
@@ -334,7 +374,7 @@ export const operatorCallContent = {
         { id: "p3_9", bossText: "Я из банка. Ваш телефон взломан, мошенники снимают деньги. Быстро скажите код!", options: ["Я сам сейчас позвоню в свой банк.", "Какой кошмар, код 1234!", "Сброшу вызов и заблокирую карту через приложение.", "Переведите мои деньги на безопасный счет."], answers: [0, 2] },
         { id: "p3_10", bossText: "Это последняя попытка. Не скажете код — сим-карта сгорит прямо сейчас!", options: ["Пусть горит.", "Только не сим-карта, вот код!", "Позвоню настоящему оператору с другого телефона.", "Я сейчас приеду к вам в офис разбираться."], answers: [0, 2] }
       ]
-    },
+    } satisfies OperatorFinalContent,
   },
   ro: {
     title: "Apelul fals de la operator",
@@ -505,29 +545,29 @@ export const operatorCallContent = {
           text: "Tariful dvs. expiră. Prelungiți accesând linkul:",
           fakeLink: "mintei-support.com",
           realLink: "mintel.md",
-          correctTarget: "fakeLink"
+          correctTargets: ["fakeLink"]
         },
         {
           id: "p1_2",
           type: "call",
           caller: "Serviciul de securitate MinTel",
           number: "+44 20 7123 4567",
-          correctTarget: "number"
+          correctTargets: ["number"]
         },
         {
           id: "p1_3",
           type: "profile",
           name: "Suport MinTel",
           accountType: "Cont obișnuit",
-          correctTarget: "accountType"
+          correctTargets: ["accountType"]
         },
-        { id: "p1_4", type: "sms", sender: "MinTel-Security", text: "Cartela SIM este blocată. Confirmați datele:", fakeLink: "minteI-id.md", realLink: "mintel.md", correctTarget: "fakeLink" },
-        { id: "p1_5", type: "call", caller: "Suport Tehnic (WhatsApp)", number: "+44 77 00 900077", correctTarget: "number" },
-        { id: "p1_6", type: "profile", name: "MinTeI Official", accountType: "Cont de afaceri (fără bifă)", correctTarget: "accountType" },
-        { id: "p1_7", type: "sms", sender: "Info", text: "Credit aprobat de MinTel Bank:", fakeLink: "mint.el-bank.com", realLink: "mintel.md", correctTarget: "fakeLink" },
-        { id: "p1_8", type: "call", caller: "Poliția", number: "+373 999 999 999", correctTarget: "number" },
-        { id: "p1_9", type: "profile", name: "Suport Clienți", accountType: "Număr ascuns", correctTarget: "accountType" },
-        { id: "p1_10", type: "sms", sender: "MinTel", text: "Ați câștigat un iPhone 16! Accesați:", fakeLink: "mintel-prize.com", realLink: "mintel.md", correctTarget: "fakeLink" }
+        { id: "p1_4", type: "sms", sender: "MinTel-Security", text: "Cartela SIM este blocată. Confirmați datele:", fakeLink: "minteI-id.md", realLink: "mintel.md", correctTargets: ["fakeLink"] },
+        { id: "p1_5", type: "call", caller: "Suport Tehnic (WhatsApp)", number: "+44 77 00 900077", correctTargets: ["caller", "number"] },
+        { id: "p1_6", type: "profile", name: "MinTeI Official", accountType: "Cont de afaceri (fără bifă)", correctTargets: ["name", "accountType"] },
+        { id: "p1_7", type: "sms", sender: "Info", text: "Credit aprobat de MinTel Bank:", fakeLink: "mint.el-bank.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink"] },
+        { id: "p1_8", type: "call", caller: "Poliția", number: "+373 999 999 999", correctTargets: ["avatar", "caller", "number"] },
+        { id: "p1_9", type: "profile", name: "Suport Clienți", accountType: "Număr ascuns", correctTargets: ["avatar", "name", "accountType"] },
+        { id: "p1_10", type: "sms", sender: "MinTel", text: "Ați câștigat un iPhone 16! Accesați:", fakeLink: "mintel-prize.com", realLink: "mintel.md", correctTargets: ["sender", "text", "fakeLink"] }
       ],
       phase2: [
         { id: "p2_1", text: "Operatorul vă cere urgent codul din SMS pentru a anula blocarea.", options: ["Îl dictez", "Închid apelul", "Dictez doar o jumătate"], answer: 1 },
@@ -550,7 +590,7 @@ export const operatorCallContent = {
             "Voi suna eu însumi la suport acum.", 
             "Bine, dictez: 4-5-2..."
           ], 
-          answer: 0 
+          answers: [0]
         },
         { 
           id: "p3_2", 
@@ -559,7 +599,7 @@ export const operatorCallContent = {
             "Ce trebuie să fac pentru a vă ajuta?", 
             "Chemați-mă oficial prin citație. La revedere."
           ], 
-          answer: 1 
+          answers: [1]
         },
         { 
           id: "p3_3", 
@@ -568,17 +608,17 @@ export const operatorCallContent = {
             "Nu descarc nimic, telefonul meu este protejat.", 
             "Dați-mi linkul, o instalez."
           ], 
-          answer: 0
+          answers: [0]
         },
-        { id: "p3_4", bossText: "Cineva încearcă să vă reînregistreze numărul în alt oraș. Dictați codul de anulare!", options: ["Voi închide și voi suna la suport.", "Codul este 4521"], answer: 0 },
-        { id: "p3_5", bossText: "Am trimis deja poliția pentru complicitate la fraudă, dacă nu vă confirmați identitatea!", options: ["Chemați-i, îi voi aștepta.", "Oh, ce trebuie să spun?"], answer: 0 },
-        { id: "p3_6", bossText: "Aveți un serviciu cu plată de 500 de lei pe zi. Pentru dezactivare, e nevoie de un cod.", options: ["Îl voi dezactiva singur din aplicație.", "Sigur, codul 9912."], answer: 0 },
-        { id: "p3_7", bossText: "Sunt managerul dvs. personal. Aveți o conexiune slabă, haideți să o actualizăm.", options: ["Totul funcționează perfect, la revedere.", "Da, haideți să actualizăm."], answer: 0 },
-        { id: "p3_8", bossText: "Ați câștigat la loteria MinTel! Pentru transferul banilor, accesați link-ul meu.", options: ["Mulțumesc, voi verifica pe site-ul MinTel.", "Aștept link-ul!"], answer: 0 },
-        { id: "p3_9", bossText: "Sunt de la bancă. Telefonul vă este spart. Spuneți rapid codul!", options: ["Voi suna eu imediat la banca mea.", "Ce coșmar, codul 1234!"], answer: 0 },
-        { id: "p3_10", bossText: "Aceasta este ultima încercare. Dacă nu ziceți codul, cartela SIM va arde acum!", options: ["Las-o să ardă.", "Numai nu cartela SIM, iată codul!"], answer: 0 }
+        { id: "p3_4", bossText: "Cineva încearcă să vă reînregistreze numărul în alt oraș. Dictați codul de anulare!", options: ["Voi închide și voi suna la suport.", "Codul este 4521"], answers: [0] },
+        { id: "p3_5", bossText: "Am trimis deja poliția pentru complicitate la fraudă, dacă nu vă confirmați identitatea!", options: ["Chemați-i, îi voi aștepta.", "Oh, ce trebuie să spun?"], answers: [0] },
+        { id: "p3_6", bossText: "Aveți un serviciu cu plată de 500 de lei pe zi. Pentru dezactivare, e nevoie de un cod.", options: ["Îl voi dezactiva singur din aplicație.", "Sigur, codul 9912."], answers: [0] },
+        { id: "p3_7", bossText: "Sunt managerul dvs. personal. Aveți o conexiune slabă, haideți să o actualizăm.", options: ["Totul funcționează perfect, la revedere.", "Da, haideți să actualizăm."], answers: [0] },
+        { id: "p3_8", bossText: "Ați câștigat la loteria MinTel! Pentru transferul banilor, accesați link-ul meu.", options: ["Mulțumesc, voi verifica pe site-ul MinTel.", "Aștept link-ul!"], answers: [0] },
+        { id: "p3_9", bossText: "Sunt de la bancă. Telefonul vă este spart. Spuneți rapid codul!", options: ["Voi suna eu imediat la banca mea.", "Ce coșmar, codul 1234!"], answers: [0] },
+        { id: "p3_10", bossText: "Aceasta este ultima încercare. Dacă nu ziceți codul, cartela SIM va arde acum!", options: ["Las-o să ardă.", "Numai nu cartela SIM, iată codul!"], answers: [0] }
       ]
-    },
+    } satisfies OperatorFinalContent,
     dialogue: {
       prompt: "Evidențiază toate capcanele escrocului cu markerul (dă click pe fraze).",
       levelText: "Nivelul",

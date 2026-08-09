@@ -25,6 +25,7 @@ const sharedLinks = {
     { label: "Politica de confidențialitate Supabase", href: "https://supabase.com/privacy" },
     { label: "Politica de confidențialitate Google", href: "https://policies.google.com/privacy" },
     { label: "Politica de confidențialitate Vercel", href: "https://vercel.com/legal/privacy-policy" },
+    { label: "Informații despre furnizorul AI BotHub", href: "https://bothub.chat/" },
     { label: "Proiectul InfoQuest pe GitHub", href: "https://github.com/Mefist89/infoquest-cahul" },
   ],
   ru: [
@@ -32,6 +33,7 @@ const sharedLinks = {
     { label: "Политика конфиденциальности Supabase", href: "https://supabase.com/privacy" },
     { label: "Политика конфиденциальности Google", href: "https://policies.google.com/privacy" },
     { label: "Политика конфиденциальности Vercel", href: "https://vercel.com/legal/privacy-policy" },
+    { label: "Информация об AI-провайдере BotHub", href: "https://bothub.chat/" },
     { label: "Проект InfoQuest на GitHub", href: "https://github.com/Mefist89/infoquest-cahul" },
   ],
 } satisfies Record<LegalLocale, { label: string; href: string }[]>;
@@ -41,7 +43,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
     privacy: {
       title: "Politica de confidențialitate",
       eyebrow: "InfoQuest · Protecția datelor",
-      updated: "Ultima actualizare: 7 august 2026",
+      updated: "Ultima actualizare: 9 august 2026",
       summary:
         "Această politică explică, într-un limbaj clar, ce informații pot fi prelucrate când folosești InfoQuest și ce control ai asupra lor.",
       backHome: "Înapoi la pagina principală",
@@ -59,7 +61,11 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "La autentificarea cu Google, primim prin Supabase datele de bază aprobate de utilizator: identificatorul contului, numele, adresa de e-mail și, dacă există, imaginea de profil. InfoQuest nu primește parola contului Google.",
             "Supabase folosește cookie-uri strict necesare pentru păstrarea și securizarea sesiunii de autentificare.",
             "Limba aleasă (RO sau RU) este salvată local în browser, sub cheia «infoquest.lang», pentru a păstra preferința la următoarea vizită.",
-            "O imagine selectată în blocul «Sigla echipei» este citită numai în memoria browserului. Nu este încărcată pe server și dispare după reîncărcarea sau închiderea paginii.",
+            "Dacă folosești asistentul Chrono, textul introdus este trimis prin serverul InfoQuest către un furnizor AI extern pentru analiza solicitată.",
+            "Chrono este disponibil numai utilizatorilor autentificați. Identificatorul contului este verificat de InfoQuest pentru controlul accesului și limitarea solicitărilor, dar nu este inclus în textul sau fișierul audio transmis furnizorului AI.",
+            "Pentru aplicarea limitei de 3 analize audio pe zi și blocarea solicitărilor simultane, Supabase păstrează identificatorul contului, data, numărul solicitărilor și o blocare tehnică temporară. Aceste înregistrări nu conțin textul, audio-ul sau transcrierea.",
+            "Dacă înregistrezi sau atașezi un fișier audio, browserul solicită acces la microfon numai după acțiunea ta, iar fișierul este trimis prin serverul InfoQuest către serviciul extern de transcriere. Transcrierea și întrebarea sunt apoi analizate de modelul AI.",
+            "InfoQuest primește de la furnizor transcrierea și răspunsul structurat al analizei, inclusiv nivelul orientativ de risc, semnalele observate și pașii recomandați.",
             "Codul QR este generat direct în browser din adresa publică a site-ului; conținutul său nu este trimis de aplicație către un serviciu extern de generare QR.",
             "Furnizorul de găzduire poate prelucra automat date tehnice precum adresa IP, tipul browserului, data și ora cererii, pagina solicitată și jurnalele de securitate necesare livrării site-ului.",
           ],
@@ -70,7 +76,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "Nu folosim datele contului pentru publicitate comportamentală sau profilare.",
             "Nu instalăm cookie-uri proprii de marketing și nu folosim instrumente de analiză a audienței în versiunea actuală.",
             "Nu vindem și nu închiriem date personale.",
-            "Nu solicităm încărcarea conversațiilor private, a documentelor de identitate sau a imaginilor sensibile.",
+            "Nu cerem și nu recomandăm trimiterea conversațiilor private, parolelor, codurilor SMS, datelor bancare, documentelor de identitate ori a înregistrărilor altor persoane fără acordul lor. Folosește exemple fictive sau anonimizate.",
           ],
         },
         {
@@ -78,6 +84,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Datele contului și cookie-urile de sesiune sunt folosite pentru autentificare, controlul accesului și, când funcția este activă, asocierea progresului cu utilizatorul. Prelucrarea este necesară pentru furnizarea serviciului solicitat și securitatea contului.",
             "Preferința de limbă este folosită pentru furnizarea funcției solicitate. Datele tehnice de găzduire pot fi prelucrate pentru funcționarea, securitatea și prevenirea abuzurilor, în baza interesului legitim și a obligațiilor tehnice ale furnizorului.",
+            "Textul, fișierul audio și transcrierea sunt prelucrate numai pentru a furniza analiza Chrono cerută de utilizator. Trimiterea către furnizorul extern are loc numai după confirmarea afișată în interfața AI.",
           ],
         },
         {
@@ -86,7 +93,9 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "Datele contului sunt păstrate în Supabase cât timp contul este activ sau cât este necesar pentru furnizarea și securizarea serviciului; utilizatorul poate solicita ștergerea lor.",
             "Cookie-urile de autentificare sunt păstrate până la expirarea sesiunii, deconectare sau ștergerea datelor site-ului, în funcție de situație.",
             "Preferința de limbă rămâne în browser până când utilizatorul șterge datele site-ului sau schimbă setarea.",
-            "Imaginea siglei nu este păstrată după reîncărcarea paginii.",
+            "InfoQuest nu înscrie în Supabase textul, fișierul audio, transcrierea sau răspunsul Chrono în versiunea actuală. Conversația rămâne temporar în memoria paginii până la reîncărcare sau închidere.",
+            "Contoarele zilnice de utilizare Chrono sunt păstrate în Supabase pentru controlul limitei, securitate și prevenirea abuzurilor până la ștergerea contului sau a acestor date de către echipa proiectului.",
+            "Furnizorul AI și furnizorii modelelor pot prelucra sau păstra date tehnice și conținutul transmis potrivit propriilor condiții, politicilor și configurației contului proiectului. Echipa InfoQuest trebuie să verifice periodic aceste condiții și nu promite un termen de ștergere pe care nu îl controlează.",
             "Jurnalele tehnice sunt păstrate de furnizorul de găzduire conform termenelor și măsurilor sale de securitate.",
           ],
         },
@@ -95,12 +104,13 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Site-ul este găzduit prin Vercel. În măsura necesară furnizării și protejării site-ului, datele tehnice pot fi prelucrate pe infrastructura furnizorului și în alte jurisdicții, cu garanțiile descrise în politica sa de confidențialitate.",
             "Autentificarea și stocarea contului sunt furnizate de Supabase, iar verificarea identității este realizată de Google. Acești furnizori pot prelucra datele în conformitate cu propriile politici și garanții privind transferurile internaționale.",
+            "În configurația curentă, funcția Chrono folosește API-ul agregatorului AI BotHub pentru transcriere și analiză. BotHub poate transmite cererea furnizorului modelului selectat. Datele pot fi prelucrate în afara Republicii Moldova; înainte de utilizare trebuie consultate condițiile actuale ale furnizorului.",
           ],
         },
         {
           title: "7. Copii și adolescenți",
           paragraphs: [
-            "Proiectul are scop educațional și poate fi folosit de elevi. Autentificarea prelucrează datele de bază ale contului Google; minorii trebuie să folosească serviciul cu acordul și îndrumarea părintelui, tutorelui sau instituției de învățământ, atunci când legea o cere. Nu introduce date reale în exemplele de joc.",
+            "Proiectul are scop educațional și poate fi folosit de elevi. Minorii trebuie să folosească autentificarea și funcția AI cu acordul și îndrumarea părintelui, tutorelui sau instituției de învățământ, atunci când legea o cere. Nu introduce date reale, nu înregistra alte persoane și folosește numai exemple fictive sau anonimizate.",
           ],
         },
         {
@@ -125,7 +135,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
     terms: {
       title: "Termeni și condiții",
       eyebrow: "InfoQuest · Reguli de utilizare",
-      updated: "Ultima actualizare: 7 august 2026",
+      updated: "Ultima actualizare: 9 august 2026",
       summary:
         "Acești termeni stabilesc regulile de folosire a prototipului educațional InfoQuest.",
       backHome: "Înapoi la pagina principală",
@@ -169,6 +179,8 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "6. Servicii și legături externe",
           paragraphs: [
             "Site-ul poate folosi servicii de găzduire sau poate afișa legături către resurse externe. Aceste servicii au propriii termeni și politici, iar echipa InfoQuest nu controlează conținutul ori disponibilitatea lor.",
+            "Asistentul Chrono este o funcție opțională bazată pe un furnizor AI extern. Textul sau audio-ul este transmis numai după confirmarea utilizatorului. Răspunsul este orientativ, poate conține erori și nu reprezintă o constatare definitivă că o persoană sau o înregistrare este frauduloasă.",
+            "Nu trimite parole, coduri SMS, date bancare, documente sau înregistrări ale altor persoane fără drept și acord.",
           ],
         },
         {
@@ -204,7 +216,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
     privacy: {
       title: "Политика конфиденциальности",
       eyebrow: "InfoQuest · Защита данных",
-      updated: "Последнее обновление: 7 августа 2026 года",
+      updated: "Последнее обновление: 9 августа 2026 года",
       summary:
         "Эта политика простым языком объясняет, какие сведения могут обрабатываться при использовании InfoQuest и как пользователь может ими управлять.",
       backHome: "Вернуться на главную",
@@ -222,7 +234,11 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "При входе через Google мы получаем через Supabase одобренные пользователем основные данные: идентификатор аккаунта, имя, адрес электронной почты и, при наличии, изображение профиля. InfoQuest не получает пароль от Google.",
             "Supabase использует строго необходимые cookie-файлы для сохранения и защиты сеанса авторизации.",
             "Выбранный язык (RO или RU) сохраняется локально в браузере под ключом «infoquest.lang», чтобы запомнить настройку для следующего посещения.",
-            "Изображение, выбранное в блоке «Логотип команды», читается только в памяти браузера. Оно не отправляется на сервер и исчезает после перезагрузки или закрытия страницы.",
+            "При использовании помощника Chrono введённый текст передаётся через сервер InfoQuest внешнему AI-провайдеру для выполнения запрошенного анализа.",
+            "Chrono доступен только авторизованным пользователям. InfoQuest проверяет идентификатор аккаунта для контроля доступа и ограничения запросов, но не добавляет его в текст или аудиофайл, передаваемый AI-провайдеру.",
+            "Чтобы применять лимит 3 аудиоанализов в день и блокировать одновременные запросы, Supabase хранит идентификатор аккаунта, дату, количество запросов и временную техническую блокировку. Эти записи не содержат текст, аудио или расшифровку.",
+            "Если пользователь записывает или прикрепляет аудиофайл, браузер запрашивает доступ к микрофону только после действия пользователя, а файл передаётся через сервер InfoQuest внешнему сервису распознавания речи. Затем расшифровка и вопрос анализируются AI-моделью.",
+            "InfoQuest получает от провайдера расшифровку и структурированный результат: ориентировочный уровень риска, замеченные признаки и рекомендуемые действия.",
             "QR-код создаётся непосредственно в браузере из публичного адреса сайта; приложение не отправляет его содержимое внешнему сервису генерации QR-кодов.",
             "Хостинг-провайдер может автоматически обрабатывать технические данные: IP-адрес, тип браузера, дату и время запроса, запрошенную страницу и журналы безопасности, необходимые для доставки и защиты сайта.",
           ],
@@ -233,7 +249,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "Не используем данные аккаунта для поведенческой рекламы или профилирования.",
             "Не устанавливаем собственные маркетинговые cookie-файлы и не используем системы веб-аналитики в текущей версии.",
             "Не продаём и не сдаём в аренду персональные данные.",
-            "Не просим загружать личную переписку, документы или чувствительные изображения.",
+            "Не просим и не рекомендуем отправлять личную переписку, пароли, SMS-коды, банковские данные, документы или записи других людей без их согласия. Используйте вымышленные или обезличенные примеры.",
           ],
         },
         {
@@ -241,6 +257,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Данные аккаунта и cookie-файлы сеанса используются для авторизации, контроля доступа и, когда функция будет включена, привязки игрового прогресса к пользователю. Обработка необходима для предоставления запрошенного сервиса и защиты аккаунта.",
             "Настройка языка используется для предоставления выбранной функции. Технические данные хостинга могут обрабатываться для работы сайта, обеспечения безопасности и предотвращения злоупотреблений на основании законного интереса и технических обязанностей провайдера.",
+            "Текст, аудиофайл и расшифровка обрабатываются только для предоставления запрошенного пользователем анализа Chrono. Передача внешнему провайдеру происходит только после подтверждения, показанного в AI-интерфейсе.",
           ],
         },
         {
@@ -249,7 +266,9 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "Данные аккаунта хранятся в Supabase, пока аккаунт активен или пока это необходимо для предоставления и защиты сервиса; пользователь может запросить их удаление.",
             "Cookie-файлы авторизации хранятся до завершения срока сеанса, выхода из аккаунта или удаления данных сайта — в зависимости от ситуации.",
             "Настройка языка хранится в браузере, пока пользователь не очистит данные сайта или не изменит язык.",
-            "Изображение логотипа не сохраняется после перезагрузки страницы.",
+            "В текущей версии InfoQuest не записывает текст, аудиофайл, расшифровку или ответ Chrono в Supabase. Диалог временно остаётся в памяти страницы до её перезагрузки или закрытия.",
+            "Дневные счётчики использования Chrono хранятся в Supabase для контроля лимита, безопасности и предотвращения злоупотреблений до удаления аккаунта или удаления этих данных командой проекта.",
+            "AI-провайдер и поставщики используемых моделей могут обрабатывать или сохранять технические данные и переданный контент в соответствии со своими условиями, политиками и настройками аккаунта проекта. Команда InfoQuest должна регулярно проверять эти условия и не обещает срок удаления, который не может контролировать.",
             "Технические журналы хранятся хостинг-провайдером в соответствии с его сроками хранения и мерами безопасности.",
           ],
         },
@@ -258,12 +277,13 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Сайт размещён на Vercel. В объёме, необходимом для работы и защиты сайта, технические данные могут обрабатываться на инфраструктуре провайдера и в других юрисдикциях с гарантиями, описанными в его политике конфиденциальности.",
             "Авторизацию и хранение аккаунта обеспечивает Supabase, а проверку личности выполняет Google. Эти поставщики могут обрабатывать данные согласно собственным политикам и гарантиям международной передачи данных.",
+            "В текущей конфигурации Chrono использует API AI-агрегатора BotHub для распознавания речи и анализа. BotHub может передавать запрос поставщику выбранной модели. Данные могут обрабатываться за пределами Республики Молдова; перед использованием необходимо ознакомиться с актуальными условиями провайдера.",
           ],
         },
         {
           title: "7. Дети и подростки",
           paragraphs: [
-            "Проект имеет образовательную направленность и может использоваться школьниками. При авторизации обрабатываются основные данные Google-аккаунта; несовершеннолетним следует пользоваться сервисом с согласием и под руководством родителя, опекуна или образовательного учреждения, когда этого требует закон. Не вводите реальные данные в игровые примеры.",
+            "Проект имеет образовательную направленность и может использоваться школьниками. Несовершеннолетним следует использовать авторизацию и AI-функцию с согласием и под руководством родителя, опекуна или образовательного учреждения, когда этого требует закон. Не вводите реальные данные, не записывайте других людей и используйте только вымышленные или обезличенные примеры.",
           ],
         },
         {
@@ -288,7 +308,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
     terms: {
       title: "Условия использования",
       eyebrow: "InfoQuest · Правила использования",
-      updated: "Последнее обновление: 7 августа 2026 года",
+      updated: "Последнее обновление: 9 августа 2026 года",
       summary: "Эти условия определяют правила использования образовательного прототипа InfoQuest.",
       backHome: "Вернуться на главную",
       sections: [
@@ -331,6 +351,8 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "6. Внешние сервисы и ссылки",
           paragraphs: [
             "Сайт может использовать услуги хостинга и содержать ссылки на внешние ресурсы. У них есть собственные условия и политики; команда InfoQuest не контролирует их содержание и доступность.",
+            "Помощник Chrono — необязательная функция на основе внешнего AI-провайдера. Текст или аудио передаются только после подтверждения пользователя. Ответ носит ориентировочный характер, может содержать ошибки и не является окончательным доказательством того, что человек или запись связаны с мошенничеством.",
+            "Не отправляйте пароли, SMS-коды, банковские данные, документы или записи других людей без законного права и согласия.",
           ],
         },
         {

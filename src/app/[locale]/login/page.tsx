@@ -50,11 +50,14 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
   if (!isLocale(locale)) notFound();
   const t = content[locale];
+  const nextPath = typeof query.next === "string" && query.next.startsWith(`/${locale}/`)
+    ? query.next
+    : `/${locale}/profile`;
 
   return (
     <main className="circuit-bg relative min-h-screen overflow-hidden px-4 py-6 sm:py-10">
@@ -110,7 +113,7 @@ export default async function LoginPage({
               <h2 className="mt-5 text-center text-xl font-bold">Google</h2>
               <p className="mt-2 text-center text-sm leading-relaxed text-muted-foreground">{t.note as string}</p>
               <div className="mt-7">
-                <GoogleSignInButton locale={locale} initialError={query.error === "oauth"} />
+                <GoogleSignInButton locale={locale} initialError={query.error === "oauth"} nextPath={nextPath} />
               </div>
               <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
                 {t.agreement as string}{" "}

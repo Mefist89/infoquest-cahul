@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Bot,
@@ -51,6 +52,10 @@ const content = {
     verdicts: { likely_scam: "Probabil fraudă", suspicious: "Suspect", unclear: "Neclar", likely_safe: "Probabil sigur" },
     demo: "Analiză AI",
     demoHint: "Chrono transcrie înregistrarea, explică semnalele de fraudă și recomandă pași siguri.",
+    privacyNotice: "Textul și fișierul audio sunt trimise prin serverul InfoQuest către un furnizor AI extern pentru transcriere și analiză. Nu trimite parole, coduri SMS, date bancare, documente sau înregistrări ale altor persoane fără acordul lor.",
+    consent: "Am înțeles și sunt de acord cu trimiterea acestor date pentru analiza solicitată.",
+    consentRequired: "Confirmă acordul privind prelucrarea datelor înainte de înregistrare sau trimitere.",
+    privacyLink: "Politica de confidențialitate",
   },
   ru: {
     title: "Онлайн-помощник AI",
@@ -78,6 +83,10 @@ const content = {
     verdicts: { likely_scam: "Вероятно мошенничество", suspicious: "Подозрительно", unclear: "Недостаточно данных", likely_safe: "Вероятно безопасно" },
     demo: "AI-анализ",
     demoHint: "Chrono расшифрует запись, объяснит признаки мошенничества и предложит безопасные действия.",
+    privacyNotice: "Текст и аудиофайл передаются через сервер InfoQuest внешнему AI-провайдеру для расшифровки и анализа. Не отправляйте пароли, SMS-коды, банковские данные, документы или записи других людей без их согласия.",
+    consent: "Я понял(а) и согласен(на) на передачу этих данных для запрошенного анализа.",
+    consentRequired: "Подтвердите согласие на обработку данных перед записью или отправкой.",
+    privacyLink: "Политика конфиденциальности",
   },
 } as const;
 
@@ -125,6 +134,7 @@ async function convertToWhisperWav(source: Blob) {
 }
 
 export function AiHelpChat({ locale }: { locale: AiLocale }) {
+  const router = useRouter();
   const t = content[locale];
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "intro", role: "assistant", text: t.intro },
@@ -137,6 +147,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const [requestError, setRequestError] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
   const [welcoming, setWelcoming] = useState(true);
+  const [dataConsent, setDataConsent] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
@@ -188,6 +199,10 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     event?.preventDefault();
     const cleanText = input.trim();
     if ((!cleanText && !attachment) || thinking) return;
+    if (!dataConsent) {
+      setRequestError(t.consentRequired);
+      return;
+    }
 
     const currentAttachment = attachment;
     const userMessage: ChatMessage = {
@@ -205,10 +220,19 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
     try {
       const body = new FormData();
       body.append("locale", locale);
+      body.append("dataConsent", "accepted");
       if (cleanText) body.append("message", cleanText);
       if (currentAttachment) body.append("audio", currentAttachment.file, currentAttachment.name);
-      const response = await fetch("/api/ai", { method: "POST", body });
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "x-infoquest-locale": locale },
+        body,
+      });
       const result = await response.json() as ApiResult;
+      if (response.status === 401) {
+        router.push(`/${locale}/login?next=${encodeURIComponent(`/${locale}/ai-help`)}`);
+        return;
+      }
       if (!response.ok || !result.analysis) throw new Error(result.error || t.networkError);
       const reply = result.analysis.reply;
       setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", text: reply, analysis: result.analysis, transcript: result.transcript }]);
@@ -255,6 +279,11 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
       if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
       recordingTimeoutRef.current = null;
       if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+      return;
+    }
+
+    if (!dataConsent) {
+      setSpeechError(t.consentRequired);
       return;
     }
 
@@ -399,16 +428,37 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                   <button type="button" onClick={() => setAttachment(null)} className="focus-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
                 </div>
               )}
-              <div className="flex items-end gap-2 rounded-2xl border border-border bg-card/85 p-2 focus-within:border-neon/60">
-                <label title={t.attach} className="focus-ring grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-muted-foreground transition hover:bg-secondary hover:text-neon">
-                  <Paperclip className="size-5" aria-hidden="true" />
-                  <input type="file" accept="audio/*,.mp3,.m4a,.wav,.webm,.weba,.ogg,.aac,.flac" onChange={selectFile} className="sr-only" />
+              <div className="mb-3 rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs leading-relaxed text-muted-foreground">
+                <p>{t.privacyNotice}</p>
+                <Link href={`/${locale}/privacy`} className="mt-2 inline-flex font-bold text-neon hover:underline">
+                  {t.privacyLink}
+                </Link>
+                <label className="mt-3 flex cursor-pointer items-start gap-3 text-foreground">
+                  <input
+                    type="checkbox"
+                    checked={dataConsent}
+                    onChange={(event) => {
+                      setDataConsent(event.target.checked);
+                      if (event.target.checked) {
+                        setSpeechError(null);
+                        setRequestError(null);
+                      }
+                    }}
+                    className="mt-0.5 size-4 shrink-0 accent-[var(--neon)]"
+                  />
+                  <span>{t.consent}</span>
                 </label>
-                <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} rows={1} placeholder={t.placeholder} className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground" />
-                <button type="button" onClick={toggleMicrophone} aria-pressed={listening} title={listening ? t.micStop : t.micStart} className={`focus-ring grid size-11 shrink-0 place-items-center rounded-xl transition ${listening ? "bg-danger text-white" : "bg-success/15 text-success hover:bg-success/25"}`}>
+              </div>
+              <div className="flex items-end gap-2 rounded-2xl border border-border bg-card/85 p-2 focus-within:border-neon/60">
+                <label title={t.attach} className={`focus-ring grid size-11 shrink-0 place-items-center rounded-xl text-muted-foreground transition ${dataConsent ? "cursor-pointer hover:bg-secondary hover:text-neon" : "cursor-not-allowed opacity-40"}`}>
+                  <Paperclip className="size-5" aria-hidden="true" />
+                  <input type="file" accept="audio/*,.mp3,.m4a,.wav,.webm,.weba,.ogg,.aac,.flac" onChange={selectFile} disabled={!dataConsent} className="sr-only" />
+                </label>
+                <textarea aria-label={t.placeholder} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} rows={1} placeholder={t.placeholder} className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground" />
+                <button type="button" onClick={toggleMicrophone} disabled={!dataConsent} aria-pressed={listening} title={listening ? t.micStop : t.micStart} className={`focus-ring grid size-11 shrink-0 place-items-center rounded-xl transition disabled:cursor-not-allowed disabled:opacity-40 ${listening ? "bg-danger text-white" : "bg-success/15 text-success hover:bg-success/25"}`}>
                   {listening ? <Square className="size-4 fill-current" aria-hidden="true" /> : <Mic className="size-5" aria-hidden="true" />}
                 </button>
-                <button type="submit" disabled={thinking || (!input.trim() && !attachment)} title={t.send} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl bg-neon text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"><Send className="size-5" aria-hidden="true" /></button>
+                <button type="submit" disabled={!dataConsent || thinking || (!input.trim() && !attachment)} title={t.send} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl bg-neon text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"><Send className="size-5" aria-hidden="true" /></button>
               </div>
               <div className="mt-2 flex items-center gap-3 px-1 text-[11px] text-muted-foreground"><FileAudio className="size-3.5" aria-hidden="true" />{t.attach}</div>
             </form>
