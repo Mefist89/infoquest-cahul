@@ -30,7 +30,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { caseSlides, missions, strings, type Lang, type Mission } from "@/data/home-data";
-import { MODULE_COUNT, TOTAL_MAX_XP } from "@/data/module-catalog";
+import { MODULE_CATALOG, MODULE_COUNT, MODULE_MAX_XP, TOTAL_MAX_XP, type ModuleId } from "@/data/module-catalog";
+import { canUseAi, isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -46,7 +47,29 @@ const icons: Record<Mission["icon"], LucideIcon> = {
   "link-2-off": Link2Off,
 };
 
-type HeaderProgress = { isAuthenticated: boolean; loading: boolean; xp: number; rewards: number; displayName: string | null; avatarUrl: string | null };
+type ProgressStatus = "not_started" | "in_progress" | "completed";
+type ModuleProgress = { status: ProgressStatus; xp: number };
+type HeaderProgress = {
+  isAuthenticated: boolean;
+  loading: boolean;
+  xp: number;
+  rewards: number;
+  displayName: string | null;
+  avatarUrl: string | null;
+  role: UserRole | null;
+  modules: Partial<Record<ModuleId, ModuleProgress>>;
+};
+
+const emptyProgress: HeaderProgress = {
+  isAuthenticated: false,
+  loading: true,
+  xp: 0,
+  rewards: 0,
+  displayName: null,
+  avatarUrl: null,
+  role: null,
+  modules: {},
+};
 
 function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang) => void; progress: HeaderProgress }) {
   const t = strings[lang];
@@ -181,7 +204,9 @@ function MissionCard({ mission, lang, onClick }: { mission: Mission; lang: Lang;
   );
 }
 
-function ShieldProgress({ lang }: { lang: Lang }) {
+function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgress }) {
+  const percent = Math.min(100, Math.round((progress.xp / TOTAL_MAX_XP) * 100));
+
   return (
     <div className="relative mx-auto w-full max-w-sm text-center">
       <div className="relative">
@@ -192,16 +217,27 @@ function ShieldProgress({ lang }: { lang: Lang }) {
           width={1024}
           height={1024}
           priority
-          className="mx-auto w-full drop-shadow-[0_0_35px_color-mix(in_oklab,var(--neon)_45%,transparent)]"
+          className="mx-auto w-full transition-[filter,opacity] duration-700"
+          style={{
+            opacity: 0.58 + percent * 0.0042,
+            filter: `drop-shadow(0 0 ${18 + percent * 0.22}px color-mix(in oklab, var(--neon) ${25 + percent * 0.35}%, transparent))`,
+          }}
         />
       </div>
       <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
-      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={0} aria-valuemin={0} aria-valuemax={MODULE_COUNT} aria-label={strings[lang].shieldProgress}>
-        {Array.from({ length: MODULE_COUNT }).map((_, index) => (
-          <span key={index} className="h-2 flex-1 rounded-full bg-secondary" />
-        ))}
+      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={TOTAL_MAX_XP} aria-label={strings[lang].shieldProgress}>
+        {MODULE_CATALOG.map((module) => {
+          const moduleXp = progress.modules[module.moduleId]?.xp ?? 0;
+          const modulePercent = Math.min(100, Math.round((moduleXp / MODULE_MAX_XP) * 100));
+
+          return (
+            <span key={module.moduleId} className="h-2 flex-1 overflow-hidden rounded-full bg-secondary" title={`${module.title[lang]}: ${modulePercent}%`}>
+              <span className="block h-full rounded-full bg-neon transition-[width] duration-700" style={{ width: `${modulePercent}%` }} />
+            </span>
+          );
+        })}
       </div>
-      <p className="mt-2 font-display text-lg text-neon text-glow">0%</p>
+      <p className="mt-2 font-display text-lg text-neon text-glow">{progress.loading ? "…" : `${percent}%`}</p>
     </div>
   );
 }
@@ -274,7 +310,7 @@ export default function HomePage() {
   const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
   const lang = routeLang;
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-  const [headerProgress, setHeaderProgress] = useState<HeaderProgress>({ isAuthenticated: false, loading: true, xp: 0, rewards: 0, displayName: null, avatarUrl: null });
+  const [headerProgress, setHeaderProgress] = useState<HeaderProgress>(emptyProgress);
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
   const rightMissions = useMemo(() => missions.filter((mission) => mission.side === "right"), []);
@@ -293,17 +329,27 @@ export default function HomePage() {
       if (!active) return;
 
       if (!user) {
-        setHeaderProgress({ isAuthenticated: false, loading: false, xp: 0, rewards: 0, displayName: null, avatarUrl: null });
+        setHeaderProgress({ ...emptyProgress, loading: false });
         return;
       }
 
       const [{ data: progressData }, { data: profile }] = await Promise.all([
-        supabase.from("module_progress").select("status, xp").eq("user_id", user.id),
-        supabase.from("profiles").select("display_name, avatar_url").eq("id", user.id).maybeSingle(),
+        supabase.from("module_progress").select("module_id, status, xp").eq("user_id", user.id),
+        supabase.from("profiles").select("display_name, avatar_url, role").eq("id", user.id).maybeSingle(),
       ]);
 
       if (!active) return;
-      const progressRows = progressData ?? [];
+      const catalogIds = new Set<string>(MODULE_CATALOG.map((module) => module.moduleId));
+      const progressRows = (progressData ?? []).filter((item) => catalogIds.has(item.module_id));
+      const moduleProgress = Object.fromEntries(
+        progressRows.map((item) => [
+          item.module_id,
+          {
+            status: item.status as ProgressStatus,
+            xp: Math.max(0, Math.min(MODULE_MAX_XP, Number(item.xp ?? 0))),
+          },
+        ]),
+      ) as Partial<Record<ModuleId, ModuleProgress>>;
       const metadata = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string };
       const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || null;
       const candidateAvatar = profile?.avatar_url || metadata.avatar_url;
@@ -311,10 +357,12 @@ export default function HomePage() {
       setHeaderProgress({
         isAuthenticated: true,
         loading: false,
-        xp: progressRows.reduce((sum, item) => sum + Number(item.xp ?? 0), 0),
+        xp: Object.values(moduleProgress).reduce((sum, item) => sum + item.xp, 0),
         rewards: progressRows.filter((item) => item.status === "completed").length,
         displayName,
         avatarUrl,
+        role: isUserRole(profile?.role) ? profile.role : "user",
+        modules: moduleProgress,
       });
     }
 
@@ -348,13 +396,20 @@ export default function HomePage() {
               {t.startInvestigation}
               <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
             </Link>
-            <Link
-              href={`/${lang}/ai-help`}
-              className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-success px-6 text-sm font-extrabold text-slate-950 shadow-[0_0_28px_color-mix(in_oklab,var(--success)_32%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--success)_50%,transparent)]"
-            >
-              <Bot className="size-5" aria-hidden="true" />
-              {t.aiHelp}
-            </Link>
+            {headerProgress.isAuthenticated && !canUseAi(headerProgress.role) ? (
+              <span aria-disabled="true" title={t.aiRoleRequired} className="inline-flex min-h-12 cursor-not-allowed items-center gap-3 rounded-xl border border-border bg-secondary/70 px-6 text-sm font-extrabold text-muted-foreground opacity-75">
+                <Lock className="size-5" aria-hidden="true" />
+                <span>{t.aiHelp}<span className="ml-2 hidden text-xs font-medium sm:inline">· {t.aiRoleRequired}</span></span>
+              </span>
+            ) : (
+              <Link
+                href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`}
+                className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-success px-6 text-sm font-extrabold text-slate-950 shadow-[0_0_28px_color-mix(in_oklab,var(--success)_32%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--success)_50%,transparent)]"
+              >
+                <Bot className="size-5" aria-hidden="true" />
+                {t.aiHelp}
+              </Link>
+            )}
           </div>
         </section>
 
@@ -377,7 +432,7 @@ export default function HomePage() {
                   className="animate-dash-run opacity-70"
                 />
               </svg>
-              <ShieldProgress lang={lang} />
+              <ShieldProgress lang={lang} progress={headerProgress} />
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
@@ -387,7 +442,7 @@ export default function HomePage() {
           </div>
 
           <div className="lg:hidden">
-            <ShieldProgress lang={lang} />
+            <ShieldProgress lang={lang} progress={headerProgress} />
             <div className="mt-8 space-y-3">
               {missions.map((mission) => (
                 <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
@@ -401,17 +456,25 @@ export default function HomePage() {
         <section className="relative mx-auto mt-10 max-w-3xl px-4" aria-label={t.badges}>
           <h2 className="text-lg font-bold text-gold">{t.badges}</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {missions.map((mission) => mission.badge[lang]).map((badge) => (
-              <div key={badge} className="flex items-center gap-3 rounded-2xl border border-border bg-card/60 p-4 opacity-70">
-                <Medal className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <span className="text-sm font-medium text-foreground">{badge}</span>
-              </div>
-            ))}
-            <div className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4 sm:col-span-2">
-              <ShieldCheck className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
+            {missions.map((mission) => {
+              const earned = headerProgress.modules[mission.moduleId]?.status === "completed";
+              return (
+                <div key={mission.moduleId} className={`flex items-center gap-3 rounded-2xl border p-4 transition ${earned ? "border-gold/55 bg-gold/10 shadow-[0_0_20px_color-mix(in_oklab,var(--gold)_14%,transparent)]" : "border-border bg-card/60 opacity-65"}`}>
+                  <span className={`grid size-9 shrink-0 place-items-center rounded-full ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}>
+                    {earned ? <Medal className="size-6" aria-hidden="true" /> : <Lock className="size-5" aria-hidden="true" />}
+                  </span>
+                  <span className="text-sm">
+                    <strong className="block font-medium text-foreground">{mission.badge[lang]}</strong>
+                    <span className={earned ? "text-gold" : "text-muted-foreground"}>{earned ? (lang === "ru" ? "Получен" : "Obținută") : (lang === "ru" ? "Заблокирован" : "Blocată")}</span>
+                  </span>
+                </div>
+              );
+            })}
+            <div className={`flex items-center gap-3 rounded-2xl border p-4 sm:col-span-2 ${headerProgress.rewards === MODULE_COUNT ? "border-neon/55 bg-neon/10 glow-neon" : "border-dashed border-border bg-card/60"}`}>
+              <ShieldCheck className={`size-8 shrink-0 ${headerProgress.rewards === MODULE_COUNT ? "text-neon" : "text-muted-foreground"}`} aria-hidden="true" />
               <span className="text-sm">
                 <strong className="block font-semibold text-foreground">{t.finalBadge}</strong>
-                <span className="text-muted-foreground">{t.finalBadgeHint}</span>
+                <span className={headerProgress.rewards === MODULE_COUNT ? "text-neon" : "text-muted-foreground"}>{headerProgress.rewards === MODULE_COUNT ? (lang === "ru" ? "Щит города полностью восстановлен." : "Scutul orașului a fost restaurat complet.") : t.finalBadgeHint}</span>
               </span>
             </div>
           </div>

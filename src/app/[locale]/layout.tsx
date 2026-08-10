@@ -19,9 +19,12 @@ export const metadata: Metadata = {
     "Двуязычная образовательная игра о цифровой безопасности, мошенничестве, дипфейках и дезинформации.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const lang = locale === "ro" ? "ro" : "ru";
+
   return (
-    <html lang="ru" className={`${orbitron.variable} ${rubik.variable}`}>
+    <html lang={lang} data-scroll-behavior="smooth" className={`${orbitron.variable} ${rubik.variable}`}>
       <body>
         {children}
         <ScrollToTop />

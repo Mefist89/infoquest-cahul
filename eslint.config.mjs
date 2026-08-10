@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "infoquest-digital-guard-main/**",
+    "scratch/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

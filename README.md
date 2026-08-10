@@ -27,5 +27,15 @@ npm run dev
 
 ```bash
 npm run lint
+npm run typecheck
+npm run test
 npm run build
 ```
+
+Полная проверка, включая браузерные smoke-тесты:
+
+```bash
+npm run check:all
+```
+
+Настройка тестовой Google-сессии для проверки профиля и сохранения прогресса описана в [`docs/authenticated-e2e-setup.md`](docs/authenticated-e2e-setup.md).

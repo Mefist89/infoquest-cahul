@@ -21,6 +21,7 @@ import {
   Loader2,
   Lock,
   MessageSquare,
+  Pause,
   Play,
   ScanSearch,
   ShieldAlert,
@@ -44,6 +45,57 @@ import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import { MODULE_IDS } from "@/data/module-catalog";
 import { createClient } from "@/lib/supabase/client";
 
+const accessibilityText = {
+  ru: {
+    correct: "Правильно",
+    wrong: "Ошибка",
+    selected: "Выбрано",
+    unselected: "Не выбрано",
+    found: "Найдено",
+    pause: "Пауза",
+    resume: "Продолжить",
+    paused: "Таймер приостановлен",
+    nextCard: "Следующая карточка",
+    levelComplete: "Уровень завершён",
+    chooseFragment: "Выбрать фрагмент",
+    clue: "Проверить деталь",
+    sender: "Отправитель",
+    message: "Текст сообщения",
+    link: "Ссылка",
+    avatar: "Аватар",
+    caller: "Имя звонящего",
+    number: "Номер телефона",
+    profileName: "Имя профиля",
+    accountType: "Тип аккаунта",
+    callAction: "Кнопка звонка",
+    messageAction: "Кнопка сообщения",
+  },
+  ro: {
+    correct: "Corect",
+    wrong: "Eroare",
+    selected: "Selectat",
+    unselected: "Neselectat",
+    found: "Găsit",
+    pause: "Pauză",
+    resume: "Continuă",
+    paused: "Cronometrul este oprit",
+    nextCard: "Cardul următor",
+    levelComplete: "Nivel finalizat",
+    chooseFragment: "Selectează fragmentul",
+    clue: "Verifică detaliul",
+    sender: "Expeditor",
+    message: "Textul mesajului",
+    link: "Link",
+    avatar: "Avatar",
+    caller: "Numele apelantului",
+    number: "Numărul de telefon",
+    profileName: "Numele profilului",
+    accountType: "Tipul contului",
+    callAction: "Buton de apel",
+    messageAction: "Buton de mesaj",
+  },
+} as const;
+
 type StageProgress = { stage_index: number; status: "not_started" | "in_progress" | "completed"; score: number };
 type ModuleProgress = { status: "not_started" | "in_progress" | "completed"; xp: number; score: number } | null;
 
@@ -60,11 +112,10 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
-  const [finalAnswers, setFinalAnswers] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
 
   const unlockedThrough = useMemo(() => {
-    return 8; // Unlock all stages for testing
+    return Array.from({ length: 8 }, (_, index) => index + 1).find((stage) => !completedStages.has(stage)) ?? 8;
   }, [completedStages]);
 
   const completionPercent = Math.round((completedStages.size / 8) * 100);
@@ -94,6 +145,10 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
   }
 
   function chooseStage(stage: number) {
+    if (stage > 0 && stage > unlockedThrough && !completedStages.has(stage)) {
+      setNotice({ kind: "error", text: t.locked });
+      return;
+    }
     setCurrentStage(stage);
     setFeedback(null);
     setNotice(null);
@@ -175,11 +230,11 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
                 const number = index + 1;
                 const Icon = stageIcons[index];
                 const done = completedStages.has(number);
-                const locked = number > unlockedThrough;
+                const locked = !done && number > unlockedThrough;
                 const active = currentStage === number;
                 return (
                   <li key={stage.title}>
-                    <button type="button" onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
+                    <button type="button" data-testid={`stage-nav-${number}`} aria-label={`${number}/8. ${stage.title}. ${locked ? t.locked : done ? t.completed : stage.subtitle}`} onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
                       <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
                       <span className="min-w-0"><span className="block text-xs text-muted-foreground">{number}/8</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
                     </button>
@@ -208,10 +263,10 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
                 {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
                 {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.check} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
-                {currentStage === 5 && <ClassifyStage content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
-                {currentStage === 6 && <DialogueStage content={t.dialogue} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
-                {currentStage === 7 && <OrderingStage content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
-                {currentStage === 8 && <FinalStage content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
+                {currentStage === 5 && <ClassifyStage locale={locale} content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
+                {currentStage === 6 && <DialogueStage locale={locale} content={t.dialogue} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
+                {currentStage === 7 && <OrderingStage locale={locale} content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
+                {currentStage === 8 && <FinalStage locale={locale} content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
               </div>
             </NextButtonContext.Provider>
 
@@ -501,7 +556,7 @@ function VideoPlaceholder({ title, placeholder, hint, src }: { title: string; pl
         preload="metadata"
       >
         <source src={src || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"} type="video/mp4" />
-        <p>Your browser doesn't support HTML5 video.</p>
+        <p>Your browser doesn&apos;t support HTML5 video.</p>
       </video>
       <div className="border-t border-border bg-card p-4">
         <h3 className="font-bold">{title}</h3>
@@ -511,7 +566,7 @@ function VideoPlaceholder({ title, placeholder, hint, src }: { title: string; pl
   );
 }
 
-function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function CallSimulatorStage({ locale, content, check, saving, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [status, setStatus] = useState<"idle" | "playing" | "failed" | "won">("idle");
@@ -678,23 +733,34 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
   );
 }
 
-function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["classify"] | (typeof operatorCallContent)["ro"]["classify"]; answers: Record<string, "safe" | "danger">; setAnswers: React.Dispatch<React.SetStateAction<Record<string, "safe" | "danger">>>; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function ClassifyStage({ locale, content, answers, setAnswers, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["classify"] | (typeof operatorCallContent)["ro"]["classify"]; answers: Record<string, "safe" | "danger">; setAnswers: React.Dispatch<React.SetStateAction<Record<string, "safe" | "danger">>>; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
   const answeredCount = Object.keys(answers).length;
   const isComplete = answeredCount >= content.items.length;
-  
+  const a11y = accessibilityText[locale];
+  const firstActionRef = useRef<HTMLButtonElement>(null);
+  const completionRef = useRef<HTMLDivElement>(null);
+  const [announcement, setAnnouncement] = useState("");
   const currentItem = content.items[answeredCount];
 
   const handleSwipe = (direction: "left" | "right") => {
     if (!currentItem) return;
     const answer = direction === "left" ? "danger" : "safe";
-    if (answer === (currentItem as any).answer) playSound("correct");
+    const isCorrect = answer === currentItem.answer;
+    if (isCorrect) playSound("correct");
     else playSound("wrong");
+    setAnnouncement(`${isCorrect ? a11y.correct : a11y.wrong}. ${answeredCount + 1 < content.items.length ? a11y.nextCard : content.completeMessage}`);
     setAnswers(prev => ({ ...prev, [currentItem.id]: answer }));
   };
+
+  useEffect(() => {
+    if (isComplete) completionRef.current?.focus();
+    else firstActionRef.current?.focus();
+  }, [answeredCount, isComplete]);
 
   return (
     <div className="flex flex-col items-center w-full overflow-hidden pb-10">
       <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-8">{content.prompt}</p>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       
       {!isComplete ? (
         <div className="relative w-full max-w-sm aspect-[4/5] sm:aspect-square flex items-center justify-center">
@@ -711,8 +777,8 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
           </AnimatePresence>
         </div>
       ) : (
-        <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
-           <CheckCircle2 className="size-16 text-neon mb-4" />
+        <div ref={completionRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+           <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
            <p className="text-2xl font-black mb-8 text-foreground">{content.completeMessage}</p>
            {feedback && <ScoreFeedback score={feedback.score} />}
         </div>
@@ -720,15 +786,15 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
       
       {!isComplete && (
          <div className="flex justify-between w-full max-w-sm mt-8 px-4">
-            <button onClick={() => handleSwipe("left")} className="flex flex-col items-center gap-2 text-danger hover:scale-110 transition">
-              <div className="size-16 rounded-full border-2 border-danger flex items-center justify-center bg-danger/10 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                 <ShieldAlert className="size-8" />
+             <button ref={firstActionRef} type="button" onClick={() => handleSwipe("left")} className="focus-ring flex min-h-11 flex-col items-center gap-2 rounded-2xl p-2 text-danger transition hover:scale-110">
+               <div className="size-16 rounded-full border-2 border-danger flex items-center justify-center bg-danger/10 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                  <ShieldAlert className="size-8" aria-hidden="true" />
               </div>
               <span className="font-bold text-xs uppercase tracking-wider">{content.danger}</span>
             </button>
-            <button onClick={() => handleSwipe("right")} className="flex flex-col items-center gap-2 text-success hover:scale-110 transition">
-              <div className="size-16 rounded-full border-2 border-success flex items-center justify-center bg-success/10 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                 <Check className="size-8" />
+             <button type="button" onClick={() => handleSwipe("right")} className="focus-ring flex min-h-11 flex-col items-center gap-2 rounded-2xl p-2 text-success transition hover:scale-110">
+               <div className="size-16 rounded-full border-2 border-success flex items-center justify-center bg-success/10 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                  <Check className="size-8" aria-hidden="true" />
               </div>
               <span className="font-bold text-xs uppercase tracking-wider">{content.safe}</span>
             </button>
@@ -743,7 +809,7 @@ function ClassifyStage({ content, answers, setAnswers, check, saving, feedback, 
   );
 }
 
-function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: any, onSwipe: (dir: "left" | "right") => void, safeText: string, dangerText: string }) {
+function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: { id: string; text: string; answer: string }, onSwipe: (dir: "left" | "right") => void, safeText: string, dangerText: string }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
@@ -769,6 +835,8 @@ function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: any, onSwipe
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.8, opacity: 0, transition: { duration: 0.2 } }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      role="group"
+      aria-label={item.text}
       className="absolute w-full h-full border border-border rounded-3xl bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-6 sm:p-8 flex flex-col items-center justify-center text-center select-none cursor-grab active:cursor-grabbing overflow-hidden"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/20 pointer-events-none" />
@@ -789,17 +857,26 @@ function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: any, onSwipe
   );
 }
 
-function DialogueStage({ content, check, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const firstPartRef = useRef<HTMLButtonElement>(null);
+  const completionRef = useRef<HTMLDivElement>(null);
+  const a11y = accessibilityText[locale];
 
   const level = content.levels?.[currentLevelIndex];
+
+  useEffect(() => {
+    if (level) firstPartRef.current?.focus();
+    else completionRef.current?.focus();
+  }, [currentLevelIndex, level]);
   
   if (!level) {
     return (
-      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
-         <CheckCircle2 className="size-16 text-neon mb-4" />
+      <div ref={completionRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+         <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
@@ -811,10 +888,13 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
     setErrorText(null);
     setSelectedParts(prev => {
       const next = new Set(prev);
+      const part = level.parts.find(item => item.id === id);
       if (next.has(id)) {
         next.delete(id);
+        setAnnouncement(`${a11y.unselected}: ${part?.text ?? ""}`);
       } else {
         next.add(id);
+        setAnnouncement(`${a11y.selected}: ${part?.text ?? ""}`);
       }
       return next;
     });
@@ -836,18 +916,21 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
 
     if (correct && selectedLies === level.liesCount) {
       playSound("correct");
+      setAnnouncement(`${a11y.correct}. ${a11y.levelComplete}`);
       setCurrentLevelIndex(prev => prev + 1);
       setSelectedParts(new Set());
       setErrorText(null);
     } else {
       playSound("wrong");
       setErrorText(content.error);
+      setAnnouncement(`${a11y.wrong}. ${content.error}`);
     }
   };
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-10">
       <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-6">{content.prompt}</p>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       
       <div className="w-full flex justify-between items-center mb-4 px-2">
         <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
@@ -861,31 +944,37 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
       <div className="relative w-full bg-slate-900 border border-border rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.3)] mb-8 text-left leading-relaxed text-lg sm:text-xl">
         <div className="absolute -bottom-3 left-8 w-6 h-6 bg-slate-900 border-b border-l border-border transform -rotate-45" />
         
-        {level.parts.map(part => {
+         {level.parts.map((part, index) => {
           const isSelected = selectedParts.has(part.id);
           const selectedStyle = "bg-danger/30 text-danger-foreground border-b-2 border-danger";
           const hoverStyle = "hover:bg-foreground/10";
-          const baseStyle = "transition-colors duration-200 cursor-pointer rounded px-1 -mx-1 select-none";
+           const baseStyle = "focus-ring inline min-h-11 rounded px-1 py-1 text-left align-baseline transition-colors duration-200 select-none";
           
           return (
-             <span 
-               key={part.id} 
-               onClick={() => togglePart(part.id)}
-               className={`${baseStyle} ${isSelected ? selectedStyle : hoverStyle}`}
-             >
-               {part.text}
-             </span>
-          );
-        })}
+             <button
+                key={part.id}
+                ref={index === 0 ? firstPartRef : undefined}
+                type="button"
+                onClick={() => togglePart(part.id)}
+                aria-pressed={isSelected}
+                aria-label={`${a11y.chooseFragment}: ${part.text}. ${isSelected ? a11y.selected : a11y.unselected}`}
+                className={`${baseStyle} ${isSelected ? selectedStyle : hoverStyle}`}
+              >
+                {isSelected && <Check className="mr-1 inline size-4" aria-hidden="true" />}
+                {part.text}
+              </button>
+           );
+         })}
       </div>
 
       <div className="h-8 mb-6">
         {errorText && (
-          <p className="text-danger font-bold animate-in slide-in-from-top-2 text-center">{errorText}</p>
+          <p role="alert" className="text-danger font-bold animate-in slide-in-from-top-2 text-center">{errorText}</p>
         )}
       </div>
 
       <button 
+        type="button"
         onClick={verify}
         className="rounded-xl bg-neon px-12 py-4 text-sm font-black text-primary-foreground focus-ring hover:scale-105 transition shadow-[0_0_20px_rgba(0,217,255,0.4)]"
       >
@@ -896,44 +985,46 @@ function DialogueStage({ content, check, saving, feedback, onSubmit }: { content
   );
 }
 
-function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function OrderingStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [status, setStatus] = useState<"playing" | "failed" | "won">("playing");
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-  
+  const [timeLeft, setTimeLeft] = useState<number>(() => content.levels[0]?.time ?? 0);
+  const [paused, setPaused] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const levelPanelRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const a11y = accessibilityText[locale];
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
-  const [shuffledSteps, setShuffledSteps] = useState<{id: string, text: string}[]>([]);
+  const [shuffledSteps, setShuffledSteps] = useState<{id: string, text: string}[]>(() => [...(content.levels[0]?.steps ?? [])].sort(() => Math.random() - 0.5));
   const [flashError, setFlashError] = useState(false);
   
   const level = content.levels?.[currentLevelIndex];
 
   useEffect(() => {
-    if (level && status === "playing") {
-      setTimeLeft(level.time);
-      setOrderedIds([]);
-      setShuffledSteps([...level.steps].sort(() => Math.random() - 0.5));
-    }
-  }, [currentLevelIndex, level, status]);
+    if (status !== "playing" || !level || paused) return;
+
+    const timer = window.setTimeout(() => {
+      if (timeLeft <= 1) {
+        setTimeLeft(0);
+        setStatus("failed");
+        setAnnouncement(`${a11y.wrong}. ${content.fail}`);
+      } else {
+        setTimeLeft(timeLeft - 1);
+      }
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [a11y.wrong, content.fail, paused, status, timeLeft, level]);
 
   useEffect(() => {
-    if (status !== "playing" || !level) return;
-    
-    if (timeLeft <= 0) {
-      setStatus("failed");
-      return;
-    }
-    
-    const timer = window.setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-    
-    return () => window.clearInterval(timer);
-  }, [status, timeLeft, level]);
+    if (status === "failed" || !level) statusRef.current?.focus();
+    else levelPanelRef.current?.focus();
+  }, [currentLevelIndex, level, status]);
 
   if (!level) {
     return (
-      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
-         <CheckCircle2 className="size-16 text-neon mb-4" />
+      <div ref={statusRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+         <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
@@ -951,16 +1042,21 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
       playSound("correct");
       const newOrderedIds = [...orderedIds, stepId];
       setOrderedIds(newOrderedIds);
+      setAnnouncement(`${a11y.correct}. ${a11y.selected}: ${newOrderedIds.length}`);
       
       if (newOrderedIds.length === level.steps.length) {
-        if (currentLevelIndex === content.levels.length - 1) {
-          setCurrentLevelIndex(prev => prev + 1); 
-        } else {
-          setCurrentLevelIndex(prev => prev + 1);
+        const nextLevelIndex = currentLevelIndex + 1;
+        const nextLevel = content.levels[nextLevelIndex];
+        if (nextLevel) {
+          setTimeLeft(nextLevel.time);
+          setOrderedIds([]);
+          setShuffledSteps([...nextLevel.steps].sort(() => Math.random() - 0.5));
         }
+        setCurrentLevelIndex(nextLevelIndex);
       }
     } else {
       playSound("wrong");
+      setAnnouncement(`${a11y.wrong}. ${locale === "ru" ? "Попробуйте выбрать другой шаг" : "Încearcă să alegi alt pas"}`);
       setTimeLeft(prev => Math.max(0, prev - 3));
       setFlashError(true);
       setTimeout(() => setFlashError(false), 300);
@@ -969,6 +1065,7 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
 
   const restartLevel = () => {
     setStatus("playing");
+    setPaused(false);
     setTimeLeft(level.time);
     setOrderedIds([]);
     setShuffledSteps([...level.steps].sort(() => Math.random() - 0.5));
@@ -976,10 +1073,10 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
 
   if (status === "failed") {
     return (
-      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
-         <XCircle className="size-16 text-danger mb-4" />
+      <div ref={statusRef} tabIndex={-1} role="alert" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
+         <XCircle className="size-16 text-danger mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.fail}</p>
-         <button onClick={restartLevel} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
+         <button type="button" onClick={restartLevel} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
       </div>
     );
   }
@@ -990,17 +1087,22 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-10">
       <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-6">{content.prompt}</p>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       
       <div className="w-full flex justify-between items-center mb-4 px-2">
         <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
           {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
         </span>
-        <span className={`text-2xl font-black tabular-nums transition-colors duration-200 ${isErrorState ? 'text-danger animate-pulse scale-110' : 'text-neon'}`}>
-          0:{timeLeft.toString().padStart(2, '0')}
-        </span>
+        <div className="flex items-center gap-3">
+          <span role="timer" aria-label={`${timeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-2xl font-black tabular-nums transition-colors duration-200 ${isErrorState ? 'text-danger animate-pulse scale-110' : 'text-neon'}`}>0:{timeLeft.toString().padStart(2, '0')}</span>
+          <button type="button" onClick={() => { setPaused(value => !value); setAnnouncement(paused ? a11y.resume : a11y.paused); }} aria-pressed={paused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/50 px-3 text-xs font-bold text-foreground">
+            {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+            {paused ? a11y.resume : a11y.pause}
+          </button>
+        </div>
       </div>
 
-      <div className={`w-full rounded-3xl p-6 sm:p-8 border-2 transition-all duration-300 ${isErrorState ? 'border-danger bg-danger/5 shadow-[0_0_50px_rgba(255,0,0,0.3)]' : 'border-border bg-slate-900 shadow-[0_10px_30px_rgba(0,0,0,0.3)]'}`}>
+      <div ref={levelPanelRef} tabIndex={-1} className={`focus-ring w-full rounded-3xl p-6 sm:p-8 border-2 transition-all duration-300 ${isErrorState ? 'border-danger bg-danger/5 shadow-[0_0_50px_rgba(255,0,0,0.3)]' : 'border-border bg-slate-900 shadow-[0_10px_30px_rgba(0,0,0,0.3)]'}`}>
         
         <div className="flex flex-col gap-3">
           {shuffledSteps.map((step) => {
@@ -1010,9 +1112,10 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
             return (
               <button
                 key={step.id}
+                type="button"
                 onClick={() => handleStepClick(step.id)}
                 disabled={isSelected}
-                className={`relative flex items-center p-4 rounded-2xl border-2 text-left transition-all duration-300
+                className={`focus-ring relative flex items-center p-4 rounded-2xl border-2 text-left transition-all duration-300
                   ${isSelected 
                     ? 'border-neon/50 bg-neon/10 text-foreground/80 scale-[0.98] opacity-60' 
                     : 'border-border bg-background/50 hover:bg-background/80 hover:border-neon/30 active:scale-[0.99]'
@@ -1025,6 +1128,7 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
                    </div>
                 )}
                 <span className="text-sm sm:text-base font-medium">{step.text}</span>
+                {isSelected && <span className="ml-auto pl-3 text-xs font-bold text-neon"><Check className="mr-1 inline size-4" aria-hidden="true" />{a11y.selected}: {indexNumber}</span>}
               </button>
             )
           })}
@@ -1037,7 +1141,28 @@ function OrderingStage({ content, check, retry, saving, feedback, onSubmit }: { 
   );
 }
 
-function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: () => void }) {
+function VisualClueButton({ label, selected, foundText, onSelect, className, children }: { label: string; selected: boolean; foundText: string; onSelect: () => void; className: string; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-pressed={selected} aria-label={`${label}. ${selected ? foundText : ""}`} onClick={onSelect} className={`focus-ring relative ${className}`}>
+      {children}
+      {selected && <span className="mt-1 block text-[10px] font-black uppercase tracking-wide text-success"><Check className="mr-1 inline size-3" aria-hidden="true" />{foundText}</span>}
+    </button>
+  );
+}
+
+type VisualScenario = {
+  type: "sms" | "call" | "profile";
+  sender?: string;
+  text?: string;
+  fakeLink?: string;
+  caller?: string;
+  number?: string;
+  name?: string;
+  accountType?: string;
+  correctTargets: readonly string[];
+};
+
+function FinalStage({ locale, content, check, retry, saving, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: () => void }) {
   const MAX_PLAYER_HP = 3;
   const MAX_BOSS_HP = 10;
   
@@ -1050,8 +1175,13 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
   const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
   const [blitzTimeLeft, setBlitzTimeLeft] = useState(12);
   const [shake, setShake] = useState(false);
+  const [blitzPaused, setBlitzPaused] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const phaseRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const a11y = accessibilityText[locale];
 
-  const takeDamage = () => {
+  const takeDamage = useCallback(() => {
     setShake(true);
     setTimeout(() => setShake(false), 400);
     setPlayerHp(prev => {
@@ -1059,9 +1189,9 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
       if (next <= 0) setStatus("gameover");
       return next;
     });
-  };
+  }, []);
 
-  const advanceLevel = () => {
+  const advanceLevel = useCallback(() => {
     setFoundDetails(new Set());
     setBossSelected(new Set());
     setBossSelected(new Set());
@@ -1075,33 +1205,40 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
         setStatus("win");
       }
     }
-    setBlitzTimeLeft(12); 
-  };
+    setBlitzTimeLeft(12);
+    setBlitzPaused(false);
+  }, [currentLevel, currentPhase]);
 
   useEffect(() => {
-    if (status !== "playing" || currentPhase !== 1) return;
+    if (status !== "playing" || currentPhase !== 1 || blitzPaused) return;
     
-    if (blitzTimeLeft <= 0) {
-      playSound("timeout");
-      takeDamage();
-      advanceLevel();
-      return;
-    }
-    
-    const timer = window.setInterval(() => {
-      setBlitzTimeLeft(prev => prev - 1);
+    const timer = window.setTimeout(() => {
+      if (blitzTimeLeft <= 1) {
+        playSound("timeout");
+        setAnnouncement(`${a11y.wrong}. ${locale === "ru" ? "Время вышло" : "Timpul a expirat"}`);
+        takeDamage();
+        advanceLevel();
+      } else {
+        setBlitzTimeLeft(blitzTimeLeft - 1);
+      }
     }, 1000);
-    return () => window.clearInterval(timer);
-  }, [status, currentPhase, blitzTimeLeft]);
+    return () => window.clearTimeout(timer);
+  }, [advanceLevel, a11y.wrong, blitzPaused, blitzTimeLeft, currentPhase, locale, status, takeDamage]);
+
+  useEffect(() => {
+    if (status === "playing") phaseRef.current?.focus();
+    else statusRef.current?.focus();
+  }, [currentLevel, currentPhase, status]);
 
   const handleVisualClick = (targetId: string, isCorrect: boolean) => {
     if (isCorrect) {
       playSound("correct");
+      setAnnouncement(`${a11y.correct}. ${a11y.found}: ${targetId}`);
       setFoundDetails(prev => {
         const next = new Set(prev);
         next.add(targetId);
         
-        const required = (content.phase1[currentLevel] as any).correctTargets?.length || 1;
+        const required = content.phase1[currentLevel].correctTargets.length || 1;
         if (next.size >= required) {
           setTimeout(() => advanceLevel(), 300);
           return new Set();
@@ -1110,6 +1247,7 @@ function FinalStage({ content, check, retry, saving, feedback, onSubmit }: { con
       });
     } else {
       playSound("wrong");
+      setAnnouncement(a11y.wrong);
       takeDamage();
     }
   };
@@ -1118,20 +1256,23 @@ const handleBlitzClick = (optionIndex: number) => {
     const isCorrect = optionIndex === content.phase2[currentLevel].answer;
     if (isCorrect) {
       playSound("correct");
+      setAnnouncement(a11y.correct);
       advanceLevel();
     } else {
       playSound("wrong");
+      setAnnouncement(a11y.wrong);
       takeDamage();
       advanceLevel();
     }
   };
 
   const handleBossClick = (optionIndex: number) => {
-    const answers = (content.phase3[currentLevel] as any).answers;
+    const answers = content.phase3[currentLevel].answers;
     const isCorrect = answers.includes(optionIndex);
     
     if (isCorrect) {
       playSound("correct");
+      setAnnouncement(`${a11y.correct}. ${a11y.selected}`);
       setBossSelected(prev => {
         const next = new Set(prev);
         next.add(optionIndex);
@@ -1154,6 +1295,7 @@ const handleBlitzClick = (optionIndex: number) => {
       });
     } else {
       playSound("wrong");
+      setAnnouncement(a11y.wrong);
       takeDamage();
       setBossSelected(new Set());
     }
@@ -1166,23 +1308,24 @@ const restart = () => {
     setCurrentLevel(0);
     setStatus("playing");
     setBlitzTimeLeft(12);
+    setBlitzPaused(false);
     setFoundDetails(new Set());
   };
 
   if (status === "gameover") {
     return (
-      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
-         <XCircle className="size-16 text-danger mb-4" />
+      <div ref={statusRef} tabIndex={-1} role="alert" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
+         <XCircle className="size-16 text-danger mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.gameOver}</p>
-         <button onClick={restart} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
+         <button type="button" onClick={restart} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
       </div>
     );
   }
 
   if (status === "win") {
     return (
-      <div className="flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
-         <CheckCircle2 className="size-16 text-neon mb-4" />
+      <div ref={statusRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
+         <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
       </div>
@@ -1190,15 +1333,18 @@ const restart = () => {
   }
 
   const renderHP = (hp: number, max: number, colorClass: string) => (
-    <div className="flex gap-1">
+    <div className="flex gap-1" role="progressbar" aria-valuenow={hp} aria-valuemin={0} aria-valuemax={max} aria-label="HP">
       {Array.from({ length: max }).map((_, i) => (
         <div key={i} className={`h-3 w-[35px] sm:w-[53px] rounded-full border-2 transition-all duration-300 ${i < hp ? colorClass + ' border-transparent' : 'bg-transparent border-foreground/20'}`} />
       ))}
     </div>
   );
 
+  const currentVisual = content.phase1[currentLevel] as VisualScenario;
+
   return (
     <div className={`flex flex-col items-center w-full max-w-2xl mx-auto pb-10 transition-transform ${shake ? 'animate-shake' : ''}`}>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       <div className="w-full flex justify-between items-center mb-8 px-4 bg-slate-900/50 p-4 rounded-2xl border border-border">
         <div>
           <p className="text-xs font-black tracking-widest text-muted-foreground uppercase mb-1">HP</p>
@@ -1213,7 +1359,7 @@ const restart = () => {
       </div>
 
       {currentPhase === 0 && (
-        <div className="w-full flex flex-col items-center animate-in fade-in">
+        <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
           <p className="font-bold text-center text-lg text-neon mb-6">{content.phase1Intro}</p>
           <div className="w-full max-w-sm bg-slate-100 dark:bg-slate-900 border-4 border-slate-300 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl relative">
             <div className="bg-slate-200 dark:bg-slate-950 px-6 py-2 flex justify-between items-center text-[10px] text-slate-500 font-bold border-b border-slate-300 dark:border-slate-800">
@@ -1222,46 +1368,38 @@ const restart = () => {
             </div>
             
             <div className="bg-slate-800/10 py-1 text-center border-b border-slate-200 dark:border-slate-800">
-                <span className="text-xs font-bold text-slate-500">Улики: {foundDetails.size} / {(content.phase1[currentLevel] as any).correctTargets?.length || 1}</span>
+                <span className="text-xs font-bold text-slate-500">{content.clues}: {foundDetails.size} / {content.phase1[currentLevel].correctTargets.length || 1}</span>
             </div>
 
-            <div className="p-4 flex flex-col gap-4 min-h-[300px]" onClick={() => handleVisualClick("bg", false)}>
-              {content.phase1[currentLevel].type === "sms" && (
+            <div className="p-4 flex flex-col gap-4 min-h-[300px]">
+              {currentVisual.type === "sms" && (
                 <div className="flex flex-col gap-4">
-                  <p className={`text-center text-xs font-bold uppercase tracking-wider mt-2 p-1 rounded-lg border-2 ${foundDetails.has("sender") ? "border-success text-success bg-success/10" : "border-transparent text-slate-500"}`} onClick={(e) => { e.stopPropagation(); handleVisualClick("sender", (content.phase1[currentLevel] as any).correctTargets.includes("sender")) }}>{(content.phase1[currentLevel] as any).sender || "MinTel"}</p>
-                  
-                  <div className={`bg-blue-500 text-white p-4 rounded-2xl rounded-tl-sm shadow-md text-sm leading-relaxed border-2 ${foundDetails.has("text") ? "border-success" : "border-transparent"}`} onClick={(e) => { e.stopPropagation(); handleVisualClick("text", (content.phase1[currentLevel] as any).correctTargets.includes("text")) }}>
-                    {content.phase1[currentLevel].text}
-                    <br/><br/>
-                    <button onClick={(e) => { e.stopPropagation(); handleVisualClick("fakeLink", (content.phase1[currentLevel] as any).correctTargets.includes("fakeLink")); }} className={`text-blue-200 underline font-bold w-full text-left break-all border-2 p-1 rounded-lg ${foundDetails.has("fakeLink") ? "border-success text-success bg-success/20" : "border-transparent"}`}>{(content.phase1[currentLevel] as any).fakeLink}</button>
+                  <VisualClueButton label={`${a11y.sender}: ${currentVisual.sender || "MinTel"}`} selected={foundDetails.has("sender")} foundText={a11y.found} onSelect={() => handleVisualClick("sender", currentVisual.correctTargets.includes("sender"))} className={`mt-2 w-full rounded-lg border-2 p-2 text-center text-xs font-bold uppercase tracking-wider ${foundDetails.has("sender") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-500"}`}>{currentVisual.sender || "MinTel"}</VisualClueButton>
+                  <div className="rounded-2xl rounded-tl-sm border-2 border-transparent bg-blue-500 p-3 text-white shadow-md">
+                    <VisualClueButton label={`${a11y.message}: ${currentVisual.text}`} selected={foundDetails.has("text")} foundText={a11y.found} onSelect={() => handleVisualClick("text", currentVisual.correctTargets.includes("text"))} className={`w-full rounded-lg border-2 p-2 text-left text-sm leading-relaxed ${foundDetails.has("text") ? "border-success bg-success/20" : "border-transparent"}`}>{currentVisual.text}</VisualClueButton>
+                    <VisualClueButton label={`${a11y.link}: ${currentVisual.fakeLink}`} selected={foundDetails.has("fakeLink")} foundText={a11y.found} onSelect={() => handleVisualClick("fakeLink", currentVisual.correctTargets.includes("fakeLink"))} className={`mt-3 w-full break-all rounded-lg border-2 p-2 text-left font-bold underline ${foundDetails.has("fakeLink") ? "border-success bg-success/20 text-success" : "border-transparent text-blue-100"}`}>{currentVisual.fakeLink}</VisualClueButton>
                   </div>
                 </div>
               )}
-              {content.phase1[currentLevel].type === "call" && (
+              {currentVisual.type === "call" && (
                 <div className="flex flex-col items-center justify-center h-full pt-10">
-                  <div className={`w-20 h-20 bg-slate-300 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 border-4 ${foundDetails.has("avatar") ? "border-success text-success bg-success/10" : "border-transparent"}`} onClick={(e) => { e.stopPropagation(); handleVisualClick("avatar", (content.phase1[currentLevel] as any).correctTargets.includes("avatar")); }}>
-                    <User className="size-10 text-slate-500" />
-                  </div>
-                  <p className={`text-xl font-bold p-1 rounded-lg border-2 mb-1 ${foundDetails.has("caller") ? "border-success text-success bg-success/10" : "border-transparent text-slate-800 dark:text-slate-100"}`} onClick={(e) => { e.stopPropagation(); handleVisualClick("caller", (content.phase1[currentLevel] as any).correctTargets.includes("caller")); }}>{(content.phase1[currentLevel] as any).caller}</p>
-                  <button onClick={(e) => { e.stopPropagation(); handleVisualClick("number", (content.phase1[currentLevel] as any).correctTargets.includes("number")); }} className={`text-danger font-black text-lg tracking-wider px-3 py-1 rounded-lg border-2 ${foundDetails.has("number") ? "border-success bg-success/10 text-success" : "bg-danger/10 border-danger/20"}`}>{(content.phase1[currentLevel] as any).number}</button>
-                  <div className="flex gap-8 mt-12 w-full justify-center" onClick={(e) => { e.stopPropagation(); handleVisualClick("action", false); }}>
-                    <div className="w-14 h-14 bg-danger rounded-full flex items-center justify-center shadow-lg"><Phone className="text-white transform rotate-[135deg]" /></div>
-                    <div className="w-14 h-14 bg-success rounded-full flex items-center justify-center shadow-lg"><Phone className="text-white" /></div>
+                  <VisualClueButton label={a11y.avatar} selected={foundDetails.has("avatar")} foundText={a11y.found} onSelect={() => handleVisualClick("avatar", currentVisual.correctTargets.includes("avatar"))} className={`mb-4 flex min-h-20 w-24 flex-col items-center justify-center rounded-full border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10 text-success" : "border-transparent bg-slate-300 dark:bg-slate-800"}`}><User className="size-10 text-slate-500" aria-hidden="true" /></VisualClueButton>
+                  <VisualClueButton label={`${a11y.caller}: ${currentVisual.caller}`} selected={foundDetails.has("caller")} foundText={a11y.found} onSelect={() => handleVisualClick("caller", currentVisual.correctTargets.includes("caller"))} className={`mb-1 w-full rounded-lg border-2 p-2 text-xl font-bold ${foundDetails.has("caller") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-800 dark:text-slate-100"}`}>{currentVisual.caller}</VisualClueButton>
+                  <VisualClueButton label={`${a11y.number}: ${currentVisual.number}`} selected={foundDetails.has("number")} foundText={a11y.found} onSelect={() => handleVisualClick("number", currentVisual.correctTargets.includes("number"))} className={`rounded-lg border-2 px-3 py-2 text-lg font-black tracking-wider ${foundDetails.has("number") ? "border-success bg-success/10 text-success" : "border-danger/20 bg-danger/10 text-danger"}`}>{currentVisual.number}</VisualClueButton>
+                  <div className="flex gap-8 mt-12 w-full justify-center">
+                    <button type="button" aria-label={a11y.callAction} onClick={() => handleVisualClick("action", false)} className="focus-ring grid min-h-14 w-14 place-items-center rounded-full bg-danger shadow-lg"><Phone className="text-white transform rotate-[135deg]" aria-hidden="true" /></button>
+                    <button type="button" aria-label={a11y.callAction} onClick={() => handleVisualClick("action", false)} className="focus-ring grid min-h-14 w-14 place-items-center rounded-full bg-success shadow-lg"><Phone className="text-white" aria-hidden="true" /></button>
                   </div>
                 </div>
               )}
-              {content.phase1[currentLevel].type === "profile" && (
+              {currentVisual.type === "profile" && (
                 <div className="flex flex-col items-center pt-8">
-                  <div className={`w-24 h-24 bg-neon/20 rounded-full flex items-center justify-center mb-4 border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10" : "border-neon"}`} onClick={(e) => { e.stopPropagation(); handleVisualClick("avatar", (content.phase1[currentLevel] as any).correctTargets.includes("avatar")); }}>
-                    <CheckCircle2 className={`size-12 ${foundDetails.has("avatar") ? "text-success" : "text-neon"}`} />
-                  </div>
-                  <p className={`text-2xl font-bold p-1 rounded-lg border-2 mb-2 ${foundDetails.has("name") ? "border-success text-success bg-success/10" : "border-transparent text-slate-800 dark:text-slate-100"}`} onClick={(e) => { e.stopPropagation(); handleVisualClick("name", (content.phase1[currentLevel] as any).correctTargets.includes("name")); }}>{(content.phase1[currentLevel] as any).name}</p>
-                  <button onClick={(e) => { e.stopPropagation(); handleVisualClick("accountType", (content.phase1[currentLevel] as any).correctTargets.includes("accountType")); }} className={`text-sm font-bold px-4 py-2 rounded-xl mb-6 border-2 ${foundDetails.has("accountType") ? "border-success text-success bg-success/10" : "border-transparent text-slate-500 bg-slate-200 dark:bg-slate-800"}`}>
-                    {(content.phase1[currentLevel] as any).accountType}
-                  </button>
-                  <div className="w-full flex justify-around border-t border-slate-300 dark:border-slate-800 pt-4" onClick={(e) => { e.stopPropagation(); handleVisualClick("action", false); }}>
-                     <div className="flex flex-col items-center text-neon"><Phone className="size-6 mb-1"/><span className="text-xs">Apel</span></div>
-                     <div className="flex flex-col items-center text-neon"><MessageCircle className="size-6 mb-1"/><span className="text-xs">Mesaj</span></div>
+                  <VisualClueButton label={a11y.avatar} selected={foundDetails.has("avatar")} foundText={a11y.found} onSelect={() => handleVisualClick("avatar", currentVisual.correctTargets.includes("avatar"))} className={`mb-4 flex min-h-24 w-28 flex-col items-center justify-center rounded-full border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10" : "border-neon bg-neon/20"}`}><CheckCircle2 className={`size-12 ${foundDetails.has("avatar") ? "text-success" : "text-neon"}`} aria-hidden="true" /></VisualClueButton>
+                  <VisualClueButton label={`${a11y.profileName}: ${currentVisual.name}`} selected={foundDetails.has("name")} foundText={a11y.found} onSelect={() => handleVisualClick("name", currentVisual.correctTargets.includes("name"))} className={`mb-2 w-full rounded-lg border-2 p-2 text-2xl font-bold ${foundDetails.has("name") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-800 dark:text-slate-100"}`}>{currentVisual.name}</VisualClueButton>
+                  <VisualClueButton label={`${a11y.accountType}: ${currentVisual.accountType}`} selected={foundDetails.has("accountType")} foundText={a11y.found} onSelect={() => handleVisualClick("accountType", currentVisual.correctTargets.includes("accountType"))} className={`mb-6 rounded-xl border-2 px-4 py-2 text-sm font-bold ${foundDetails.has("accountType") ? "border-success bg-success/10 text-success" : "border-transparent bg-slate-200 text-slate-500 dark:bg-slate-800"}`}>{currentVisual.accountType}</VisualClueButton>
+                  <div className="w-full flex justify-around border-t border-slate-300 dark:border-slate-800 pt-4">
+                     <button type="button" onClick={() => handleVisualClick("action", false)} className="focus-ring flex min-h-11 flex-col items-center rounded-xl p-2 text-neon"><Phone className="size-6 mb-1" aria-hidden="true"/><span className="text-xs">{a11y.callAction}</span></button>
+                     <button type="button" onClick={() => handleVisualClick("action", false)} className="focus-ring flex min-h-11 flex-col items-center rounded-xl p-2 text-neon"><MessageCircle className="size-6 mb-1" aria-hidden="true"/><span className="text-xs">{a11y.messageAction}</span></button>
                   </div>
                 </div>
               )}
@@ -1271,17 +1409,23 @@ const restart = () => {
       )}
 
       {currentPhase === 1 && (
-        <div className="w-full flex flex-col items-center animate-in fade-in">
+        <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
           <p className="font-bold text-center text-lg text-warning mb-6">{content.phase2Intro}</p>
           <div className="w-full bg-slate-900 border-2 border-warning/50 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{currentLevel + 1} / 10</span>
-               <span className={`text-3xl font-black tabular-nums transition-colors ${blitzTimeLeft <= 3 ? 'text-danger animate-pulse' : 'text-warning'}`}>0:0{blitzTimeLeft}</span>
+               <div className="flex items-center gap-3">
+                 <span role="timer" aria-label={`${blitzTimeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-3xl font-black tabular-nums transition-colors ${blitzTimeLeft <= 3 ? 'text-danger animate-pulse' : 'text-warning'}`}>0:{blitzTimeLeft.toString().padStart(2, "0")}</span>
+                 <button type="button" onClick={() => { setBlitzPaused(value => !value); setAnnouncement(blitzPaused ? a11y.resume : a11y.paused); }} aria-pressed={blitzPaused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-warning/40 bg-background/50 px-3 text-xs font-bold text-foreground">
+                   {blitzPaused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
+                   {blitzPaused ? a11y.resume : a11y.pause}
+                 </button>
+               </div>
             </div>
             <p className="text-xl sm:text-2xl font-bold mb-8 text-foreground">{content.phase2[currentLevel].text}</p>
             <div className="flex flex-col gap-3">
               {content.phase2[currentLevel].options.map((opt, i) => (
-                <button key={i} onClick={() => handleBlitzClick(i)} className="w-full text-left p-4 rounded-xl border border-border bg-background/50 hover:bg-background/80 hover:border-warning/50 transition font-medium text-lg focus-ring">
+                <button key={i} type="button" onClick={() => handleBlitzClick(i)} className="w-full text-left p-4 rounded-xl border border-border bg-background/50 hover:bg-background/80 hover:border-warning/50 transition font-medium text-lg focus-ring">
                   {opt}
                 </button>
               ))}
@@ -1291,7 +1435,7 @@ const restart = () => {
       )}
 
       {currentPhase === 2 && (
-        <div className="w-full flex flex-col items-center animate-in zoom-in-95">
+        <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in zoom-in-95">
           <p className="font-bold text-center text-lg text-danger mb-6">{content.phase3Intro}</p>
           <div className="w-full bg-slate-950 border-2 border-danger rounded-3xl p-6 shadow-[0_0_50px_rgba(239,68,68,0.3)] relative overflow-hidden">
             <div className="absolute -top-20 -right-20 w-64 h-64 bg-danger/20 blur-[100px] rounded-full pointer-events-none" />
@@ -1306,8 +1450,9 @@ const restart = () => {
             </div>
             <div className="flex flex-col gap-3 relative z-10">
               {content.phase3[currentLevel].options.map((opt, i) => (
-                <button key={i} onClick={() => handleBossClick(i)} className={`w-full text-left p-4 rounded-xl border transition font-medium text-lg focus-ring ${bossSelected.has(i) ? 'border-success bg-success/20 text-success shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'border-danger/20 bg-background/50 hover:bg-danger/20 hover:border-danger/50'}`}>
+                <button key={i} type="button" aria-pressed={bossSelected.has(i)} onClick={() => handleBossClick(i)} className={`w-full text-left p-4 rounded-xl border transition font-medium text-lg focus-ring ${bossSelected.has(i) ? 'border-success bg-success/20 text-success shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'border-danger/20 bg-background/50 hover:bg-danger/20 hover:border-danger/50'}`}>
                   {opt}
+                  {bossSelected.has(i) && <span className="ml-2 text-xs font-black uppercase"><Check className="mr-1 inline size-4" aria-hidden="true" />{a11y.selected}</span>}
                 </button>
               ))}
             </div>

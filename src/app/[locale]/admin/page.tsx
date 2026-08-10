@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, BarChart3, CheckCircle2, Layers3, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Ban, BarChart3, CheckCircle2, Layers3, Save, ShieldCheck, ShieldOff, Users, WalletCards, type LucideIcon } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { MODULE_CATALOG, MODULE_COUNT, MODULE_STAGES, STAGE_COUNT, TOTAL_STAGE_COUNT } from "@/data/module-catalog";
-import { ADMIN_EMAILS, isAdminEmail } from "@/lib/admin";
+import { isAdministrator, isUserRole, ROLE_LABELS, USER_ROLES, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
+import { toggleUserIpBlock, updateUserRole } from "./actions";
 
 type AdminLocale = "ru" | "ro";
 type ModuleStatus = "not_started" | "in_progress" | "completed";
@@ -23,6 +24,7 @@ type AdminUser = {
   email: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  user_role: UserRole;
   created_at: string;
   last_sign_in_at: string | null;
   completed_modules: number;
@@ -32,6 +34,8 @@ type AdminUser = {
   total_xp: number;
   module_breakdown: ModuleBreakdown[];
 };
+type AiBudgetStatus = { daily_used: number; daily_limit: number; monthly_used: number; monthly_limit: number; warning_percent: number };
+type AdminAccessStatus = { user_id: string; last_ip_seen_at: string | null; ip_blocked: boolean };
 
 const copy = {
   ru: {
@@ -54,7 +58,19 @@ const copy = {
     modules: "Модули",
     stagesLabel: "Этапы",
     xp: "XP",
+    role: "Роль",
+    saveRole: "Сохранить",
+    aiBudget: "Бюджет запросов Chrono",
+    today: "Сегодня",
+    month: "Текущий месяц",
+    budgetOk: "Лимиты работают нормально.",
+    budgetWarning: "Использовано больше установленного порога. Проверьте историю расходов BotHub.",
     noUsers: "Пользователей пока нет.",
+    ipSeen: "Последний сетевой адрес",
+    noIp: "Ещё не зафиксирован",
+    blockIp: "Заблокировать последний IP",
+    unblockIp: "Снять блокировку IP",
+    blockedAccount: "Доступ к сайту закрыт",
   },
   ro: {
     title: "Panoul administratorului",
@@ -76,7 +92,19 @@ const copy = {
     modules: "Module",
     stagesLabel: "Etape",
     xp: "XP",
+    role: "Rol",
+    saveRole: "Salvează",
+    aiBudget: "Bugetul solicitărilor Chrono",
+    today: "Astăzi",
+    month: "Luna curentă",
+    budgetOk: "Limitele funcționează normal.",
+    budgetWarning: "A fost depășit pragul de avertizare. Verifică istoricul cheltuielilor BotHub.",
     noUsers: "Nu există încă utilizatori.",
+    ipSeen: "Ultima adresă de rețea",
+    noIp: "Nu a fost înregistrată încă",
+    blockIp: "Blochează ultimul IP",
+    unblockIp: "Deblochează IP-ul",
+    blockedAccount: "Accesul la site este blocat",
   },
 } as const;
 
@@ -97,17 +125,25 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) redirect(`/${locale}/login`);
-  if (!isAdminEmail(authData.user.email)) redirect(`/${locale}/profile`);
+  const { data: adminProfile } = await supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle();
+  if (!isAdministrator(isUserRole(adminProfile?.role) ? adminProfile.role : null)) redirect(`/${locale}/profile`);
 
-  const { data, error } = await supabase.rpc("get_admin_dashboard");
+  const [{ data, error }, { data: budgetData }, { data: accessData }] = await Promise.all([
+    supabase.rpc("get_admin_dashboard"),
+    supabase.rpc("get_ai_budget_status"),
+    supabase.rpc("get_admin_access_status"),
+  ]);
   if (error) redirect(`/${locale}/profile`);
 
   const users = (data ?? []) as AdminUser[];
+  const budget = (Array.isArray(budgetData) ? budgetData[0] : null) as AiBudgetStatus | null;
+  const accessByUser = new Map(((accessData ?? []) as AdminAccessStatus[]).map((item) => [item.user_id, item]));
   const t = copy[locale];
   const activeUsers = users.filter((user) => user.completed_modules > 0 || user.in_progress_modules > 0 || user.completed_stages > 0).length;
   const completedModules = users.reduce((sum, user) => sum + Number(user.completed_modules), 0);
   const completedStages = users.reduce((sum, user) => sum + Number(user.completed_stages), 0);
   const availableStages = users.length * TOTAL_STAGE_COUNT;
+  const roleCounts = Object.fromEntries(USER_ROLES.map((role) => [role, users.filter((user) => user.user_role === role).length])) as Record<UserRole, number>;
   const dateFormatter = new Intl.DateTimeFormat(locale === "ro" ? "ro-MD" : "ru-MD", { dateStyle: "medium", timeStyle: "short" });
 
   return (
@@ -134,8 +170,8 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               <h1 className="mt-4 text-3xl font-black sm:text-5xl">{t.title}</h1>
               <p className="mt-3 text-sm text-muted-foreground">{t.description}</p>
             </div>
-            <div className="flex flex-col gap-2">
-              {ADMIN_EMAILS.map((email) => <p key={email} className="rounded-xl border border-border bg-background/35 px-4 py-2 text-sm text-muted-foreground">{email}</p>)}
+            <div className="flex flex-wrap gap-2 sm:max-w-md sm:justify-end">
+              {USER_ROLES.map((role) => <span key={role} className="rounded-full border border-border bg-background/35 px-3 py-1.5 text-xs text-muted-foreground">{ROLE_LABELS[role][locale]}: <strong className="text-foreground">{roleCounts[role]}</strong></span>)}
             </div>
           </div>
 
@@ -145,6 +181,22 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
             <StatCard icon={CheckCircle2} label={t.modulesDone} value={`${completedModules} / ${users.length * MODULE_COUNT}`} color="text-success" />
             <StatCard icon={Layers3} label={t.stagesDone} value={`${completedStages} / ${availableStages}`} color="text-violet" />
           </div>
+
+          {budget && (() => {
+            const dailyPercent = Math.min(100, Math.round((budget.daily_used / budget.daily_limit) * 100));
+            const monthlyPercent = Math.min(100, Math.round((budget.monthly_used / budget.monthly_limit) * 100));
+            const warning = dailyPercent >= budget.warning_percent || monthlyPercent >= budget.warning_percent;
+            return (
+              <div className={`mt-5 rounded-2xl border p-5 ${warning ? "border-gold/50 bg-gold/10" : "border-neon/25 bg-background/35"}`}>
+                <div className="flex items-center gap-3"><WalletCards className={warning ? "size-5 text-gold" : "size-5 text-neon"} aria-hidden="true" /><h2 className="font-bold">{t.aiBudget}</h2></div>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <BudgetBar label={t.today} used={budget.daily_used} limit={budget.daily_limit} percent={dailyPercent} warning={warning && dailyPercent >= budget.warning_percent} />
+                  <BudgetBar label={t.month} used={budget.monthly_used} limit={budget.monthly_limit} percent={monthlyPercent} warning={warning && monthlyPercent >= budget.warning_percent} />
+                </div>
+                <p role="status" className={`mt-4 flex items-center gap-2 text-xs ${warning ? "text-gold" : "text-muted-foreground"}`}>{warning && <AlertTriangle className="size-4" aria-hidden="true" />}{warning ? t.budgetWarning : t.budgetOk}</p>
+              </div>
+            );
+          })()}
         </section>
 
         <section className="mt-8 rounded-3xl border border-border bg-card/70 p-6 sm:p-8">
@@ -170,9 +222,11 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               const avatarIsSafe = typeof user.avatar_url === "string" && user.avatar_url.startsWith("https://lh3.googleusercontent.com/");
               const moduleMap = new Map((user.module_breakdown ?? []).map((module) => [module.module_id, module]));
               const stagePercent = Math.round((Number(user.completed_stages) / TOTAL_STAGE_COUNT) * 100);
+              const access = accessByUser.get(user.user_id);
+              const accountBlocked = user.user_role === "blocked";
 
               return (
-                <article key={user.user_id} className="overflow-hidden rounded-3xl border border-border bg-card/75 p-5 transition hover:border-neon/35 sm:p-6">
+                <article key={user.user_id} className={`overflow-hidden rounded-3xl border bg-card/75 p-5 transition sm:p-6 ${accountBlocked || access?.ip_blocked ? "border-danger/55 shadow-[0_0_35px_rgba(239,68,68,0.08)]" : "border-border hover:border-neon/35"}`}>
                   <div className="grid gap-6 xl:grid-cols-[minmax(14rem,0.8fr)_minmax(24rem,1.5fr)_auto] xl:items-center">
                     <div className="flex min-w-0 items-center gap-4">
                       <div className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-neon/40 bg-background font-black text-neon">
@@ -182,6 +236,28 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
                         <h3 className="truncate font-bold">{displayName}</h3>
                         <p className="mt-1 truncate text-sm text-muted-foreground">{user.email}</p>
                         <p className="mt-2 text-xs text-muted-foreground">{t.registered}: {dateFormatter.format(new Date(user.created_at))}</p>
+                        {accountBlocked && <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-danger/40 bg-danger/10 px-2.5 py-1 text-xs font-bold text-danger"><Ban className="size-3.5" aria-hidden="true" />{t.blockedAccount}</p>}
+                        <form action={updateUserRole} className="mt-3 flex items-center gap-2">
+                          <input type="hidden" name="userId" value={user.user_id} />
+                          <input type="hidden" name="locale" value={locale} />
+                          <label htmlFor={`role-${user.user_id}`} className="sr-only">{t.role}</label>
+                          <select id={`role-${user.user_id}`} name="role" defaultValue={user.user_role} className="focus-ring min-h-10 min-w-0 flex-1 rounded-xl border border-border bg-background/70 px-3 text-xs font-semibold text-foreground">
+                            {USER_ROLES.map((role) => <option key={role} value={role} disabled={user.user_id === authData.user.id && role !== "administrator"}>{ROLE_LABELS[role][locale]}</option>)}
+                          </select>
+                          <button type="submit" className="focus-ring grid size-10 shrink-0 place-items-center rounded-xl border border-neon/35 bg-neon/10 text-neon transition hover:border-neon hover:bg-neon/20" aria-label={`${t.saveRole}: ${displayName}`} title={t.saveRole}><Save className="size-4" aria-hidden="true" /></button>
+                        </form>
+                        <div className="mt-3 border-t border-border/70 pt-3">
+                          <p className="text-[11px] text-muted-foreground">{t.ipSeen}: {access?.last_ip_seen_at ? dateFormatter.format(new Date(access.last_ip_seen_at)) : t.noIp}</p>
+                          <form action={toggleUserIpBlock} className="mt-2">
+                            <input type="hidden" name="userId" value={user.user_id} />
+                            <input type="hidden" name="locale" value={locale} />
+                            <input type="hidden" name="blocked" value={access?.ip_blocked ? "false" : "true"} />
+                            <button type="submit" disabled={user.user_id === authData.user.id || (!access?.last_ip_seen_at && !access?.ip_blocked)} className={`focus-ring inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${access?.ip_blocked ? "border-success/45 bg-success/10 text-success hover:border-success" : "border-danger/40 bg-danger/10 text-danger hover:border-danger"}`}>
+                              {access?.ip_blocked ? <ShieldCheck className="size-4" aria-hidden="true" /> : <ShieldOff className="size-4" aria-hidden="true" />}
+                              {access?.ip_blocked ? t.unblockIp : t.blockIp}
+                            </button>
+                          </form>
+                        </div>
                       </div>
                     </div>
 
@@ -225,4 +301,8 @@ function StatCard({ icon: Icon, label, value, color }: { icon: LucideIcon; label
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return <div className="rounded-xl border border-border bg-background/35 p-3 text-center"><p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 font-display font-black text-neon">{value}</p></div>;
+}
+
+function BudgetBar({ label, used, limit, percent, warning }: { label: string; used: number; limit: number; percent: number; warning: boolean }) {
+  return <div><div className="flex items-center justify-between gap-3 text-xs"><span className="text-muted-foreground">{label}</span><strong className={warning ? "text-gold" : "text-foreground"}>{used}/{limit} · {percent}%</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={used} aria-valuemin={0} aria-valuemax={limit} aria-label={label}><div className={`h-full rounded-full transition-[width] duration-500 ${warning ? "bg-gold" : "bg-neon"}`} style={{ width: `${percent}%` }} /></div></div>;
 }

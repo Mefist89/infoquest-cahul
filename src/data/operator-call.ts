@@ -32,6 +32,7 @@ type OperatorFinalContent = {
   intro: string;
   gameOver: string;
   win: string;
+  clues: string;
   phase1Intro: string;
   phase2Intro: string;
   phase3Intro: string;
@@ -334,6 +335,7 @@ export const operatorCallContent = {
       intro: "Финальная схватка. У тебя 3 жизни (HP) на все фазы. Ошибка = минус 1 жизнь.",
       gameOver: "Увы, твои жизни иссякли... Тень победила. Начни сначала!",
       win: "Победа! Тень повержена, а твой номер в безопасности.",
+      clues: "Улики",
       phase1Intro: "Фаза 1: Визуальный тест. Кликни на деталь, которая выдает мошенника.",
       phase2Intro: "Фаза 2: Блиц. У тебя 12 секунд на ответ!",
       phase3Intro: "Фаза 3: Битва с Боссом. Парируй его уловки!",
@@ -534,6 +536,7 @@ export const operatorCallContent = {
       intro: "Confruntarea finală. Ai 3 vieți (HP) pentru toate fazele. O greșeală = minus 1 viață.",
       gameOver: "Din păcate, ai rămas fără vieți... Umbra a învins. Începe din nou!",
       win: "Victorie! Umbra a fost învinsă, iar numărul tău este în siguranță.",
+      clues: "Indicii",
       phase1Intro: "Faza 1: Test vizual. Dă click pe detaliul care trădează escrocul.",
       phase2Intro: "Faza 2: Blitz. Ai 12 secunde pentru a răspunde!",
       phase3Intro: "Faza 3: Lupta cu Boss-ul. Parează atacurile lui!",
