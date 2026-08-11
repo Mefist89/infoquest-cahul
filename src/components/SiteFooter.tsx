@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Download, PlayCircle, Users } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { strings, type Lang } from "@/data/home-data";
+import { strings, teamMembers, type Lang } from "@/data/home-data";
 import { Modal } from "@/components/Modal";
 
 function BottomCard({ label, icon, children, onClick }: { label: string; icon?: ReactNode; children?: ReactNode; onClick?: () => void }) {
@@ -23,15 +23,10 @@ function BottomCard({ label, icon, children, onClick }: { label: string; icon?: 
   );
 }
 
-const teamMembers = {
-  ru: ["Дмитрий (Разработка/UX)", "Евгения (Дизайн/Контент)", "Виктор (Аналитика/Тестирование)", "Александр (Менеджмент/QA)", "Мария (Копирайтинг/Маркетинг)"],
-  ro: ["Dumitru (Dezvoltare/UX)", "Eugenia (Design/Conținut)", "Victor (Analiză/Testare)", "Alexandru (Management/QA)", "Maria (Copywriting/Marketing)"],
-};
-
-export function SiteFooter({ lang }: { lang: string }) {
-  const t = strings[lang as Lang];
+export function SiteFooter({ lang }: { lang: Lang }) {
+  const t = strings[lang];
   const [openBlock, setOpenBlock] = useState<"logo" | "qr" | "team" | "demo" | null>(null);
-  const siteUrl = "https://infoquest-cahul.vercel.app";
+  const siteUrl = `https://infoquest-cahul.vercel.app/${lang}`;
 
   const downloadQr = () => {
     const svg = document.getElementById("infoquest-qr-large");
@@ -95,6 +90,7 @@ export function SiteFooter({ lang }: { lang: string }) {
           title={openBlock === "logo" ? t.teamLogo : openBlock === "qr" ? t.qrCode : openBlock === "team" ? t.projectTeam : t.demo}
           onClose={() => setOpenBlock(null)}
           wide={openBlock === "demo"}
+          closeLabel={t.close}
         >
           {openBlock === "logo" && (
             <div className="overflow-hidden rounded-2xl border border-neon/35 bg-slate-950">
@@ -125,7 +121,7 @@ export function SiteFooter({ lang }: { lang: string }) {
             <div>
               <p className="mb-4 text-sm text-muted-foreground">{t.teamHint}</p>
               <ul className="space-y-2">
-                {teamMembers[lang as keyof typeof teamMembers].map((member) => (
+                {teamMembers[lang].map((member) => (
                   <li key={member} className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-foreground">{member}</li>
                 ))}
               </ul>

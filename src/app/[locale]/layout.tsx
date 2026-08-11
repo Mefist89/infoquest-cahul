@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { Orbitron, Rubik } from "next/font/google";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SITE_ORIGIN } from "@/lib/site";
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -14,9 +15,20 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "InfoQuest — Щит цифрового сообщества",
-  description:
-    "Двуязычная образовательная игра о цифровой безопасности, мошенничестве, дипфейках и дезинформации.",
+  metadataBase: new URL(SITE_ORIGIN),
+  applicationName: "InfoQuest",
+  title: {
+    default: "InfoQuest",
+    template: "%s | InfoQuest",
+  },
+  description: "Bilingual digital safety education for the Cahul community.",
+  openGraph: {
+    type: "website",
+    siteName: "InfoQuest",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
@@ -27,7 +39,7 @@ export default async function RootLayout({ children, params }: { children: React
     <html lang={lang} data-scroll-behavior="smooth" className={`${orbitron.variable} ${rubik.variable}`}>
       <body>
         {children}
-        <ScrollToTop />
+        <ScrollToTop locale={lang} />
       </body>
     </html>
   );

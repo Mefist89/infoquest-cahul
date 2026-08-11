@@ -1,13 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+import type { Database } from "@/lib/supabase/database.types";
+import { supabaseConfig } from "@/lib/supabase/config";
+
 export async function createClient() {
   const cookieStore = await cookies();
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://qfmjjhitknwnbfblohvw.supabase.co";
-  const publishableKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "sb_publishable_XGbrZYx2vxkck6Z-o2AMYA_ncucKEVD";
 
-  return createServerClient(url, publishableKey, {
+  return createServerClient<Database>(supabaseConfig.url, supabaseConfig.publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

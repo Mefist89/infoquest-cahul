@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { getRiskIndicatorClass, getRiskLevel } from "@/lib/risk-level";
 
 type AiLocale = "ro" | "ru";
 type Attachment = { name: string; url: string; file: File };
@@ -56,6 +57,8 @@ const content = {
     consent: "Am înțeles și sunt de acord cu trimiterea acestor date pentru analiza solicitată.",
     consentRequired: "Confirmă acordul privind prelucrarea datelor înainte de înregistrare sau trimitere.",
     privacyLink: "Politica de confidențialitate",
+    removeAttachment: "Elimină atașamentul",
+    thinking: "Chrono analizează mesajul…",
   },
   ru: {
     title: "Онлайн-помощник AI",
@@ -87,6 +90,8 @@ const content = {
     consent: "Я понял(а) и согласен(на) на передачу этих данных для запрошенного анализа.",
     consentRequired: "Подтвердите согласие на обработку данных перед записью или отправкой.",
     privacyLink: "Политика конфиденциальности",
+    removeAttachment: "Удалить вложение",
+    thinking: "Chrono анализирует сообщение…",
   },
 } as const;
 
@@ -155,8 +160,9 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
   const fileUrlsRef = useRef<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const latestAnalysis = useMemo(() => [...messages].reverse().find((message) => message.analysis)?.analysis, [messages]);
-  const highRisk = (latestAnalysis?.risk ?? 0) > 70;
-  const lowRisk = latestAnalysis !== undefined && latestAnalysis.risk < 30;
+  const latestRiskLevel = latestAnalysis ? getRiskLevel(latestAnalysis.risk) : null;
+  const highRisk = latestRiskLevel === "high";
+  const lowRisk = latestRiskLevel === "low";
 
   const robotImage = useMemo(() => {
     if (thinking) return "/characters/chrono/04_sad_thinking.png";
@@ -391,8 +397,8 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                   <article className={`relative max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed sm:max-w-[75%] ${message.role === "user" ? "rounded-br-md bg-neon text-primary-foreground" : "rounded-bl-md border border-border bg-background/55 text-foreground"}`}>
-                    {message.analysis && message.analysis.risk > 70 && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-danger/90 shadow-[0_0_24px_rgba(255,60,80,0.35)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
-                    {message.analysis && message.analysis.risk >= 30 && message.analysis.risk <= 70 && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-gold/90 shadow-[0_0_24px_rgba(255,195,60,0.32)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
+                    {message.analysis && getRiskLevel(message.analysis.risk) === "high" && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-danger/90 shadow-[0_0_24px_rgba(255,60,80,0.35)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
+                    {message.analysis && getRiskLevel(message.analysis.risk) === "medium" && <span className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-gold/90 shadow-[0_0_24px_rgba(255,195,60,0.32)] animate-pulse [animation-duration:2s]" aria-hidden="true" />}
                     {message.attachment && <audio src={message.attachment.url} controls className="mb-3 max-w-full" />}
                     {message.text && <p>{message.text}</p>}
                     {message.analysis && (
@@ -401,7 +407,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                           <span className={`rounded-full border px-3 py-1 text-xs font-black ${message.analysis.verdict === "likely_scam" ? "border-danger/45 bg-danger/10 text-danger" : message.analysis.verdict === "suspicious" ? "border-gold/45 bg-gold/10 text-gold" : message.analysis.verdict === "likely_safe" ? "border-success/45 bg-success/10 text-success" : "border-border bg-secondary text-muted-foreground"}`}>{t.verdicts[message.analysis.verdict]}</span>
                           <span className="font-display text-xs font-black text-gold">{t.risk}: {message.analysis.risk}%</span>
                         </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full rounded-full ${message.analysis.risk >= 70 ? "bg-danger" : message.analysis.risk >= 40 ? "bg-gold" : "bg-success"}`} style={{ width: `${message.analysis.risk}%` }} /></div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full rounded-full ${getRiskIndicatorClass(getRiskLevel(message.analysis.risk))}`} style={{ width: `${message.analysis.risk}%` }} /></div>
                         <p className="text-xs text-muted-foreground">{message.analysis.summary}</p>
                         {message.analysis.signals.length > 0 && <div><strong className="text-xs text-neon">{t.signals}</strong><ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-muted-foreground">{message.analysis.signals.map((signal) => <li key={signal}>{signal}</li>)}</ul></div>}
                         <div><strong className="text-xs text-success">{t.actions}</strong><ol className="mt-1 list-decimal space-y-1 pl-5 text-xs text-muted-foreground">{message.analysis.actions.map((action) => <li key={action}>{action}</li>)}</ol></div>
@@ -413,7 +419,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                   </article>
                 </div>
               ))}
-              {thinking && <div className="flex justify-start"><div className="flex items-center gap-1 rounded-2xl rounded-bl-md border border-border bg-background/55 px-4 py-4"><span className="size-2 animate-bounce rounded-full bg-neon" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:120ms]" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:240ms]" /></div></div>}
+              {thinking && <div className="flex justify-start"><div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-border bg-background/55 px-4 py-4" role="status" aria-live="polite"><span className="flex gap-1" aria-hidden="true"><span className="size-2 animate-bounce rounded-full bg-neon" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:120ms]" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:240ms]" /></span><span className="text-xs text-muted-foreground">{t.thinking}</span></div></div>}
               <div ref={bottomRef} />
             </div>
 
@@ -425,7 +431,7 @@ export function AiHelpChat({ locale }: { locale: AiLocale }) {
                 <div className="mb-3 flex items-center gap-3 rounded-xl border border-neon/25 bg-card/70 p-2">
                   <span className="grid size-12 place-items-center rounded-lg bg-success/10 text-success"><FileAudio className="size-6" /></span>
                   <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{attachment.name}</p><p className="text-xs text-muted-foreground">{t.audio} · {(attachment.file.size / 1024 / 1024).toFixed(1)} MB</p></div>
-                  <button type="button" onClick={() => setAttachment(null)} className="focus-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
+                  <button type="button" onClick={() => setAttachment(null)} aria-label={`${t.removeAttachment}: ${attachment.name}`} className="focus-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
                 </div>
               )}
               <div className="mb-3 rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs leading-relaxed text-muted-foreground">

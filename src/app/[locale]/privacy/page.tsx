@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { LegalDocumentPage } from "@/components/legal/LegalDocumentPage";
 import type { LegalLocale } from "@/data/legal-content";
+import { localizedAlternates } from "@/lib/site";
 
 type PageProps = { params: Promise<{ locale: string }> };
 
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       locale === "ro"
         ? "Cum protejează InfoQuest datele și confidențialitatea utilizatorilor."
         : "Как InfoQuest защищает данные и конфиденциальность пользователей.",
+    alternates: localizedAlternates("/privacy", locale),
   };
 }
 

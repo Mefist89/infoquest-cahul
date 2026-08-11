@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -13,6 +13,7 @@ import {
   TOTAL_STAGE_COUNT,
 } from "@/data/module-catalog";
 import { canUseAi, isAdministrator, isUserRole, USER_ROLES } from "@/lib/roles";
+import { getRiskIndicatorClass, getRiskLevel } from "@/lib/risk-level";
 
 describe("единый каталог модулей", () => {
   it("содержит восемь модулей и восемь этапов", () => {
@@ -36,6 +37,26 @@ describe("единый каталог модулей", () => {
   });
 });
 
+describe("Supabase configuration contract", () => {
+  const supabaseDirectory = join(process.cwd(), "src/lib/supabase");
+  const clientSources = ["client.ts", "server.ts", "proxy.ts"]
+    .map((file) => readFileSync(join(supabaseDirectory, file), "utf8"))
+    .join("\n");
+
+  it("uses typed clients and has no embedded production fallback", () => {
+    expect(clientSources).toContain("<Database>");
+    expect(clientSources).not.toContain("qfmjjhitknwnbfblohvw.supabase.co");
+    expect(clientSources).not.toContain("sb_publishable_");
+  });
+
+  it("keeps required public environment variables in one fail-fast validator", () => {
+    const configSource = readFileSync(join(supabaseDirectory, "config.ts"), "utf8");
+    expect(configSource).toContain("Missing required environment variable");
+    expect(configSource).toContain("NEXT_PUBLIC_SUPABASE_URL");
+    expect(configSource).toContain("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
+  });
+});
+
 describe("роли и доступ к Chrono", () => {
   it("распознаёт только поддерживаемые роли", () => {
     USER_ROLES.forEach((role) => expect(isUserRole(role)).toBe(true));
@@ -56,7 +77,13 @@ describe("роли и доступ к Chrono", () => {
 });
 
 describe("контракт клавиатурной доступности первого модуля", () => {
-  const source = readFileSync(join(process.cwd(), "src/components/modules/OperatorCallModule.tsx"), "utf8");
+  const moduleDirectory = join(process.cwd(), "src/components/modules/operator-call");
+  const source = [
+    readFileSync(join(process.cwd(), "src/components/modules/OperatorCallModule.tsx"), "utf8"),
+    ...readdirSync(moduleDirectory)
+      .filter((file) => file.endsWith(".tsx"))
+      .map((file) => readFileSync(join(moduleDirectory, file), "utf8")),
+  ].join("\n");
 
   it("не использует кликабельные div, span или p", () => {
     expect(source).not.toMatch(/<(?:div|span|p)\b[^>]*\bonClick=/u);
@@ -67,5 +94,184 @@ describe("контракт клавиатурной доступности пе�
     expect(source).toContain('aria-live="polite"');
     expect(source).toContain("setPaused");
     expect(source).toContain("setBlitzPaused");
+  });
+});
+
+describe("архитектурная граница первого модуля", () => {
+  const coordinatorPath = join(process.cwd(), "src/components/modules/OperatorCallModule.tsx");
+  const stageDirectory = join(process.cwd(), "src/components/modules/operator-call");
+
+  it("оставляет координатор компактным и не создаёт новый монолит этапов", () => {
+    expect(readFileSync(coordinatorPath, "utf8").split(/\r?\n/u).length).toBeLessThanOrEqual(300);
+    for (const file of readdirSync(stageDirectory).filter((name) => name.endsWith(".tsx"))) {
+      expect(readFileSync(join(stageDirectory, file), "utf8").split(/\r?\n/u).length, file).toBeLessThanOrEqual(400);
+    }
+  });
+
+  it("делегирует прогресс общему ModuleRunner-контроллеру", () => {
+    const coordinator = readFileSync(coordinatorPath, "utf8");
+    const runner = readFileSync(join(process.cwd(), "src/features/modules/runner/use-module-runner.ts"), "utf8");
+    expect(coordinator).toContain("useModuleRunner");
+    expect(coordinator).not.toContain('rpc("complete_module_stage"');
+    expect(runner).toContain('rpc("complete_module_stage"');
+    expect(runner).toContain("unlockedThrough");
+  });
+});
+
+describe("architecture boundaries", () => {
+  it("keeps the TypeScript and Supabase module catalogs aligned", () => {
+    const migration = readFileSync(join(process.cwd(), "supabase/migrations/20260809200000_create_module_catalog.sql"), "utf8");
+    MODULE_CATALOG.forEach((module) => expect(migration).toContain(`('${module.moduleId}', ${module.id},`));
+    MODULE_STAGES.forEach((stage) => expect(migration).toContain(`(${stage.index}, '${stage.kind}',`));
+  });
+
+  it("keeps provider-specific endpoints outside the AI route", () => {
+    const route = readFileSync(join(process.cwd(), "src/app/api/ai/route.ts"), "utf8");
+    const provider = readFileSync(join(process.cwd(), "src/features/ai-help/server/openai-compatible-provider.ts"), "utf8");
+    expect(route).toContain("createAiProvider");
+    expect(route).not.toContain("/chat/completions");
+    expect(route).not.toContain("/audio/transcriptions");
+    expect(provider).toContain("interface AiProvider");
+    expect(provider).toContain("/chat/completions");
+    expect(provider).toContain("/audio/transcriptions");
+  });
+
+  it("records the modular-monolith decision and revisit triggers", () => {
+    const adr = readFileSync(join(process.cwd(), "docs/architecture/adr-001-modular-monolith-boundaries.md"), "utf8");
+    expect(adr).toContain("Модульный монолит");
+    expect(adr).toContain("Когда пересмотреть");
+  });
+});
+
+describe("route boundaries and placeholder routes", () => {
+  const appDirectory = join(process.cwd(), "src/app/[locale]");
+  const placeholderPages = [
+    "intro/page.tsx",
+    "map/page.tsx",
+    "results/page.tsx",
+    "modules/fake-link/page.tsx",
+    "modules/hacked-account/page.tsx",
+    "modules/scam-or-real/page.tsx",
+    "modules/deepfake-detective/page.tsx",
+  ];
+
+  it("does not leave any planned route as an empty page", () => {
+    for (const page of placeholderPages) {
+      const source = readFileSync(join(appDirectory, page), "utf8");
+      expect(source, page).not.toMatch(/return\s+null/u);
+      expect(source, page).toContain("PlaceholderRoutePage");
+    }
+  });
+
+  it("provides localized loading, error and not-found boundaries", () => {
+    for (const boundary of ["loading.tsx", "error.tsx", "not-found.tsx"]) {
+      const source = readFileSync(join(appDirectory, boundary), "utf8");
+      expect(source, boundary).toContain('pathname?.startsWith("/ro")');
+      expect(source, boundary).toContain("ru:");
+      expect(source, boundary).toContain("ro:");
+    }
+  });
+});
+
+describe("media performance budget", () => {
+  const videoFiles = [
+    "public/video/2-video_ro.mp4",
+    "public/video/2-video_ru.mp4",
+    "public/video/3video.mp4",
+    "public/promo.mp4",
+    "public/promo_ro.mp4",
+  ];
+
+  it("keeps every video under 12 MiB and the current set under 25 MiB", () => {
+    const sizes = videoFiles.map((file) => statSync(join(process.cwd(), file)).size);
+    sizes.forEach((size) => expect(size).toBeLessThanOrEqual(12 * 1024 * 1024));
+    expect(sizes.reduce((total, size) => total + size, 0)).toBeLessThanOrEqual(25 * 1024 * 1024);
+  });
+});
+
+describe("UX and accessibility contracts", () => {
+  it("uses one risk threshold function for frame and indicator", () => {
+    expect(getRiskLevel(29)).toBe("low");
+    expect(getRiskLevel(30)).toBe("medium");
+    expect(getRiskLevel(70)).toBe("medium");
+    expect(getRiskLevel(71)).toBe("high");
+    expect(getRiskIndicatorClass(getRiskLevel(70))).toBe("bg-gold");
+  });
+
+  it("uses a modal primitive with managed focus", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/Modal.tsx"), "utf8");
+    expect(source).toContain("Dialog.Root");
+    expect(source).toContain("Dialog.Popup");
+    expect(source).toContain("initialFocus={closeButtonRef}");
+    expect(source).toContain("Dialog.Close");
+  });
+
+  it("removes the hidden scroll button from the tab order", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/ScrollToTop.tsx"), "utf8");
+    expect(source).toContain("if (!isVisible) return null");
+  });
+
+  it("allows skipping typewriter animation and respects reduced motion", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/modules/operator-call/intro-media-stages.tsx"), "utf8");
+    expect(source).toContain('prefers-reduced-motion: reduce');
+    expect(source).toContain("showAllLabel");
+  });
+
+  it("announces AI thinking and names attachment removal", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8");
+    expect(source).toContain("t.thinking");
+    expect(source).toContain("t.removeAttachment");
+    expect(source).toContain('role="status"');
+  });
+
+  it("keeps automatic carousel changes out of its live region", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/HomePage.tsx"), "utf8");
+    expect(source).toContain("setAnnouncement");
+    expect(source).not.toMatch(/key=\{slide\.id\}[^>]*aria-live/u);
+  });
+});
+
+describe("repository completeness and SEO", () => {
+  it("does not keep the removed empty game-engine placeholders", () => {
+    const removedPlaceholders = [
+      "src/lib/game-store.ts",
+      "src/lib/scoring.ts",
+      "src/lib/storage.ts",
+      "src/components/game/GameShell.tsx",
+      "src/data/operator-call.json",
+    ];
+
+    removedPlaceholders.forEach((file) => expect(existsSync(join(process.cwd(), file)), file).toBe(false));
+    expect(readFileSync(join(process.cwd(), "src/lib/types.ts"), "utf8").trim().length).toBeGreaterThan(0);
+  });
+
+  it("documents the current one-module MVP and operational setup", () => {
+    const readme = readFileSync(join(process.cwd(), "README.md"), "utf8");
+    const scope = readFileSync(join(process.cwd(), "docs/mvp-scope.md"), "utf8");
+    expect(readme).toContain("Supabase и Google OAuth");
+    expect(readme).toContain("AI Chrono");
+    expect(readme).toContain("NEXT_PUBLIC_SITE_URL");
+    expect(scope).toContain("один полностью доступный учебный модуль");
+    expect(scope).toContain("operator-call");
+  });
+
+  it("defines an evidence-based GO/NO-GO gate for the public pilot", () => {
+    const definitionOfDone = readFileSync(join(process.cwd(), "docs/public-pilot-definition-of-done.md"), "utf8");
+    expect(definitionOfDone).toContain("G-01");
+    expect(definitionOfDone).toContain("G-08");
+    expect(definitionOfDone).toContain("Условия немедленной остановки");
+    expect(definitionOfDone).toContain("GO / NO-GO");
+  });
+
+  it("publishes sitemap, robots, OpenGraph, canonical and language alternates", () => {
+    const sitemap = readFileSync(join(process.cwd(), "src/app/sitemap.ts"), "utf8");
+    const robots = readFileSync(join(process.cwd(), "src/app/robots.ts"), "utf8");
+    const ogImage = readFileSync(join(process.cwd(), "src/app/[locale]/opengraph-image.tsx"), "utf8");
+    const homeMetadata = readFileSync(join(process.cwd(), "src/app/[locale]/page.tsx"), "utf8");
+    expect(sitemap).toContain("alternates");
+    expect(robots).toContain("/sitemap.xml");
+    expect(ogImage).toContain("ImageResponse");
+    expect(homeMetadata).toContain("localizedAlternates");
+    expect(homeMetadata).toContain("openGraph");
   });
 });

@@ -5,6 +5,7 @@ import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MODULE_IDS } from "@/data/module-catalog";
 import type { OperatorLocale } from "@/data/operator-call";
+import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 
@@ -39,8 +40,8 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
     <>
       <OperatorCallModule
         locale={locale}
-        initialStages={(stages ?? []) as Array<{ stage_index: number; status: "not_started" | "in_progress" | "completed"; score: number }>}
-        initialModule={moduleProgress as { status: "not_started" | "in_progress" | "completed"; xp: number; score: number } | null}
+        initialStages={(stages ?? []) as StageProgress[]}
+        initialModule={moduleProgress as ModuleProgress}
         isAdmin={isAdministrator(isUserRole(profile?.role) ? profile.role : null)}
       />
       <SiteFooter lang={locale} />
