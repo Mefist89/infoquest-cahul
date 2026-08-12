@@ -124,4 +124,4 @@ end;
 $$;
 
 revoke execute on function public.complete_module_stage(text, smallint, integer) from public, anon;
-grant execute on function public.complete_module_stage(text, smallint, integer) to authenticated;
+grant execute on function public.complete_module_stage(text, smallint, integer) to authenticated;;

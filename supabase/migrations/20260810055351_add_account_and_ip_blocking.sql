@@ -283,3 +283,5 @@ drop trigger if exists prevent_blocked_stage_progress_write on public.module_sta
 create trigger prevent_blocked_stage_progress_write
 before insert or update on public.module_stage_progress
 for each row execute function public.prevent_blocked_progress_write();
+
+;

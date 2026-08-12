@@ -120,7 +120,7 @@ describe("архитектурная граница первого модуля"
 
 describe("architecture boundaries", () => {
   it("keeps the TypeScript and Supabase module catalogs aligned", () => {
-    const migration = readFileSync(join(process.cwd(), "supabase/migrations/20260809200000_create_module_catalog.sql"), "utf8");
+    const migration = readFileSync(join(process.cwd(), "supabase/migrations/20260809161329_create_module_catalog.sql"), "utf8");
     MODULE_CATALOG.forEach((module) => expect(migration).toContain(`('${module.moduleId}', ${module.id},`));
     MODULE_STAGES.forEach((stage) => expect(migration).toContain(`(${stage.index}, '${stage.kind}',`));
   });
@@ -261,6 +261,56 @@ describe("repository completeness and SEO", () => {
     expect(definitionOfDone).toContain("G-08");
     expect(definitionOfDone).toContain("Условия немедленной остановки");
     expect(definitionOfDone).toContain("GO / NO-GO");
+  });
+
+  it("keeps a complete application overview for product and technical handoff", () => {
+    const overview = readFileSync(join(process.cwd(), "docs/application-overview.md"), "utf8");
+    expect(overview).toContain("Общая информация");
+    expect(overview).toContain("Первый модуль");
+    expect(overview).toContain("AI-помощник Chrono");
+    expect(overview).toContain("Данные Supabase");
+    expect(overview).toContain("Архитектура");
+    expect(overview).toContain("Что не входит в текущую версию");
+  });
+
+  it("keeps the admin dashboard connected to real data and management actions", () => {
+    const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/admin/page.tsx"), "utf8");
+    expect(dashboard).toContain('supabase.rpc("get_admin_dashboard")');
+    expect(dashboard).toContain('supabase.rpc("get_ai_budget_status")');
+    expect(dashboard).toContain('href="#overview"');
+    expect(dashboard).toContain('href="#learning"');
+    expect(dashboard).toContain('href="#users"');
+    expect(dashboard).toContain('href="#security"');
+    expect(dashboard).toContain("<ActivityChart");
+    expect(dashboard).toContain("<RoleChart");
+    expect(dashboard).toContain("<ModuleBar");
+    expect(dashboard).toContain("action={updateUserRole}");
+    expect(dashboard).toContain("action={toggleUserIpBlock}");
+  });
+
+  it("keeps the user dashboard connected to progress, missions and rewards", () => {
+    const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/profile/page.tsx"), "utf8");
+    expect(dashboard).toContain('supabase.from("module_progress")');
+    expect(dashboard).toContain('supabase.from("module_stage_progress")');
+    expect(dashboard).toContain('href="#overview"');
+    expect(dashboard).toContain('href="#missions"');
+    expect(dashboard).toContain('href="#achievements"');
+    expect(dashboard).toContain("MODULE_CATALOG.map");
+    expect(dashboard).toContain("module.badge[locale]");
+    expect(dashboard).toContain("<ProgressDonut");
+  });
+
+  it("keeps independent quests separate from modules and administrator-only", () => {
+    const migration = readFileSync(join(process.cwd(), "supabase/migrations/20260812190000_create_quests_catalog.sql"), "utf8");
+    const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/admin/page.tsx"), "utf8");
+    expect(migration).toContain("create table public.quests");
+    expect(migration).toContain("config jsonb");
+    expect(migration).toContain("quests_administrator_all");
+    expect(migration).toContain("profiles.role = 'administrator'");
+    expect(migration).not.toContain("references public.module_catalog");
+    expect(dashboard).toContain('supabase.from("quests")');
+    expect(dashboard).toContain('href="#quests"');
+    expect(dashboard).toContain("<QuestCard");
   });
 
   it("publishes sitemap, robots, OpenGraph, canonical and language alternates", () => {

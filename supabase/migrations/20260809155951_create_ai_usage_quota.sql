@@ -112,3 +112,5 @@ revoke execute on function public.acquire_ai_request(boolean, uuid) from public,
 revoke execute on function public.release_ai_request(uuid) from public, anon;
 grant execute on function public.acquire_ai_request(boolean, uuid) to authenticated;
 grant execute on function public.release_ai_request(uuid) to authenticated;
+
+;

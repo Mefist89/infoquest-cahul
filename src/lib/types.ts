@@ -9,3 +9,4 @@ export type {
 export type Profile = import("@/lib/supabase/database.types").Tables<"profiles">;
 export type ModuleProgressRow = import("@/lib/supabase/database.types").Tables<"module_progress">;
 export type ModuleStageProgressRow = import("@/lib/supabase/database.types").Tables<"module_stage_progress">;
+export type QuestRow = import("@/lib/supabase/database.types").Tables<"quests">;

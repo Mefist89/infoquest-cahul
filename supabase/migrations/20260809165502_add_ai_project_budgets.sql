@@ -228,4 +228,4 @@ end;
 $$;
 
 revoke execute on function public.get_ai_budget_status() from public, anon;
-grant execute on function public.get_ai_budget_status() to authenticated;
+grant execute on function public.get_ai_budget_status() to authenticated;;

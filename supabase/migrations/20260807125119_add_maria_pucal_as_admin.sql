@@ -14,3 +14,5 @@ begin
   execute replace(function_definition, old_check, new_check);
 end;
 $$;
+
+;

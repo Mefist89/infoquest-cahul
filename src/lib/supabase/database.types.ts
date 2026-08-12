@@ -235,6 +235,66 @@ export type Database = {
         };
         Relationships: Relationship[];
       };
+      quests: {
+        Row: {
+          config: Json;
+          cover_image_url: string | null;
+          created_at: string;
+          created_by: string | null;
+          game_type: string;
+          id: string;
+          is_featured: boolean;
+          published_at: string | null;
+          route: string | null;
+          slug: string;
+          sort_order: number;
+          status: string;
+          summary_ro: string | null;
+          summary_ru: string | null;
+          title_ro: string;
+          title_ru: string;
+          updated_at: string;
+        };
+        Insert: {
+          config?: Json;
+          cover_image_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          game_type?: string;
+          id?: string;
+          is_featured?: boolean;
+          published_at?: string | null;
+          route?: string | null;
+          slug: string;
+          sort_order?: number;
+          status?: string;
+          summary_ro?: string | null;
+          summary_ru?: string | null;
+          title_ro: string;
+          title_ru: string;
+          updated_at?: string;
+        };
+        Update: {
+          config?: Json;
+          cover_image_url?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          game_type?: string;
+          id?: string;
+          is_featured?: boolean;
+          published_at?: string | null;
+          route?: string | null;
+          slug?: string;
+          sort_order?: number;
+          status?: string;
+          summary_ro?: string | null;
+          summary_ru?: string | null;
+          title_ro?: string;
+          title_ru?: string;
+          updated_at?: string;
+        };
+        Relationships: Relationship[];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;

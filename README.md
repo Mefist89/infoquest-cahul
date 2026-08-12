@@ -92,6 +92,7 @@ Production размещён на `https://infoquest-cahul.vercel.app`. В Vercel
 
 ## Документация
 
+- [`docs/application-overview.md`](docs/application-overview.md) — полное описание приложения, функций, страниц, данных и архитектуры;
 - [`docs/mvp-scope.md`](docs/mvp-scope.md) — актуальный объём MVP;
 - [`docs/public-pilot-definition-of-done.md`](docs/public-pilot-definition-of-done.md) — обязательные критерии GO/NO-GO публичного пилота;
 - [`docs/architecture/adr-001-modular-monolith-boundaries.md`](docs/architecture/adr-001-modular-monolith-boundaries.md) — архитектурные границы и компромиссы;
