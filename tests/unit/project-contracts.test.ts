@@ -301,11 +301,17 @@ describe("repository completeness and SEO", () => {
 
   it("keeps the user dashboard connected to progress, missions and rewards", () => {
     const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/profile/page.tsx"), "utf8");
+    const sectionPage = readFileSync(join(process.cwd(), "src/app/[locale]/profile/[section]/page.tsx"), "utf8");
     expect(dashboard).toContain('supabase.from("module_progress")');
     expect(dashboard).toContain('supabase.from("module_stage_progress")');
-    expect(dashboard).toContain('href="#overview"');
-    expect(dashboard).toContain('href="#missions"');
-    expect(dashboard).toContain('href="#achievements"');
+    expect(dashboard).toContain('href={`/${locale}/profile`}');
+    expect(dashboard).toContain('href={`/${locale}/profile/missions`}');
+    expect(dashboard).toContain('href={`/${locale}/profile/achievements`}');
+    expect(dashboard).toContain('href={`/${locale}/profile/quests`}');
+    expect(dashboard).toContain('section === "overview"');
+    expect(dashboard).toContain('section === "quests"');
+    expect(sectionPage).toContain("isProfileSection(section)");
+    expect(sectionPage).toContain("renderProfileDashboard(locale, section)");
     expect(dashboard).toContain("MODULE_CATALOG.map");
     expect(dashboard).toContain("module.badge[locale]");
     expect(dashboard).toContain("<ProgressDonut");

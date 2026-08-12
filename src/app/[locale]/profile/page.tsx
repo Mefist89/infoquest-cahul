@@ -10,6 +10,7 @@ import {
   ChevronRight,
   CircleGauge,
   Clock3,
+  Compass,
   Gift,
   GraduationCap,
   Home,
@@ -44,6 +45,7 @@ import { canUseAi, isAdministrator, isUserRole, ROLE_LABELS, type UserRole } fro
 import { createClient } from "@/lib/supabase/server";
 
 type ProfileLocale = "ru" | "ro";
+export type ProfileSection = "overview" | "missions" | "achievements" | "quests";
 type ProgressStatus = "not_started" | "in_progress" | "completed";
 type ProgressRow = { module_id: string; status: ProgressStatus; score: number; xp: number; attempts: number };
 type StageProgressRow = { module_id: string; status: ProgressStatus };
@@ -72,6 +74,7 @@ const copy = {
     overview: "Обзор",
     missions: "Мои миссии",
     achievements: "Награды",
+    quests: "Квесты",
     aiHelp: "Chrono AI",
     xp: "Всего XP",
     completed: "Пройдено",
@@ -94,6 +97,10 @@ const copy = {
     badgesHint: "Каждое завершённое расследование открывает отдельный бейдж.",
     earned: "Получено",
     notEarned: "Не получено",
+    questsTitle: "Отдельные игровые квесты",
+    questsHint: "Здесь появятся дополнительные игры, которые не влияют на обязательный прогресс восьми учебных миссий.",
+    questsEmpty: "Первый квест ещё разрабатывается. Когда он будет готов, он появится на этой странице.",
+    questsSoon: "Скоро",
     aiRestricted: "AI-помощник Chrono доступен ученикам, учителям и администраторам. Администратор может изменить вашу роль.",
     statuses: { not_started: "Не начато", in_progress: "В процессе", completed: "Пройдено" },
   },
@@ -109,6 +116,7 @@ const copy = {
     overview: "Prezentare",
     missions: "Misiunile mele",
     achievements: "Recompense",
+    quests: "Quest-uri",
     aiHelp: "Chrono AI",
     xp: "XP total",
     completed: "Finalizate",
@@ -131,6 +139,10 @@ const copy = {
     badgesHint: "Fiecare investigație finalizată deblochează o insignă separată.",
     earned: "Obținută",
     notEarned: "Neobținută",
+    questsTitle: "Quest-uri de joc separate",
+    questsHint: "Aici vor apărea jocuri suplimentare care nu influențează progresul obligatoriu al celor opt misiuni educaționale.",
+    questsEmpty: "Primul quest este încă în dezvoltare. Când va fi gata, va apărea pe această pagină.",
+    questsSoon: "În curând",
     aiRestricted: "Asistentul AI Chrono este disponibil elevilor, profesorilor și administratorilor. Un administrator îți poate schimba rolul.",
     statuses: { not_started: "Neînceput", in_progress: "În desfășurare", completed: "Finalizat" },
   },
@@ -138,6 +150,10 @@ const copy = {
 
 function isLocale(locale: string): locale is ProfileLocale {
   return locale === "ru" || locale === "ro";
+}
+
+export function isProfileSection(section: string): section is ProfileSection {
+  return ["overview", "missions", "achievements", "quests"].includes(section);
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -148,8 +164,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ ai?: string | string[] }> }) {
   const { locale } = await params;
+  return renderProfileDashboard(locale, "overview", await searchParams);
+}
+
+export async function renderProfileDashboard(locale: string, section: ProfileSection, query: { ai?: string | string[] } = {}) {
   if (!isLocale(locale)) notFound();
-  const query = await searchParams;
 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -190,6 +209,8 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const currentProgress = byModule.get(currentModule.moduleId) ?? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 };
   const currentStages = completedStagesByModule.get(currentModule.moduleId) ?? 0;
   const CurrentModuleIcon = moduleIcons[currentModule.icon];
+  const sectionPath = section === "overview" ? "" : `/${section}`;
+  const sectionLabel = section === "overview" ? t.overview : section === "missions" ? t.missions : section === "achievements" ? t.achievements : t.quests;
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,rgba(2,8,23,0.98),rgba(7,20,48,0.96))]">
@@ -209,9 +230,10 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
 
           <p className="mt-7 hidden px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
           <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible" aria-label={t.navigation}>
-            <DashboardNavLink href="#overview" icon={LayoutDashboard} label={t.overview} active />
-            <DashboardNavLink href="#missions" icon={GraduationCap} label={t.missions} />
-            <DashboardNavLink href="#achievements" icon={Trophy} label={t.achievements} />
+            <DashboardNavLink href={`/${locale}/profile`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
+            <DashboardNavLink href={`/${locale}/profile/missions`} icon={GraduationCap} label={t.missions} active={section === "missions"} />
+            <DashboardNavLink href={`/${locale}/profile/achievements`} icon={Trophy} label={t.achievements} active={section === "achievements"} />
+            <DashboardNavLink href={`/${locale}/profile/quests`} icon={Compass} label={t.quests} active={section === "quests"} />
             {canUseAi(userRole) && <DashboardNavLink href={`/${locale}/ai-help`} icon={Bot} label={t.aiHelp} />}
           </nav>
 
@@ -222,7 +244,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
 
           <div className="mt-5 hidden lg:mt-auto lg:block lg:pt-5">
             <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
-              <LanguageNav locale={locale} />
+              <LanguageNav locale={locale} sectionPath={sectionPath} />
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
           </div>
@@ -230,13 +252,13 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
 
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest</p><p className="font-bold">Dashboard</p></div></div>
-            <div className="flex items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} /><SignOutButton locale={locale} label={t.signOut} /></div>
+            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
+            <div className="flex items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
           </header>
 
           {query.ai === "restricted" && <div role="alert" className="mt-6 rounded-2xl border border-gold/45 bg-gold/10 px-5 py-4 text-sm text-foreground"><strong className="text-gold">{t.role}: {ROLE_LABELS[userRole][locale]}.</strong> {t.aiRestricted}</div>}
 
-          <section id="overview" className="scroll-mt-6 pt-8">
+          {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8 pb-10">
             <div className="flex flex-wrap items-end justify-between gap-5">
               <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-neon">{t.detective}</p><h1 className="mt-2 text-3xl font-black sm:text-4xl xl:text-5xl">{t.greeting}, {displayName}</h1><p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">{t.greetingText}</p></div>
               <Link href={`/${locale}${currentModule.route}`} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground shadow-[0_0_25px_rgba(0,217,255,0.2)] transition hover:-translate-y-0.5"><PhoneCall className="size-4" aria-hidden="true" />{t.continue}<ChevronRight className="size-4" aria-hidden="true" /></Link>
@@ -257,9 +279,9 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                 <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center"><div><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl border border-gold/50 font-display text-xs font-black text-gold">01</span><h2 className="font-black">{currentModule.title[locale]}</h2></div><div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{t.stages}: {currentStages}/{STAGE_COUNT}</span><span>{currentProgress.xp}/{MODULE_MAX_XP} XP</span><span>{t.score}: {currentProgress.attempts ? `${currentProgress.score}%` : t.noScore}</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-label={currentModule.title[locale]} aria-valuenow={currentStages} aria-valuemin={0} aria-valuemax={STAGE_COUNT}><div className="h-full rounded-full bg-neon" style={{ width: `${(currentStages / STAGE_COUNT) * 100}%` }} /></div></div><Link href={`/${locale}${currentModule.route}`} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-4 text-sm font-bold text-neon">{t.open}<ChevronRight className="size-4" aria-hidden="true" /></Link></div>
               </DashboardPanel>
             </div>
-          </section>
+          </section>}
 
-          <section id="missions" className="scroll-mt-6 pt-10">
+          {section === "missions" && <section id="missions" className="scroll-mt-6 py-10">
             <SectionHeading title={t.modules} description={t.moduleHint} icon={GraduationCap} />
             <div className="mt-5 grid gap-4 xl:grid-cols-2">
               {MODULE_CATALOG.map((module) => {
@@ -272,9 +294,9 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                 return <article key={module.moduleId} className={`group rounded-2xl border bg-card/55 p-5 transition ${locked ? "border-border/60" : "border-neon/30 hover:-translate-y-0.5 hover:border-neon/60"}`}><div className="flex items-start gap-4"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-background/60"><Icon className="size-6" style={{ color: module.color }} aria-hidden="true" /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><h3 className="font-bold">{module.title[locale]}</h3><span className="font-display text-xs text-gold">0{module.id}</span></div><div className="mt-2 flex flex-wrap gap-2 text-xs"><span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-semibold ${statusStyles}`}>{item.status === "completed" ? <Check className="size-3" aria-hidden="true" /> : <Clock3 className="size-3" aria-hidden="true" />}{t.statuses[item.status]}</span><span className="py-1 text-muted-foreground">{completedStages}/{STAGE_COUNT} · {moduleXp}/{MODULE_MAX_XP} XP</span></div></div></div><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full rounded-full ${locked ? "bg-muted-foreground/35" : "bg-neon"}`} style={{ width: `${(moduleXp / MODULE_MAX_XP) * 100}%` }} /></div><div className="mt-4 flex justify-end">{locked || !module.route ? <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-secondary/45 px-3 text-xs font-bold text-muted-foreground"><Lock className="size-3.5" aria-hidden="true" />{t.locked}</span> : <Link href={`/${locale}${module.route}`} className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-xs font-bold text-neon">{t.open}<ChevronRight className="size-3.5" aria-hidden="true" /></Link>}</div></article>;
               })}
             </div>
-          </section>
+          </section>}
 
-          <section id="achievements" className="scroll-mt-6 py-10">
+          {section === "achievements" && <section id="achievements" className="scroll-mt-6 py-10">
             <SectionHeading title={t.badges} description={t.badgesHint} icon={Trophy} />
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {MODULE_CATALOG.map((module) => {
@@ -282,15 +304,24 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                 return <article key={module.moduleId} className={`rounded-2xl border p-4 ${earned ? "border-gold/45 bg-gold/10" : "border-border/65 bg-card/45"}`}><div className="flex items-start gap-3"><span className={`grid size-11 shrink-0 place-items-center rounded-xl ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}><Medal className="size-5" aria-hidden="true" /></span><div><h3 className={`text-sm font-bold ${earned ? "text-foreground" : "text-muted-foreground"}`}>{module.badge[locale]}</h3><p className={`mt-2 text-[10px] font-bold uppercase tracking-wider ${earned ? "text-gold" : "text-muted-foreground"}`}>{earned ? t.earned : t.notEarned}</p></div></div></article>;
               })}
             </div>
-          </section>
+          </section>}
+
+          {section === "quests" && <section id="quests" className="scroll-mt-6 py-10">
+            <SectionHeading title={t.questsTitle} description={t.questsHint} icon={Compass} />
+            <div className="mt-5 rounded-3xl border border-dashed border-neon/35 bg-card/45 p-8 text-center sm:p-12">
+              <span className="mx-auto grid size-20 place-items-center rounded-3xl border border-neon/30 bg-neon/10 text-neon shadow-[0_0_28px_rgba(0,217,255,0.12)]"><Compass className="size-10" aria-hidden="true" /></span>
+              <span className="mt-6 inline-flex rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-gold">{t.questsSoon}</span>
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.questsEmpty}</p>
+            </div>
+          </section>}
         </div>
       </div>
     </main>
   );
 }
 
-function LanguageNav({ locale }: { locale: ProfileLocale }) {
-  return <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/profile`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>;
+function LanguageNav({ locale, sectionPath }: { locale: ProfileLocale; sectionPath: string }) {
+  return <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/profile${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>;
 }
 
 function DashboardNavLink({ href, icon: Icon, label, active = false }: { href: string; icon: LucideIcon; label: string; active?: boolean }) {
