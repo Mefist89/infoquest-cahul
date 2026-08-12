@@ -281,12 +281,17 @@ describe("repository completeness and SEO", () => {
 
   it("keeps the admin dashboard connected to real data and management actions", () => {
     const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/admin/page.tsx"), "utf8");
+    const sectionPage = readFileSync(join(process.cwd(), "src/app/[locale]/admin/[section]/page.tsx"), "utf8");
     expect(dashboard).toContain('supabase.rpc("get_admin_dashboard")');
     expect(dashboard).toContain('supabase.rpc("get_ai_budget_status")');
-    expect(dashboard).toContain('href="#overview"');
-    expect(dashboard).toContain('href="#learning"');
-    expect(dashboard).toContain('href="#users"');
-    expect(dashboard).toContain('href="#security"');
+    expect(dashboard).toContain('href={`/${locale}/admin`}');
+    expect(dashboard).toContain('href={`/${locale}/admin/learning`}');
+    expect(dashboard).toContain('href={`/${locale}/admin/quests`}');
+    expect(dashboard).toContain('href={`/${locale}/admin/users`}');
+    expect(dashboard).toContain('href={`/${locale}/admin/security`}');
+    expect(dashboard).toContain('section === "overview"');
+    expect(sectionPage).toContain("isAdminSection(section)");
+    expect(sectionPage).toContain("renderAdminDashboard(locale, section)");
     expect(dashboard).toContain("<ActivityChart");
     expect(dashboard).toContain("<RoleChart");
     expect(dashboard).toContain("<ModuleBar");
@@ -315,7 +320,7 @@ describe("repository completeness and SEO", () => {
     expect(migration).toContain("profiles.role = 'administrator'");
     expect(migration).not.toContain("references public.module_catalog");
     expect(dashboard).toContain('supabase.from("quests")');
-    expect(dashboard).toContain('href="#quests"');
+    expect(dashboard).toContain('href={`/${locale}/admin/quests`}');
     expect(dashboard).toContain("<QuestCard");
   });
 

@@ -33,6 +33,7 @@ import type { QuestRow } from "@/lib/types";
 import { toggleUserIpBlock, updateUserRole } from "./actions";
 
 type AdminLocale = "ru" | "ro";
+export type AdminSection = "overview" | "learning" | "quests" | "users" | "security";
 type ModuleStatus = "not_started" | "in_progress" | "completed";
 type ModuleBreakdown = { module_id: string; status: ModuleStatus; score: number; xp: number; completed_stages: number };
 type AdminUser = {
@@ -182,6 +183,10 @@ function isLocale(locale: string): locale is AdminLocale {
   return locale === "ru" || locale === "ro";
 }
 
+export function isAdminSection(section: string): section is AdminSection {
+  return ["overview", "learning", "quests", "users", "security"].includes(section);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const lang: AdminLocale = locale === "ro" ? "ro" : "ru";
@@ -190,6 +195,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  return renderAdminDashboard(locale, "overview");
+}
+
+export async function renderAdminDashboard(locale: string, section: AdminSection) {
   if (!isLocale(locale)) notFound();
 
   const supabase = await createClient();
@@ -229,6 +238,8 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const adminName = adminProfile?.display_name || authData.user.user_metadata.full_name || authData.user.email?.split("@")[0] || t.admin;
   const adminAvatar = adminProfile?.avatar_url || authData.user.user_metadata.avatar_url;
   const avatarIsSafe = typeof adminAvatar === "string" && adminAvatar.startsWith("https://lh3.googleusercontent.com/");
+  const sectionPath = section === "overview" ? "" : `/${section}`;
+  const sectionLabel = section === "overview" ? t.overview : section === "learning" ? t.learning : section === "quests" ? t.quests : section === "users" ? t.usersSection : t.security;
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,rgba(2,8,23,0.98),rgba(7,20,48,0.96))]">
@@ -250,11 +261,11 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
 
           <p className="mt-7 hidden px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
           <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible" aria-label={t.navigation}>
-            <DashboardNavLink href="#overview" icon={LayoutDashboard} label={t.overview} active />
-            <DashboardNavLink href="#learning" icon={GraduationCap} label={t.learning} />
-            <DashboardNavLink href="#quests" icon={Compass} label={t.quests} />
-            <DashboardNavLink href="#users" icon={Users} label={t.usersSection} />
-            <DashboardNavLink href="#security" icon={LockKeyhole} label={t.security} />
+            <DashboardNavLink href={`/${locale}/admin`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
+            <DashboardNavLink href={`/${locale}/admin/learning`} icon={GraduationCap} label={t.learning} active={section === "learning"} />
+            <DashboardNavLink href={`/${locale}/admin/quests`} icon={Compass} label={t.quests} active={section === "quests"} />
+            <DashboardNavLink href={`/${locale}/admin/users`} icon={Users} label={t.usersSection} active={section === "users"} />
+            <DashboardNavLink href={`/${locale}/admin/security`} icon={LockKeyhole} label={t.security} active={section === "security"} />
           </nav>
 
           <div className="mt-5 hidden border-t border-border/60 pt-5 lg:grid lg:gap-2">
@@ -265,7 +276,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
           <div className="mt-5 hidden lg:mt-auto lg:block lg:pt-5">
             <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
               <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">
-                {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/admin`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
+                {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
               </nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
@@ -274,15 +285,15 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
 
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest</p><p className="font-bold">Dashboard</p></div></div>
+            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
             <div className="flex items-center gap-2 lg:hidden">
               <Link href={`/${locale}/profile`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><UserCog className="size-4" aria-hidden="true" /></Link>
-              <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/admin`} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>
+              <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/admin${sectionPath}`} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
           </header>
 
-          <section id="overview" className="scroll-mt-6 pt-8">
+          {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8">
             <p className="inline-flex items-center gap-2 rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-neon"><Sparkles className="size-3.5" aria-hidden="true" />{t.title}</p>
             <h1 className="mt-4 max-w-4xl text-3xl font-black sm:text-4xl xl:text-5xl">{t.greeting}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
@@ -326,16 +337,16 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
             </div>
 
             {budget && <AiBudgetPanel budget={budget} locale={locale} />}
-          </section>
+          </section>}
 
-          <section id="learning" className="scroll-mt-6 pt-10">
+          {section === "learning" && <section id="learning" className="scroll-mt-6 py-10">
             <SectionHeading title={t.structure} description={t.structureHint} icon={GraduationCap} />
             <ol className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {MODULE_STAGES.map((stage) => <li key={stage.kind} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/55 p-4"><span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-display text-xs font-black ${stage.index === STAGE_COUNT ? "border-gold/60 bg-gold/10 text-gold" : "border-neon/40 bg-neon/10 text-neon"}`}>{stage.index}</span><div><p className="text-sm font-semibold">{stage.title[locale]}</p><p className="mt-1 text-xs text-muted-foreground">+{stage.xp} XP</p></div></li>)}
             </ol>
-          </section>
+          </section>}
 
-          <section id="quests" className="scroll-mt-6 pt-10">
+          {section === "quests" && <section id="quests" className="scroll-mt-6 py-10">
             <SectionHeading title={t.questsTitle} description={t.questsHint} icon={Compass} />
             {quests.length === 0 ? (
               <div className="mt-5 rounded-2xl border border-dashed border-neon/35 bg-card/45 p-6 sm:p-8">
@@ -346,22 +357,22 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
                 {quests.map((quest) => <QuestCard key={quest.id} quest={quest} locale={locale} t={t} />)}
               </div>
             )}
-          </section>
+          </section>}
 
-          <section id="users" className="scroll-mt-6 pt-10">
+          {section === "users" && <section id="users" className="scroll-mt-6 py-10">
             <SectionHeading title={t.list} description={t.listHint} icon={UserCog} />
             <div className="mt-5 grid gap-4">
               {users.length === 0 && <p className="rounded-2xl border border-border bg-card/70 p-6 text-muted-foreground">{t.noUsers}</p>}
               {users.map((user) => <UserCard key={user.user_id} user={user} locale={locale} t={t} access={accessByUser.get(user.user_id)} currentAdminId={authData.user.id} dateFormatter={dateFormatter} />)}
             </div>
-          </section>
+          </section>}
 
-          <section id="security" className="scroll-mt-6 pt-10 pb-10">
+          {section === "security" && <section id="security" className="scroll-mt-6 py-10">
             <SectionHeading title={t.security} description={t.listHint} icon={LockKeyhole} />
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               {USER_ROLES.map((role) => <div key={role} className="rounded-2xl border border-border/70 bg-card/55 p-4"><div className={`size-2.5 rounded-full ${roleColors[role]}`} /><p className="mt-4 text-xs text-muted-foreground">{ROLE_LABELS[role][locale]}</p><p className="mt-1 font-display text-2xl font-black">{roleCounts[role]}</p></div>)}
             </div>
-          </section>
+          </section>}
         </div>
       </div>
     </main>
