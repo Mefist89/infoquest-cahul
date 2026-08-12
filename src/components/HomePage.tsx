@@ -35,6 +35,15 @@ import { canUseAi, isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
 import { SiteFooter } from "@/components/SiteFooter";
+import {
+  AiAssistantSection,
+  AudienceSection,
+  FaqSection,
+  HowItWorks,
+  MiniChallenge,
+  ProgressAndBadges,
+  SkillsSection,
+} from "@/components/home/HomeLearningSections";
 
 const icons: Record<Mission["icon"], LucideIcon> = {
   "user-lock": UserLock,
@@ -82,7 +91,7 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
           <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon">
             <ShieldCheck className="size-5 text-neon" aria-hidden="true" />
           </span>
-          <span className="min-w-0 leading-tight">
+          <span className="hidden min-w-0 leading-tight min-[430px]:block">
             <span className="block whitespace-nowrap font-display text-[10px] font-bold tracking-wider sm:text-base">
               <span className="text-white">INFO</span><span className="text-[#00D9FF]">QUEST</span>
             </span>
@@ -90,7 +99,15 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
           </span>
         </a>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <nav className="ml-auto hidden items-center gap-5 text-xs font-semibold text-muted-foreground xl:flex" aria-label={lang === "ru" ? "Главная навигация" : "Navigare principală"}>
+          <a className="focus-ring rounded-lg transition hover:text-neon" href="#how">{lang === "ru" ? "Как играть" : "Cum se joacă"}</a>
+          <a className="focus-ring rounded-lg transition hover:text-neon" href="#missions">{lang === "ru" ? "Дела" : "Dosare"}</a>
+          <a className="focus-ring rounded-lg transition hover:text-neon" href="#badges">{lang === "ru" ? "Бейджи" : "Insigne"}</a>
+          <a className="focus-ring rounded-lg transition hover:text-neon" href="#materials">{lang === "ru" ? "Материалы" : "Materiale"}</a>
+          <a className="focus-ring rounded-lg transition hover:text-neon" href="#about">{lang === "ru" ? "О проекте" : "Despre proiect"}</a>
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2 sm:gap-3 xl:ml-2">
           <div className="hidden min-w-40 sm:block">
             <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
@@ -159,7 +176,7 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
   );
 }
 
-function MissionCard({ mission, lang, onClick }: { mission: Mission; lang: Lang; onClick: () => void }) {
+function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Mission; lang: Lang; onClick: () => void; dimmed?: boolean }) {
   const Icon = icons[mission.icon];
   const t = strings[lang];
   const locked = mission.status === "soon";
@@ -171,7 +188,9 @@ function MissionCard({ mission, lang, onClick }: { mission: Mission; lang: Lang;
       disabled={locked}
       data-mission-id={mission.id}
       className={`focus-ring group flex w-full items-center gap-3 rounded-2xl border-2 bg-card/85 p-3 text-left backdrop-blur transition-all duration-300 ${
-        locked ? "cursor-not-allowed border-dashed opacity-65" : "opacity-100 hover:-translate-y-1 hover:bg-card"
+        locked ? "cursor-not-allowed border-dashed" : "hover:-translate-y-1 hover:bg-card"
+      } ${
+        dimmed ? "opacity-30" : locked ? "opacity-65" : "opacity-100"
       }`}
       style={{
         borderColor: `color-mix(in oklab, ${mission.color} ${locked ? "48%" : "100%"}, transparent)`,
@@ -316,10 +335,17 @@ export default function HomePage() {
   const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
   const lang = routeLang;
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+  const [missionFilter, setMissionFilter] = useState<"fraud" | "accounts" | "deepfakes" | "rumors">("fraud");
   const [headerProgress, setHeaderProgress] = useState<HeaderProgress>(emptyProgress);
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
   const rightMissions = useMemo(() => missions.filter((mission) => mission.side === "right"), []);
+  const filterIds = {
+    fraud: new Set(["operator-call", "fake-link", "scam-or-real"]),
+    accounts: new Set(["hacked-account"]),
+    deepfakes: new Set(["deepfake-detective", "bilingual-detective"]),
+    rumors: new Set(["rumor-city", "community-trolls"]),
+  };
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -388,15 +414,14 @@ export default function HomePage() {
     <>
       <Header lang={lang} setLang={setLang} progress={headerProgress} />
       <main id="top" className="circuit-bg overflow-hidden">
-        <section className="relative mx-auto max-w-6xl px-4 pt-10 text-center sm:pt-12">
-          <h1 className="font-display text-3xl font-black uppercase tracking-tight sm:text-5xl">
-            <span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span>
-          </h1>
-          <p className="mt-2 font-display text-sm uppercase tracking-[0.25em] text-neon sm:text-base">{t.tagline}</p>
-          <p className="mx-auto mt-4 inline-block rounded-full border border-gold/50 px-5 py-2 text-sm font-semibold text-gold">{t.motto}</p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <section className="relative mx-auto grid w-full max-w-6xl items-center gap-8 overflow-hidden px-4 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:py-14">
+          <div className="relative z-10 min-w-0 text-center lg:text-left">
+            <h1 className="font-display text-4xl font-black uppercase tracking-tight min-[360px]:text-5xl sm:text-6xl"><span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span></h1>
+            <p className="mx-auto mt-2 max-w-full text-balance font-display text-xs uppercase tracking-[0.12em] text-neon min-[360px]:text-sm sm:text-lg sm:tracking-[0.25em] lg:mx-0">{t.tagline}</p>
+            <p className="mx-auto mt-4 block w-fit max-w-full text-balance rounded-3xl border border-gold/50 px-4 py-2 text-xs font-semibold text-gold sm:rounded-full sm:px-5 sm:text-sm lg:mx-0">{t.motto}</p>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
             <Link
-              href={`/${lang}/login`}
+              href={headerProgress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`}
               className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-neon px-6 text-sm font-extrabold text-primary-foreground shadow-[0_0_28px_color-mix(in_oklab,var(--neon)_38%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--neon)_55%,transparent)]"
             >
               {t.startInvestigation}
@@ -416,14 +441,23 @@ export default function HomePage() {
                 {t.aiHelp}
               </Link>
             )}
+            </div>
+            <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">{lang === "ru" ? "Расследуй цифровые происшествия, находи доказательства и учись защищать себя и друзей в интернете." : "Investighează incidente digitale, găsește dovezi și învață să te protejezi pe tine și pe prieteni pe internet."}</p>
           </div>
+          <div className="relative mx-auto w-full min-w-0 max-w-xl overflow-hidden rounded-[2rem] border border-neon/20 bg-[radial-gradient(circle_at_50%_60%,rgba(0,217,255,0.18),transparent_58%)]"><div className="absolute inset-12 rounded-full bg-neon/15 blur-3xl" aria-hidden="true" /><Image src="/patrol-shield.png" alt={t.storyTitle} width={1024} height={1024} priority className="relative h-auto w-full opacity-100 [mask-image:linear-gradient(to_bottom,black_80%,transparent)]" /></div>
         </section>
 
+        <HowItWorks lang={lang} />
+
         <section id="missions" aria-label="Mission map" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10">
+          <h2 className="home-title">{lang === "ru" ? "Выбери своё первое дело" : "Alege primul tău dosar"}</h2>
+          <div className="mb-7 mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label={lang === "ru" ? "Фильтр дел" : "Filtru dosare"}>
+            {(["fraud", "accounts", "deepfakes", "rumors"] as const).map((filter) => { const labels = { fraud: lang === "ru" ? "Мошенничество" : "Fraude", accounts: lang === "ru" ? "Аккаунты" : "Conturi", deepfakes: lang === "ru" ? "Дипфейки" : "Deepfake-uri", rumors: lang === "ru" ? "Слухи и тролли" : "Zvonuri și troli" }; return <button key={filter} type="button" aria-pressed={missionFilter === filter} onClick={() => setMissionFilter(filter)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === filter ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{labels[filter]}</button>; })}
+          </div>
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
               {leftMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={!filterIds[missionFilter].has(mission.moduleId)} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
             <div className="relative">
@@ -442,7 +476,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={!filterIds[missionFilter].has(mission.moduleId)} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -451,49 +485,21 @@ export default function HomePage() {
             <ShieldProgress lang={lang} progress={headerProgress} />
             <div className="mt-8 space-y-3">
               {missions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={!filterIds[missionFilter].has(mission.moduleId)} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
         </section>
 
+        <MiniChallenge lang={lang} />
         <CaseSlider lang={lang} />
-
-        <section className="relative mx-auto mt-10 max-w-3xl px-4" aria-label={t.badges}>
-          <h2 className="text-lg font-bold text-gold">{t.badges}</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {missions.map((mission) => {
-              const earned = headerProgress.modules[mission.moduleId]?.status === "completed";
-              return (
-                <div key={mission.moduleId} className={`flex items-center gap-3 rounded-2xl border p-4 transition ${earned ? "border-gold/55 bg-gold/10 shadow-[0_0_20px_color-mix(in_oklab,var(--gold)_14%,transparent)]" : "border-border bg-card/60 opacity-65"}`}>
-                  <span className={`grid size-9 shrink-0 place-items-center rounded-full ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}>
-                    {earned ? <Medal className="size-6" aria-hidden="true" /> : <Lock className="size-5" aria-hidden="true" />}
-                  </span>
-                  <span className="text-sm">
-                    <strong className="block font-medium text-foreground">{mission.badge[lang]}</strong>
-                    <span className={earned ? "text-gold" : "text-muted-foreground"}>{earned ? (lang === "ru" ? "Получен" : "Obținută") : (lang === "ru" ? "Заблокирован" : "Blocată")}</span>
-                  </span>
-                </div>
-              );
-            })}
-            <div className={`flex items-center gap-3 rounded-2xl border p-4 sm:col-span-2 ${headerProgress.rewards === MODULE_COUNT ? "border-neon/55 bg-neon/10 glow-neon" : "border-dashed border-border bg-card/60"}`}>
-              <ShieldCheck className={`size-8 shrink-0 ${headerProgress.rewards === MODULE_COUNT ? "text-neon" : "text-muted-foreground"}`} aria-hidden="true" />
-              <span className="text-sm">
-                <strong className="block font-semibold text-foreground">{t.finalBadge}</strong>
-                <span className={headerProgress.rewards === MODULE_COUNT ? "text-neon" : "text-muted-foreground"}>{headerProgress.rewards === MODULE_COUNT ? (lang === "ru" ? "Щит города полностью восстановлен." : "Scutul orașului a fost restaurat complet.") : t.finalBadgeHint}</span>
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <section className="relative mx-auto mt-10 max-w-3xl px-4 text-center">
-          <p className="text-sm text-foreground">{t.heroLead}</p>
-          <p className="mt-1 text-sm text-gold">{t.heroSub}</p>
-        </section>
-
+        <SkillsSection lang={lang} />
+        <ProgressAndBadges lang={lang} progress={headerProgress} />
+        <AudienceSection lang={lang} />
+        <AiAssistantSection lang={lang} restricted={headerProgress.isAuthenticated && !canUseAi(headerProgress.role)} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
       </main>
 
-      <SiteFooter lang={lang} />
+      <SiteFooter lang={lang} beforeLegal={<FaqSection lang={lang} />} />
 
       {selectedMission && (
         <Modal title={selectedMission.title[lang]} onClose={() => setSelectedMission(null)} closeLabel={t.close}>

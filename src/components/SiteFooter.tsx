@@ -23,7 +23,7 @@ function BottomCard({ label, icon, children, onClick }: { label: string; icon?: 
   );
 }
 
-export function SiteFooter({ lang }: { lang: Lang }) {
+export function SiteFooter({ lang, beforeLegal }: { lang: Lang; beforeLegal?: ReactNode }) {
   const t = strings[lang];
   const [openBlock, setOpenBlock] = useState<"logo" | "qr" | "team" | "demo" | null>(null);
   const siteUrl = `https://infoquest-cahul.vercel.app/${lang}`;
@@ -44,7 +44,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
   return (
     <>
       <footer className="relative border-t border-neon/15 bg-slate-950/35">
-        <section className="mx-auto max-w-6xl px-4 py-14">
+        <section id="materials" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
           <div className="mb-7 text-center">
             <h2 className="text-lg font-bold text-neon">{t.projectMaterials}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{t.projectMaterialsHint}</p>
@@ -68,7 +68,10 @@ export function SiteFooter({ lang }: { lang: Lang }) {
             <BottomCard label={t.demo} icon={<PlayCircle className="size-12 text-gold" aria-hidden="true" />} onClick={() => setOpenBlock("demo")} />
           </div>
 
+          {beforeLegal}
+
           <div className="mt-16 border-t border-neon/10 pt-8 text-center text-xs text-muted-foreground">
+            <p className="mx-auto mb-5 max-w-3xl text-sm leading-relaxed text-muted-foreground">{lang === "ru" ? "Двуязычная образовательная игра для школьников, учителей, семей и всего сообщества. Учись распознавать мошенничество, дезинформацию, дипфейки и цифровые угрозы." : "Joc educațional bilingv pentru elevi, profesori, familii și întreaga comunitate. Învață să recunoști fraudele, dezinformarea, deepfake-urile și amenințările digitale."}</p>
             <div className="mb-4 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6">
               <span className="font-semibold text-foreground/80">{t.footerHackathon}</span>
               <span className="hidden text-neon/30 sm:inline">•</span>

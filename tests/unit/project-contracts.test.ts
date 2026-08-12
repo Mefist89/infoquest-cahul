@@ -341,4 +341,22 @@ describe("repository completeness and SEO", () => {
     expect(homeMetadata).toContain("localizedAlternates");
     expect(homeMetadata).toContain("openGraph");
   });
+
+  it("keeps the redesigned bilingual home journey complete", () => {
+    const home = readFileSync(join(process.cwd(), "src/components/HomePage.tsx"), "utf8");
+    const learningSections = readFileSync(join(process.cwd(), "src/components/home/HomeLearningSections.tsx"), "utf8");
+    const footer = readFileSync(join(process.cwd(), "src/components/SiteFooter.tsx"), "utf8");
+
+    expect(home).toContain("<HowItWorks");
+    expect(home).toContain("<MiniChallenge");
+    expect(home).toContain("<SkillsSection");
+    expect(home).toContain("<ProgressAndBadges");
+    expect(home).toContain("<AudienceSection");
+    expect(home).toContain("<AiAssistantSection");
+    expect(home).toContain("<FaqSection");
+    expect(home).toContain("missionFilter");
+    expect(learningSections).toContain('role="status"');
+    expect(learningSections).toContain("content[lang]");
+    expect(footer).toContain('id="materials"');
+  });
 });

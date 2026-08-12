@@ -138,6 +138,32 @@
   }
 }
 
+@utility home-section {
+  position: relative;
+  width: min(100% - 2rem, 72rem);
+  margin-inline: auto;
+  margin-top: 2.5rem;
+}
+
+@utility home-panel {
+  position: relative;
+  width: min(100% - 2rem, 72rem);
+  margin-inline: auto;
+  margin-top: 2.5rem;
+  border: 1px solid color-mix(in oklab, var(--neon) 38%, transparent);
+  border-radius: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: color-mix(in oklab, var(--card) 64%, transparent);
+  box-shadow: 0 20px 70px color-mix(in oklab, black 24%, transparent);
+}
+
+@utility home-title {
+  text-align: center;
+  color: var(--neon);
+  font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+  font-weight: 900;
+}
+
 @keyframes dash-run {
   to {
     stroke-dashoffset: -240;
