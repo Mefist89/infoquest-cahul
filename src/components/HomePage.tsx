@@ -217,9 +217,8 @@ function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgre
           width={1024}
           height={1024}
           priority
-          className="mx-auto w-full transition-[filter,opacity] duration-700"
+          className="mx-auto w-full opacity-100 transition-[filter] duration-700"
           style={{
-            opacity: 0.58 + percent * 0.0042,
             filter: `drop-shadow(0 0 ${18 + percent * 0.22}px color-mix(in oklab, var(--neon) ${25 + percent * 0.35}%, transparent))`,
           }}
         />

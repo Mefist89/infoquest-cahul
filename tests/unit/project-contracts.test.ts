@@ -229,6 +229,12 @@ describe("UX and accessibility contracts", () => {
     expect(source).toContain("setAnnouncement");
     expect(source).not.toMatch(/key=\{slide\.id\}[^>]*aria-live/u);
   });
+
+  it("keeps the central mission artwork fully visible at zero progress", () => {
+    const source = readFileSync(join(process.cwd(), "src/components/HomePage.tsx"), "utf8");
+    expect(source).toContain('className="mx-auto w-full opacity-100');
+    expect(source).not.toContain("opacity: 0.58 + percent");
+  });
 });
 
 describe("repository completeness and SEO", () => {
