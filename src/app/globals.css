@@ -157,8 +157,8 @@
   box-shadow: 0 20px 70px color-mix(in oklab, black 24%, transparent);
 }
 
-@utility home-panel-wide {
-  width: min(100% - 2rem, 80rem);
+@utility home-content-width {
+  width: min(100% - 2rem, 72rem);
 }
 
 @utility home-title {

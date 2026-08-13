@@ -266,7 +266,7 @@ function CaseSlider({ lang }: { lang: Lang }) {
 
   return (
     <section
-      className="home-panel-wide relative mx-auto mt-12"
+      className="home-content-width relative mx-auto mt-12"
       aria-roledescription="carousel"
       aria-label={t.storyTitle}
       onMouseEnter={() => setPaused(true)}
