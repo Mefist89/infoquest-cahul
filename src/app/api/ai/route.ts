@@ -1,26 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { createAiProvider, type AiLocale as Locale } from "@/features/ai-help/server/openai-compatible-provider";
+import {
+  AudioValidationError,
+  MAX_MULTIPART_BYTES,
+  validateAudioFile,
+  validateTranscript,
+} from "@/features/ai-help/server/audio-validation";
+import { createAiProvider, type AiChatMessage, type AiLocale as Locale } from "@/features/ai-help/server/openai-compatible-provider";
 import { canUseAi, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
-
-const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
-const ALLOWED_AUDIO_TYPES = new Set([
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/mp4",
-  "audio/m4a",
-  "audio/x-m4a",
-  "audio/aac",
-  "audio/flac",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/webm",
-  "audio/weba",
-  "audio/ogg",
-]);
 
 type QuotaDecision = {
   decision: "acquired" | "audio_limit" | "user_daily_limit" | "user_monthly_limit" | "project_daily_limit" | "project_monthly_limit" | "busy";
@@ -36,12 +26,36 @@ type QuotaDecision = {
   project_monthly_limit: number;
 };
 
-function errorText(locale: Locale, code: "key" | "input" | "audio" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService") {
+function parseChatHistory(value: FormDataEntryValue | null): AiChatMessage[] {
+  if (typeof value !== "string") return [];
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item): item is { role: "assistant" | "user"; content: string } => (
+        Boolean(item) && typeof item === "object" &&
+        ((item as { role?: unknown }).role === "assistant" || (item as { role?: unknown }).role === "user") &&
+        typeof (item as { content?: unknown }).content === "string"
+      ))
+      .slice(-6)
+      .map((item) => ({ role: item.role, content: item.content.trim().slice(0, 1200) }))
+      .filter((item) => item.content.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService") {
   const messages = {
     ro: {
       key: "Serviciul AI nu este configurat încă. Adaugă AI_API_KEY în variabilele de mediu.",
       input: "Scrie o întrebare sau atașează un fișier audio.",
       audio: "Fișierul audio trebuie să aibă maximum 4 MB și un format acceptat.",
+      requestSize: "Solicitarea este prea mare. Fișierul audio poate avea maximum 4 MB.",
+      audioFormat: "Conținutul fișierului nu corespunde unui format audio acceptat.",
+      audioDuration: "Înregistrarea trebuie să aibă între 0,5 și 60 de secunde.",
+      audioSilent: "Înregistrarea este goală sau prea silențioasă. Înregistrează din nou mai aproape de microfon.",
+      transcriptSize: "Transcrierea audio este neobișnuit de mare și a fost oprită în siguranță.",
       service: "Chrono nu poate analiza mesajul acum. Încearcă din nou peste puțin timp.",
       timeout: "Analiza a durat prea mult și a fost oprită în siguranță. Încearcă din nou.",
       consent: "Confirmă acordul privind prelucrarea datelor înainte de trimitere.",
@@ -58,6 +72,11 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "service" |
       key: "AI-сервис пока не настроен. Добавьте AI_API_KEY в переменные окружения.",
       input: "Напишите вопрос или прикрепите аудиофайл.",
       audio: "Аудиофайл должен быть не больше 4 МБ и иметь поддерживаемый формат.",
+      requestSize: "Запрос слишком большой. Размер аудиофайла не должен превышать 4 МБ.",
+      audioFormat: "Содержимое файла не соответствует поддерживаемому аудиоформату.",
+      audioDuration: "Продолжительность записи должна быть от 0,5 до 60 секунд.",
+      audioSilent: "Запись пустая или слишком тихая. Запишите её ещё раз ближе к микрофону.",
+      transcriptSize: "Расшифровка аудио имеет необычно большой размер и была безопасно остановлена.",
       service: "Chrono сейчас не может выполнить анализ. Попробуйте ещё раз немного позже.",
       timeout: "Анализ занял слишком много времени и был безопасно остановлен. Попробуйте ещё раз.",
       consent: "Подтвердите согласие на обработку данных перед отправкой.",
@@ -87,10 +106,10 @@ function getRequestTimeoutMs() {
   return Math.max(10_000, Math.min(55_000, Math.round(configured)));
 }
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   const supabase = await createClient();
-  const { data: authData, error: authError } = await supabase.auth.getUser();
   const requestLocale: Locale = request.headers.get("x-infoquest-locale") === "ro" ? "ro" : "ru";
+  const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) {
     return jsonResponse({ error: errorText(requestLocale, "auth"), code: "authentication_required" }, 401);
   }
@@ -100,7 +119,48 @@ export async function POST(request: Request) {
     return jsonResponse({ error: errorText(requestLocale, "role"), code: "role_required" }, 403);
   }
 
-  const form = await request.formData();
+  const { data, error } = await supabase.rpc("get_ai_user_quota_status").single();
+  if (error || !data) {
+    console.error("Chrono quota status failed", error?.message || "Empty quota response");
+    return jsonResponse({ error: errorText(requestLocale, "quotaService"), code: "quota_unavailable" }, 503);
+  }
+
+  return jsonResponse({
+    audioRemaining: Math.max(0, data.audio_limit - data.audio_used),
+    dailyRemaining: Math.max(0, data.user_daily_limit - data.user_daily_used),
+  });
+}
+
+export async function POST(request: Request) {
+  const requestLocale: Locale = request.headers.get("x-infoquest-locale") === "ro" ? "ro" : "ru";
+  const contentLengthHeader = request.headers.get("content-length");
+  if (contentLengthHeader) {
+    const contentLength = Number(contentLengthHeader);
+    if (!Number.isSafeInteger(contentLength) || contentLength < 0) {
+      return jsonResponse({ error: errorText(requestLocale, "input"), code: "invalid_content_length" }, 400);
+    }
+    if (contentLength > MAX_MULTIPART_BYTES) {
+      return jsonResponse({ error: errorText(requestLocale, "requestSize"), code: "request_too_large" }, 413);
+    }
+  }
+
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) {
+    return jsonResponse({ error: errorText(requestLocale, "auth"), code: "authentication_required" }, 401);
+  }
+
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle();
+  if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {
+    return jsonResponse({ error: errorText(requestLocale, "role"), code: "role_required" }, 403);
+  }
+
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return jsonResponse({ error: errorText(requestLocale, "input"), code: "invalid_form_data" }, 400);
+  }
   const locale: Locale = form.get("locale") === "ro" ? "ro" : "ru";
   if (form.get("dataConsent") !== "accepted") {
     return jsonResponse({ error: errorText(locale, "consent"), code: "consent_required" }, 400);
@@ -109,15 +169,26 @@ export async function POST(request: Request) {
   const provider = createAiProvider();
   if (!provider) return jsonResponse({ error: errorText(locale, "key"), code: "not_configured" }, 503);
 
+  const mode = form.get("mode") === "chat" ? "chat" : "analyzer";
   const messageValue = form.get("message");
-  const message = typeof messageValue === "string" ? messageValue.trim().slice(0, 4000) : "";
+  const message = typeof messageValue === "string" ? messageValue.trim().slice(0, mode === "chat" ? 1200 : 4000) : "";
+  const chatHistory = mode === "chat" ? parseChatHistory(form.get("history")) : [];
   const audioValue = form.get("audio");
-  const audio = audioValue instanceof File && audioValue.size > 0 ? audioValue : null;
+  let audio: File | null = null;
+  if (audioValue instanceof File && audioValue.size > 0) {
+    try {
+      audio = await validateAudioFile(audioValue);
+    } catch (error) {
+      if (error instanceof AudioValidationError) {
+        const errorCode = error.code === "audio_format" ? "audioFormat" : error.code === "audio_duration" ? "audioDuration" : "audioSilent";
+        return jsonResponse({ error: errorText(locale, errorCode), code: error.code }, error.code === "audio_format" ? 415 : 422);
+      }
+      return jsonResponse({ error: errorText(locale, "audio"), code: "invalid_audio" }, 400);
+    }
+  }
 
   if (!message && !audio) return jsonResponse({ error: errorText(locale, "input") }, 400);
-  if (audio && (audio.size > MAX_AUDIO_BYTES || !ALLOWED_AUDIO_TYPES.has(audio.type))) {
-    return jsonResponse({ error: errorText(locale, "audio") }, 400);
-  }
+  if (mode === "chat" && audio) return jsonResponse({ error: errorText(locale, "audio") }, 400);
 
   const requestId = crypto.randomUUID();
   const { data: quotaData, error: quotaError } = await supabase
@@ -149,7 +220,26 @@ export async function POST(request: Request) {
   const timeout = setTimeout(() => controller.abort(), getRequestTimeoutMs());
 
   try {
-    const transcript = audio ? await provider.transcribeAudio(audio, locale, controller.signal) : "";
+    if (mode === "chat") {
+      const reply = await provider.chat([...chatHistory, { role: "user", content: message }], locale, controller.signal);
+      return jsonResponse({
+        reply,
+        dailyRemaining: Math.max(0, quota.user_daily_limit - quota.user_daily_used),
+      });
+    }
+
+    let transcript = audio ? await provider.transcribeAudio(audio, locale, controller.signal) : "";
+    if (audio) {
+      try {
+        transcript = validateTranscript(transcript);
+      } catch (error) {
+        if (error instanceof AudioValidationError) {
+          const errorCode = error.code === "audio_silent" ? "audioSilent" : "transcriptSize";
+          return jsonResponse({ error: errorText(locale, errorCode), code: error.code === "audio_silent" ? "audio_empty" : "transcript_too_large" }, 422);
+        }
+        throw error;
+      }
+    }
     const combinedInput = [
       message ? `User question:\n${message}` : "",
       transcript ? `Audio transcript:\n${transcript}` : "",

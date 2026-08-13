@@ -13,9 +13,15 @@ export type FraudAnalysis = {
   disclaimer: string;
 };
 
+export type AiChatMessage = {
+  role: "assistant" | "user";
+  content: string;
+};
+
 export interface AiProvider {
   transcribeAudio(file: File, locale: AiLocale, signal: AbortSignal): Promise<string>;
   analyzeContent(input: string, locale: AiLocale, signal: AbortSignal): Promise<FraudAnalysis>;
+  chat(messages: AiChatMessage[], locale: AiLocale, signal: AbortSignal): Promise<string>;
 }
 
 type ProviderConfig = {
@@ -138,6 +144,33 @@ class OpenAiCompatibleProvider implements AiProvider {
     const parsed = JSON.parse(extractChatText(payload)) as unknown;
     if (!isFraudAnalysis(parsed)) throw new Error("Invalid structured analysis");
     return parsed;
+  }
+
+  async chat(messages: AiChatMessage[], locale: AiLocale, signal: AbortSignal) {
+    const language = locale === "ro" ? "Romanian" : "Russian";
+    const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.config.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: this.config.analysisModel,
+        max_tokens: 500,
+        messages: [
+          {
+            role: "system",
+            content: `You are Chrono, the friendly InfoQuest digital-safety tutor for students, teachers, and families. Continue the conversation using the supplied recent context and reply in ${language}. Give clear, age-appropriate, practical guidance about scams, privacy, accounts, misinformation, cyberbullying, and safe online behavior. Be concise and calm. Do not request passwords, SMS codes, banking details, identity documents, or other sensitive data. If a user appears to be in immediate danger or has lost money, advise them to contact a trusted adult, their bank, or local authorities through official channels. Do not present guesses as facts.`,
+          },
+          ...messages,
+        ],
+      }),
+      signal,
+    });
+
+    const payload = await response.json() as ChatCompletionResponse;
+    if (!response.ok) throw new Error(payload.error?.message || "Chat Completions request failed");
+    return extractChatText(payload).trim();
   }
 }
 

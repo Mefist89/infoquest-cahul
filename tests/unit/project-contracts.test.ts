@@ -12,8 +12,40 @@ import {
   TOTAL_MAX_XP,
   TOTAL_STAGE_COUNT,
 } from "@/data/module-catalog";
+import {
+  AudioValidationError,
+  detectAudioFormat,
+  getWavRms,
+  validateAudioFile,
+  validateTranscript,
+} from "@/features/ai-help/server/audio-validation";
 import { canUseAi, isAdministrator, isUserRole, USER_ROLES } from "@/lib/roles";
 import { getRiskIndicatorClass, getRiskLevel } from "@/lib/risk-level";
+
+function makeWav(sampleValue: number, durationSeconds = 1) {
+  const sampleRate = 8_000;
+  const sampleCount = Math.round(sampleRate * durationSeconds);
+  const buffer = new ArrayBuffer(44 + sampleCount * 2);
+  const view = new DataView(buffer);
+  const writeAscii = (offset: number, value: string) => {
+    for (let index = 0; index < value.length; index += 1) view.setUint8(offset + index, value.charCodeAt(index));
+  };
+  writeAscii(0, "RIFF");
+  view.setUint32(4, 36 + sampleCount * 2, true);
+  writeAscii(8, "WAVE");
+  writeAscii(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(36, "data");
+  view.setUint32(40, sampleCount * 2, true);
+  for (let index = 0; index < sampleCount; index += 1) view.setInt16(44 + index * 2, sampleValue, true);
+  return new Uint8Array(buffer);
+}
 
 describe("единый каталог модулей", () => {
   it("содержит восемь модулей и восемь этапов", () => {
@@ -28,6 +60,12 @@ describe("единый каталог модулей", () => {
     expect(new Set(MODULE_CATALOG.map((module) => module.moduleId)).size).toBe(MODULE_COUNT);
     expect(MODULE_CATALOG.filter((module) => module.status === "playable").map((module) => module.moduleId)).toEqual(["operator-call"]);
     expect(MODULE_CATALOG[0].route).toBe("/modules/operator-call");
+  });
+
+  it("задаёт отдельную двуязычную категорию для каждого из восьми дел", () => {
+    expect(new Set(MODULE_CATALOG.map((module) => module.category.ru)).size).toBe(MODULE_COUNT);
+    expect(new Set(MODULE_CATALOG.map((module) => module.category.ro)).size).toBe(MODULE_COUNT);
+    expect(MODULE_CATALOG.every((module) => module.category.ru.length > 0 && module.category.ro.length > 0)).toBe(true);
   });
 
   it("начисляет 100 XP за модуль и 800 XP за весь проект", () => {
@@ -73,6 +111,35 @@ describe("роли и доступ к Chrono", () => {
     expect(isAdministrator("teacher")).toBe(false);
     expect(isAdministrator("administrator")).toBe(true);
     expect(isAdministrator("blocked")).toBe(false);
+  });
+});
+
+describe("серверная проверка аудио Chrono", () => {
+  it("определяет WAV по сигнатуре, а не по имени или MIME", () => {
+    const wav = makeWav(4_000);
+    expect(detectAudioFormat(wav)).toEqual({ extension: "wav", mimeType: "audio/wav" });
+    expect(detectAudioFormat(new Uint8Array(32))).toBeNull();
+  });
+
+  it("различает слышимый и пустой PCM-сигнал", () => {
+    expect(getWavRms(makeWav(4_000))).toBeGreaterThan(0.1);
+    expect(getWavRms(makeWav(0))).toBe(0);
+  });
+
+  it("отклоняет тихой WAV и принимает слышимую запись допустимой длины", async () => {
+    const silent = new File([makeWav(0)], "fake.mp3", { type: "audio/mpeg" });
+    await expect(validateAudioFile(silent)).rejects.toMatchObject({ code: "audio_silent" });
+
+    const audible = new File([makeWav(4_000)], "fake.bin", { type: "application/octet-stream" });
+    const normalized = await validateAudioFile(audible);
+    expect(normalized.type).toBe("audio/wav");
+    expect(normalized.name).toBe("recording.wav");
+  });
+
+  it("ограничивает пустую и аномально большую расшифровку", () => {
+    expect(() => validateTranscript("   ...   ")).toThrowError(AudioValidationError);
+    expect(() => validateTranscript("а".repeat(6_001))).toThrowError(AudioValidationError);
+    expect(validateTranscript("Это тестовая запись.")).toBe("Это тестовая запись.");
   });
 });
 
@@ -219,9 +286,48 @@ describe("UX and accessibility contracts", () => {
 
   it("announces AI thinking and names attachment removal", () => {
     const source = readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8");
+    const route = readFileSync(join(process.cwd(), "src/app/api/ai/route.ts"), "utf8");
+    const provider = readFileSync(join(process.cwd(), "src/features/ai-help/server/openai-compatible-provider.ts"), "utf8");
+    const quotaMigration = readFileSync(join(process.cwd(), "supabase/migrations/20260813122500_add_ai_user_quota_status.sql"), "utf8");
     expect(source).toContain("t.thinking");
     expect(source).toContain("t.removeAttachment");
     expect(source).toContain('role="status"');
+    expect(source).toContain('type AiMode = "analyzer" | "chat"');
+    expect(source).toContain("messagesByMode");
+    expect(source).toContain("drafts");
+    expect(source).toContain('body.append("history"');
+    expect(route).toContain('form.get("mode") === "chat"');
+    expect(route).toContain("parseChatHistory");
+    expect(provider).toContain("async chat(messages: AiChatMessage[]");
+    expect(source).toContain("t.quickExamples.map");
+    expect(source).toContain("analyzerInputMode");
+    expect(source).toContain("recordingSeconds");
+    expect(source).toContain("audioAnalysisStep");
+    expect(source).toContain("t.audioSteps.map");
+    expect(source).toContain("audioRemaining");
+    expect(source).toContain("t.privacySummary");
+    expect(source).toContain("t.historyNotice");
+    expect(source).toContain("<details");
+    expect(source).toContain('href={`/${locale}/privacy`}');
+    expect(source).toContain("function startNewCheck()");
+    expect(source).toContain("requestControllerRef.current?.abort()");
+    expect(source).toContain('setMessagesByMode((current) => ({ ...current, [mode]: [introMessage] }))');
+    expect(source).toContain('className="sticky bottom-0');
+    expect(source).toContain('className="relative hidden min-h-72');
+    expect(source).toContain('aria-label={voiceEnabled ? t.listenOn : t.listenOff}');
+    expect(source).toContain('aria-label={listening ? t.stopRecording : t.startRecording}');
+    expect(source).toContain('aria-label={t.sendMessage}');
+    expect(source).toContain('aria-label={t.sendAudio}');
+    expect(source).toContain('aria-atomic="true">{analysisAnnouncement}');
+    expect(source).not.toContain('overflow-y-auto p-4 sm:p-6" aria-live');
+    expect(route).toContain("MAX_MULTIPART_BYTES");
+    expect(route).toContain("validateAudioFile(audioValue)");
+    expect(route).toContain("validateTranscript(transcript)");
+    expect(route).toContain('export async function GET(request: Request)');
+    expect(route).toContain('rpc("get_ai_user_quota_status")');
+    expect(quotaMigration).toContain("security definer");
+    expect(quotaMigration).toContain("auth.uid()");
+    expect(quotaMigration).toContain("revoke execute");
   });
 
   it("keeps automatic carousel changes out of its live region", () => {

@@ -315,18 +315,11 @@ export default function HomePage() {
   const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
   const lang = routeLang;
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-  const [missionFilter, setMissionFilter] = useState<"fraud" | "accounts" | "deepfakes" | "rumors">("fraud");
+  const [missionFilter, setMissionFilter] = useState<ModuleId>("operator-call");
   const [headerProgress, setHeaderProgress] = useState<HeaderProgress>(emptyProgress);
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
   const rightMissions = useMemo(() => missions.filter((mission) => mission.side === "right"), []);
-  const filterIds = {
-    fraud: new Set(["operator-call", "fake-link", "scam-or-real"]),
-    accounts: new Set(["hacked-account"]),
-    deepfakes: new Set(["deepfake-detective", "bilingual-detective"]),
-    rumors: new Set(["rumor-city", "community-trolls"]),
-  };
-
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
@@ -432,12 +425,12 @@ export default function HomePage() {
         <section id="missions" aria-label="Mission map" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10">
           <h2 className="home-title">{lang === "ru" ? "Выбери своё первое дело" : "Alege primul tău dosar"}</h2>
           <div className="mb-7 mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label={lang === "ru" ? "Фильтр дел" : "Filtru dosare"}>
-            {(["fraud", "accounts", "deepfakes", "rumors"] as const).map((filter) => { const labels = { fraud: lang === "ru" ? "Мошенничество" : "Fraude", accounts: lang === "ru" ? "Аккаунты" : "Conturi", deepfakes: lang === "ru" ? "Дипфейки" : "Deepfake-uri", rumors: lang === "ru" ? "Слухи и тролли" : "Zvonuri și troli" }; return <button key={filter} type="button" aria-pressed={missionFilter === filter} onClick={() => setMissionFilter(filter)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === filter ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{labels[filter]}</button>; })}
+            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
           </div>
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
               {leftMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={!filterIds[missionFilter].has(mission.moduleId)} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
             <div className="relative">
@@ -456,7 +449,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={!filterIds[missionFilter].has(mission.moduleId)} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -465,7 +458,7 @@ export default function HomePage() {
             <ShieldProgress lang={lang} progress={headerProgress} />
             <div className="mt-8 space-y-3">
               {missions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={!filterIds[missionFilter].has(mission.moduleId)} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>

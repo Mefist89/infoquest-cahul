@@ -408,6 +408,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: { daily_limit: number; daily_used: number; monthly_limit: number; monthly_used: number; warning_percent: number }[];
       };
+      get_ai_user_quota_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: { audio_limit: number; audio_used: number; user_daily_limit: number; user_daily_used: number }[];
+      };
       release_ai_request: { Args: { p_request_id: string }; Returns: undefined };
       set_user_ip_block: {
         Args: { p_blocked: boolean; p_reason?: string | null; p_user_id: string };
