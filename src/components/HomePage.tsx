@@ -14,14 +14,12 @@ import {
   LogIn,
   Lock,
   MapPin,
-  Medal,
   Pause,
   PhoneCall,
   Play,
   ScanFace,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   UserLock,
   type LucideIcon,
 } from "lucide-react";
@@ -82,11 +80,10 @@ const emptyProgress: HeaderProgress = {
 
 function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang) => void; progress: HeaderProgress }) {
   const t = strings[lang];
-  const xpPercent = Math.min(100, Math.round((progress.xp / TOTAL_MAX_XP) * 100));
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+      <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
         <a href="#top" className="focus-ring flex min-w-0 items-center gap-2 rounded-lg" aria-label="InfoQuest">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon">
             <ShieldCheck className="size-5 text-neon" aria-hidden="true" />
@@ -99,7 +96,7 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
           </span>
         </a>
 
-        <nav className="ml-auto hidden items-center gap-5 text-xs font-semibold text-muted-foreground xl:flex" aria-label={lang === "ru" ? "Главная навигация" : "Navigare principală"}>
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 whitespace-nowrap text-xs font-semibold text-muted-foreground xl:flex" aria-label={lang === "ru" ? "Главная навигация" : "Navigare principală"}>
           <a className="focus-ring rounded-lg transition hover:text-neon" href="#how">{lang === "ru" ? "Как играть" : "Cum se joacă"}</a>
           <a className="focus-ring rounded-lg transition hover:text-neon" href="#missions">{lang === "ru" ? "Дела" : "Dosare"}</a>
           <a className="focus-ring rounded-lg transition hover:text-neon" href="#badges">{lang === "ru" ? "Бейджи" : "Insigne"}</a>
@@ -107,24 +104,7 @@ function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang)
           <a className="focus-ring rounded-lg transition hover:text-neon" href="#about">{lang === "ru" ? "О проекте" : "Despre proiect"}</a>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3 xl:ml-2">
-          <div className="hidden min-w-40 sm:block">
-            <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Sparkles className="size-3 text-gold" aria-hidden="true" /> {t.xp}
-              </span>
-              <span className="font-semibold text-foreground">{progress.xp}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={TOTAL_MAX_XP} aria-label="XP">
-              <div className="h-full rounded-full bg-gold transition-[width] duration-500" style={{ width: `${xpPercent}%` }} />
-            </div>
-          </div>
-
-          <Link href={progress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`} className="focus-ring flex items-center gap-1 rounded-full border border-border bg-card/70 px-2.5 py-2 text-xs text-muted-foreground transition hover:border-gold/60 sm:px-3" aria-label={lang === "ru" ? "Награды" : "Recompense"}>
-            <Medal className="size-3.5 text-gold" aria-hidden="true" />
-            <strong className="text-foreground">{progress.rewards}</strong>/{MODULE_COUNT}
-          </Link>
-
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           {progress.loading ? (
             <span className="size-10 shrink-0 animate-pulse rounded-full border border-border bg-card/70" aria-label={lang === "ru" ? "Загрузка профиля" : "Se încarcă profilul"} />
           ) : progress.isAuthenticated ? (
@@ -286,7 +266,7 @@ function CaseSlider({ lang }: { lang: Lang }) {
 
   return (
     <section
-      className="relative mx-auto max-w-3xl px-4"
+      className="home-panel-wide relative mx-auto mt-12"
       aria-roledescription="carousel"
       aria-label={t.storyTitle}
       onMouseEnter={() => setPaused(true)}
