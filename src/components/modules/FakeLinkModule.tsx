@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Lock,
   MessageSquare,
+  BookOpen,
   ShieldCheck,
   Sparkles,
   Volume2,
@@ -34,7 +35,7 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
   );
 }
 
-const stageIcons = [MessageSquare];
+const stageIcons = [MessageSquare, BookOpen];
 
 export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }: { locale: FakeLinkLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
   const t = fakeLinkContent[locale];
@@ -47,10 +48,10 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
   const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const unlockedThrough = useMemo(() => {
-    return 1; // Unlocked for now
+    return Math.max(1, ...Array.from(completedStages).map((s) => s + 1));
   }, [completedStages]);
 
-  const completionPercent = Math.round((completedStages.size / 1) * 100);
+  const completionPercent = Math.round((completedStages.size / 2) * 100);
 
   async function completeStage(stageIndex: number, score = 100) {
     if (saving) return false;
@@ -83,6 +84,11 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
 
   async function submitIntro() {
     await completeStage(1, 100);
+    chooseStage(1);
+  }
+
+  async function submitTheory() {
+    await completeStage(2, 100);
   }
 
   return (
@@ -113,11 +119,11 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
               <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <HeaderStat label={t.completed} value={`${completedStages.size}/1`} icon={CheckCircle2} />
+              <HeaderStat label={t.completed} value={`${completedStages.size}/2`} icon={CheckCircle2} />
               <HeaderStat label={t.xp} value={`${moduleXp}/100`} icon={Sparkles} />
             </div>
           </div>
-          <div className="relative mt-6 h-2.5 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={completedStages.size} aria-valuemin={0} aria-valuemax={1} aria-label={t.progress}>
+          <div className="relative mt-6 h-2.5 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={completedStages.size} aria-valuemin={0} aria-valuemax={2} aria-label={t.progress}>
             <div className="h-full rounded-full bg-neon transition-[width] duration-500" style={{ width: `${completionPercent}%` }} />
           </div>
         </section>
@@ -129,6 +135,17 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
               <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
               <span className="min-w-0"><span className="block text-xs text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
             </button>
+            {unlockedThrough >= 2 ? (
+              <button type="button" onClick={() => chooseStage(1)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 1 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
+                <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 1 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><BookOpen className="size-4" /></span>
+                <span className="min-w-0"><span className="block text-xs text-muted-foreground">{t.stages[1].subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{t.stages[1].title}</span></span>
+              </button>
+            ) : (
+              <div className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-background/25 p-3 text-left opacity-60">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground"><Lock className="size-4" /></span>
+                <span className="min-w-0"><span className="block text-xs text-muted-foreground">{t.stages[1].subtitle}</span><span className="block truncate text-sm font-bold text-muted-foreground">{t.stages[1].title}</span></span>
+              </div>
+            )}
           </aside>
 
           <section className="min-w-0">
@@ -139,6 +156,7 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
             )}
             
             {currentStage === 0 && <IntroStage locale={locale} content={t.intro} onFinish={submitIntro} />}
+            {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
           </section>
         </div>
       </div>
@@ -238,4 +256,15 @@ function TypewriterText({ text, onDone }: { text: string; onDone: () => void }) 
       {!done && <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-neon align-middle" />}
     </p>
   );
+}
+
+function TheoryStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["theory"] | (typeof fakeLinkContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
+  return <div>
+    <p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p>
+    <div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div>
+    <p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p>
+    <div className="mt-8 flex flex-wrap items-center gap-4">
+      <button type="button" onClick={onComplete} disabled={saving} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_rgba(0,217,255,0.5)] disabled:opacity-60">{button}</button>
+    </div>
+  </div>;
 }
