@@ -315,7 +315,7 @@ export default function HomePage() {
   const routeLang: Lang = params.locale === "ro" ? "ro" : "ru";
   const lang = routeLang;
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-  const [missionFilter, setMissionFilter] = useState<ModuleId>("operator-call");
+  const [missionFilter, setMissionFilter] = useState<ModuleId | null>(null);
   const [headerProgress, setHeaderProgress] = useState<HeaderProgress>(emptyProgress);
   const t = strings[lang];
   const leftMissions = useMemo(() => missions.filter((mission) => mission.side === "left"), []);
@@ -425,12 +425,13 @@ export default function HomePage() {
         <section id="missions" aria-label="Mission map" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10">
           <h2 className="home-title">{lang === "ru" ? "Выбери своё первое дело" : "Alege primul tău dosar"}</h2>
           <div className="mb-7 mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label={lang === "ru" ? "Фильтр дел" : "Filtru dosare"}>
-            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
+            <button type="button" aria-pressed={missionFilter === null} onClick={() => setMissionFilter(null)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === null ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{lang === "ru" ? "Все" : "Toate"}</button>
+            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId === missionFilter ? null : mission.moduleId)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
           </div>
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
               {leftMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
             <div className="relative">
@@ -449,7 +450,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -458,7 +459,7 @@ export default function HomePage() {
             <ShieldProgress lang={lang} progress={headerProgress} />
             <div className="mt-8 space-y-3">
               {missions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
