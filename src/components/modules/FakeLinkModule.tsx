@@ -51,7 +51,7 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
     return Math.max(1, ...Array.from(completedStages).map((s) => s + 1));
   }, [completedStages]);
 
-  const completionPercent = Math.round((completedStages.size / 2) * 100);
+  const completionPercent = Math.round((completedStages.size / 1) * 100);
 
   async function completeStage(stageIndex: number, score = 100) {
     if (saving) return false;
@@ -83,12 +83,11 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
   }
 
   async function submitIntro() {
-    await completeStage(1, 100);
     chooseStage(1);
   }
 
   async function submitTheory() {
-    await completeStage(2, 100);
+    await completeStage(1, 100);
   }
 
   return (
@@ -119,34 +118,44 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
               <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <HeaderStat label={t.completed} value={`${completedStages.size}/2`} icon={CheckCircle2} />
+              <HeaderStat label={t.completed} value={`${completedStages.size}/1`} icon={CheckCircle2} />
               <HeaderStat label={t.xp} value={`${moduleXp}/100`} icon={Sparkles} />
             </div>
           </div>
-          <div className="relative mt-6 h-2.5 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={completedStages.size} aria-valuemin={0} aria-valuemax={2} aria-label={t.progress}>
+          <div className="relative mt-6 h-2.5 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={completedStages.size} aria-valuemin={0} aria-valuemax={1} aria-label={t.progress}>
             <div className="h-full rounded-full bg-neon transition-[width] duration-500" style={{ width: `${completionPercent}%` }} />
           </div>
         </section>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
-          <aside className="rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
-            <p className="px-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
-            <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
-              <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
-              <span className="min-w-0"><span className="block text-xs text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
-            </button>
-            {unlockedThrough >= 2 ? (
-              <button type="button" onClick={() => chooseStage(1)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 1 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
-                <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 1 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><BookOpen className="size-4" /></span>
-                <span className="min-w-0"><span className="block text-xs text-muted-foreground">{t.stages[1].subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{t.stages[1].title}</span></span>
+          
+            <aside className="rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
+              <p className="px-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
+              <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
+                <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
+                <span className="min-w-0"><span className="block text-xs text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
               </button>
-            ) : (
-              <div className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-dashed border-border bg-background/25 p-3 text-left opacity-60">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground"><Lock className="size-4" /></span>
-                <span className="min-w-0"><span className="block text-xs text-muted-foreground">{t.stages[1].subtitle}</span><span className="block truncate text-sm font-bold text-muted-foreground">{t.stages[1].title}</span></span>
-              </div>
-            )}
-          </aside>
+              
+              <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                {t.stages.slice(1).map((stage, index) => {
+                  const number = index + 1; // 1 for Theory
+                  const dbStage = number;   // 1 for Theory
+                  const Icon = stageIcons[number] || BookOpen;
+                  const done = completedStages.has(dbStage);
+                  const locked = !done && dbStage > unlockedThrough;
+                  const active = currentStage === number;
+                  return (
+                    <li key={stage.title}>
+                      <button type="button" onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
+                        <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
+                        <span className="min-w-0"><span className="block text-xs text-muted-foreground">{dbStage}/1 {stage.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </aside>
+
 
           <section className="min-w-0">
             {notice && (
