@@ -26,7 +26,7 @@ import {
 import { fakeLinkContent, type FakeLinkLocale } from "@/data/fake-link";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { createClient } from "@/lib/supabase/client";
-import { NextButtonContext, StageHeading } from "./operator-call/stage-heading";
+import { NextButtonContext } from "./operator-call/stage-support";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
   return (
@@ -309,4 +309,8 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
       <button type="button" onClick={onComplete} disabled={saving} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_rgba(0,217,255,0.5)] disabled:opacity-60">{button}</button>
     </div>
   </div>;
+}
+
+function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
+  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
 }
