@@ -1,3 +1,4 @@
+import React from "react";
 "use client";
 
 import Image from "next/image";
@@ -188,7 +189,8 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
               <div className="mt-7">
                 {currentStage === 0 && <IntroStage locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
-                {currentStage > 1 && currentStage < 9 && (
+                {currentStage === 3 && <AudioExampleStage content={t.audioExample} button={t.continue} saving={saving} onComplete={() => completeStage(3, 100)} />}
+                {currentStage !== 3 && currentStage > 1 && currentStage < 9 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
@@ -314,4 +316,42 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
   return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+}
+
+function AudioExampleStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["audioExample"] | (typeof fakeLinkContent)["ro"]["audioExample"]; button: string; saving: boolean; onComplete: () => void }) {
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = React.useState(false);
+
+  const toggleAudio = React.useCallback(() => {
+    if (audioRef.current) {
+      if (playing) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setPlaying(!playing);
+    }
+  }, [playing]);
+
+  React.useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handleEnded = () => setPlaying(false);
+    audio.addEventListener("ended", handleEnded);
+    return () => audio.removeEventListener("ended", handleEnded);
+  }, []);
+
+  return (
+    <div className="py-8 text-center">
+      <audio ref={audioRef} src={content.audioFile} preload="metadata" />
+      <button type="button" onClick={toggleAudio} className="focus-ring mb-8 inline-flex min-h-12 items-center gap-3 rounded-2xl border border-neon/40 bg-neon/10 px-8 py-3 text-sm font-bold text-neon transition hover:bg-neon/20">
+        <Volume2 className={`size-5 ${playing ? "animate-pulse text-success" : ""}`} />
+        {playing ? "..." : content.listen}
+      </button>
+      <br />
+      <button type="button" onClick={onComplete} disabled={saving} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60">
+        {button}
+      </button>
+    </div>
+  );
 }

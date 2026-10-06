@@ -54,6 +54,14 @@ export const fakeLinkContent = {
       ],
       rule: "Всегда проверяйте адрес в строке браузера перед тем, как ввести свои данные. При малейших сомнениях вводите адрес сайта вручную.",
     },
+    audioExample: {
+      listen: "Ascultă textul",
+      audioFile: "/3_exemple_ro.mp3",
+    },
+    audioExample: {
+      listen: "Прослушать текст",
+      audioFile: "/3_exemple_ru.mp3",
+    },
   },
   ro: {
     title: "Capcana linkului fals",
