@@ -2,8 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import {
   ArrowLeft,
   Check,
@@ -11,10 +9,17 @@ import {
   ChevronRight,
   Lock,
   MessageSquare,
-  BookOpen,
   ShieldCheck,
   Sparkles,
   Volume2,
+  BookOpen,
+  Clapperboard,
+  Video,
+  ScanSearch,
+  ListChecks,
+  ListOrdered,
+  ShieldAlert,
+  type LucideIcon,
 } from "lucide-react";
 
 import { fakeLinkContent, type FakeLinkLocale } from "@/data/fake-link";
@@ -35,12 +40,12 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
   );
 }
 
-const stageIcons = [MessageSquare, BookOpen];
+const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
 
 export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }: { locale: FakeLinkLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
   const t = fakeLinkContent[locale];
   const initialCompleted = initialStages.filter((stage) => stage.status === "completed").map((stage) => stage.stage_index);
-  const firstOpenStage = Array.from({ length: 1 }, (_, index) => index + 1).find((stage) => !initialCompleted.includes(stage)) ?? 1;
+  const firstOpenStage = Array.from({ length: 8 }, (_, index) => index + 1).find((stage) => !initialCompleted.includes(stage)) ?? 1;
   const [completedStages, setCompletedStages] = useState(() => new Set(initialCompleted));
   const [currentStage, setCurrentStage] = useState(initialCompleted.length === 0 ? 0 : firstOpenStage);
   const [moduleXp, setModuleXp] = useState(initialModule?.xp ?? 0);
@@ -51,7 +56,7 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
     return Math.max(1, ...Array.from(completedStages).map((s) => s + 1));
   }, [completedStages]);
 
-  const completionPercent = Math.round((completedStages.size / 1) * 100);
+  const completionPercent = Math.round((completedStages.size / 8) * 100);
 
   async function completeStage(stageIndex: number, score = 100) {
     if (saving) return false;
@@ -118,11 +123,11 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
               <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <HeaderStat label={t.completed} value={`${completedStages.size}/1`} icon={CheckCircle2} />
+              <HeaderStat label={t.completed} value={`${completedStages.size}/8`} icon={CheckCircle2} />
               <HeaderStat label={t.xp} value={`${moduleXp}/100`} icon={Sparkles} />
             </div>
           </div>
-          <div className="relative mt-6 h-2.5 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={completedStages.size} aria-valuemin={0} aria-valuemax={1} aria-label={t.progress}>
+          <div className="relative mt-6 h-2.5 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={completedStages.size} aria-valuemin={0} aria-valuemax={8} aria-label={t.progress}>
             <div className="h-full rounded-full bg-neon transition-[width] duration-500" style={{ width: `${completionPercent}%` }} />
           </div>
         </section>
@@ -148,7 +153,7 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
                     <li key={stage.title}>
                       <button type="button" onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
                         <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
-                        <span className="min-w-0"><span className="block text-xs text-muted-foreground">{dbStage}/1 {stage.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
+                        <span className="min-w-0"><span className="block text-xs text-muted-foreground">{dbStage}/8 {stage.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
                       </button>
                     </li>
                   );
@@ -157,16 +162,42 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
             </aside>
 
 
-          <section className="min-w-0">
+          
+          <section className="min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
             {notice && (
               <div className={`mb-6 rounded-2xl border p-4 text-sm font-medium ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>
                 {notice.text}
               </div>
             )}
-            
-            {currentStage === 0 && <IntroStage locale={locale} content={t.intro} onFinish={submitIntro} />}
-            {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
+
+            {currentStage === 0 ? (
+              <StageHeading number={0} title={t.intro.title} subtitle={t.intro.subtitle} done={false} />
+            ) : (
+              <StageHeading number={currentStage} title={t.stages[currentStage].title} subtitle={t.stages[currentStage].subtitle} done={completedStages.has(currentStage)} />
+            )}
+            <NextButtonContext.Provider value={
+              currentStage > 0 && currentStage < 8 ? (
+                <button type="button" disabled={!completedStages.has(currentStage)} onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-neon/40 disabled:hover:bg-neon/10">
+                  {t.continue}<ChevronRight className="size-4" aria-hidden="true" />
+                </button>
+              ) : null
+            }>
+              <div className="mt-7">
+                {currentStage === 0 && <IntroStage locale={locale} content={t.intro} onFinish={submitIntro} />}
+                {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
+                {currentStage > 1 && currentStage < 9 && (
+                  <div className="py-20 text-center">
+                    <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
+                    <button type="button" onClick={() => { completeStage(currentStage, 100); chooseStage(currentStage < 8 ? currentStage + 1 : 8); }} disabled={saving} className="focus-ring mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60">
+                      Завершить этап (Dev)
+                    </button>
+                  </div>
+                )}
+              </div>
+            </NextButtonContext.Provider>
           </section>
+
         </div>
       </div>
     </main>

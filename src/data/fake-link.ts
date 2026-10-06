@@ -35,7 +35,14 @@ export const fakeLinkContent = {
     },
     stages: [
       { title: "Вступление", subtitle: "Знакомство" },
-      { title: "Теория", subtitle: "Анатомия фальшивой ссылки" }
+      { title: "Теория", subtitle: "Анатомия фальшивой ссылки" },
+      { title: "Видеообъяснение", subtitle: "Как отличить подделку" },
+      { title: "Видеопример", subtitle: "Опасное сообщение" },
+      { title: "Игра: найди сигналы", subtitle: "Проверь сайт на подлинность" },
+      { title: "Игра: классификация", subtitle: "Безопасная или фишинговая ссылка" },
+      { title: "Игра: диалог", subtitle: "Как правильно реагировать" },
+      { title: "Игра: порядок действий", subtitle: "Алгоритм проверки ссылки" },
+      { title: "Финальная схватка", subtitle: "Останови атаку Тени" },
     ],
     theory: {
       lead: "Сайты-подделки создаются с одной целью: заставить вас ввести свои данные (логин, пароль или данные карты) на странице, которая выглядит как настоящая.",
@@ -82,7 +89,14 @@ export const fakeLinkContent = {
     },
     stages: [
       { title: "Introducere", subtitle: "Cunoaștere" },
-      { title: "Teorie", subtitle: "Anatomia unui link fals" }
+      { title: "Teorie", subtitle: "Anatomia unui link fals" },
+      { title: "Explicație video", subtitle: "Cum să recunoști un fals" },
+      { title: "Exemplu video", subtitle: "Un mesaj periculos" },
+      { title: "Joc: găsește semnalele", subtitle: "Verifică autenticitatea site-ului" },
+      { title: "Joc: clasificare", subtitle: "Link sigur sau phishing" },
+      { title: "Joc: dialog", subtitle: "Cum să reacționezi corect" },
+      { title: "Joc: ordinea acțiunilor", subtitle: "Algoritmul de verificare a linkului" },
+      { title: "Lupta finală", subtitle: "Oprește atacul Umbrei" },
     ],
     theory: {
       lead: "Site-urile false sunt create cu un singur scop: să vă determine să introduceți datele dvs. (login, parolă sau datele cardului) pe o pagină care arată ca una reală.",
