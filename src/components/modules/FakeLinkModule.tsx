@@ -26,6 +26,7 @@ import {
 import { fakeLinkContent, type FakeLinkLocale } from "@/data/fake-link";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { createClient } from "@/lib/supabase/client";
+import { NextButtonContext, StageHeading } from "./operator-call/stage-heading";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
   return (
