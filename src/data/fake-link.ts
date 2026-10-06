@@ -53,17 +53,13 @@ export const fakeLinkContent = {
         { title: "Нестандартный дизайн", text: "Ошибки в верстке, размытые логотипы, неработающие кнопки (кроме кнопки входа)." }
       ],
       rule: "Всегда проверяйте адрес в строке браузера перед тем, как ввести свои данные. При малейших сомнениях вводите адрес сайта вручную.",
+      },
+      audioExample: {
+        listen: "Прослушать текст",
+        audioFile: "/3_exemple_ru.mp3",
+      },
     },
-    audioExample: {
-      listen: "Ascultă textul",
-      audioFile: "/3_exemple_ro.mp3",
-    },
-    audioExample: {
-      listen: "Прослушать текст",
-      audioFile: "/3_exemple_ru.mp3",
-    },
-  },
-  ro: {
+    ro: {
     title: "Capcana linkului fals",
     eyebrow: "Modulul 2 · Phishing",
     description: "Învață să distingi site-urile false de cele reale și să verifici linkurile în siguranță.",
@@ -115,6 +111,10 @@ export const fakeLinkContent = {
         { title: "Design neobișnuit", text: "Erori de aspect, logo-uri neclare, butoane nefuncționale (cu excepția butonului de conectare)." }
       ],
       rule: "Verificați mereu adresa din bara browserului înainte de a introduce datele. Dacă aveți cea mai mică îndoială, introduceți manual adresa site-ului.",
-    },
-  }
-} as const;
+      },
+      audioExample: {
+        listen: "Ascultă textul",
+        audioFile: "/3_exemple_ro.mp3",
+      },
+    }
+  } as const;
