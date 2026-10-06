@@ -73,7 +73,8 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
     setSaving(false);
 
     if (error) {
-      setNotice({ kind: "error", text: t.saveError });
+      console.error(error);
+      setNotice({ kind: "error", text: \`\${t.saveError} (\${error.message})\` });
       return false;
     }
 
@@ -147,7 +148,7 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
                 {t.stages.slice(1).map((stage, index) => {
                   const number = index + 1; // 1 for Theory
                   const dbStage = number;   // 1 for Theory
-                  const Icon = stageIcons[number] || BookOpen;
+                  const Icon = stageIcons[index] || BookOpen;
                   const done = completedStages.has(dbStage);
                   const locked = !done && dbStage > unlockedThrough;
                   const active = currentStage === number;
