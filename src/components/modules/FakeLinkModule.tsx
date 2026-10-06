@@ -75,7 +75,7 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
 
     if (error) {
       console.error(error);
-      setNotice({ kind: "error", text: \`\${t.saveError} (\${error.message})\` });
+      setNotice({ kind: "error", text: `${t.saveError} (${error.message})` });
       return false;
     }
 
