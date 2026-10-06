@@ -41,8 +41,8 @@ export const MODULE_CATALOG = [
   {
     id: 2,
     moduleId: "fake-link",
-    status: "soon",
-    route: null,
+    status: "playable",
+    route: "/modules/fake-link",
     color: "var(--gold)",
     icon: "link-2-off",
     side: "left",

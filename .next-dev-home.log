@@ -1,0 +1,16 @@
+
+> infoquest-cahul@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.4:3000
+- Environments: .env.local
+✓ Ready in 1248ms
+✓ Running next.config.ts took 5.2s
+
+ GET /ru 200 in 2.3s (next.js: 1009ms, proxy.ts: 329ms, application-code: 1007ms)
+ GET /ru 200 in 402ms (next.js: 26ms, proxy.ts: 122ms, application-code: 254ms)
+ GET /ru 200 in 756ms (next.js: 34ms, proxy.ts: 124ms, application-code: 598ms)
+ GET /ru 200 in 697ms (next.js: 52ms, proxy.ts: 310ms, application-code: 335ms)
+ GET /ru 200 in 820ms (next.js: 42ms, proxy.ts: 454ms, application-code: 324ms)
