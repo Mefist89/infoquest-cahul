@@ -89,6 +89,64 @@ export const scamOrRealContent = {
         { id: "bike-meet", offer: "Б/у велосипед: встреча лично, осмотр, оплата на месте", context: "Объявление с реальными фото и адресом.", verdict: "honest", explain: "Личная встреча, осмотр товара и оплата по факту — безопасно." },
       ],
     },
+    haggleDialogue: {
+      prompt: "Продавец давит на тебя. Веди торг безопасно и не поддавайся на уловки.",
+      sellerName: "Продавец",
+      youName: "Ты",
+      successTitle: "Сделка безопасна! Давлению не поддался.",
+      resultCount: "Шагов: 5/5 · Ошибок: {misses}",
+      steps: [
+        {
+          id: "prepay",
+          messages: ["Телефон почти даром! Переводи предоплату сейчас, а то уйдёт другому!"],
+          options: [
+            { id: "send", text: "Перевожу сразу, чтобы не упустить", correct: false },
+            { id: "verify", text: "Сначала проверю продавца и встречусь лично", correct: true },
+            { id: "discount", text: "Прошу ещё большую скидку", correct: false },
+          ],
+          correction: "Спешка «а то уйдёт другому» — классическое давление. Сначала проверка, потом деньги.",
+        },
+        {
+          id: "check",
+          messages: ["Какая проверка? Так дёшево только сейчас!"],
+          options: [
+            { id: "believe", text: "Прав, беру без проверки", correct: false },
+            { id: "calm", text: "Дёшево и срочно — признак скама. Проверяю отзывы и возраст сайта", correct: true },
+            { id: "half", text: "Переведу половину предоплаты — компромисс", correct: false },
+          ],
+          correction: "И половина предоплаты мошеннику — потерянные деньги. Проверяй до любой оплаты.",
+        },
+        {
+          id: "secret",
+          messages: ["Ладно, вот номер моей карты. И никому не рассказывай о цене!"],
+          options: [
+            { id: "silent", text: "Хорошо, молчу и плачу", correct: false },
+            { id: "tell", text: "Секретность — красный флаг, расскажу родителям и всё проверю", correct: true },
+            { id: "friend-pay", text: "Попрошу друга заплатить вместо меня", correct: false },
+          ],
+          correction: "Секрет защищает мошенника, а не тебя. Расскажи взрослым, которым доверяешь.",
+        },
+        {
+          id: "code",
+          messages: ["Пришли код из SMS, чтобы я забронировал товар за тобой!"],
+          options: [
+            { id: "send-code", text: "Отправляю код — это же просто бронь", correct: false },
+            { id: "refuse", text: "Коды никому не отправляю. Точка.", correct: true },
+          ],
+          correction: "Код из SMS — ключ от твоих денег. Настоящая бронь кодов не требует.",
+        },
+        {
+          id: "deal",
+          messages: ["Ну что, берёшь или нет?"],
+          options: [
+            { id: "prepay-deal", text: "Беру с предоплатой — цена хорошая", correct: false },
+            { id: "safe-deal", text: "Беру только безопасно: встреча, осмотр, оплата по факту", correct: true },
+            { id: "never", text: "Больше никогда ничего не покупаю онлайн", correct: false },
+          ],
+          correction: "Отказываться от всего — так же неверно, как верить всему. Правильно — безопасная сделка.",
+        },
+      ],
+    },
   },
   ro: {
     title: "Scam sau ofertă reală?",
@@ -177,6 +235,64 @@ export const scamOrRealContent = {
         { id: "sale-10", offer: "Reducere 10% în magazin cunoscut, retur 14 zile", context: "Site-ul oficial al rețelei.", verdict: "honest", explain: "Reducere moderată, vânzător cunoscut și retur — totul e curat." },
         { id: "sms-code", offer: "Vânzătorul cere codul din SMS «pentru confirmare»", context: "Discuție despre cumpărătură.", verdict: "scam", explain: "Codurile din SMS sunt cheia conturilor și banilor tăi. Nu se cer." },
         { id: "bike-meet", offer: "Bicicletă second-hand: întâlnire personală, verificare, plată pe loc", context: "Anunț cu poze reale și adresă.", verdict: "honest", explain: "Întâlnire personală, verificarea mărfii și plata pe loc — sigur." },
+      ],
+    },
+    haggleDialogue: {
+      prompt: "Vânzătorul te presează. Negociază în siguranță și nu ceda capcanelor.",
+      sellerName: "Vânzător",
+      youName: "Tu",
+      successTitle: "Afaceresigură! N-ai cedat presiunii.",
+      resultCount: "Pași: 5/5 · Greșeli: {misses}",
+      steps: [
+        {
+          id: "prepay",
+          messages: ["Telefonul aproape gratis! Transferă avansul acum, altfel îl ia altcineva!"],
+          options: [
+            { id: "send", text: "Transfer imediat, ca să nu-l pierd", correct: false },
+            { id: "verify", text: "Mai întâi verific vânzătorul și mă întâlnesc personal", correct: true },
+            { id: "discount", text: "Cer reducere și mai mare", correct: false },
+          ],
+          correction: "Graba «altfel ia altul» e presiune clasică. Mai întâi verificarea, apoi banii.",
+        },
+        {
+          id: "check",
+          messages: ["Ce verificare? Așa ieftin e doar acum!"],
+          options: [
+            { id: "believe", text: "Ai dreptate, iau fără verificare", correct: false },
+            { id: "calm", text: "Ieftin și urgent — semn de scam. Verific recenziile și vechimea site-ului", correct: true },
+            { id: "half", text: "Trimit jumătate din avans — compromis", correct: false },
+          ],
+          correction: "Și jumătate din avans la escroc e tot bani pierduți. Verifică înainte de orice plată.",
+        },
+        {
+          id: "secret",
+          messages: ["Bine, iată numărul cardului meu. Și nu spune nimănui de preț!"],
+          options: [
+            { id: "silent", text: "Bine, tac și plătesc", correct: false },
+            { id: "tell", text: "Secretul e steag roșu — povestesc părinților și verific tot", correct: true },
+            { id: "friend-pay", text: "Rog un prieten să plătească în locul meu", correct: false },
+          ],
+          correction: "Secretul protejează escrocul, nu pe tine. Spune adulților în care ai încredere.",
+        },
+        {
+          id: "code",
+          messages: ["Trimite-mi codul din SMS, ca să-ți rezerv marfa!"],
+          options: [
+            { id: "send-code", text: "Trimit codul — e doar o rezervare", correct: false },
+            { id: "refuse", text: "Codurile nu le trimit nimănui. Punct.", correct: true },
+          ],
+          correction: "Codul din SMS e cheia banilor tăi. Rezervările reale nu cer coduri.",
+        },
+        {
+          id: "deal",
+          messages: ["Ei, iei sau nu?"],
+          options: [
+            { id: "prepay-deal", text: "Iau cu plată în avans — prețul e bun", correct: false },
+            { id: "safe-deal", text: "Iau doar sigur: întâlnire, verificare, plată pe loc", correct: true },
+            { id: "never", text: "Nu mai cumpăr nimic online niciodată", correct: false },
+          ],
+          correction: "A refuza tot e la fel de greșit ca a crede tot. Corect e afacerea sigură.",
+        },
       ],
     },
   },
