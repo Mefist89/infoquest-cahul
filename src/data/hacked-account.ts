@@ -122,6 +122,65 @@ export const hackedAccountContent = {
         { id: "p-river", password: "râu-repede#peste44-munte", context: "Пароль от банка.", verdict: "strong", explain: "Длинный и уникальный — такой не подобрать." },
       ],
     },
+    recoveryDialogue: {
+      prompt: "Аккаунт взломан! Веди диалог со службой поддержки и верни доступ шаг за шагом.",
+      supportName: "Поддержка",
+      youName: "Ты",
+      successTitle: "Доступ возвращён! Аккаунт снова твой.",
+      resultCount: "Шагов: 5/5 · Ошибок: {misses}",
+      steps: [
+        {
+          id: "first",
+          messages: ["Вижу чужой вход в твой аккаунт. Что делаем первым делом?"],
+          options: [
+            { id: "clean", text: "Сменить пароль с чистого устройства", correct: true },
+            { id: "delete", text: "Удалить приложение — нет приложения, нет проблемы", correct: false },
+            { id: "write", text: "Написать взломщику и попросить уйти", correct: false },
+          ],
+          correction: "Удаление приложения и переговоры не выгонят взломщика. Сначала — новый пароль с чистого устройства.",
+        },
+        {
+          id: "sessions",
+          messages: ["Пароль сменён. Но чужая сессия может быть ещё активна. Дальше?"],
+          options: [
+            { id: "logout-one", text: "Выйти только на своём телефоне", correct: false },
+            { id: "logout-all", text: "Завершить все чужие сессии в настройках", correct: true },
+            { id: "nothing", text: "Ничего — пароль же уже новый", correct: false },
+          ],
+          correction: "Новый пароль не выкидывает того, кто уже внутри. Закрой все чужие сессии.",
+        },
+        {
+          id: "lock",
+          messages: ["Сессии закрыты. Как не пустить взломщика обратно?"],
+          options: [
+            { id: "same", text: "Придумать такой же пароль — я его помню", correct: false },
+            { id: "2fa", text: "Включить двухэтапную проверку", correct: true },
+            { id: "sticker", text: "Записать новый пароль на стикер у монитора", correct: false },
+          ],
+          correction: "Старый пароль уже утёк, а бумажка — подарок посторонним. Нужен второй замок — двухэтапная проверка.",
+        },
+        {
+          id: "friends",
+          messages: ["Замок включён. От твоего имени уже просили деньги у друзей. Что с ними?"],
+          options: [
+            { id: "silent", text: "Промолчать — стыдно признаваться", correct: false },
+            { id: "warn", text: "Предупредить друзей, что писал не я", correct: true },
+            { id: "newpass", text: "Разослать всем свой новый пароль — для честности", correct: false },
+          ],
+          correction: "Молчание оставляет друзей беззащитными, а пароль — только твой. Предупреди всех.",
+        },
+        {
+          id: "audit",
+          messages: ["Почти всё. Осталась проверка следов взломщика. Что смотрим?"],
+          options: [
+            { id: "avatar", text: "Сменить аватарку — для настроения", correct: false },
+            { id: "audit", text: "Проверить резервную почту и отключить чужие приложения", correct: true },
+            { id: "done", text: "Ничего — и так уже много сделано", correct: false },
+          ],
+          correction: "Недобитый след — открытая дверь. Проверь резервную почту и подключённые приложения.",
+        },
+      ],
+    },
   },
   ro: {
     title: "Contul compromis",
@@ -243,6 +302,65 @@ export const hackedAccountContent = {
         { id: "p-phrase", password: "Soare-mare+42!verde", context: "Parola de la email.", verdict: "strong", explain: "Frază lungă cu cifre și simbol — puternică." },
         { id: "p-qwerty", password: "qwerty", context: "Parola de la contul școlii.", verdict: "weak", explain: "Primele litere de pe tastatură — în fiecare dicționar de spărgător." },
         { id: "p-river", password: "râu-repede#peste44-munte", context: "Parola de la bancă.", verdict: "strong", explain: "Lungă și unică — așa ceva nu se ghicește." },
+      ],
+    },
+    recoveryDialogue: {
+      prompt: "Contul e spart! Poartă un dialog cu suportul și recuperează accesul pas cu pas.",
+      supportName: "Suport",
+      youName: "Tu",
+      successTitle: "Acces recuperat! Contul e din nou al tău.",
+      resultCount: "Pași: 5/5 · Greșeli: {misses}",
+      steps: [
+        {
+          id: "first",
+          messages: ["Văd o conectare străină în contul tău. Ce facem mai întâi?"],
+          options: [
+            { id: "clean", text: "Schimb parola de pe un dispozitiv curat", correct: true },
+            { id: "delete", text: "Șterg aplicația — fără aplicație, fără problemă", correct: false },
+            { id: "write", text: "Îi scriu spărgătorului să plece", correct: false },
+          ],
+          correction: "Ștergerea aplicației și negocierile nu alungă spărgătorul. Mai întâi — parolă nouă de pe un dispozitiv curat.",
+        },
+        {
+          id: "sessions",
+          messages: ["Parola e schimbată. Dar sesiunea străină poate fi încă activă. Mai departe?"],
+          options: [
+            { id: "logout-one", text: "Mă deconectez doar pe telefonul meu", correct: false },
+            { id: "logout-all", text: "Închid toate sesiunile străine din setări", correct: true },
+            { id: "nothing", text: "Nimic — parola e deja nouă", correct: false },
+          ],
+          correction: "Parola nouă nu-l dă afară pe cel intrat deja. Închide toate sesiunile străine.",
+        },
+        {
+          id: "lock",
+          messages: ["Sesiunile sunt închise. Cum nu-l lăsăm pe spărgător înapoi?"],
+          options: [
+            { id: "same", text: "Pun aceeași parolă — o țin minte", correct: false },
+            { id: "2fa", text: "Activez verificarea în doi pași", correct: true },
+            { id: "sticker", text: "Scriu parola nouă pe un sticker lângă monitor", correct: false },
+          ],
+          correction: "Parola veche deja s-a scurs, iar hârtiuța e cadou pentru străini. Îți trebuie al doilea lacăt — verificarea în doi pași.",
+        },
+        {
+          id: "friends",
+          messages: ["Lacătul e pus. În numele tău deja s-au cerut bani de la prieteni. Cu ei ce facem?"],
+          options: [
+            { id: "silent", text: "Tac — mi-e rușine să recunosc", correct: false },
+            { id: "warn", text: "Îi avertizez pe prieteni că n-am scris eu", correct: true },
+            { id: "newpass", text: "Trimit tuturor parola mea nouă — pentru sinceritate", correct: false },
+          ],
+          correction: "Tăcerea îi lasă pe prieteni fără apărare, iar parola e doar a ta. Avertizează-i pe toți.",
+        },
+        {
+          id: "audit",
+          messages: ["Aproape gata. A rămas verificarea urmelor spărgătorului. Ce verificăm?"],
+          options: [
+            { id: "avatar", text: "Schimb poza — pentru dispoziție", correct: false },
+            { id: "audit", text: "Verific emailul de rezervă și deconectez aplicațiile străine", correct: true },
+            { id: "done", text: "Nimic — și așa s-a făcut mult", correct: false },
+          ],
+          correction: "O urmă nedoborâtă — o ușă deschisă. Verifică emailul de rezervă și aplicațiile conectate.",
+        },
       ],
     },
   },

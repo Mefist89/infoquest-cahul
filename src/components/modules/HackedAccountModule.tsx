@@ -27,6 +27,7 @@ import {
 import { hackedAccountContent, type HackedAccountLocale } from "@/data/hacked-account";
 import { BreachSignsStage } from "./hacked-account/breach-signs-stage";
 import { PasswordGameStage } from "./hacked-account/password-game-stage";
+import { RecoveryDialogueStage } from "./hacked-account/recovery-dialogue-stage";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { createClient } from "@/lib/supabase/client";
 import { NextButtonContext } from "./operator-call/stage-support";
@@ -189,7 +190,8 @@ export function HackedAccountModule({ locale, initialStages, initialModule, isAd
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 4 && <BreachSignsStage content={t.breachSigns} saving={saving} onComplete={(score) => completeStage(4, score)} />}
                 {currentStage === 5 && <PasswordGameStage content={t.passwordGame} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(5, score)} />}
-                {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage < 9 && (
+                {currentStage === 6 && <RecoveryDialogueStage content={t.recoveryDialogue} saving={saving} onComplete={(score) => completeStage(6, score)} />}
+                {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
