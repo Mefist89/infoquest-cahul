@@ -57,8 +57,8 @@ export const MODULE_CATALOG = [
   {
     id: 3,
     moduleId: "hacked-account",
-    status: "soon",
-    route: null,
+    status: "playable",
+    route: "/modules/hacked-account",
     color: "var(--danger)",
     icon: "user-lock",
     side: "left",
