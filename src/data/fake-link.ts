@@ -54,6 +54,21 @@ export const fakeLinkContent = {
       ],
       rule: "Всегда проверяйте адрес в строке браузера перед тем, как ввести свои данные. При малейших сомнениях вводите адрес сайта вручную.",
       },
+      findSignals: {
+        lead: "Перед тобой копия сайта банка. Осмотри страницу и нажми на всё, что кажется подозрительным.",
+        passNote: "Найди минимум 4 сигнала из 6, затем нажми «Проверить».",
+        successTitle: "Тени не пройти! Сигналы найдены.",
+        failTitle: "Пока мало сигналов — посмотри подсказки и попробуй ещё.",
+        foundCount: "Найдено: {found}/6",
+        signals: [
+          { id: "domain", title: "Подменённый домен", explain: "banca-noroc-online.com вместо banca-noroc.md: лишние слова и .com вместо .md." },
+          { id: "no-https", title: "Нет защищённого соединения", explain: "В адресной строке нет замка: данные уйдут открытым текстом." },
+          { id: "urgency", title: "Срочный призыв", explain: "Баннер торопит — «войдите за 10 минут», чтобы ты не успел подумать." },
+          { id: "logo", title: "Размытый логотип", explain: "Логотип мутный: скопирован с настоящего сайта в низком качестве." },
+          { id: "form", title: "Форма вымогает лишнее", explain: "Для «входа» просят PIN и CVV карты — банку они никогда не нужны." },
+          { id: "prize", title: "Приз-ловушка", explain: "Кнопка «Забрать приз» ведёт на посторонний адрес." },
+        ],
+      },
       audioExample: {
         listen: "Прослушать текст",
         audioFile: "/3_exemple_ru.mp3",
@@ -111,6 +126,21 @@ export const fakeLinkContent = {
         { title: "Design neobișnuit", text: "Erori de aspect, logo-uri neclare, butoane nefuncționale (cu excepția butonului de conectare)." }
       ],
       rule: "Verificați mereu adresa din bara browserului înainte de a introduce datele. Dacă aveți cea mai mică îndoială, introduceți manual adresa site-ului.",
+      },
+      findSignals: {
+        lead: "În fața ta este o copie a site-ului băncii. Examinează pagina și apasă pe tot ce ți se pare suspect.",
+        passNote: "Găsește cel puțin 4 semnale din 6, apoi apasă «Verifică».",
+        successTitle: "Umbra nu trece! Semnale găsite.",
+        failTitle: "Deocamdată prea puține semnale — citește explicațiile și mai încearcă.",
+        foundCount: "Găsite: {found}/6",
+        signals: [
+          { id: "domain", title: "Domeniu falsificat", explain: "banca-noroc-online.com în loc de banca-noroc.md: cuvinte în plus și .com în loc de .md." },
+          { id: "no-https", title: "Lipsa conexiunii securizate", explain: "În bara de adrese lipsește lacătul: datele circulă ca text simplu." },
+          { id: "urgency", title: "Apel urgent", explain: "Bannerul te grăbește — «conectează-te în 10 minute», ca să n-ai timp să gândești." },
+          { id: "logo", title: "Logo neclar", explain: "Logo-ul e încețoșat: copiat de pe site-ul real la calitate joasă." },
+          { id: "form", title: "Formularul cere date în plus", explain: "Pentru «conectare» se cer PIN-ul și CVV-ul cardului — banca nu le cere niciodată." },
+          { id: "prize", title: "Premiu-capcană", explain: "Butonul «Ridică premiul» duce la o adresă străină." },
+        ],
       },
       audioExample: {
         listen: "Ascultă textul",
