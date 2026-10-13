@@ -134,14 +134,30 @@ export const fakeLinkContent = {
           {
             id: "prize-win",
             title: "Выигрыш приза",
-            incoming: ["Поздравляем! Ты выиграл телефон. Забери приз сегодня: super-prizy-online.com/zabrat. Только никому не рассказывай!"],
-            options: [
+            incoming: ["Поздравляем! Ты выиграл телефон. Забери приз сегодня: super-prizy-online.com/zabrat. Только никому не рассказывай!"],            options: [
               { id: "claim", text: "Забрать приз, пока не забрали другие", correct: false },
               { id: "secret", text: "Молчать, как просят, но приз забрать", correct: false },
               { id: "ignore", text: "Проигнорировать: в конкурсах я не участвовал, а секретность — признак обмана", correct: true },
             ],
             explain: "Неожиданные призы и просьба молчать — классические признаки мошенничества.",
           },
+        ],
+      },
+      orderSteps: {
+        prompt: "Собери правильный алгоритм проверки подозрительной ссылки: нажимай шаги в верном порядке.",
+        passNote: "Нужно минимум 4 шага из 5 на своих местах.",
+        yourOrder: "Твой порядок",
+        available: "Шаги",
+        tapToRemove: "Нажми на шаг, чтобы убрать его.",
+        successTitle: "Алгоритм собран! Тень обезврежена.",
+        failTitle: "Порядок перепутан — посмотри верный алгоритм и попробуй ещё.",
+        resultCount: "На месте: {score}/5",
+        steps: [
+          { id: "stop", text: "Остановись: не кликай и не вводи данные" },
+          { id: "domain", text: "Прочитай адрес слева направо: домен и зону" },
+          { id: "lock", text: "Проверь замок и HTTPS в адресной строке" },
+          { id: "manual", text: "Зайди вручную через официальный сайт или приложение" },
+          { id: "report", text: "Удали сообщение и предупреди близких" },
         ],
       },
       audioExample: {
@@ -291,6 +307,23 @@ export const fakeLinkContent = {
             ],
             explain: "Premiile neașteptate și rugămintea de a tăcea sunt semne clasice de escrocherie.",
           },
+        ],
+      },
+      orderSteps: {
+        prompt: "Construiește algoritmul corect de verificare a unui link suspect: apasă pașii în ordinea bună.",
+        passNote: "Ai nevoie de cel puțin 4 pași din 5 la locurile lor.",
+        yourOrder: "Ordinea ta",
+        available: "Pași",
+        tapToRemove: "Apasă pe un pas ca să-l scoți.",
+        successTitle: "Algoritm construit! Umbra e neutralizată.",
+        failTitle: "Ordinea e încurcată — privește algoritmul corect și mai încearcă.",
+        resultCount: "La loc: {score}/5",
+        steps: [
+          { id: "stop", text: "Oprește-te: nu da clic și nu introduce date" },
+          { id: "domain", text: "Citește adresa de la stânga la dreapta: domeniul și zona" },
+          { id: "lock", text: "Verifică lacătul și HTTPS în bara de adrese" },
+          { id: "manual", text: "Intră manual prin site-ul oficial sau aplicație" },
+          { id: "report", text: "Șterge mesajul și avertizează-i pe cei apropiați" },
         ],
       },
       audioExample: {
