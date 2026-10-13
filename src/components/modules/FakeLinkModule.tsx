@@ -29,6 +29,7 @@ import { FindSignalsStage } from "./fake-link/find-signals-stage";
 import { LinkClassifyStage } from "./fake-link/link-classify-stage";
 import { DialogueReactStage } from "./fake-link/dialogue-react-stage";
 import { OrderStepsStage } from "./fake-link/order-steps-stage";
+import { FinalBattleStage } from "./fake-link/final-battle-stage";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { createClient } from "@/lib/supabase/client";
 import { NextButtonContext } from "./operator-call/stage-support";
@@ -198,7 +199,8 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
                 {currentStage === 5 && <LinkClassifyStage content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(5, score)} />}
                 {currentStage === 6 && <DialogueReactStage content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(6, score)} />}
                 {currentStage === 7 && <OrderStepsStage content={t.orderSteps} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(7, score)} />}
-                {currentStage !== 3 && currentStage !== 4 && currentStage > 1 && currentStage !== 5 && currentStage !== 6 && currentStage !== 7 && currentStage < 9 && (
+                {currentStage === 8 && <FinalBattleStage content={t.finalBattle} nextLabel={t.finalBattle.next} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(8, score)} />}
+                {currentStage !== 3 && currentStage !== 4 && currentStage > 1 && currentStage !== 5 && currentStage !== 6 && currentStage !== 7 && currentStage !== 8 && currentStage < 9 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
