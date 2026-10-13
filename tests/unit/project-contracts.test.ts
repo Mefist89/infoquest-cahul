@@ -56,9 +56,9 @@ describe("единый каталог модулей", () => {
     expect(MODULE_STAGES).toHaveLength(STAGE_COUNT);
   });
 
-  it("имеет уникальные идентификаторы и ровно три доступных модуля", () => {
+  it("имеет уникальные идентификаторы и ровно четыре доступных модуля", () => {
     expect(new Set(MODULE_CATALOG.map((module) => module.moduleId)).size).toBe(MODULE_COUNT);
-    expect(MODULE_CATALOG.filter((module) => module.status === "playable").map((module) => module.moduleId)).toEqual(["operator-call", "fake-link", "hacked-account"]);
+    expect(MODULE_CATALOG.filter((module) => module.status === "playable").map((module) => module.moduleId)).toEqual(["operator-call", "fake-link", "hacked-account", "scam-or-real"]);
     expect(MODULE_CATALOG[0].route).toBe("/modules/operator-call");
   });
 
@@ -216,7 +216,6 @@ describe("route boundaries and placeholder routes", () => {
     "intro/page.tsx",
     "map/page.tsx",
     "results/page.tsx",
-    "modules/scam-or-real/page.tsx",
     "modules/deepfake-detective/page.tsx",
   ];
 

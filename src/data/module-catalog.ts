@@ -73,8 +73,8 @@ export const MODULE_CATALOG = [
   {
     id: 4,
     moduleId: "scam-or-real",
-    status: "soon",
-    route: null,
+    status: "playable",
+    route: "/modules/scam-or-real",
     color: "var(--gold)",
     icon: "gift",
     side: "left",
