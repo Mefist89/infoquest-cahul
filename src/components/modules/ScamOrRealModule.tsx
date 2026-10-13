@@ -28,6 +28,8 @@ import { scamOrRealContent, type ScamOrRealLocale } from "@/data/scam-or-real";
 import { DealSignalsStage } from "./scam-or-real/deal-signals-stage";
 import { OfferClassifyStage } from "./scam-or-real/offer-classify-stage";
 import { HaggleDialogueStage } from "./scam-or-real/haggle-dialogue-stage";
+import { SellerCheckStage } from "./scam-or-real/seller-check-stage";
+import { FinalBattleStage } from "./scam-or-real/final-battle-stage";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { createClient } from "@/lib/supabase/client";
 import { NextButtonContext } from "./operator-call/stage-support";
@@ -191,7 +193,9 @@ export function ScamOrRealModule({ locale, initialStages, initialModule, isAdmin
                 {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(4, score)} />}
                 {currentStage === 5 && <OfferClassifyStage content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(5, score)} />}
                 {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(score) => completeStage(6, score)} />}
-                {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && (
+                {currentStage === 7 && <SellerCheckStage content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(7, score)} />}
+                {currentStage === 8 && <FinalBattleStage content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(8, score)} />}
+                {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && currentStage !== 7 && currentStage !== 8 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
