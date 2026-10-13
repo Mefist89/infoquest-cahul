@@ -55,6 +55,21 @@ export const scamOrRealContent = {
       ],
       rule: "Не переводи предоплату незнакомцам и проверяй продавца: возраст сайта, отзывы, контакты и возможность возврата.",
     },
+    dealSignals: {
+      lead: "Перед тобой объявление о продаже телефона. Осмотри страницу и нажми на всё подозрительное.",
+      passNote: "Найди минимум 4 сигнала из 6, затем нажми «Проверить».",
+      successTitle: "Скам распознан! Деньги целы.",
+      failTitle: "Пока мало сигналов — посмотри подсказки и попробуй ещё.",
+      foundCount: "Найдено: {found}/6",
+      signals: [
+        { id: "price", title: "Цена-ловушка", explain: "Телефон за полцены и «только сегодня» — так честно не продают." },
+        { id: "prepay", title: "Предоплата на личную карту", explain: "100% вперёд незнакомцу: после оплаты продавец исчезнет." },
+        { id: "seller", title: "Продавец-призрак", explain: "На сайте 6 дней, ноль отзывов — проверить нечего." },
+        { id: "urgency", title: "Искусственная спешка", explain: "Таймер и «осталось 2 штуки» не дают подумать." },
+        { id: "contacts", title: "Нет контактов", explain: "Только мессенджер: ни адреса, ни возврата, ни ответственности." },
+        { id: "photo", title: "Мутные фото", explain: "Размытые картинки скопированы с чужого объявления." },
+      ],
+    },
   },
   ro: {
     title: "Scam sau ofertă reală?",
@@ -109,6 +124,21 @@ export const scamOrRealContent = {
         { title: "Presiune și secret", text: "Te grăbesc cu decizia și îți cer să nu spui nimănui despre «chilipir»." },
       ],
       rule: "Nu transfera avansuri străinilor și verifică vânzătorul: vechimea site-ului, recenzii, contacte și posibilitatea de retur.",
+    },
+    dealSignals: {
+      lead: "În fața ta e un anunț de vânzare a unui telefon. Examinează pagina și apasă pe tot ce e suspect.",
+      passNote: "Găsește cel puțin 4 semnale din 6, apoi apasă «Verifică».",
+      successTitle: "Scam recunoscut! Banii sunt teferi.",
+      failTitle: "Deocamdată prea puține semnale — citește explicațiile și mai încearcă.",
+      foundCount: "Găsite: {found}/6",
+      signals: [
+        { id: "price", title: "Preț-capcană", explain: "Telefon la jumătate de preț și «doar azi» — așa nu se vinde onest." },
+        { id: "prepay", title: "Avans pe card personal", explain: "100% în avans unui străin: după plată vânzătorul dispare." },
+        { id: "seller", title: "Vânzător-fantomă", explain: "Pe site de 6 zile, zero recenzii — n-ai ce verifica." },
+        { id: "urgency", title: "Grabă artificială", explain: "Cronometrul și «au rămas 2 bucăți» nu te lasă să gândești." },
+        { id: "contacts", title: "Fără contacte", explain: "Doar messenger: fără adresă, fără retur, fără responsabilitate." },
+        { id: "photo", title: "Poze neclare", explain: "Imaginile încețoșate sunt copiate din alt anunț." },
+      ],
     },
   },
 } as const;
