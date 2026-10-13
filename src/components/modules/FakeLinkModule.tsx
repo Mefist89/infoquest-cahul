@@ -27,6 +27,7 @@ import {
 import { fakeLinkContent, type FakeLinkLocale } from "@/data/fake-link";
 import { FindSignalsStage } from "./fake-link/find-signals-stage";
 import { LinkClassifyStage } from "./fake-link/link-classify-stage";
+import { DialogueReactStage } from "./fake-link/dialogue-react-stage";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { createClient } from "@/lib/supabase/client";
 import { NextButtonContext } from "./operator-call/stage-support";
@@ -194,7 +195,8 @@ export function FakeLinkModule({ locale, initialStages, initialModule, isAdmin }
                 {currentStage === 3 && <AudioExampleStage content={t.audioExample} button={t.continue} saving={saving} onComplete={() => completeStage(3, 100)} />}
                 {currentStage === 4 && <FindSignalsStage locale={locale} content={t.findSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(4, score)} />}
                 {currentStage === 5 && <LinkClassifyStage content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(5, score)} />}
-                {currentStage !== 3 && currentStage !== 4 && currentStage > 1 && currentStage !== 5 && currentStage < 9 && (
+                {currentStage === 6 && <DialogueReactStage content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(6, score)} />}
+                {currentStage !== 3 && currentStage !== 4 && currentStage > 1 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
