@@ -35,6 +35,14 @@ export class PatrolScene extends Phaser.Scene {
     this.locale = locale;
   }
 
+  preload() {
+    // Спрайты Kenney (CC0), нормализованные копии лежат в public/game/sprites.
+    this.load.atlasXML("player", "/game/sprites/player.png", "/game/sprites/player.xml");
+    this.load.atlasXML("shadow", "/game/sprites/shadow.png", "/game/sprites/shadow.xml");
+    this.load.atlasXML("npc-female", "/game/sprites/npc-female.png", "/game/sprites/npc-female.xml");
+    this.load.atlasXML("npc-male", "/game/sprites/npc-male.png", "/game/sprites/npc-male.xml");
+  }
+
   create() {
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
@@ -76,16 +84,17 @@ export class PatrolScene extends Phaser.Scene {
         .setAlpha(0.9);
     }
 
-    // Игрок: неоновый кружок, текстура генерируется кодом.
-    const painter = this.make.graphics({ x: 0, y: 0 }, false);
-    painter.fillStyle(0x00d9ff, 1);
-    painter.fillCircle(16, 16, 13);
-    painter.lineStyle(3, 0xffffff, 1);
-    painter.strokeCircle(16, 16, 13);
-    painter.generateTexture("patrol-player", 32, 32);
-    painter.destroy();
+    // Анимация ходьбы игрока из атласа.
+    this.anims.create({
+      key: "player-run",
+      frames: this.anims.generateFrameNames("player", { prefix: "run", start: 0, end: 2 }),
+      frameRate: 8,
+      repeat: -1,
+    });
 
-    this.player = this.physics.add.sprite(800, 600, "patrol-player");
+    this.player = this.physics.add.sprite(800, 600, "player", "idle");
+    this.player.setScale(0.55);
+    this.player.body.setSize(60, 100);
     this.player.setCollideWorldBounds(true);
     this.physics.add.collider(this.player, solids);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
@@ -113,6 +122,15 @@ export class PatrolScene extends Phaser.Scene {
       vy *= Math.SQRT1_2;
     }
     this.player.setVelocity(vx, vy);
+
+    const moving = vx !== 0 || vy !== 0;
+    if (moving) {
+      this.player.anims.play("player-run", true);
+      if (vx !== 0) this.player.setFlipX(vx < 0);
+    } else {
+      this.player.anims.stop();
+      this.player.setFrame("idle");
+    }
 
     const zone = DISTRICTS.find(
       (district) =>
