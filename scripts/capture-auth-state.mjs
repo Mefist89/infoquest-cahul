@@ -8,7 +8,8 @@ import { chromium } from "@playwright/test";
 const port = 3000;
 const baseUrl = `http://localhost:${port}`;
 const statePath = resolve("tests/.auth/google-user.json");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+const isWindows = process.platform === "win32";
+const npmCommand = isWindows ? "npm.cmd" : "npm";
 
 async function waitForServer() {
   const deadline = Date.now() + 120_000;
@@ -27,6 +28,8 @@ async function waitForServer() {
 const server = spawn(npmCommand, ["run", "dev", "--", "-p", String(port)], {
   cwd: process.cwd(),
   stdio: "ignore",
+  // .cmd shims on Windows require a shell, otherwise Node 24+ throws EINVAL.
+  shell: isWindows,
 });
 
 try {
@@ -52,5 +55,11 @@ try {
   process.stdout.write(`Сессия сохранена в ${statePath}\n`);
   process.stdout.write("Файл содержит секретную сессию и уже исключён из Git.\n");
 } finally {
-  server.kill();
+  if (isWindows && server.pid !== undefined) {
+    // With shell:true server.kill() only stops the cmd wrapper,
+    // so terminate the whole process tree to avoid an orphaned dev server.
+    spawn("taskkill", ["/PID", String(server.pid), "/T", "/F"], { stdio: "ignore" });
+  } else {
+    server.kill();
+  }
 }
