@@ -1,10 +1,17 @@
 import * as Phaser from "phaser";
 
+import { PATROL_NPCS } from "@/data/patrol";
+
 export type PatrolLocale = "ru" | "ro";
+
+export type PatrolHooks = {
+  onTalk: (npcId: string) => void;
+};
 
 const WORLD_WIDTH = 1600;
 const WORLD_HEIGHT = 1200;
 const PLAYER_SPEED = 260;
+const TALK_DISTANCE = 100;
 
 type District = {
   id: string;
@@ -23,16 +30,29 @@ const DISTRICTS: District[] = [
   { id: "shop", name: { ru: "Магазин", ro: "Magazinul" }, x: 1040, y: 760, width: 420, height: 300, color: 0xbe185d },
 ];
 
+type NpcRecord = {
+  id: string;
+  sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  checkText: Phaser.GameObjects.Text;
+  resolved: boolean;
+};
+
 export class PatrolScene extends Phaser.Scene {
   private locale: PatrolLocale;
+  private hooks: PatrolHooks;
   private player?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
+  private talkKey?: Phaser.Input.Keyboard.Key;
   private hudText?: Phaser.GameObjects.Text;
+  private promptText?: Phaser.GameObjects.Text;
+  private npcs: NpcRecord[] = [];
+  private nearNpcId: string | null = null;
 
-  constructor(locale: PatrolLocale) {
+  constructor(locale: PatrolLocale, hooks: PatrolHooks) {
     super("patrol");
     this.locale = locale;
+    this.hooks = hooks;
   }
 
   preload() {
@@ -99,13 +119,69 @@ export class PatrolScene extends Phaser.Scene {
     this.physics.add.collider(this.player, solids);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
+    // NPC с именами над головой.
+    const npcData = PATROL_NPCS;
+    this.npcs = npcData.map((npc) => {
+      const sprite = this.physics.add.sprite(npc.x, npc.y, npc.sprite, "idle");
+      sprite.setScale(0.55);
+      if (npc.tint !== undefined) sprite.setTint(npc.tint);
+      sprite.setImmovable(true);
+      this.add
+        .text(npc.x, npc.y - 52, npc.name[this.locale], {
+          fontSize: "16px",
+          fontStyle: "bold",
+          color: "#ffd166",
+          backgroundColor: "#060d1fcc",
+          padding: { x: 6, y: 2 },
+        })
+        .setOrigin(0.5);
+      const checkText = this.add
+        .text(npc.x + 26, npc.y - 52, "✓", { fontSize: "20px", fontStyle: "900", color: "#34d399" })
+        .setOrigin(0.5)
+        .setVisible(false);
+      return { id: npc.id, sprite, checkText, resolved: false };
+    });
+
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D") as Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
+    this.talkKey = this.input.keyboard?.addKey("E") as Phaser.Input.Keyboard.Key;
+
+    this.promptText = this.add
+      .text(0, 0, this.locale === "ro" ? "[E] Vorbește" : "[E] Поговорить", {
+        fontSize: "18px",
+        fontStyle: "900",
+        color: "#00d9ff",
+        backgroundColor: "#060d1fee",
+        padding: { x: 8, y: 4 },
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
+      .setVisible(false);
 
     this.hudText = this.add
       .text(12, 12, "", { fontSize: "18px", fontStyle: "bold", color: "#00d9ff", backgroundColor: "#060d1fcc", padding: { x: 10, y: 6 } })
       .setScrollFactor(0)
       .setDepth(100);
+  }
+
+  /** Помечает NPC как разобранного: галочка + лёгкий оттенок. */
+  markResolved(npcId: string) {
+    const record = this.npcs.find((npc) => npc.id === npcId);
+    if (!record) return;
+    record.resolved = true;
+    record.checkText.setVisible(true);
+    record.sprite.setTint(0xb8f5d0);
+  }
+
+  /** Сбрасывает патруль для новой попытки. */
+  resetPatrol() {
+    for (const record of this.npcs) {
+      record.resolved = false;
+      record.checkText.setVisible(false);
+      record.sprite.clearTint();
+    }
+    this.nearNpcId = null;
+    this.promptText?.setVisible(false);
   }
 
   update() {
@@ -132,6 +208,27 @@ export class PatrolScene extends Phaser.Scene {
       this.player.setFrame("idle");
     }
 
+    // Ближайший неразобранный NPC в радиусе разговора.
+    this.nearNpcId = null;
+    let best = TALK_DISTANCE;
+    for (const record of this.npcs) {
+      if (record.resolved) continue;
+      const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, record.sprite.x, record.sprite.y);
+      if (distance < best) {
+        best = distance;
+        this.nearNpcId = record.id;
+      }
+    }
+    const near = this.npcs.find((npc) => npc.id === this.nearNpcId);
+    if (near && this.promptText) {
+      this.promptText.setPosition(near.sprite.x, near.sprite.y - 84).setVisible(true);
+      if (this.talkKey && Phaser.Input.Keyboard.JustDown(this.talkKey)) {
+        this.hooks.onTalk(near.id);
+      }
+    } else {
+      this.promptText?.setVisible(false);
+    }
+
     const zone = DISTRICTS.find(
       (district) =>
         this.player !== undefined &&
@@ -140,7 +237,7 @@ export class PatrolScene extends Phaser.Scene {
         this.player.y >= district.y &&
         this.player.y <= district.y + district.height,
     );
-    const hint = this.locale === "ro" ? "WASD / săgeți — mișcare" : "WASD / стрелки — движение";
+    const hint = this.locale === "ro" ? "WASD / săgeți — mișcare, E — dialog" : "WASD / стрелки — движение, E — разговор";
     this.hudText?.setText(zone ? `${zone.name[this.locale]} · ${hint}` : hint);
   }
 }

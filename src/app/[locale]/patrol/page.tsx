@@ -45,8 +45,8 @@ export default async function PatrolPage({ params }: { params: Promise<{ locale:
           </h1>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             {locale === "ro"
-              ? "Mergi prin cartiere cu WASD sau săgeți. NPC-urile și amenințările apar în milestone-urile următoare."
-              : "Ходи по районам на WASD или стрелках. NPC и угрозы появятся в следующих майлстоунах."}
+              ? "Mergi prin cartiere cu WASD sau săgeți, apropie-te de locuitori și apasă E pentru dialog."
+              : "Ходи по районам на WASD или стрелках, подходи к жителям и жми E для разговора."}
           </p>
         </section>
 
