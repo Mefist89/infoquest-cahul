@@ -6,10 +6,11 @@ const projectId = "qfmjjhitknwnbfblohvw";
 const npx = process.platform === "win32" ? "npx.cmd" : "npx";
 const target = resolve("src/lib/supabase/database.types.ts");
 
+// Win32: spawnSync обёрнут в shell — Node >= 20 запрещает спавнить .cmd напрямую (EINVAL)
 const generated = execFileSync(
   npx,
   ["supabase", "gen", "types", "typescript", "--project-id", projectId, "--schema", "public"],
-  { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 },
+  { encoding: "utf8", maxBuffer: 10 * 1024 * 1024, shell: process.platform === "win32" },
 );
 
 if (!generated.includes("export type Database")) {
