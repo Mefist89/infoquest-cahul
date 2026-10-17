@@ -4,15 +4,18 @@ import { Check, CheckCircle2, ShieldAlert, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
 
-import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
+import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
-function CallSimulatorStage({ locale, content, check, saving, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [status, setStatus] = useState<"idle" | "playing" | "failed" | "won">("idle");
   const [failReason, setFailReason] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(100);
+  const [correctActions, setCorrectActions] = useState(0);
+  const [wrongActions, setWrongActions] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const level = content.levels[currentLevelIndex];
@@ -60,15 +63,16 @@ function CallSimulatorStage({ locale, content, check, saving, onSubmit }: { loca
   function handleAction(isDangerAction: boolean) {
     if (status !== "playing" || !phrase) return;
     if (phrase.isThreat) {
-      if (isDangerAction) { playSound("correct"); advanceLevel(); }
-      else { playSound("wrong"); setStatus("failed"); setFailReason(content.loseThreat); }
+      if (isDangerAction) { playSound("correct"); setCorrectActions((count) => count + 1); advanceLevel(); }
+      else { playSound("wrong"); setWrongActions((count) => count + 1); setStatus("failed"); setFailReason(content.loseThreat); }
     } else {
-      if (isDangerAction) { playSound("wrong"); setStatus("failed"); setFailReason(content.loseSafe); }
+      if (isDangerAction) { playSound("wrong"); setWrongActions((count) => count + 1); setStatus("failed"); setFailReason(content.loseSafe); }
       else {
         if (currentPhraseIndex < level.phrases.length - 1) {
+          setCorrectActions((count) => count + 1);
           setCurrentPhraseIndex((prev) => prev + 1);
           setTimeLeft(100);
-        } else { playSound("correct"); advanceLevel(); }
+        } else { playSound("correct"); setCorrectActions((count) => count + 1); advanceLevel(); }
       }
     }
   }
@@ -167,7 +171,8 @@ function CallSimulatorStage({ locale, content, check, saving, onSubmit }: { loca
 
       {status === "won" && (
         <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
-          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+          {feedback && <ScoreFeedback score={feedback.score} />}
+          <ActionButton disabled={saving} onClick={() => onSubmit({ correct: correctActions, total: correctActions + wrongActions })} center>{check}</ActionButton>
         </div>
       )}
     </div>

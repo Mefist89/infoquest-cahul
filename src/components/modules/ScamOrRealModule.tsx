@@ -3,7 +3,7 @@ import React from "react";
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowLeft,
   BadgePercent,
@@ -24,14 +24,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { scamOrRealContent, type ScamOrRealLocale } from "@/data/scam-or-real";
+import type { scamOrRealContent, ScamOrRealLocale } from "@/data/scam-or-real";
 import { DealSignalsStage } from "./scam-or-real/deal-signals-stage";
 import { OfferClassifyStage } from "./scam-or-real/offer-classify-stage";
 import { HaggleDialogueStage } from "./scam-or-real/haggle-dialogue-stage";
 import { SellerCheckStage } from "./scam-or-real/seller-check-stage";
 import { FinalBattleStage } from "./scam-or-real/final-battle-stage";
-import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
-import { createClient } from "@/lib/supabase/client";
+import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog";
+import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
 import { NextButtonContext } from "./operator-call/stage-support";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
@@ -50,58 +50,23 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, BadgePercent, MessageSquare, ListOrdered, ShieldAlert];
 
-export function ScamOrRealModule({ locale, initialStages, initialModule, isAdmin }: { locale: ScamOrRealLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
-  const t = scamOrRealContent[locale];
-  const initialCompleted = initialStages.filter((stage) => stage.status === "completed").map((stage) => stage.stage_index);
-  const firstOpenStage = Array.from({ length: 8 }, (_, index) => index + 1).find((stage) => !initialCompleted.includes(stage)) ?? 1;
-  const [completedStages, setCompletedStages] = useState(() => new Set(initialCompleted));
-  const [currentStage, setCurrentStage] = useState(initialCompleted.length === 0 ? 0 : firstOpenStage);
-  const [moduleXp, setModuleXp] = useState(initialModule?.xp ?? 0);
-  const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<{ kind: "success" | "error"; text: string } | null>(null);
-
-  const unlockedThrough = useMemo(() => {
-    return Math.max(1, ...Array.from(completedStages).map((s) => s + 1));
-  }, [completedStages]);
-
-  const completionPercent = Math.round((completedStages.size / 8) * 100);
-
-  async function completeStage(stageIndex: number, score = 100) {
-    if (saving) return false;
-    setSaving(true);
-    setNotice(null);
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("complete_module_stage", {
-      p_module_id: "scam-or-real",
-      p_stage_index: stageIndex,
-      p_score: Math.max(0, Math.min(100, Math.round(score))),
-    });
-    setSaving(false);
-
-    if (error) {
-      console.error(error);
-      setNotice({ kind: "error", text: `${t.saveError} (${error.message})` });
-      return false;
-    }
-
-    const result = Array.isArray(data) ? data[0] : null;
-    setCompletedStages((previous) => new Set(previous).add(stageIndex));
-    setModuleXp(Number(result?.module_xp ?? moduleXp));
-    setNotice({ kind: "success", text: t.saved });
-    return true;
-  }
-
-  function chooseStage(stage: number) {
-    setCurrentStage(stage);
-    setNotice(null);
-  }
+export function ScamOrRealModule({ content, locale, initialStages, initialModule, isAdmin }: { content: typeof scamOrRealContent[keyof typeof scamOrRealContent]; locale: ScamOrRealLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
+  const t = content;
+  const runner = useModuleRunner({
+    moduleId: MODULE_IDS.scamOrReal,
+    stageCount: STAGE_COUNT,
+    initialStages,
+    initialModule,
+    messages: { locked: t.locked, saved: t.saved, saveError: t.saveError },
+  });
+  const { completedStages, completionPercent, currentStage, moduleXp, notice, saving, unlockedThrough, chooseStage, completeStage } = runner;
 
   async function submitIntro() {
     chooseStage(1);
   }
 
   async function submitTheory() {
-    await completeStage(1, 100);
+    await completeStage(1);
   }
 
   return (
@@ -190,16 +155,16 @@ export function ScamOrRealModule({ locale, initialStages, initialModule, isAdmin
               <div className="mt-7">
                 {currentStage === 0 && <IntroStage locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
-                {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(4, score)} />}
-                {currentStage === 5 && <OfferClassifyStage content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(5, score)} />}
-                {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(score) => completeStage(6, score)} />}
-                {currentStage === 7 && <SellerCheckStage content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(7, score)} />}
-                {currentStage === 8 && <FinalBattleStage content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(score) => completeStage(8, score)} />}
+                {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
+                {currentStage === 5 && <OfferClassifyStage content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
+                {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
+                {currentStage === 7 && <SellerCheckStage content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
+                {currentStage === 8 && <FinalBattleStage content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
                 {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && currentStage !== 7 && currentStage !== 8 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
-                    <button type="button" onClick={() => { completeStage(currentStage, 100); chooseStage(currentStage < 8 ? currentStage + 1 : 8); }} disabled={saving} className="focus-ring mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60">
+                    <button type="button" onClick={() => { completeStage(currentStage); chooseStage(currentStage < 8 ? currentStage + 1 : 8); }} disabled={saving} className="focus-ring mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60">
                       Завершить этап (Dev)
                     </button>
                   </div>

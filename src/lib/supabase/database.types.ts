@@ -379,7 +379,8 @@ export type Database = {
         Returns: { block_source: string | null; is_blocked: boolean }[];
       };
       complete_module_stage: {
-        Args: { p_module_id: string; p_score?: number; p_stage_index: number };
+        // NOTE: типы дополнены вручную под миграцию 20261017120000; после `npm run supabase:types` заменить заново сгенерированными.
+        Args: { p_correct?: number | null; p_module_id: string; p_stage_index: number; p_total?: number | null };
         Returns: { completed_stages: number; module_score: number; module_status: string; module_xp: number }[];
       };
       get_admin_access_status: {

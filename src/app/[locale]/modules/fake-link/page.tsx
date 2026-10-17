@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { FakeLinkModule } from "@/components/modules/FakeLinkModule";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MODULE_IDS } from "@/data/module-catalog";
-import type { FakeLinkLocale } from "@/data/fake-link";
+import { fakeLinkContent, type FakeLinkLocale } from "@/data/fake-link";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -38,9 +38,10 @@ export default async function FakeLinkPage({ params }: { params: Promise<{ local
 
   return (
     <>
-      <FakeLinkModule 
-        locale={locale} 
-        initialStages={(stages as StageProgress[]) || []} 
+      <FakeLinkModule
+        content={fakeLinkContent[locale]}
+        locale={locale}
+        initialStages={(stages as StageProgress[]) || []}
         initialModule={(moduleProgress as ModuleProgress) || null} 
         isAdmin={isAdministrator(isUserRole(profile?.role) ? profile.role : null)} 
       />

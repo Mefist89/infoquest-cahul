@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { BadgeCheck, ShieldAlert, Tag } from "lucide-react";
 
-import { scamOrRealContent } from "@/data/scam-or-real";
+import type { scamOrRealContent } from "@/data/scam-or-real";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type OfferClassifyContent =
   | (typeof scamOrRealContent)["ru"]["offerClassify"]
@@ -21,7 +22,7 @@ export function OfferClassifyStage({
   content: OfferClassifyContent;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, "honest" | "scam">>({});
@@ -33,7 +34,6 @@ export function OfferClassifyStage({
   const answer = item ? answers[item.id] : undefined;
   const isCorrect = item && answer === item.verdict;
   const correctCount = content.items.filter((entry) => answers[entry.id] === entry.verdict).length;
-  const score = Math.round((correctCount / ITEM_COUNT) * 100);
 
   function choose(verdict: "honest" | "scam") {
     if (!item || revealed || saving) return;
@@ -47,7 +47,7 @@ export function OfferClassifyStage({
       setFinished(true);
       if (correctCount >= PASS_COUNT) {
         setPassed(true);
-        onComplete(score);
+        onComplete({ correct: correctCount, total: ITEM_COUNT });
       }
       return;
     }

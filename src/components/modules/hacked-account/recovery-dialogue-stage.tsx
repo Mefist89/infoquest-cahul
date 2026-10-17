@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Check, Headset, User } from "lucide-react";
 
-import { hackedAccountContent } from "@/data/hacked-account";
+import type { hackedAccountContent } from "@/data/hacked-account";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type RecoveryDialogueContent =
   | (typeof hackedAccountContent)["ru"]["recoveryDialogue"]
@@ -20,7 +21,7 @@ export function RecoveryDialogueStage({
 }: {
   content: RecoveryDialogueContent;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [bubbles, setBubbles] = useState<Bubble[]>(() =>
@@ -32,7 +33,6 @@ export function RecoveryDialogueStage({
 
   const step = content.steps[stepIndex];
   const lastStep = stepIndex >= content.steps.length - 1;
-  const score = Math.max(0, Math.round(((STEP_COUNT - misses) / STEP_COUNT) * 100));
 
   function choose(optionId: string, correct: boolean, text: string) {
     if (!step || finished || saving) return;
@@ -47,7 +47,7 @@ export function RecoveryDialogueStage({
     if (lastStep) {
       setBubbles(nextBubbles);
       setFinished(true);
-      onComplete(score);
+      onComplete({ correct: Math.max(0, STEP_COUNT - misses), total: STEP_COUNT });
       return;
     }
     const nextStep = content.steps[stepIndex + 1];

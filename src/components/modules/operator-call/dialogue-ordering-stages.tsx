@@ -3,14 +3,17 @@
 import { Check, CheckCircle2, Pause, Play, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
+import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
-function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
   const [errorText, setErrorText] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [verifiedOk, setVerifiedOk] = useState(0);
+  const [verifyTries, setVerifyTries] = useState(0);
   const firstPartRef = useRef<HTMLButtonElement>(null);
   const completionRef = useRef<HTMLDivElement>(null);
   const a11y = accessibilityText[locale];
@@ -28,7 +31,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
          <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
-         <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+         <ActionButton disabled={saving} onClick={() => onSubmit({ correct: verifiedOk, total: verifyTries })} center>{check}</ActionButton>
       </div>
     );
   }
@@ -52,6 +55,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
   const verify = () => {
     let correct = true;
     let selectedLies = 0;
+    setVerifyTries((count) => count + 1);
 
     level.parts.forEach(part => {
       const isSelected = selectedParts.has(part.id);
@@ -65,6 +69,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
 
     if (correct && selectedLies === level.liesCount) {
       playSound("correct");
+      setVerifiedOk((count) => count + 1);
       setAnnouncement(`${a11y.correct}. ${a11y.levelComplete}`);
       setCurrentLevelIndex(prev => prev + 1);
       setSelectedParts(new Set());
@@ -134,7 +139,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
   );
 }
 
-function OrderingStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
+function OrderingStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [status, setStatus] = useState<"playing" | "failed" | "won">("playing");
   const [timeLeft, setTimeLeft] = useState<number>(() => content.levels[0]?.time ?? 0);
@@ -144,6 +149,8 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
   const statusRef = useRef<HTMLDivElement>(null);
   const a11y = accessibilityText[locale];
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
+  const [orderedOk, setOrderedOk] = useState(0);
+  const [orderedWrong, setOrderedWrong] = useState(0);
   const [shuffledSteps, setShuffledSteps] = useState<{id: string, text: string}[]>(() => [...(content.levels[0]?.steps ?? [])].sort(() => Math.random() - 0.5));
   const [flashError, setFlashError] = useState(false);
 
@@ -176,7 +183,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
          <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
-         <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+         <ActionButton disabled={saving} onClick={() => onSubmit({ correct: orderedOk, total: orderedOk + orderedWrong })} center>{check}</ActionButton>
       </div>
     );
   }
@@ -189,6 +196,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
 
     if (stepId === expectedNextId) {
       playSound("correct");
+      setOrderedOk((count) => count + 1);
       const newOrderedIds = [...orderedIds, stepId];
       setOrderedIds(newOrderedIds);
       setAnnouncement(`${a11y.correct}. ${a11y.selected}: ${newOrderedIds.length}`);
@@ -205,6 +213,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
       }
     } else {
       playSound("wrong");
+      setOrderedWrong((count) => count + 1);
       setAnnouncement(`${a11y.wrong}. ${locale === "ru" ? "Попробуйте выбрать другой шаг" : "Încearcă să alegi alt pas"}`);
       setTimeLeft(prev => Math.max(0, prev - 3));
       setFlashError(true);

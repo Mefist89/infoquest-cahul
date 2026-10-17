@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MODULE_IDS } from "@/data/module-catalog";
-import type { OperatorLocale } from "@/data/operator-call";
+import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -39,6 +39,7 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
   return (
     <>
       <OperatorCallModule
+        content={operatorCallContent[locale]}
         locale={locale}
         initialStages={(stages ?? []) as StageProgress[]}
         initialModule={moduleProgress as ModuleProgress}

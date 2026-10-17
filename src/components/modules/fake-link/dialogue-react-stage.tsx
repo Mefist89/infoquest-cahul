@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Check, MessageSquareText, ShieldAlert } from "lucide-react";
 
-import { fakeLinkContent } from "@/data/fake-link";
+import type { fakeLinkContent } from "@/data/fake-link";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type DialogueReactContent =
   | (typeof fakeLinkContent)["ru"]["dialogueReact"]
@@ -21,7 +22,7 @@ export function DialogueReactStage({
   content: DialogueReactContent;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -36,7 +37,6 @@ export function DialogueReactStage({
   const correctCount = content.scenarios.filter(
     (entry) => answers[entry.id] === entry.options.find((option) => option.correct)?.id,
   ).length;
-  const score = Math.round((correctCount / SCENARIO_COUNT) * 100);
 
   function choose(optionId: string) {
     if (!scenario || revealed || saving) return;
@@ -50,7 +50,7 @@ export function DialogueReactStage({
       setFinished(true);
       if (correctCount >= PASS_COUNT) {
         setPassed(true);
-        onComplete(score);
+        onComplete({ correct: correctCount, total: SCENARIO_COUNT });
       }
       return;
     }

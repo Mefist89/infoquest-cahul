@@ -1,10 +1,9 @@
 import { ArrowLeft, ExternalLink, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-import { legalContent, type LegalKind, type LegalLocale } from "@/data/legal-content";
+import type { LegalDocument, LegalKind, LegalLocale } from "@/data/legal-content";
 
-export function LegalDocumentPage({ locale, kind }: { locale: LegalLocale; kind: LegalKind }) {
-  const document = legalContent[locale][kind];
+export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLocale; kind: LegalKind; document: LegalDocument }) {
   const alternateLocale: LegalLocale = locale === "ru" ? "ro" : "ru";
 
   return (

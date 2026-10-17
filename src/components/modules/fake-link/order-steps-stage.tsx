@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Check, ListOrdered, X } from "lucide-react";
 
-import { fakeLinkContent } from "@/data/fake-link";
+import type { fakeLinkContent } from "@/data/fake-link";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type OrderStepsContent =
   | (typeof fakeLinkContent)["ru"]["orderSteps"]
@@ -25,7 +26,7 @@ export function OrderStepsStage({
   checkLabel: string;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [chosen, setChosen] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -36,7 +37,6 @@ export function OrderStepsStage({
   const byId = useMemo(() => new Map<string, (typeof content.steps)[number]>(content.steps.map((step) => [step.id, step])), [content]);
 
   const exactPositions = correctOrder.filter((id, position) => chosen[position] === id).length;
-  const score = Math.round((exactPositions / STEP_COUNT) * 100);
   const complete = chosen.length === STEP_COUNT;
 
   function toggle(id: string) {
@@ -51,7 +51,7 @@ export function OrderStepsStage({
     setSubmitted(true);
     if (exactPositions >= PASS_COUNT) {
       setPassed(true);
-      onComplete(score);
+      onComplete({ correct: exactPositions, total: STEP_COUNT });
     }
   }
 

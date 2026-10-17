@@ -3,8 +3,9 @@
 import { Check, CheckCircle2, MessageCircle, Pause, Phone, Play, Skull, User, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
-import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
-import { accessibilityText, ActionButton, playSound } from "./stage-support";
+import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
+import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
 function VisualClueButton({ label, selected, foundText, onSelect, className, children }: { label: string; selected: boolean; foundText: string; onSelect: () => void; className: string; children: ReactNode }) {
   return (
@@ -27,7 +28,7 @@ type VisualScenario = {
   correctTargets: readonly string[];
 };
 
-function FinalStage({ locale, content, check, retry, saving, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: () => void }) {
+function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: (result: StageResult) => void }) {
   const MAX_PLAYER_HP = 3;
   const MAX_BOSS_HP = 10;
 
@@ -42,6 +43,8 @@ function FinalStage({ locale, content, check, retry, saving, onSubmit }: { local
   const [shake, setShake] = useState(false);
   const [blitzPaused, setBlitzPaused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  const [finalOk, setFinalOk] = useState(0);
+  const [finalMisses, setFinalMisses] = useState(0);
   const phaseRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const a11y = accessibilityText[locale];
@@ -98,6 +101,7 @@ function FinalStage({ locale, content, check, retry, saving, onSubmit }: { local
   const handleVisualClick = (targetId: string, isCorrect: boolean) => {
     if (isCorrect) {
       playSound("correct");
+      setFinalOk((count) => count + 1);
       setAnnouncement(`${a11y.correct}. ${a11y.found}: ${targetId}`);
       setFoundDetails(prev => {
         const next = new Set(prev);
@@ -112,6 +116,7 @@ function FinalStage({ locale, content, check, retry, saving, onSubmit }: { local
       });
     } else {
       playSound("wrong");
+      setFinalMisses((count) => count + 1);
       setAnnouncement(a11y.wrong);
       takeDamage();
     }
@@ -121,10 +126,12 @@ const handleBlitzClick = (optionIndex: number) => {
     const isCorrect = optionIndex === content.phase2[currentLevel].answer;
     if (isCorrect) {
       playSound("correct");
+      setFinalOk((count) => count + 1);
       setAnnouncement(a11y.correct);
       advanceLevel();
     } else {
       playSound("wrong");
+      setFinalMisses((count) => count + 1);
       setAnnouncement(a11y.wrong);
       takeDamage();
       advanceLevel();
@@ -137,6 +144,7 @@ const handleBlitzClick = (optionIndex: number) => {
 
     if (isCorrect) {
       playSound("correct");
+      setFinalOk((count) => count + 1);
       setAnnouncement(`${a11y.correct}. ${a11y.selected}`);
       setBossSelected(prev => {
         const next = new Set(prev);
@@ -160,6 +168,7 @@ const handleBlitzClick = (optionIndex: number) => {
       });
     } else {
       playSound("wrong");
+      setFinalMisses((count) => count + 1);
       setAnnouncement(a11y.wrong);
       takeDamage();
       setBossSelected(new Set());
@@ -192,7 +201,8 @@ const restart = () => {
       <div ref={statusRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
          <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
-         <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+         {feedback && <ScoreFeedback score={feedback.score} />}
+         <ActionButton disabled={saving} onClick={() => onSubmit({ correct: finalOk, total: finalOk + finalMisses })} center>{check}</ActionButton>
       </div>
     );
   }

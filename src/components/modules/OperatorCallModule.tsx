@@ -22,8 +22,8 @@ import {
 import { useState } from "react";
 
 import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog";
-import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
-import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
+import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
+import { useModuleRunner, stageDisplayScore, type ModuleProgress, type StageProgress, type StageResult } from "@/features/modules/runner/use-module-runner";
 import { CallSimulatorStage, ClassifyStage } from "./operator-call/call-classify-stages";
 import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-stages";
 import { FinalStage } from "./operator-call/final-stage";
@@ -32,8 +32,8 @@ import { NextButtonContext } from "./operator-call/stage-support";
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
 
-export function OperatorCallModule({ locale, initialStages, initialModule, isAdmin }: { locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
-  const t = operatorCallContent[locale];
+export function OperatorCallModule({ content, locale, initialStages, initialModule, isAdmin }: { content: typeof operatorCallContent[keyof typeof operatorCallContent]; locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
+  const t = content;
   const runner = useModuleRunner({
     moduleId: MODULE_IDS.operatorCall,
     stageCount: STAGE_COUNT,
@@ -52,31 +52,31 @@ export function OperatorCallModule({ locale, initialStages, initialModule, isAdm
     }
   }
 
-  async function submitCallSimulator() {
-    setFeedback({ stage: 4, score: 100 });
-    await runner.completeStage(4, 100);
+  async function submitCallSimulator(result: StageResult) {
+    setFeedback({ stage: 4, score: stageDisplayScore(result) });
+    await runner.completeStage(4, result);
   }
 
   async function submitClassification() {
     const correct = t.classify.items.filter((item) => classification[item.id] === item.answer).length;
-    const score = Math.round((correct / t.classify.items.length) * 100);
-    setFeedback({ stage: 5, score });
-    await runner.completeStage(5, score);
+    const result: StageResult = { correct, total: t.classify.items.length };
+    setFeedback({ stage: 5, score: stageDisplayScore(result) });
+    await runner.completeStage(5, result);
   }
 
-  async function submitDialogue() {
-    setFeedback({ stage: 6, score: 100 });
-    await runner.completeStage(6, 100);
+  async function submitDialogue(result: StageResult) {
+    setFeedback({ stage: 6, score: stageDisplayScore(result) });
+    await runner.completeStage(6, result);
   }
 
-  async function submitOrdering() {
-    setFeedback({ stage: 7, score: 100 });
-    await runner.completeStage(7, 100);
+  async function submitOrdering(result: StageResult) {
+    setFeedback({ stage: 7, score: stageDisplayScore(result) });
+    await runner.completeStage(7, result);
   }
 
-  async function submitFinal() {
-    setFeedback({ stage: 8, score: 100 });
-    await runner.completeStage(8, 100);
+  async function submitFinal(result: StageResult) {
+    setFeedback({ stage: 8, score: stageDisplayScore(result) });
+    await runner.completeStage(8, result);
   }
 
   return (

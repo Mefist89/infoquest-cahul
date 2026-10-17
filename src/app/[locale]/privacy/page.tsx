@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { LegalDocumentPage } from "@/components/legal/LegalDocumentPage";
-import type { LegalLocale } from "@/data/legal-content";
+import { legalContent, type LegalLocale } from "@/data/legal-content";
 import { localizedAlternates } from "@/lib/site";
 
 type PageProps = { params: Promise<{ locale: string }> };
@@ -26,5 +26,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PrivacyPage({ params }: PageProps) {
   const locale = getLocale((await params).locale);
-  return <LegalDocumentPage locale={locale} kind="privacy" />;
+  return <LegalDocumentPage locale={locale} kind="privacy" document={legalContent[locale].privacy} />;
 }

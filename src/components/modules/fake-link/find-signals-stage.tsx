@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Check, Lock, ShieldAlert } from "lucide-react";
 
-import { fakeLinkContent, type FakeLinkLocale } from "@/data/fake-link";
+import type { fakeLinkContent, FakeLinkLocale } from "@/data/fake-link";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type FindSignalsContent =
   | (typeof fakeLinkContent)["ru"]["findSignals"]
@@ -62,7 +63,7 @@ export function FindSignalsStage({
   checkLabel: string;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitted, setSubmitted] = useState(false);
@@ -70,7 +71,6 @@ export function FindSignalsStage({
 
   const zoneWord = locale === "ro" ? "Zona" : "Зона";
   const foundCount = selected.size;
-  const score = Math.round((foundCount / SIGNAL_COUNT) * 100);
 
   function toggle(id: string) {
     if (submitted || saving) return;
@@ -87,7 +87,7 @@ export function FindSignalsStage({
     if (foundCount >= PASS_COUNT) {
       setPassed(true);
       setSubmitted(true);
-      onComplete(score);
+      onComplete({ correct: foundCount, total: SIGNAL_COUNT });
     } else {
       setSubmitted(true);
     }

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { HackedAccountModule } from "@/components/modules/HackedAccountModule";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MODULE_IDS } from "@/data/module-catalog";
-import type { HackedAccountLocale } from "@/data/hacked-account";
+import { hackedAccountContent, type HackedAccountLocale } from "@/data/hacked-account";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -39,6 +39,7 @@ export default async function HackedAccountPage({ params }: { params: Promise<{ 
   return (
     <>
       <HackedAccountModule
+        content={hackedAccountContent[locale]}
         locale={locale}
         initialStages={(stages as StageProgress[]) || []}
         initialModule={(moduleProgress as ModuleProgress) || null}

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Check, ShieldAlert, Skull, Swords } from "lucide-react";
 
-import { hackedAccountContent } from "@/data/hacked-account";
+import type { hackedAccountContent } from "@/data/hacked-account";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type ShadowBattleContent =
   | (typeof hackedAccountContent)["ru"]["shadowBattle"]
@@ -36,7 +37,7 @@ export function FinalBattleStage({
   nextLabel: string;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [playerHp, setPlayerHp] = useState(PLAYER_HP);
@@ -76,7 +77,7 @@ export function FinalBattleStage({
       setCorrectHits(nextHits);
       if (nextBoss <= 0) {
         setStatus("win");
-        onComplete(Math.round((nextHits / answered) * 100));
+        onComplete({ correct: nextHits, total: answered });
       } else if (lastQuestion) {
         setStatus("fail");
       }

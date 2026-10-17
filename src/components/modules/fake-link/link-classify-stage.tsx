@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Check, Link2, ShieldAlert } from "lucide-react";
 
-import { fakeLinkContent } from "@/data/fake-link";
+import type { fakeLinkContent } from "@/data/fake-link";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type LinkClassifyContent =
   | (typeof fakeLinkContent)["ru"]["linkClassify"]
@@ -21,7 +22,7 @@ export function LinkClassifyStage({
   content: LinkClassifyContent;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, "safe" | "phishing">>({});
@@ -33,7 +34,6 @@ export function LinkClassifyStage({
   const answer = item ? answers[item.id] : undefined;
   const isCorrect = item && answer === item.verdict;
   const correctCount = content.items.filter((entry) => answers[entry.id] === entry.verdict).length;
-  const score = Math.round((correctCount / ITEM_COUNT) * 100);
 
   function choose(verdict: "safe" | "phishing") {
     if (!item || revealed || saving) return;
@@ -47,7 +47,7 @@ export function LinkClassifyStage({
       setFinished(true);
       if (correctCount >= PASS_COUNT) {
         setPassed(true);
-        onComplete(score);
+        onComplete({ correct: correctCount, total: ITEM_COUNT });
       }
       return;
     }

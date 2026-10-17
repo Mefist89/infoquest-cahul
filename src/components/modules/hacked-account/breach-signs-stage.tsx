@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Check, ChevronRight, ShieldAlert } from "lucide-react";
 
-import { hackedAccountContent } from "@/data/hacked-account";
+import type { hackedAccountContent } from "@/data/hacked-account";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type BreachSignsContent =
   | (typeof hackedAccountContent)["ru"]["breachSigns"]
@@ -18,7 +19,7 @@ export function BreachSignsStage({
 }: {
   content: BreachSignsContent;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [found, setFound] = useState<Set<string>>(new Set());
@@ -34,7 +35,6 @@ export function BreachSignsStage({
     (total, entry) => total + entry.items.filter((item) => item.suspicious && found.has(`${entry.id}:${item.id}`)).length,
     0,
   );
-  const score = Math.max(0, Math.round(((totalFound - misses) / TOTAL_SIGNALS) * 100));
   const lastLevel = levelIndex >= content.levels.length - 1;
 
   function tap(levelId: string, itemId: string, suspicious: boolean) {
@@ -54,7 +54,7 @@ export function BreachSignsStage({
     if (saving) return;
     if (lastLevel) {
       setFinished(true);
-      onComplete(score);
+      onComplete({ correct: Math.max(0, totalFound - misses), total: TOTAL_SIGNALS });
       return;
     }
     setLevelIndex((current) => current + 1);

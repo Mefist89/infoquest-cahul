@@ -47,6 +47,17 @@ function makeWav(sampleValue: number, durationSeconds = 1) {
   return new Uint8Array(buffer);
 }
 
+/** Рекурсивно собирает исходники .ts/.tsx из каталога (для агрегатных контрактов по разделённым файлам). */
+function collectSourceFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
+    entry.isDirectory()
+      ? collectSourceFiles(join(directory, entry.name))
+      : /\.(ts|tsx)$/u.test(entry.name)
+        ? [readFileSync(join(directory, entry.name), "utf8")]
+        : [],
+  );
+}
+
 describe("единый каталог модулей", () => {
   it("содержит восемь модулей и восемь этапов", () => {
     expect(MODULE_COUNT).toBe(8);
@@ -176,11 +187,23 @@ describe("архитектурная граница первого модуля"
   });
 
   it("делегирует прогресс общему ModuleRunner-контроллеру", () => {
-    const coordinator = readFileSync(coordinatorPath, "utf8");
+    const coordinators = [
+      "src/components/modules/OperatorCallModule.tsx",
+      "src/components/modules/FakeLinkModule.tsx",
+      "src/components/modules/HackedAccountModule.tsx",
+      "src/components/modules/ScamOrRealModule.tsx",
+    ];
     const runner = readFileSync(join(process.cwd(), "src/features/modules/runner/use-module-runner.ts"), "utf8");
-    expect(coordinator).toContain("useModuleRunner");
-    expect(coordinator).not.toContain('rpc("complete_module_stage"');
+    for (const coordinatorFile of coordinators) {
+      const coordinator = readFileSync(join(process.cwd(), coordinatorFile), "utf8");
+      expect(coordinator, coordinatorFile).toContain("useModuleRunner");
+      expect(coordinator, coordinatorFile).not.toContain('rpc("complete_module_stage"');
+    }
     expect(runner).toContain('rpc("complete_module_stage"');
+    // Серверная валидация: RPC принимает (correct, total), а не доверенный клиентский score.
+    expect(runner).toContain("p_correct");
+    expect(runner).toContain("p_total");
+    expect(runner).not.toContain("p_score");
     expect(runner).toContain("unlockedThrough");
   });
 });
@@ -201,6 +224,29 @@ describe("architecture boundaries", () => {
     expect(provider).toContain("interface AiProvider");
     expect(provider).toContain("/chat/completions");
     expect(provider).toContain("/audio/transcriptions");
+  });
+
+  it("ships module data to the client only for the active locale", () => {
+    const valueImportRe = /(^|\n)import \{[^}]*\} from "@\/data\/(operator-call|hacked-account|fake-link|scam-or-real|legal-content)"/;
+    collectSourceFiles(join(process.cwd(), "src/components")).forEach((source) => {
+      expect(valueImportRe.test(source), source.slice(0, 60)).toBe(false);
+    });
+
+    const pages = [
+      ["src/app/[locale]/modules/fake-link/page.tsx", "fakeLinkContent"],
+      ["src/app/[locale]/modules/hacked-account/page.tsx", "hackedAccountContent"],
+      ["src/app/[locale]/modules/operator-call/page.tsx", "operatorCallContent"],
+      ["src/app/[locale]/modules/scam-or-real/page.tsx", "scamOrRealContent"],
+    ];
+    pages.forEach(([file, name]) => {
+      const page = readFileSync(join(process.cwd(), file), "utf8");
+      expect(page).toContain(`import { ${name}`);
+      expect(page).toContain(`content={${name}[locale]}`);
+    });
+    const privacy = readFileSync(join(process.cwd(), "src/app/[locale]/privacy/page.tsx"), "utf8");
+    const terms = readFileSync(join(process.cwd(), "src/app/[locale]/terms/page.tsx"), "utf8");
+    expect(privacy).toContain("document={legalContent[locale].privacy}");
+    expect(terms).toContain("document={legalContent[locale].terms}");
   });
 
   it("records the modular-monolith decision and revisit triggers", () => {
@@ -282,7 +328,9 @@ describe("UX and accessibility contracts", () => {
   });
 
   it("announces AI thinking and names attachment removal", () => {
-    const source = readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8");
+    const source = collectSourceFiles(join(process.cwd(), "src/components/ai/chat")).concat(
+      readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8"),
+    ).join("\n");
     const route = readFileSync(join(process.cwd(), "src/app/api/ai/route.ts"), "utf8");
     const provider = readFileSync(join(process.cwd(), "src/features/ai-help/server/openai-compatible-provider.ts"), "utf8");
     const quotaMigration = readFileSync(join(process.cwd(), "supabase/migrations/20260813122500_add_ai_user_quota_status.sql"), "utf8");
@@ -383,7 +431,7 @@ describe("repository completeness and SEO", () => {
   });
 
   it("keeps the admin dashboard connected to real data and management actions", () => {
-    const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/admin/page.tsx"), "utf8");
+    const dashboard = collectSourceFiles(join(process.cwd(), "src/app/[locale]/admin")).join("\n");
     const sectionPage = readFileSync(join(process.cwd(), "src/app/[locale]/admin/[section]/page.tsx"), "utf8");
     expect(dashboard).toContain('supabase.rpc("get_admin_dashboard")');
     expect(dashboard).toContain('supabase.rpc("get_ai_budget_status")');
@@ -400,6 +448,17 @@ describe("repository completeness and SEO", () => {
     expect(dashboard).toContain("<ModuleBar");
     expect(dashboard).toContain("action={updateUserRole}");
     expect(dashboard).toContain("action={toggleUserIpBlock}");
+  });
+
+  it("keeps the split admin dashboard and AI chat files within size budgets", () => {
+    const adminDirectory = join(process.cwd(), "src/app/[locale]/admin");
+    const adminPage = readFileSync(join(adminDirectory, "page.tsx"), "utf8");
+    expect(adminPage.split("\n").length).toBeLessThanOrEqual(300);
+    collectSourceFiles(adminDirectory).forEach((source) => expect(source.split("\n").length).toBeLessThanOrEqual(400));
+
+    const chatMain = readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8");
+    expect(chatMain.split("\n").length).toBeLessThanOrEqual(400);
+    collectSourceFiles(join(process.cwd(), "src/components/ai/chat")).forEach((source) => expect(source.split("\n").length).toBeLessThanOrEqual(400));
   });
 
   it("keeps the user dashboard connected to progress, missions and rewards", () => {
@@ -422,7 +481,7 @@ describe("repository completeness and SEO", () => {
 
   it("keeps independent quests separate from modules and administrator-only", () => {
     const migration = readFileSync(join(process.cwd(), "supabase/migrations/20260812190000_create_quests_catalog.sql"), "utf8");
-    const dashboard = readFileSync(join(process.cwd(), "src/app/[locale]/admin/page.tsx"), "utf8");
+    const dashboard = collectSourceFiles(join(process.cwd(), "src/app/[locale]/admin")).join("\n");
     expect(migration).toContain("create table public.quests");
     expect(migration).toContain("config jsonb");
     expect(migration).toContain("quests_administrator_all");

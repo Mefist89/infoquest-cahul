@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { KeyRound, ShieldAlert, ShieldCheck } from "lucide-react";
 
-import { hackedAccountContent } from "@/data/hacked-account";
+import type { hackedAccountContent } from "@/data/hacked-account";
+import type { StageResult } from "@/features/modules/runner/use-module-runner";
 
 type PasswordGameContent =
   | (typeof hackedAccountContent)["ru"]["passwordGame"]
@@ -21,7 +22,7 @@ export function PasswordGameStage({
   content: PasswordGameContent;
   retryLabel: string;
   saving: boolean;
-  onComplete: (score: number) => void;
+  onComplete: (result: StageResult) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, "strong" | "weak">>({});
@@ -33,7 +34,6 @@ export function PasswordGameStage({
   const answer = item ? answers[item.id] : undefined;
   const isCorrect = item && answer === item.verdict;
   const correctCount = content.items.filter((entry) => answers[entry.id] === entry.verdict).length;
-  const score = Math.round((correctCount / ITEM_COUNT) * 100);
 
   function choose(verdict: "strong" | "weak") {
     if (!item || revealed || saving) return;
@@ -47,7 +47,7 @@ export function PasswordGameStage({
       setFinished(true);
       if (correctCount >= PASS_COUNT) {
         setPassed(true);
-        onComplete(score);
+        onComplete({ correct: correctCount, total: ITEM_COUNT });
       }
       return;
     }

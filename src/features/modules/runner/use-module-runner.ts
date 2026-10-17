@@ -19,6 +19,19 @@ export type ModuleProgress = {
 
 export type RunnerNotice = { kind: "success" | "error"; text: string };
 
+/**
+ * Серверно-проверяемый результат игрового этапа.
+ * Клиент передаёт только пары (correct, total), а итоговый score
+ * вычисляет RPC `complete_module_stage` по формуле round(100 * correct / total).
+ */
+export type StageResult = { correct: number; total: number };
+
+/** Та же формула, что в RPC complete_module_stage — только для отображения. */
+export function stageDisplayScore(result: StageResult): number {
+  if (result.total <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((result.correct / result.total) * 100)));
+}
+
 type RunnerMessages = {
   locked: string;
   saved: string;
@@ -58,7 +71,7 @@ export function useModuleRunner({
 
   const completionPercent = Math.round((completedStages.size / stageCount) * 100);
 
-  async function completeStage(stageIndex: number, score = 100) {
+  async function completeStage(stageIndex: number, result?: StageResult | null) {
     if (saving) return false;
     setSaving(true);
     setNotice(null);
@@ -67,7 +80,8 @@ export function useModuleRunner({
     const { data, error } = await supabase.rpc("complete_module_stage", {
       p_module_id: moduleId,
       p_stage_index: stageIndex,
-      p_score: Math.max(0, Math.min(100, Math.round(score))),
+      p_correct: result ? Math.trunc(result.correct) : null,
+      p_total: result ? Math.trunc(result.total) : null,
     });
     setSaving(false);
 
@@ -76,9 +90,9 @@ export function useModuleRunner({
       return false;
     }
 
-    const result = Array.isArray(data) ? data[0] : null;
+    const rpcResult = Array.isArray(data) ? data[0] : null;
     setCompletedStages((previous) => new Set(previous).add(stageIndex));
-    setModuleXp((previous) => Number(result?.module_xp ?? previous));
+    setModuleXp((previous) => Number(rpcResult?.module_xp ?? previous));
     setNotice({ kind: "success", text: messages.saved });
     return true;
   }

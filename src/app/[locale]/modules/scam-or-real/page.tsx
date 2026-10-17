@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ScamOrRealModule } from "@/components/modules/ScamOrRealModule";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MODULE_IDS } from "@/data/module-catalog";
-import type { ScamOrRealLocale } from "@/data/scam-or-real";
+import { scamOrRealContent, type ScamOrRealLocale } from "@/data/scam-or-real";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
@@ -39,6 +39,7 @@ export default async function ScamOrRealPage({ params }: { params: Promise<{ loc
   return (
     <>
       <ScamOrRealModule
+        content={scamOrRealContent[locale]}
         locale={locale}
         initialStages={(stages as StageProgress[]) || []}
         initialModule={(moduleProgress as ModuleProgress) || null}

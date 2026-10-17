@@ -4,7 +4,7 @@ import Image from "next/image";
 import { BookOpen, CheckCircle2, ChevronRight, Play, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
+import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import { ActionButton } from "./stage-support";
 
 function IntroStage({ content, locale, onFinish }: { content: (typeof operatorCallContent)["ru"]["intro"] | (typeof operatorCallContent)["ro"]["intro"]; locale: OperatorLocale; onFinish: () => void }) {
