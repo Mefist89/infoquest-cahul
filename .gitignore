@@ -53,3 +53,5 @@ next-env.d.ts
 # kenney source packs (only normalized copies in public/game are committed)
 /public/kenney_rpg-urban-pack/
 /public/kenney_toon-characters/
+
+supabase/.temp/
