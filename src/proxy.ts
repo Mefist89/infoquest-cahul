@@ -42,7 +42,7 @@ export default async function proxy(request: NextRequest) {
   const isBlockedPage = request.nextUrl.pathname === blockedPath;
   const ipHash = await hashIp(requestIp(request));
   const {data, error: accessError} = await supabase
-    .rpc('check_access_status', {p_ip_hash: ipHash})
+    .rpc('check_access_status', {p_ip_hash: ipHash ?? undefined})
     .maybeSingle();
   const access = data as AccessStatus | null;
 

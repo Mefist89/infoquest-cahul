@@ -80,8 +80,8 @@ export function useModuleRunner({
     const { data, error } = await supabase.rpc("complete_module_stage", {
       p_module_id: moduleId,
       p_stage_index: stageIndex,
-      p_correct: result ? Math.trunc(result.correct) : null,
-      p_total: result ? Math.trunc(result.total) : null,
+      p_correct: result ? Math.trunc(result.correct) : undefined,
+      p_total: result ? Math.trunc(result.total) : undefined,
     });
     setSaving(false);
 

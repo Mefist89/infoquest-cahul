@@ -47,7 +47,7 @@ export async function toggleUserIpBlock(formData: FormData) {
   const { error } = await supabase.rpc("set_user_ip_block", {
     p_user_id: targetUserId,
     p_blocked: shouldBlock,
-    p_reason: shouldBlock ? "Blocked from the InfoQuest admin dashboard" : null,
+    p_reason: shouldBlock ? "Blocked from the InfoQuest admin dashboard" : undefined,
   });
   if (error) throw new Error("IP block update failed");
 
