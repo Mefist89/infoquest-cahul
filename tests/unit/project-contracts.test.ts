@@ -402,13 +402,13 @@ describe("repository completeness and SEO", () => {
     expect(readFileSync(join(process.cwd(), "src/lib/types.ts"), "utf8").trim().length).toBeGreaterThan(0);
   });
 
-  it("documents the current one-module MVP and operational setup", () => {
+  it("documents the current four-module MVP and operational setup", () => {
     const readme = readFileSync(join(process.cwd(), "README.md"), "utf8");
     const scope = readFileSync(join(process.cwd(), "docs/mvp-scope.md"), "utf8");
     expect(readme).toContain("Supabase и Google OAuth");
     expect(readme).toContain("AI Chrono");
     expect(readme).toContain("NEXT_PUBLIC_SITE_URL");
-    expect(scope).toContain("один полностью доступный учебный модуль");
+    expect(scope).toContain("четыре полностью доступных учебных модуля");
     expect(scope).toContain("operator-call");
   });
 
