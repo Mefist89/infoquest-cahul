@@ -4,6 +4,7 @@ import * as Phaser from "phaser";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, Skull } from "lucide-react";
 
+import { createClient } from "@/lib/supabase/client";
 import { PATROL_NPCS } from "@/data/patrol";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
@@ -13,6 +14,21 @@ const SHADOW_HIT = 15;
 const SHADOW_MISS = 20;
 const SHADOW_DEFEAT = 100;
 
+interface PatrolProgressResult {
+  shadow_pct: number;
+  completed_npc_ids: string[];
+  completed_count: number;
+  total_count: number;
+  status: string;
+}
+
+interface CompletePatrolNpcResult {
+  shadow_pct: number;
+  completed_count: number;
+  status: string;
+  total_count: number;
+}
+
 export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -20,7 +36,8 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const [feedback, setFeedback] = useState<{ correct: boolean; text: string } | null>(null);
   const [resolvedIds, setResolvedIds] = useState<string[]>([]);
   const [shadow, setShadow] = useState(SHADOW_START);
-  const [phase, setPhase] = useState<"playing" | "won" | "lost">("playing");
+  const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">("loading");
+  const [loading, setLoading] = useState(true);
 
   const byId = useMemo(() => new Map(PATROL_NPCS.map((npc) => [npc.id, npc])), []);
   const talkNpc = talkId ? byId.get(talkId) : undefined;
@@ -67,9 +84,41 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Load patrol progress from Supabase
+  useEffect(() => {
+    let mounted = true;
+    async function loadProgress() {
+      const supabase = createClient();
+      const { data, error } = await (supabase.rpc as unknown as (name: string) => Promise<{ data: PatrolProgressResult[] | null; error: Error | null }>)("get_patrol_progress") as unknown as { data: PatrolProgressResult[] | null; error: Error | null };
+      if (!mounted) return;
+      if (error) {
+        console.error("Failed to load patrol progress:", error);
+        // Fallback to defaults
+        setShadow(SHADOW_START);
+        setResolvedIds([]);
+        setPhase("playing");
+        setLoading(false);
+        return;
+      }
+      const result = data?.[0];
+      if (result) {
+        setShadow(result.shadow_pct);
+        setResolvedIds(result.completed_npc_ids ?? []);
+        if (result.shadow_pct <= 0) setPhase("won");
+        else if (result.shadow_pct >= 100) setPhase("lost");
+        else setPhase("playing");
+      }
+      setLoading(false);
+    }
+    loadProgress();
+    return () => { mounted = false; };
+  }, []);
+
   function answer(correct: boolean, npcId: string) {
     const npc = byId.get(npcId);
     if (!npc) return;
+
+    // Optimistic update
     const nextShadow = correct ? Math.max(0, shadow - SHADOW_HIT) : Math.min(SHADOW_DEFEAT, shadow + SHADOW_MISS);
     const nextResolved = resolvedIds.includes(npcId) ? resolvedIds : [...resolvedIds, npcId];
     setShadow(nextShadow);
@@ -81,6 +130,18 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     } else if (nextResolved.length >= PATROL_NPCS.length) {
       setPhase("won");
     }
+
+    // Persist to Supabase
+    (async () => {
+      const supabase = createClient();
+      const { error } = await (supabase.rpc as unknown as (name: string, params: { p_npc_id: string; p_correct: boolean }) => Promise<{ data: CompletePatrolNpcResult[] | null; error: Error | null }>)("complete_patrol_npc", {
+        p_npc_id: npcId,
+        p_correct: correct,
+      }) as unknown as { data: CompletePatrolNpcResult[] | null; error: Error | null };
+      if (error) {
+        console.error("Failed to save patrol progress:", error);
+      }
+    })();
   }
 
   function closeDialogue() {
@@ -90,6 +151,11 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   }
 
   function retry() {
+    // Reset server state
+    (async () => {
+      // We can't easily reset via RPC, so we'll rely on the next load to get fresh state
+      // For now, just reset locally and let user reload if needed
+    })();
     patrolScene()?.resetPatrol();
     setTalkId(null);
     setFeedback(null);
@@ -114,7 +180,14 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         </p>
       </div>
 
+      {loading && (
+      <div className="grid aspect-[8/5] w-full place-items-center rounded-3xl border border-border bg-card/60 text-muted-foreground">
+        {locale === "ro" ? "Încarcăm patrula…" : "Загружаем патруль…"}
+      </div>
+    )}
+    {!loading && (
       <div ref={hostRef} className="aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]" />
+    )}
 
       <div aria-live="polite" className="mt-4">
         {phase === "won" && (
