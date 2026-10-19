@@ -171,7 +171,44 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       {loading ? (
         <PatrolLoadingFrame label={locale === "ro" ? "Pregătire pentru patrulare..." : "Подготовка к патрулированию..."} />
       ) : (
-        <div ref={hostRef} className="aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]" />
+        <div className="relative aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]">
+          <div ref={hostRef} className="absolute inset-0" />
+          {phase === "playing" && talkNpc && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-[2px] sm:p-6">
+              <div aria-live="polite" className="max-h-full w-full max-w-xl overflow-y-auto rounded-2xl border border-neon/30 bg-card/95 p-4 sm:p-5">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{talkNpc.name[locale]}</p>
+                {!feedback ? (
+                  <div className="mt-2">
+                    <p className="text-sm leading-relaxed text-foreground sm:text-base">{talkNpc.situation[locale]}</p>
+                    <div className="mt-4 grid gap-2">
+                      {talkNpc.options.map((option, position) => (
+                        <button
+                          key={position}
+                          type="button"
+                          onClick={() => answer(option.correct, talkNpc.id)}
+                          className="focus-ring min-h-12 rounded-xl border border-border bg-background/60 px-4 py-3 text-left text-sm font-semibold text-foreground transition hover:border-neon/60 sm:text-base"
+                        >
+                          {option.text[locale]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`rounded-xl border p-4 ${feedback.correct ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
+                    <p className={`text-sm font-bold sm:text-base ${feedback.correct ? "text-success" : "text-danger"}`}>{feedback.text}</p>
+                    <button
+                      type="button"
+                      onClick={closeDialogue}
+                      className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground"
+                    >
+                      {locale === "ro" ? "Înapoi la patrulă" : "Назад в патруль"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       <div aria-live="polite" className="mt-4">
@@ -195,39 +232,6 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
               <RotateCcw className="size-4" aria-hidden="true" />
               {locale === "ro" ? "Încearcă din nou" : "Попробовать ещё"}
             </button>
-          </div>
-        )}
-        {phase === "playing" && talkNpc && (
-          <div className="rounded-2xl border border-neon/30 bg-card/80 p-5">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{talkNpc.name[locale]}</p>
-            {!feedback ? (
-              <div className="mt-2">
-                <p className="text-sm leading-relaxed text-foreground sm:text-base">{talkNpc.situation[locale]}</p>
-                <div className="mt-4 grid gap-2">
-                  {talkNpc.options.map((option, position) => (
-                    <button
-                      key={position}
-                      type="button"
-                      onClick={() => answer(option.correct, talkNpc.id)}
-                      className="focus-ring min-h-12 rounded-xl border border-border bg-background/60 px-4 py-3 text-left text-sm font-semibold text-foreground transition hover:border-neon/60 sm:text-base"
-                    >
-                      {option.text[locale]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className={`mt-2 rounded-xl border p-4 ${feedback.correct ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
-                <p className={`text-sm font-bold sm:text-base ${feedback.correct ? "text-success" : "text-danger"}`}>{feedback.text}</p>
-                <button
-                  type="button"
-                  onClick={closeDialogue}
-                  className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground"
-                >
-                  {locale === "ro" ? "Înapoi la patrulă" : "Назад в патруль"}
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
