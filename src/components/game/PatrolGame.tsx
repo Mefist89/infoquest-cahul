@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PATROL_NPCS } from "@/data/patrol";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
-import { PatrolLoadingScreen } from "./PatrolLoadingScreen";
+import { PatrolLoadingFrame, usePatrolSpritePrefetch } from "./PatrolStartPanel";
 
 const SHADOW_START = 40;
 const SHADOW_HIT = 15;
@@ -27,6 +27,9 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
 
   const byId = useMemo(() => new Map(PATROL_NPCS.map((npc) => [npc.id, npc])), []);
   const talkNpc = talkId ? byId.get(talkId) : undefined;
+
+  // Прогрев спрайтов — после «Старт», параллельно RPC прогресса.
+  usePatrolSpritePrefetch();
 
   function patrolScene(): PatrolScene | null {
     const scene = gameRef.current?.scene.getScene("patrol");
@@ -166,7 +169,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       </div>
 
       {loading ? (
-        <PatrolLoadingScreen locale={locale} onComplete={() => setLoading(false)} />
+        <PatrolLoadingFrame label={locale === "ro" ? "Pregătire pentru patrulare..." : "Подготовка к патрулированию..."} />
       ) : (
         <div ref={hostRef} className="aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]" />
       )}
