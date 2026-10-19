@@ -1,13 +1,14 @@
 "use client";
 
 import * as Phaser from "phaser";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, Skull } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { PATROL_NPCS } from "@/data/patrol";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
+import { PatrolLoadingScreen } from "./PatrolLoadingScreen";
 
 const SHADOW_START = 40;
 const SHADOW_HIT = 15;
@@ -47,16 +48,16 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     return scene instanceof PatrolScene ? scene : null;
   }
 
-  function pauseGame() {
+  const pauseGame = useCallback(() => {
     patrolScene()?.scene.pause();
-  }
+  }, []);
 
-  function resumeGame() {
+  const resumeGame = useCallback(() => {
     if (patrolScene()?.scene.isPaused()) patrolScene()?.scene.resume();
-  }
+  }, []);
 
   useEffect(() => {
-    if (!hostRef.current || gameRef.current) return;
+    if (loading || !hostRef.current || gameRef.current) return;
     const scene = new PatrolScene(locale, {
       onTalk: (npcId: string) => {
         pauseGame();
@@ -81,8 +82,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       gameRef.current?.destroy(true);
       gameRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loading, locale, pauseGame]);
 
   // Load patrol progress from Supabase
   useEffect(() => {
@@ -180,14 +180,11 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         </p>
       </div>
 
-      {loading && (
-      <div className="grid aspect-[8/5] w-full place-items-center rounded-3xl border border-border bg-card/60 text-muted-foreground">
-        {locale === "ro" ? "Încarcăm patrula…" : "Загружаем патруль…"}
-      </div>
-    )}
-    {!loading && (
-      <div ref={hostRef} className="aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]" />
-    )}
+      {loading ? (
+        <PatrolLoadingScreen locale={locale} onComplete={() => setLoading(false)} />
+      ) : (
+        <div ref={hostRef} className="aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]" />
+      )}
 
       <div aria-live="polite" className="mt-4">
         {phase === "won" && (
