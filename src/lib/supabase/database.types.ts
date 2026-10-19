@@ -307,6 +307,105 @@ export type Database = {
           },
         ]
       }
+      patrol_npcs: {
+        Row: {
+          fail_ro: string
+          fail_ru: string
+          id: string
+          name_ro: string
+          name_ru: string
+          options: Json
+          situation_ro: string
+          situation_ru: string
+          sprite: string
+          success_ro: string
+          success_ru: string
+          tint: number | null
+          x: number
+          y: number
+        }
+        Insert: {
+          fail_ro: string
+          fail_ru: string
+          id: string
+          name_ro: string
+          name_ru: string
+          options: Json
+          situation_ro: string
+          situation_ru: string
+          sprite: string
+          success_ro: string
+          success_ru: string
+          tint?: number | null
+          x: number
+          y: number
+        }
+        Update: {
+          fail_ro?: string
+          fail_ru?: string
+          id?: string
+          name_ro?: string
+          name_ru?: string
+          options?: Json
+          situation_ro?: string
+          situation_ru?: string
+          sprite?: string
+          success_ro?: string
+          success_ru?: string
+          tint?: number | null
+          x?: number
+          y?: number
+        }
+        Relationships: []
+      }
+      patrol_progress: {
+        Row: {
+          completed_at: string | null
+          completed_npc_ids: string[]
+          shadow_pct: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_npc_ids?: string[]
+          shadow_pct?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_npc_ids?: string[]
+          shadow_pct?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      patrol_stage_progress: {
+        Row: {
+          completed_at: string | null
+          correct: boolean
+          npc_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          correct?: boolean
+          npc_id: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          correct?: boolean
+          npc_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -469,6 +568,15 @@ export type Database = {
           module_xp: number
         }[]
       }
+      complete_patrol_npc: {
+        Args: { p_correct: boolean; p_npc_id: string }
+        Returns: {
+          completed_count: number
+          shadow_pct: number
+          status: string
+          total_count: number
+        }[]
+      }
       get_admin_access_status: {
         Args: never
         Returns: {
@@ -512,6 +620,16 @@ export type Database = {
           audio_used: number
           user_daily_limit: number
           user_daily_used: number
+        }[]
+      }
+      get_patrol_progress: {
+        Args: never
+        Returns: {
+          completed_count: number
+          completed_npc_ids: string[]
+          shadow_pct: number
+          status: string
+          total_count: number
         }[]
       }
       release_ai_request: { Args: { p_request_id: string }; Returns: undefined }

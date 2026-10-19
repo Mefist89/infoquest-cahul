@@ -15,21 +15,6 @@ const SHADOW_HIT = 15;
 const SHADOW_MISS = 20;
 const SHADOW_DEFEAT = 100;
 
-interface PatrolProgressResult {
-  shadow_pct: number;
-  completed_npc_ids: string[];
-  completed_count: number;
-  total_count: number;
-  status: string;
-}
-
-interface CompletePatrolNpcResult {
-  shadow_pct: number;
-  completed_count: number;
-  status: string;
-  total_count: number;
-}
-
 export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -89,7 +74,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     let mounted = true;
     async function loadProgress() {
       const supabase = createClient();
-      const { data, error } = await (supabase.rpc as unknown as (name: string) => Promise<{ data: PatrolProgressResult[] | null; error: Error | null }>)("get_patrol_progress") as unknown as { data: PatrolProgressResult[] | null; error: Error | null };
+      const { data, error } = await supabase.rpc("get_patrol_progress");
       if (!mounted) return;
       if (error) {
         console.error("Failed to load patrol progress:", error);
@@ -134,10 +119,10 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     // Persist to Supabase
     (async () => {
       const supabase = createClient();
-      const { error } = await (supabase.rpc as unknown as (name: string, params: { p_npc_id: string; p_correct: boolean }) => Promise<{ data: CompletePatrolNpcResult[] | null; error: Error | null }>)("complete_patrol_npc", {
+      const { error } = await supabase.rpc("complete_patrol_npc", {
         p_npc_id: npcId,
         p_correct: correct,
-      }) as unknown as { data: CompletePatrolNpcResult[] | null; error: Error | null };
+      });
       if (error) {
         console.error("Failed to save patrol progress:", error);
       }
