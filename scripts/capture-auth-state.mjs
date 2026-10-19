@@ -5,7 +5,7 @@ import process from "node:process";
 
 import { chromium } from "@playwright/test";
 
-const port = 3000;
+const port = 3100;
 const baseUrl = `http://localhost:${port}`;
 const statePath = resolve("tests/.auth/google-user.json");
 const isWindows = process.platform === "win32";
@@ -37,18 +37,38 @@ try {
   await mkdir(dirname(statePath), { recursive: true });
 
   let browser;
+  const antiAutomationArgs = ["--disable-blink-features=AutomationControlled"];
+  const antiAutomationIgnore = ["--enable-automation"];
   try {
-    browser = await chromium.launch({ channel: "chrome", headless: false });
+    browser = await chromium.launch({
+      channel: "chrome",
+      headless: false,
+      args: antiAutomationArgs,
+      ignoreDefaultArgs: antiAutomationIgnore,
+    });
   } catch {
-    browser = await chromium.launch({ headless: false });
+    browser = await chromium.launch({
+      headless: false,
+      args: antiAutomationArgs,
+      ignoreDefaultArgs: antiAutomationIgnore,
+    });
   }
 
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.goto(`${baseUrl}/ru/login`);
 
-  process.stdout.write("В открывшемся окне войдите отдельным тестовым Google-аккаунтом. Ожидаю страницу профиля...\n");
-  await page.waitForURL(/\/ru\/profile(?:\?.*)?$/u, { timeout: 300_000 });
+  // Автостарт: сами нажимаем «Продолжить с Google», чтобы человеку остался
+  // только знакомый Google-экран (аккаунт → пароль → согласие).
+  try {
+    await page.getByRole("button", { name: /Google/u }).click({ timeout: 15_000 });
+  } catch {
+    // Кнопка не нашлась — пользователь может нажать её вручную, это не фатально.
+  }
+
+  process.stdout.write("Google-экран открыт: введите аккаунт и пароль, согласие — «Продолжить». Ожидаю страницу профиля...\n");
+  // Десять минут: человек может отвлечься, окно не должно закрываться слишком рано.
+  await page.waitForURL(/\/ru\/profile(?:\?.*)?$/u, { timeout: 600_000 });
   await context.storageState({ path: statePath });
   await browser.close();
 
