@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, Circle, LoaderCircle } from "lucide-react";
-import type { ChatContent } from "./content";
+import type { ChatContent } from "@/data/chrono-content";
 import type { AiMode } from "./types";
 
 export function AudioProcessingCard({ t, audioAnalysisStep }: { t: ChatContent; audioAnalysisStep: number }) {

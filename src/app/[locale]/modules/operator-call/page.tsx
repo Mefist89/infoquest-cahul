@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
 import { SiteFooter } from "@/components/SiteFooter";
-import { MODULE_IDS } from "@/data/module-catalog";
+import { MODULE_IDS } from "@/data/module-catalog-meta";
 import { operatorCallContent, type OperatorLocale } from "@/data/operator-call";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";

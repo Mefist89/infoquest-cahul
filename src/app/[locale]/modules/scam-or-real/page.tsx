@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { ScamOrRealModule } from "@/components/modules/ScamOrRealModule";
 import { SiteFooter } from "@/components/SiteFooter";
-import { MODULE_IDS } from "@/data/module-catalog";
+import { MODULE_IDS } from "@/data/module-catalog-meta";
 import { scamOrRealContent, type ScamOrRealLocale } from "@/data/scam-or-real";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";

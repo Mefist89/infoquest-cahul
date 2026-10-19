@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { ChatContent } from "./content";
+import type { ChatContent } from "@/data/chrono-content";
 import type { AiMode, AnalyzerInputMode } from "./types";
 
 export function QuickExamples({ t, setAnalyzerInputMode, setDrafts }: { t: ChatContent; setAnalyzerInputMode: Dispatch<SetStateAction<AnalyzerInputMode>>; setDrafts: Dispatch<SetStateAction<Record<AiMode, string>>> }) {

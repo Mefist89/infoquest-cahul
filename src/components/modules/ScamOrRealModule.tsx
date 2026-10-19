@@ -30,7 +30,7 @@ import { OfferClassifyStage } from "./scam-or-real/offer-classify-stage";
 import { HaggleDialogueStage } from "./scam-or-real/haggle-dialogue-stage";
 import { SellerCheckStage } from "./scam-or-real/seller-check-stage";
 import { FinalBattleStage } from "./scam-or-real/final-battle-stage";
-import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog";
+import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
 import { NextButtonContext } from "./operator-call/stage-support";
 

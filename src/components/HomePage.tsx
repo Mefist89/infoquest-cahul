@@ -27,8 +27,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { caseSlides, missions, strings, type Lang, type Mission } from "@/data/home-data";
-import { MODULE_CATALOG, MODULE_COUNT, MODULE_MAX_XP, TOTAL_MAX_XP, type ModuleId } from "@/data/module-catalog";
+import { strings, type Lang } from "@/data/home-data";
+import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MODULE_MAX_XP, TOTAL_MAX_XP, type ModuleDefinition as Mission, type ModuleId } from "@/data/module-catalog";
 import { canUseAi, isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
@@ -224,7 +224,7 @@ function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgre
       </div>
       <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
       <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={TOTAL_MAX_XP} aria-label={strings[lang].shieldProgress}>
-        {MODULE_CATALOG.map((module) => {
+        {missions.map((module) => {
           const moduleXp = progress.modules[module.moduleId]?.xp ?? 0;
           const modulePercent = Math.min(100, Math.round((moduleXp / MODULE_MAX_XP) * 100));
 
@@ -344,7 +344,7 @@ export default function HomePage() {
       ]);
 
       if (!active) return;
-      const catalogIds = new Set<string>(MODULE_CATALOG.map((module) => module.moduleId));
+      const catalogIds = new Set<string>(missions.map((module) => module.moduleId));
       const progressRows = (progressData ?? []).filter((item) => catalogIds.has(item.module_id));
       const moduleProgress = Object.fromEntries(
         progressRows.map((item) => [
@@ -468,7 +468,7 @@ export default function HomePage() {
         <MiniChallenge lang={lang} />
         <CaseSlider lang={lang} />
         <SkillsSection lang={lang} />
-        <ProgressAndBadges lang={lang} progress={headerProgress} />
+        <ProgressAndBadges lang={lang} progress={headerProgress} missions={missions} />
         <AudienceSection lang={lang} />
         <AiAssistantSection lang={lang} restricted={headerProgress.isAuthenticated && !canUseAi(headerProgress.role)} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
       </main>

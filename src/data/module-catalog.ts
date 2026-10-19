@@ -153,9 +153,13 @@ export const MODULE_CATALOG = [
 ] as const;
 
 export type ModuleDefinition = (typeof MODULE_CATALOG)[number];
-export type ModuleId = ModuleDefinition["moduleId"];
 export type ModuleStage = (typeof MODULE_STAGES)[number];
 export type StageKind = ModuleStage["kind"];
+
+// Канонические MODULE_IDS и ModuleId живут в module-catalog-meta (чистые инварианты
+// без двуязычных текстов) — серверным страницам удобно получать их отсюда.
+export { MODULE_IDS } from "./module-catalog-meta";
+export type { ModuleId } from "./module-catalog-meta";
 
 export const MODULE_COUNT = MODULE_CATALOG.length;
 export const STAGE_COUNT = MODULE_STAGES.length;
@@ -168,14 +172,3 @@ export const CASE_SLIDES = MODULE_CATALOG.map((module) => ({
   description: module.caseDescription,
   objective: module.caseObjective,
 }));
-
-export const MODULE_IDS = {
-  operatorCall: "operator-call",
-  fakeLink: "fake-link",
-  hackedAccount: "hacked-account",
-  scamOrReal: "scam-or-real",
-  deepfakeDetective: "deepfake-detective",
-  bilingualDetective: "bilingual-detective",
-  rumorCity: "rumor-city",
-  communityTrolls: "community-trolls",
-} as const satisfies Record<string, ModuleId>;

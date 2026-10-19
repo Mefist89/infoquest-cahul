@@ -17,16 +17,16 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { getRiskLevel } from "@/lib/risk-level";
 
 import { Composer } from "./chat/composer";
-import { content } from "./chat/content";
 import { ChatMessageBubble } from "./chat/message-bubble";
 import { QuickExamples } from "./chat/quick-examples";
 import { AudioProcessingCard, ThinkingBubble } from "./chat/thinking-card";
 import { useChronoAudio } from "./chat/use-chrono-audio";
 import type { AiLocale, AiMode, AnalyzerInputMode, ApiResult, ChatMessage, QuotaStatus } from "./chat/types";
+import type { ChatContent } from "@/data/chrono-content";
 
-export function AiHelpChat({ locale }: { locale: AiLocale }) {
+export function AiHelpChat({ locale, content }: { locale: AiLocale; content: ChatContent }) {
   const router = useRouter();
-  const t = content[locale];
+  const t = content;
   const audio = useChronoAudio({ t });
   const { attachment, listening, recordingSeconds, speechError } = audio;
   const [mode, setMode] = useState<AiMode>("analyzer");

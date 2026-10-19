@@ -13,6 +13,14 @@ import {
   TOTAL_STAGE_COUNT,
 } from "@/data/module-catalog";
 import {
+  MODULE_IDS as MODULE_IDS_META,
+  MODULE_COUNT as META_MODULE_COUNT,
+  MODULE_MAX_XP as META_MODULE_MAX_XP,
+  STAGE_COUNT as META_STAGE_COUNT,
+  TOTAL_MAX_XP as META_TOTAL_MAX_XP,
+  TOTAL_STAGE_COUNT as META_TOTAL_STAGE_COUNT,
+} from "@/data/module-catalog-meta";
+import {
   AudioValidationError,
   detectAudioFormat,
   getWavRms,
@@ -226,8 +234,43 @@ describe("architecture boundaries", () => {
     expect(provider).toContain("/audio/transcriptions");
   });
 
+  it("keeps locale-fixed client routes free of the bilingual module catalog", () => {
+    const valueImportRe = /(^|\n)import \{[^}]*\} from "@\/data\/module-catalog"/;
+    // Клиентские файлы маршрутов с фиксированной локалью: двуязычный каталог им не нужен.
+    const localeFixedSources = [
+      "src/components/modules/FakeLinkModule.tsx",
+      "src/components/modules/HackedAccountModule.tsx",
+      "src/components/modules/OperatorCallModule.tsx",
+      "src/components/modules/ScamOrRealModule.tsx",
+      "src/components/home/HomeLearningSections.tsx",
+      "src/features/modules/runner/use-module-runner.ts",
+    ].map((file) => readFileSync(join(process.cwd(), file), "utf8"));
+    localeFixedSources.forEach((source) => expect(valueImportRe.test(source)).toBe(false));
+
+    // Клиент получает значения только из module-catalog-meta; они обязаны совпадать с каталогом.
+    expect(Object.values(MODULE_IDS_META)).toEqual(MODULE_CATALOG.map((module) => module.moduleId));
+    expect(META_MODULE_COUNT).toBe(MODULE_COUNT);
+    expect(META_STAGE_COUNT).toBe(STAGE_COUNT);
+    expect(META_MODULE_MAX_XP).toBe(MODULE_MAX_XP);
+    expect(META_TOTAL_STAGE_COUNT).toBe(TOTAL_STAGE_COUNT);
+    expect(META_TOTAL_MAX_XP).toBe(TOTAL_MAX_XP);
+  });
+
+  it("keeps footer data decoupled from the home data and the module catalog", () => {
+    const footerComponent = readFileSync(join(process.cwd(), "src/components/SiteFooter.tsx"), "utf8");
+    const footerData = readFileSync(join(process.cwd(), "src/data/footer-data.ts"), "utf8");
+    const homeData = readFileSync(join(process.cwd(), "src/data/home-data.ts"), "utf8");
+    expect(footerComponent).toContain('from "@/data/footer-data"');
+    expect(footerComponent).not.toContain("@/data/home-data");
+    expect(footerData).toContain("export const footerStrings");
+    expect(footerData).toContain("export const teamMembers");
+    // home-data больше не тянет каталог значениями: домашняя страница импортирует его напрямую.
+    expect(homeData).not.toMatch(/(^|\n)import \{[^}]*\} from "@\/data\/module-catalog"/);
+    expect(homeData).toContain("import type { ModuleLocale }");
+  });
+
   it("ships module data to the client only for the active locale", () => {
-    const valueImportRe = /(^|\n)import \{[^}]*\} from "@\/data\/(operator-call|hacked-account|fake-link|scam-or-real|legal-content)"/;
+    const valueImportRe = /(^|\n)import \{[^}]*\} from "@\/data\/(operator-call|hacked-account|fake-link|scam-or-real|legal-content|chrono-content)"/;
     collectSourceFiles(join(process.cwd(), "src/components")).forEach((source) => {
       expect(valueImportRe.test(source), source.slice(0, 60)).toBe(false);
     });
@@ -243,6 +286,8 @@ describe("architecture boundaries", () => {
       expect(page).toContain(`import { ${name}`);
       expect(page).toContain(`content={${name}[locale]}`);
     });
+    const aiHelpPage = readFileSync(join(process.cwd(), "src/app/[locale]/ai-help/page.tsx"), "utf8");
+    expect(aiHelpPage).toContain("content={chronoContent[locale]}");
     const privacy = readFileSync(join(process.cwd(), "src/app/[locale]/privacy/page.tsx"), "utf8");
     const terms = readFileSync(join(process.cwd(), "src/app/[locale]/terms/page.tsx"), "utf8");
     expect(privacy).toContain("document={legalContent[locale].privacy}");

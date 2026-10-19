@@ -3,7 +3,7 @@
 import { Volume2 } from "lucide-react";
 
 import { getRiskIndicatorClass, getRiskLevel } from "@/lib/risk-level";
-import type { ChatContent } from "./content";
+import type { ChatContent } from "@/data/chrono-content";
 import type { AiLocale, ChatMessage } from "./types";
 
 export function ChatMessageBubble({ message, t, locale, onSpeak }: { message: ChatMessage; t: ChatContent; locale: AiLocale; onSpeak: (text: string) => void }) {

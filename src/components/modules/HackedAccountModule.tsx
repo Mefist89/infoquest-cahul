@@ -30,7 +30,7 @@ import { PasswordGameStage } from "./hacked-account/password-game-stage";
 import { RecoveryDialogueStage } from "./hacked-account/recovery-dialogue-stage";
 import { RescueOrderStage } from "./hacked-account/rescue-order-stage";
 import { FinalBattleStage } from "./hacked-account/final-battle-stage";
-import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog";
+import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
 import { NextButtonContext } from "./operator-call/stage-support";
 

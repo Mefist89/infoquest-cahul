@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 
-import type { ChatContent } from "./content";
+import type { ChatContent } from "@/data/chrono-content";
 import type { AiLocale, AiMode, AnalyzerInputMode, Attachment } from "./types";
 
 function formatRecordingTime(seconds: number) {

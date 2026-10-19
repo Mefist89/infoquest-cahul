@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 
 import type { fakeLinkContent, FakeLinkLocale } from "@/data/fake-link";
-import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog";
+import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
 import { FindSignalsStage } from "./fake-link/find-signals-stage";
 import { LinkClassifyStage } from "./fake-link/link-classify-stage";

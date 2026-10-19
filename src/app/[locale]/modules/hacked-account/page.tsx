@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { HackedAccountModule } from "@/components/modules/HackedAccountModule";
 import { SiteFooter } from "@/components/SiteFooter";
-import { MODULE_IDS } from "@/data/module-catalog";
+import { MODULE_IDS } from "@/data/module-catalog-meta";
 import { hackedAccountContent, type HackedAccountLocale } from "@/data/hacked-account";
 import type { ModuleProgress, StageProgress } from "@/features/modules/runner/use-module-runner";
 import { isAdministrator, isUserRole } from "@/lib/roles";

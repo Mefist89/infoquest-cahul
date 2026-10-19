@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
-import type { ChatContent } from "./content";
+import type { ChatContent } from "@/data/chrono-content";
 import type { Attachment } from "./types";
 import { convertToWhisperWav } from "./wav";
 

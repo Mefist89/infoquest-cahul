@@ -22,8 +22,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { missions, type Lang } from "@/data/home-data";
-import { MODULE_COUNT, TOTAL_MAX_XP, type ModuleId } from "@/data/module-catalog";
+import type { Lang } from "@/data/home-data";
+import { MODULE_COUNT, TOTAL_MAX_XP } from "@/data/module-catalog-meta";
+import type { ModuleDefinition, ModuleId } from "@/data/module-catalog";
 
 type ModuleStatus = "not_started" | "in_progress" | "completed";
 export type HomeProgressSummary = {
@@ -172,7 +173,7 @@ export function SkillsSection({ lang }: { lang: Lang }) {
   return <section className="home-section"><h2 className="home-title">{t.skillsTitle}</h2><div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">{t.skills.map(([title, text], index) => { const Icon = skillIcons[index]; return <article key={title} className="rounded-3xl border border-neon/25 bg-card/55 p-4 text-center"><Icon className={`mx-auto size-9 ${index === 3 ? "text-violet" : "text-neon"}`} aria-hidden="true" /><h3 className="mt-4 text-xs font-black">{title}</h3><p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{text}</p></article>; })}</div></section>;
 }
 
-export function ProgressAndBadges({ lang, progress }: { lang: Lang; progress: HomeProgressSummary }) {
+export function ProgressAndBadges({ lang, progress, missions }: { lang: Lang; progress: HomeProgressSummary; missions: readonly ModuleDefinition[] }) {
   const t = content[lang];
   const xpPercent = Math.min(100, Math.round((progress.xp / TOTAL_MAX_XP) * 100));
   return <section id="badges" className="home-panel scroll-mt-24"><div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]"><article className="rounded-2xl border border-neon/30 bg-background/40 p-5"><p className="font-bold">{t.path}: {progress.rewards} / {MODULE_COUNT} {t.casesDone}</p><div className="mt-5 flex items-center gap-3"><Sparkles className="size-5 text-gold" aria-hidden="true" /><span className="text-xs text-muted-foreground">XP</span><div className="h-3 flex-1 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-neon shadow-[0_0_14px_rgba(0,217,255,0.45)]" style={{ width: `${xpPercent}%` }} /></div><strong>{progress.xp}/{TOTAL_MAX_XP}</strong></div></article><article className="flex items-center gap-4 rounded-2xl border border-gold/45 bg-gold/10 p-5"><span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-gold/50 bg-gold/10 text-gold"><Trophy className="size-7" aria-hidden="true" /></span><div><p className="text-xs font-bold uppercase text-gold">{t.nextReward}</p><p className="mt-2 text-sm font-bold">{t.nextRewardText}</p></div></article></div><h2 className="mt-6 text-lg font-black text-gold">{t.badges}</h2><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">{missions.map((mission) => { const earned = progress.modules[mission.moduleId]?.status === "completed"; return <article key={mission.moduleId} className={`rounded-2xl border p-3 text-center ${earned ? "border-gold/55 bg-gold/10 shadow-[0_0_18px_rgba(255,196,0,0.14)]" : "border-border bg-card/50"}`}><span className={`mx-auto grid size-10 place-items-center rounded-xl ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}>{earned ? <Medal className="size-5" aria-hidden="true" /> : <Lock className="size-4" aria-hidden="true" />}</span><p className={`mt-3 text-[10px] font-bold leading-snug ${earned ? "text-foreground" : "text-muted-foreground"}`}>{mission.badge[lang]}</p><p className={`mt-2 text-[9px] uppercase ${earned ? "text-gold" : "text-muted-foreground"}`}>{earned ? t.earned : t.locked}</p></article>; })}</div></section>;

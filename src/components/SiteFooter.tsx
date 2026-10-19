@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Download, PlayCircle, Users } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { strings, teamMembers, type Lang } from "@/data/home-data";
+import { footerStrings, teamMembers, type FooterLocale } from "@/data/footer-data";
 import { Modal } from "@/components/Modal";
 
 function BottomCard({ label, icon, children, onClick }: { label: string; icon?: ReactNode; children?: ReactNode; onClick?: () => void }) {
@@ -23,8 +23,8 @@ function BottomCard({ label, icon, children, onClick }: { label: string; icon?: 
   );
 }
 
-export function SiteFooter({ lang, beforeLegal }: { lang: Lang; beforeLegal?: ReactNode }) {
-  const t = strings[lang];
+export function SiteFooter({ lang, beforeLegal }: { lang: FooterLocale; beforeLegal?: ReactNode }) {
+  const t = footerStrings[lang];
   const [openBlock, setOpenBlock] = useState<"logo" | "qr" | "team" | "demo" | null>(null);
   const siteUrl = `https://infoquest-cahul.vercel.app/${lang}`;
 

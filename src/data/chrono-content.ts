@@ -1,6 +1,7 @@
-import type { AiLocale } from "./types";
+/** Тексты Chrono — единый источник; в клиентский чанк попадает только выбранная страница локаль (проп contentAi). */
+export type AiLocale = "ro" | "ru";
 
-export const content = {
+export const chronoContent = {
   ro: {
     title: "Ajutor online AI",
     subtitle: "Asistent pentru siguranță digitală",
@@ -139,4 +140,4 @@ export const content = {
   },
 } as const;
 
-export type ChatContent = (typeof content)[AiLocale];
+export type ChatContent = (typeof chronoContent)[AiLocale];

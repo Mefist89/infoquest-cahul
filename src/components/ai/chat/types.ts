@@ -1,4 +1,4 @@
-export type AiLocale = "ro" | "ru";
+export type { AiLocale } from "@/data/chrono-content";
 export type AiMode = "analyzer" | "chat";
 export type AnalyzerInputMode = "text" | "audio";
 export type Attachment = { name: string; url: string; file: File };

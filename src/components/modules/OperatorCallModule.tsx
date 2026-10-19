@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog";
+import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import { useModuleRunner, stageDisplayScore, type ModuleProgress, type StageProgress, type StageResult } from "@/features/modules/runner/use-module-runner";
 import { CallSimulatorStage, ClassifyStage } from "./operator-call/call-classify-stages";
