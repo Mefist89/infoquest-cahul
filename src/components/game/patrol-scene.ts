@@ -1,43 +1,17 @@
-import * as Phaser from "phaser";
+import Phaser from "phaser";
+import { RoadNetwork, RoadGraph, RoadNode } from "./RoadNetwork";
+import { CityMapGenerator, DEFAULT_CITY_CONFIG, CityMapConfig } from "./RoadMapGenerator";
 
 import { PATROL_NPCS } from "@/data/patrol";
 
 export type PatrolLocale = "ru" | "ro";
 
-// Убрали PatrolHooks — теперь используем сцену диалога
-
-const WORLD_WIDTH = 1600;
-const WORLD_HEIGHT = 1200;
 const PLAYER_SPEED = 260;
 const TALK_DISTANCE = 100;
 
-type District = {
-  id: string;
-  name: { ru: string; ro: string };
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: number;
-};
-
-const DISTRICTS: District[] = [
-  { id: "school", name: { ru: "Школа", ro: "Școala" }, x: 140, y: 140, width: 420, height: 300, color: 0x1d4ed8 },
-  { id: "bank", name: { ru: "Банк", ro: "Banca" }, x: 1040, y: 140, width: 420, height: 300, color: 0x047857 },
-  { id: "post", name: { ru: "Почта", ro: "Poșta" }, x: 140, y: 760, width: 420, height: 300, color: 0xb45309 },
-  { id: "shop", name: { ru: "Магазин", ro: "Magazinul" }, x: 1040, y: 760, width: 420, height: 300, color: 0xbe185d },
-];
-
-type NpcRecord = {
-  id: string;
-  sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-  checkText: Phaser.GameObjects.Text;
-  resolved: boolean;
-};
-
 export class PatrolScene extends Phaser.Scene {
   private locale: PatrolLocale;
-  private player?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
   private talkKey?: Phaser.Input.Keyboard.Key;
@@ -45,6 +19,10 @@ export class PatrolScene extends Phaser.Scene {
   private promptText?: Phaser.GameObjects.Text;
   private npcs: NpcRecord[] = [];
   private nearNpcId: string | null = null;
+  
+  private roadNetwork!: RoadNetwork;
+  private roadGraph!: RoadGraph;
+  private cityConfig: CityMapConfig;
 
   getNearNpcId(): string | null {
     return this.nearNpcId;
@@ -53,6 +31,7 @@ export class PatrolScene extends Phaser.Scene {
   constructor(locale: PatrolLocale) {
     super("patrol");
     this.locale = locale;
+    this.cityConfig = { ...DEFAULT_CITY_CONFIG };
   }
 
   preload() {
@@ -61,50 +40,40 @@ export class PatrolScene extends Phaser.Scene {
     this.load.atlasXML("shadow", "/game/sprites/shadow.png", "/game/sprites/shadow.xml");
     this.load.atlasXML("npc-female", "/game/sprites/npc-female.png", "/game/sprites/npc-female.xml");
     this.load.atlasXML("npc-male", "/game/sprites/npc-male.png", "/game/sprites/npc-male.xml");
+    
+    // Загружаем тайлы для рендеринга карты (используем Kenney tiles)
+    this.load.image("tiles", "/kenney_rpg-urban-pack/Tiles/tilemap_packed.png");
+    // Загружаем тайлмап
+    this.load.tilemapTiledJSON("citymap", "/kenney_rpg-urban-pack/Tilemap/tilemap.json");
   }
 
   create() {
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-    this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    // Инициализируем дорожную сеть
+    this.roadNetwork = new RoadNetwork(this);
+    this.cityConfig = { ...DEFAULT_CITY_CONFIG };
+    
+    // Генерируем городскую карту
+    const cityGenerator = new CityMapGenerator(this.roadNetwork, this.cityConfig);
+    const tileMap = cityGenerator.generate();
+    this.roadNetwork.createRoadMap(this.cityConfig.width, this.cityConfig.height, tileMap);
+    
+    // Строим граф дорог для навигации
+    this.roadGraph = this.roadNetwork.buildRoadGraph();
 
-    // Тёмный фон + сетка улиц.
-    this.add.rectangle(0, 0, WORLD_WIDTH, WORLD_HEIGHT, 0x060d1f).setOrigin(0);
-    const grid = this.add.graphics().lineStyle(1, 0x0e1b33, 1);
-    for (let x = 0; x <= WORLD_WIDTH; x += 80) grid.lineBetween(x, 0, x, WORLD_HEIGHT);
-    for (let y = 0; y <= WORLD_HEIGHT; y += 80) grid.lineBetween(0, y, WORLD_WIDTH, y);
+    // Настройка камеры и мира
+    const worldWidth = DEFAULT_CITY_CONFIG.width * (16 + 1);
+    const worldHeight = DEFAULT_CITY_CONFIG.height * (16 + 1);
+    
+    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
-    // Дороги.
-    this.add.rectangle(0, 540, WORLD_WIDTH, 120, 0x101c36).setOrigin(0, 0);
-    this.add.rectangle(740, 0, 120, WORLD_HEIGHT, 0x101c36).setOrigin(0, 0);
+    // Рендерим карту
+    this.renderCityMap();
 
-    // Площадь в центре.
-    this.add.circle(800, 600, 90, 0x0b2740).setStrokeStyle(3, 0x00d9ff, 0.6);
+    // Создаем коллизии для зданий и непроходимых тайлов
+    this.createCollisions();
 
-    // Районы: видимые здания + невидимые твёрдые тела + подписи.
-    const solids: Phaser.GameObjects.Rectangle[] = [];
-    for (const district of DISTRICTS) {
-      this.add.rectangle(district.x, district.y, district.width, district.height, district.color, 0.28).setOrigin(0);
-      this.add.rectangle(district.x, district.y, district.width, district.height).setOrigin(0).setStrokeStyle(3, district.color, 1);
-      const solid = this.add.rectangle(
-        district.x + district.width / 2,
-        district.y + district.height / 2,
-        district.width,
-        district.height,
-      );
-      solid.setVisible(false);
-      this.physics.add.existing(solid, true);
-      solids.push(solid);
-      this.add
-        .text(district.x + district.width / 2, district.y + district.height / 2, district.name[this.locale], {
-          fontSize: "40px",
-          fontStyle: "900",
-          color: "#ffffff",
-        })
-        .setOrigin(0.5)
-        .setAlpha(0.9);
-    }
-
-    // Анимация ходьбы игрока из атласа.
+    // Игрок
     this.anims.create({
       key: "player-run",
       frames: this.anims.generateFrameNames("player", { prefix: "run", start: 0, end: 2 }),
@@ -112,36 +81,18 @@ export class PatrolScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.player = this.physics.add.sprite(800, 600, "player", "idle");
+    // Находим безопасную точку спавна (на дороге)
+    const spawnPoint = this.findSafeSpawnPoint();
+    this.player = this.physics.add.sprite(spawnPoint.x, spawnPoint.y, "player", "idle");
     this.player.setScale(0.55);
     this.player.body.setSize(60, 100);
     this.player.setCollideWorldBounds(true);
-    this.physics.add.collider(this.player, solids);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
-    // NPC с именами над головой.
-    const npcData = PATROL_NPCS;
-    this.npcs = npcData.map((npc) => {
-      const sprite = this.physics.add.sprite(npc.x, npc.y, npc.sprite, "idle");
-      sprite.setScale(0.55);
-      if (npc.tint !== undefined) sprite.setTint(npc.tint);
-      sprite.setImmovable(true);
-      this.add
-        .text(npc.x, npc.y - 52, npc.name[this.locale], {
-          fontSize: "16px",
-          fontStyle: "bold",
-          color: "#ffd166",
-          backgroundColor: "#060d1fcc",
-          padding: { x: 6, y: 2 },
-        })
-        .setOrigin(0.5);
-      const checkText = this.add
-        .text(npc.x + 26, npc.y - 52, "✓", { fontSize: "20px", fontStyle: "900", color: "#34d399" })
-        .setOrigin(0.5)
-        .setVisible(false);
-      return { id: npc.id, sprite, checkText, resolved: false };
-    });
+    // NPCs
+    this.createNPCs();
 
+    // Управление
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D") as Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
     this.talkKey = this.input.keyboard?.addKey("E") as Phaser.Input.Keyboard.Key;
@@ -162,6 +113,94 @@ export class PatrolScene extends Phaser.Scene {
       .text(12, 12, "", { fontSize: "18px", fontStyle: "bold", color: "#00d9ff", backgroundColor: "#060d1fcc", padding: { x: 10, y: 6 } })
       .setScrollFactor(0)
       .setDepth(100);
+
+    // Слушаем завершение диалога
+    this.events.on("dialogue-complete", (correct: boolean) => {
+      const record = this.npcs.find((npc) => npc.id === this.nearNpcId);
+      if (record) {
+        if (correct) {
+          this.scene.resume();
+          this.markResolved(this.nearNpcId!);
+        } else {
+          this.scene.resume();
+          this.cameras.main.shake(200, 0.01);
+        }
+      }
+    });
+  }
+
+  private findSafeSpawnPoint(): { x: number; y: number } {
+    // Находим ближайшую к центру дорожную плитку
+    const centerX = (DEFAULT_CITY_CONFIG.width * 17) / 2;
+    const centerY = (DEFAULT_CITY_CONFIG.height * 17) / 2;
+    
+    let closest: RoadNode | null = null;
+    let minDist = Infinity;
+    
+    for (const node of this.roadGraph.nodes.values()) {
+      const dist = Math.hypot(node.x - centerX, node.y - centerY);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = node;
+      }
+    }
+    
+    return closest ? { x: closest.x, y: closest.y } : { x: 400, y: 300 };
+  }
+
+  private renderCityMap(): void {
+    // Рендерим тайлы через RoadNetwork.render
+    this.roadNetwork.render();
+  }
+
+  private createCollisions(): void {
+    // Создаем коллизии для зданий (непроходимые тайлы)
+    // В RoadNetwork isRoad/isSidewalk возвращают true для проходимых тайлов
+    // Здания и трава - непроходимые
+  }
+
+  private createNPCs(): void {
+    this.npcs = PATROL_NPCS.map((npc) => {
+      // Находим безопасную позицию рядом с дорогой для NPC
+      const spawnPoint = this.findNPCSpawnPoint(npc.x, npc.y);
+      const sprite = this.physics.add.sprite(spawnPoint.x, spawnPoint.y, npc.sprite, "idle");
+      sprite.setScale(0.55);
+      if (npc.tint !== undefined) sprite.setTint(npc.tint);
+      sprite.setImmovable(true);
+      
+      this.add
+        .text(npc.x, npc.y - 52, npc.name[this.locale], {
+          fontSize: "16px",
+          fontStyle: "bold",
+          color: "#ffd166",
+          backgroundColor: "#060d1fcc",
+          padding: { x: 6, y: 2 },
+        })
+        .setOrigin(0.5);
+      
+      const checkText = this.add
+        .text(spawnPoint.x + 26, spawnPoint.y - 52, "✓", { fontSize: "20px", fontStyle: "900", color: "#34d399" })
+        .setOrigin(0.5)
+        .setVisible(false);
+      
+      return { id: npc.id, sprite, checkText, resolved: false };
+    });
+  }
+
+  private findNPCSpawnPoint(preferredX: number, preferredY: number): { x: number; y: number } {
+    // Находим ближайшую дорожную плитку к предпочитаемой позиции
+    let closest: RoadNode | null = null;
+    let minDist = Infinity;
+    
+    for (const node of this.roadGraph.nodes.values()) {
+      const dist = Math.hypot(node.x - preferredX, node.y - preferredY);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = node;
+      }
+    }
+    
+    return closest ? { x: closest.x, y: closest.y } : { x: 400, y: 300 };
   }
 
   /** Помечает NPC как разобранного: галочка + лёгкий оттенок. */
@@ -208,6 +247,9 @@ export class PatrolScene extends Phaser.Scene {
       this.player.setFrame("idle");
     }
 
+    // Ограничиваем движение только по дорогам
+    this.constrainToRoads();
+
     // Ближайший неразобранный NPC в радиусе разговора.
     this.nearNpcId = null;
     let best = TALK_DISTANCE;
@@ -233,22 +275,51 @@ export class PatrolScene extends Phaser.Scene {
       this.promptText?.setVisible(false);
     }
 
-    // Listen for dialogue scene to complete
-    this.events.on("dialogue-complete", (correct: boolean) => {
-      const record = this.npcs.find((npc) => npc.id === this.nearNpcId);
-      if (record) {
-        if (correct) {
-          this.scene.resume();
-          this.markResolved(this.nearNpcId!);
-        } else {
-          this.scene.resume();
-          // Wrong answer - shake effect or similar
-          this.cameras.main.shake(200, 0.01);
+    // Обновляем HUD
+    const zone = this.getCurrentZone();
+    const hint = this.locale === "ro" ? "WASD / săgeți — mișcare, E — dialog" : "WASD / стрелки — движение, E — разговор";
+    this.hudText?.setText(zone ? `${zone.name[this.locale]} · ${hint}` : hint);
+  }
+
+  private constrainToRoads(): void {
+    // Ограничиваем движение игрока только по дорогам
+    // Проверяем, находится ли игрок на дороге
+    if (!this.roadGraph) return;
+    
+    const tileX = Math.floor(this.player.x / 17);
+    const tileY = Math.floor(this.player.y / 17);
+    const tileMap = this.roadNetwork.getTileMap();
+    const tileId = this.getTileIdSafe(tileMap, tileX, tileY);
+    if (!this.roadNetwork.isRoad(tileId)) {
+      // Игрок сбился с дороги - возвращаем на ближайшую дорогу
+      if (!this.roadGraph) return;
+      let closest: RoadNode | null = null;
+      let minDist = Infinity;
+      
+      for (const node of this.roadGraph.nodes.values()) {
+        const dist = Math.hypot(node.x - this.player.x, node.y - this.player.y);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = node;
         }
       }
-    });
+      
+      if (closest) {
+        this.player.x = closest.x;
+        this.player.y = closest.y;
+        this.player.setVelocity(0, 0);
+      }
+    }
+  }
 
-    const zone = DISTRICTS.find(
+  private getTileIdSafe(tileMap: number[][], tileX: number, tileY: number): number {
+    const row = tileMap[tileY];
+    if (!row) return -1;
+    return (row[tileX] ?? -1) as number;
+  }
+
+  private getCurrentZone(): District | undefined {
+    return DISTRICTS.find(
       (district) =>
         this.player !== undefined &&
         this.player.x >= district.x &&
@@ -256,7 +327,30 @@ export class PatrolScene extends Phaser.Scene {
         this.player.y >= district.y &&
         this.player.y <= district.y + district.height,
     );
-    const hint = this.locale === "ro" ? "WASD / săgeți — mișcare, E — dialog" : "WASD / стрелки — движение, E — разговор";
-    this.hudText?.setText(zone ? `${zone.name[this.locale]} · ${hint}` : hint);
   }
 }
+
+// Типы для NPC
+type NpcRecord = {
+  id: string;
+  sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  checkText: Phaser.GameObjects.Text;
+  resolved: boolean;
+};
+
+type District = {
+  id: string;
+  name: { ru: string; ro: string };
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: number;
+};
+
+const DISTRICTS: District[] = [
+  { id: "school", name: { ru: "Школа", ro: "Școala" }, x: 140, y: 140, width: 420, height: 300, color: 0x1d4ed8 },
+  { id: "bank", name: { ru: "Банк", ro: "Banca" }, x: 1040, y: 140, width: 420, height: 300, color: 0x047857 },
+  { id: "post", name: { ru: "Почта", ro: "Poșta" }, x: 140, y: 760, width: 420, height: 300, color: 0xb45309 },
+  { id: "shop", name: { ru: "Магазин", ro: "Magazinul" }, x: 1040, y: 760, width: 420, height: 300, color: 0xbe185d },
+];
