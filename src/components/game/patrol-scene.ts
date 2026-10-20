@@ -4,9 +4,7 @@ import { PATROL_NPCS } from "@/data/patrol";
 
 export type PatrolLocale = "ru" | "ro";
 
-export type PatrolHooks = {
-  onTalk: (npcId: string) => void;
-};
+// Убрали PatrolHooks — теперь используем сцену диалога
 
 const WORLD_WIDTH = 1600;
 const WORLD_HEIGHT = 1200;
@@ -39,7 +37,6 @@ type NpcRecord = {
 
 export class PatrolScene extends Phaser.Scene {
   private locale: PatrolLocale;
-  private hooks: PatrolHooks;
   private player?: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -49,10 +46,13 @@ export class PatrolScene extends Phaser.Scene {
   private npcs: NpcRecord[] = [];
   private nearNpcId: string | null = null;
 
-  constructor(locale: PatrolLocale, hooks: PatrolHooks) {
+  getNearNpcId(): string | null {
+    return this.nearNpcId;
+  }
+
+  constructor(locale: PatrolLocale) {
     super("patrol");
     this.locale = locale;
-    this.hooks = hooks;
   }
 
   preload() {
@@ -223,11 +223,30 @@ export class PatrolScene extends Phaser.Scene {
     if (near && this.promptText) {
       this.promptText.setPosition(near.sprite.x, near.sprite.y - 84).setVisible(true);
       if (this.talkKey && Phaser.Input.Keyboard.JustDown(this.talkKey)) {
-        this.hooks.onTalk(near.id);
+        this.scene.launch("dialogue", {
+          npcId: near.id,
+          locale: this.locale,
+        });
+        this.scene.pause();
       }
     } else {
       this.promptText?.setVisible(false);
     }
+
+    // Listen for dialogue scene to complete
+    this.events.on("dialogue-complete", (correct: boolean) => {
+      const record = this.npcs.find((npc) => npc.id === this.nearNpcId);
+      if (record) {
+        if (correct) {
+          this.scene.resume();
+          this.markResolved(this.nearNpcId!);
+        } else {
+          this.scene.resume();
+          // Wrong answer - shake effect or similar
+          this.cameras.main.shake(200, 0.01);
+        }
+      }
+    });
 
     const zone = DISTRICTS.find(
       (district) =>

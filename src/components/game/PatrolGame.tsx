@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PATROL_NPCS } from "@/data/patrol";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
+import { DialogueScene } from "./DialogueScene";
 import { PatrolLoadingFrame, usePatrolSpritePrefetch } from "./PatrolStartPanel";
 
 const SHADOW_START = 40;
@@ -18,15 +19,12 @@ const SHADOW_DEFEAT = 100;
 export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
-  const [talkId, setTalkId] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ correct: boolean; text: string } | null>(null);
   const [resolvedIds, setResolvedIds] = useState<string[]>([]);
   const [shadow, setShadow] = useState(SHADOW_START);
   const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">("loading");
   const [loading, setLoading] = useState(true);
 
   const byId = useMemo(() => new Map(PATROL_NPCS.map((npc) => [npc.id, npc])), []);
-  const talkNpc = talkId ? byId.get(talkId) : undefined;
 
   // Прогрев спрайтов — после «Старт», параллельно RPC прогресса.
   usePatrolSpritePrefetch();
@@ -40,19 +38,9 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     patrolScene()?.scene.pause();
   }, []);
 
-  const resumeGame = useCallback(() => {
-    if (patrolScene()?.scene.isPaused()) patrolScene()?.scene.resume();
-  }, []);
-
   useEffect(() => {
     if (loading || !hostRef.current || gameRef.current) return;
-    const scene = new PatrolScene(locale, {
-      onTalk: (npcId: string) => {
-        pauseGame();
-        setFeedback(null);
-        setTalkId(npcId);
-      },
-    });
+    const scene = new PatrolScene(locale);
     gameRef.current = new Phaser.Game({
       type: Phaser.AUTO,
       parent: hostRef.current,
@@ -61,7 +49,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       backgroundColor: "#060d1f",
       physics: { default: "arcade", arcade: { debug: false } },
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-      scene: [scene],
+      scene: [scene, DialogueScene],
     });
     if (process.env.NODE_ENV !== "production") {
       (window as unknown as { __patrolScene?: PatrolScene }).__patrolScene = scene;
@@ -102,7 +90,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     return () => { mounted = false; };
   }, []);
 
-  function answer(correct: boolean, npcId: string) {
+  const handleDialogueComplete = useCallback((correct: boolean, npcId: string) => {
     const npc = byId.get(npcId);
     if (!npc) return;
 
@@ -111,13 +99,12 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     const nextResolved = resolvedIds.includes(npcId) ? resolvedIds : [...resolvedIds, npcId];
     setShadow(nextShadow);
     setResolvedIds(nextResolved);
-    setFeedback({ correct, text: correct ? npc.success[locale] : npc.fail[locale] });
-    patrolScene()?.markResolved(npcId);
     if (nextShadow >= SHADOW_DEFEAT) {
       setPhase("lost");
     } else if (nextResolved.length >= PATROL_NPCS.length) {
       setPhase("won");
     }
+    patrolScene()?.markResolved(npcId);
 
     // Persist to Supabase
     (async () => {
@@ -130,13 +117,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         console.error("Failed to save patrol progress:", error);
       }
     })();
-  }
-
-  function closeDialogue() {
-    setTalkId(null);
-    setFeedback(null);
-    resumeGame();
-  }
+  }, [byId, resolvedIds, shadow]);
 
   function retry() {
     // Reset server state
@@ -145,13 +126,28 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       // For now, just reset locally and let user reload if needed
     })();
     patrolScene()?.resetPatrol();
-    setTalkId(null);
-    setFeedback(null);
     setResolvedIds([]);
     setShadow(SHADOW_START);
     setPhase("playing");
-    resumeGame();
   }
+
+  // Listen for dialogue completion from Phaser scene
+  useEffect(() => {
+    const scene = patrolScene();
+    if (!scene) return;
+
+    const handleDialogueCompleteEvent = (correct: boolean) => {
+      // Get the NPC that was being talked to
+      const nearNpcId = scene.getNearNpcId();
+      if (!nearNpcId) return;
+      handleDialogueComplete(correct, nearNpcId);
+    };
+
+    scene.events.on("dialogue-complete", handleDialogueCompleteEvent);
+    return () => {
+      scene.events.off("dialogue-complete", handleDialogueCompleteEvent);
+    };
+  }, [resolvedIds, shadow, handleDialogueComplete]);
 
   return (
     <div>
@@ -173,41 +169,6 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       ) : (
         <div className="relative aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]">
           <div ref={hostRef} className="absolute inset-0" />
-          {phase === "playing" && talkNpc && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-[2px] sm:p-6">
-              <div aria-live="polite" className="max-h-full w-full max-w-xl overflow-y-auto rounded-2xl border border-neon/30 bg-card/95 p-4 sm:p-5">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{talkNpc.name[locale]}</p>
-                {!feedback ? (
-                  <div className="mt-2">
-                    <p className="text-sm leading-relaxed text-foreground sm:text-base">{talkNpc.situation[locale]}</p>
-                    <div className="mt-4 grid gap-2">
-                      {talkNpc.options.map((option, position) => (
-                        <button
-                          key={position}
-                          type="button"
-                          onClick={() => answer(option.correct, talkNpc.id)}
-                          className="focus-ring min-h-12 rounded-xl border border-border bg-background/60 px-4 py-3 text-left text-sm font-semibold text-foreground transition hover:border-neon/60 sm:text-base"
-                        >
-                          {option.text[locale]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`rounded-xl border p-4 ${feedback.correct ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
-                    <p className={`text-sm font-bold sm:text-base ${feedback.correct ? "text-success" : "text-danger"}`}>{feedback.text}</p>
-                    <button
-                      type="button"
-                      onClick={closeDialogue}
-                      className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground"
-                    >
-                      {locale === "ro" ? "Înapoi la patrulă" : "Назад в патруль"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
