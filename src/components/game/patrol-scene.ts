@@ -117,29 +117,31 @@ export class PatrolScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
 
-    // Fullscreen button (top-right corner of game canvas)
+    // Fullscreen button (top-right corner of game canvas) - more visible
     this.fullscreenBtn = this.add
       .rectangle(
         this.cameras.main.width - 40,
         20,
-        36,
-        36,
+        40,
+        40,
         0x00d9ff,
-        0.15
+        0.4
       )
-      .setStrokeStyle(2, 0x00d9ff, 0.8)
-      .setDepth(200)
+      .setStrokeStyle(3, 0xffffff, 1)
+      .setDepth(1000)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.toggleFullscreen())
-      .on("pointerover", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.3))
-      .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.15));
+      .on("pointerover", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.6))
+      .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.35));
 
     this.fullscreenIcon = this.add
       .text(0, 0, "⛶", {
-        fontSize: "18px",
-        color: "#00d9ff",
+        fontSize: "20px",
+        color: "#ffffff",
         fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       .setDepth(201)
@@ -148,9 +150,9 @@ export class PatrolScene extends Phaser.Scene {
     // Position fullscreen button in top-right corner
     const updateFullscreenBtnPos = () => {
       const cam = this.cameras.main;
-      this.fullscreenBtn!.setPosition(cam.scrollX + cam.width - 40, cam.scrollY + 20);
+      this.fullscreenBtn!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 15);
       if (this.fullscreenIcon) {
-        this.fullscreenIcon!.setPosition(cam.scrollX + cam.width - 40, cam.scrollY + 20);
+        this.fullscreenIcon!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 25);
       }
     };
     this.cameras.main.on("scroll", updateFullscreenBtnPos);
@@ -159,27 +161,14 @@ export class PatrolScene extends Phaser.Scene {
     // Listen for fullscreen changes to update icon
     this.scale.on("fullscreenchange", () => {
       if (this.fullscreenIcon) {
-        this.fullscreenBtn!.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.15);
+        this.fullscreenBtn!.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.5);
       }
     });
 
     // Fullscreen toggle
     this.fullscreenBtn!.on("pointerdown", () => this.toggleFullscreen());
 
-    // Слушаем завершение диалога
-    this.events.on("dialogue-complete", (correct: boolean) => {
-      const record = this.npcs.find((npc) => npc.id === this.nearNpcId);
-      if (record) {
-        if (correct) {
-          this.scene.resume();
-          this.markResolved(this.nearNpcId!);
-        } else {
-          this.scene.resume();
-          this.cameras.main.shake(200, 0.01);
-        }
-      }
-    });
-  }
+    }
 
   private findSafeSpawnPoint(): { x: number; y: number } {
     // Находим ближайшую к центру дорожную плитку
@@ -325,10 +314,30 @@ export class PatrolScene extends Phaser.Scene {
     if (near && this.promptText) {
       this.promptText.setPosition(near.sprite.x, near.sprite.y - 84).setVisible(true);
       if (this.talkKey && Phaser.Input.Keyboard.JustDown(this.talkKey)) {
+        // Launch dialogue scene and listen for its completion on ITS event emitter
         this.scene.launch("dialogue", {
           npcId: near.id,
           locale: this.locale,
         });
+        this.scene.pause();
+        
+        // Listen for dialogue completion on the DIALOGUE SCENE's event emitter
+        const dialogueScene = this.scene.get("dialogue");
+        if (dialogueScene) {
+          dialogueScene.events.once("dialogue-complete", (correct: boolean) => {
+            this.scene.resume();
+            const record = this.npcs.find((npc) => npc.id === this.nearNpcId);
+            if (record) {
+              if (correct) {
+                this.markResolved(this.nearNpcId!);
+              } else {
+                this.cameras.main.shake(200, 0.01);
+              }
+            }
+            this.nearNpcId = null;
+            this.promptText?.setVisible(false);
+          });
+        }
         this.scene.pause();
       }
     } else {
