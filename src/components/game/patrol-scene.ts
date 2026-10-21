@@ -22,6 +22,10 @@ export class PatrolScene extends Phaser.Scene {
   
   private fullscreenBtn?: Phaser.GameObjects.Rectangle;
   private fullscreenIcon?: Phaser.GameObjects.Text;
+  private settingsBtn?: Phaser.GameObjects.Rectangle;
+  private settingsIcon?: Phaser.GameObjects.Text;
+  private settingsPanel!: Phaser.GameObjects.Container;
+  private isSettingsOpen = false;
   
   private roadNetwork!: RoadNetwork;
   private roadGraph!: RoadGraph;
@@ -117,13 +121,13 @@ export class PatrolScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
 
-    // Fullscreen button (top-right corner of game canvas) - more visible
-    this.fullscreenBtn = this.add
+    // Settings button (top-right corner of game canvas)
+    this.settingsBtn = this.add
       .rectangle(
-        this.cameras.main.width - 40,
+        this.cameras.main.width - 50,
         20,
-        40,
-        40,
+        44,
+        44,
         0x00d9ff,
         0.4
       )
@@ -131,13 +135,13 @@ export class PatrolScene extends Phaser.Scene {
       .setDepth(1000)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.toggleFullscreen())
-      .on("pointerover", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.6))
-      .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.35));
+      .on("pointerdown", () => this.toggleSettings())
+      .on("pointerover", () => this.settingsBtn!.setFillStyle(0x00d9ff, 0.6))
+      .on("pointerout", () => this.settingsBtn!.setFillStyle(0x00d9ff, 0.35));
 
-    this.fullscreenIcon = this.add
-      .text(0, 0, "⛶", {
-        fontSize: "20px",
+    this.settingsIcon = this.add
+      .text(0, 0, "⚙", {
+        fontSize: "22px",
         color: "#ffffff",
         fontStyle: "bold",
         stroke: "#000000",
@@ -147,21 +151,24 @@ export class PatrolScene extends Phaser.Scene {
       .setDepth(201)
       .setScrollFactor(0);
 
-    // Position fullscreen button in top-right corner
-    const updateFullscreenBtnPos = () => {
+    // Position settings button in top-right corner
+    const updateSettingsBtnPos = () => {
       const cam = this.cameras.main;
-      this.fullscreenBtn!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 15);
+      this.settingsBtn!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 15);
       if (this.fullscreenIcon) {
         this.fullscreenIcon!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 25);
       }
     };
-    this.cameras.main.on("scroll", updateFullscreenBtnPos);
-    updateFullscreenBtnPos();
+    this.cameras.main.on("scroll", updateSettingsBtnPos);
+    updateSettingsBtnPos();
+
+    // Settings panel (initially hidden)
+    this.createSettingsPanel();
 
     // Listen for fullscreen changes to update icon
     this.scale.on("fullscreenchange", () => {
       if (this.fullscreenIcon) {
-        this.fullscreenBtn!.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.5);
+        this.fullscreenBtn!.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.15);
       }
     });
 
@@ -195,6 +202,109 @@ export class PatrolScene extends Phaser.Scene {
     } else {
       this.scale.startFullscreen();
     }
+  }
+
+  private toggleSettings(): void {
+    this.isSettingsOpen = !this.isSettingsOpen;
+    this.settingsPanel?.setVisible(this.isSettingsOpen);
+    this.settingsBtn!.setFillStyle(this.isSettingsOpen ? 0x00d9ff : 0x00d9ff, this.isSettingsOpen ? 0.6 : 0.4);
+  }
+
+  private createSettingsPanel(): void {
+    const cam = this.cameras.main;
+    const panelX = cam.scrollX + cam.width - 50 - 220;
+    const panelY = cam.scrollY + 70;
+
+    // Panel background
+    this.settingsPanel = this.add.container(0, 0);
+    this.settingsPanel.setDepth(2000);
+    this.settingsPanel.setScrollFactor(0);
+    this.settingsPanel.setVisible(false);
+
+    // Panel background
+    const bg = this.add.graphics();
+    bg.fillStyle(0x0a1528, 0.98);
+    bg.fillRoundedRect(0, 0, 220, 180, 16);
+    bg.lineStyle(3, 0x00d9ff, 0.8);
+    bg.strokeRoundedRect(0, 0, 220, 180, 16);
+    this.settingsPanel.add(bg);
+
+    // Title
+    this.add.text(110, 16, this.locale === "ro" ? "Setări" : "Настройки", {
+      fontSize: "18px",
+      fontStyle: "bold",
+      color: "#00d9ff",
+      fontFamily: "'Orbitron', sans-serif",
+    }).setOrigin(0.5, 0).setDepth(2001).setScrollFactor(0);
+
+    // Sound toggle
+    this.createSettingItem(110, 50, "🔊", this.locale === "ro" ? "Sunet" : "Звук", true);
+
+    // Fullscreen toggle
+    this.createSettingItem(110, 100, this.scale.isFullscreen ? "⛶" : "⛶", this.locale === "ro" ? "Fullscreen" : "На весь экран", this.scale.isFullscreen, () => this.toggleFullscreen());
+
+    // Exit button
+    this.createSettingItem(110, 150, "✕", this.locale === "ro" ? "Ieșire" : "Выход", false, () => this.exitGame());
+
+    this.settingsPanel.setPosition(panelX, panelY);
+    this.settingsPanel.setVisible(false);
+    this.settingsPanel.setDepth(2000);
+  }
+
+  private createSettingItem(x: number, y: number, icon: string, label: string, isOn: boolean = false, onClick?: () => void): void {
+    const itemContainer = this.add.container(x, y);
+
+    // Item background
+    const itemBg = this.add.graphics();
+    itemBg.fillStyle(0x000000, 0.3);
+    itemBg.fillRoundedRect(-90, -25, 180, 50, 10);
+    itemBg.lineStyle(1, 0x00d9ff, 0.3);
+    itemBg.strokeRoundedRect(-90, -25, 180, 50, 12);
+
+    // Icon
+    this.add.text(-80, 0, icon, {
+      fontSize: "24px",
+      color: "#00d9ff",
+      fontStyle: "bold",
+    }).setOrigin(0.5).setDepth(2001).setScrollFactor(0);
+
+    // Label
+    this.add.text(-20, 0, label, {
+      fontSize: "14px",
+      color: "#ffffff",
+      fontStyle: "bold",
+      fontFamily: "'Geist', sans-serif",
+    }).setOrigin(0.5).setDepth(2001).setScrollFactor(0);
+
+    // Toggle indicator or click handler
+    if (onClick) {
+      const indicator = this.add.circle(70, 0, 12, isOn ? 0x34d399 : 0x666666, 1)
+        .setDepth(2001)
+        .setScrollFactor(0)
+        .setStrokeStyle(2, 0xffffff, 0.5);
+
+      const hitArea = this.add.rectangle(0, 0, 180, 50)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(2001)
+        .setScrollFactor(0)
+        .on("pointerdown", () => onClick && onClick())
+        .on("pointerover", () => itemBg.fillStyle(0x00d9ff, 0.2).fillRoundedRect(-90, -25, 180, 50, 12))
+        .on("pointerout", () => itemBg.fillStyle(0x000000, 0.3).fillRoundedRect(-90, -25, 180, 50, 12));
+
+      itemContainer.add([itemBg, indicator, hitArea]);
+    } else {
+      itemContainer.add(itemBg);
+    }
+
+    this.settingsPanel.add(itemContainer);
+  }
+
+  private exitGame(): void {
+    // Close settings panel
+    this.isSettingsOpen = false;
+    this.settingsPanel?.setVisible(false);
+    this.settingsBtn!.setFillStyle(0x00d9ff, 0.4);
+    // Could navigate away or just close
   }
 
   private renderCityMap(): void {
