@@ -20,6 +20,9 @@ export class PatrolScene extends Phaser.Scene {
   private npcs: NpcRecord[] = [];
   private nearNpcId: string | null = null;
   
+  private fullscreenBtn?: Phaser.GameObjects.Rectangle;
+  private fullscreenIcon?: Phaser.GameObjects.Text;
+  
   private roadNetwork!: RoadNetwork;
   private roadGraph!: RoadGraph;
   private cityConfig: CityMapConfig;
@@ -114,6 +117,55 @@ export class PatrolScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
 
+    // Fullscreen button (top-right corner of game canvas)
+    this.fullscreenBtn = this.add
+      .rectangle(
+        this.cameras.main.width - 40,
+        20,
+        36,
+        36,
+        0x00d9ff,
+        0.15
+      )
+      .setStrokeStyle(2, 0x00d9ff, 0.8)
+      .setDepth(200)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.toggleFullscreen())
+      .on("pointerover", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.3))
+      .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.15));
+
+    this.fullscreenIcon = this.add
+      .text(0, 0, "⛶", {
+        fontSize: "18px",
+        color: "#00d9ff",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(201)
+      .setScrollFactor(0);
+
+    // Position fullscreen button in top-right corner
+    const updateFullscreenBtnPos = () => {
+      const cam = this.cameras.main;
+      this.fullscreenBtn!.setPosition(cam.scrollX + cam.width - 40, cam.scrollY + 20);
+      if (this.fullscreenIcon) {
+        this.fullscreenIcon!.setPosition(cam.scrollX + cam.width - 40, cam.scrollY + 20);
+      }
+    };
+    this.cameras.main.on("scroll", updateFullscreenBtnPos);
+    updateFullscreenBtnPos();
+
+    // Listen for fullscreen changes to update icon
+    this.scale.on("fullscreenchange", () => {
+      if (this.fullscreenIcon) {
+        this.fullscreenBtn!.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.15);
+      }
+    });
+
+    // Fullscreen toggle
+    this.fullscreenBtn!.on("pointerdown", () => this.toggleFullscreen());
+
     // Слушаем завершение диалога
     this.events.on("dialogue-complete", (correct: boolean) => {
       const record = this.npcs.find((npc) => npc.id === this.nearNpcId);
@@ -146,6 +198,14 @@ export class PatrolScene extends Phaser.Scene {
     }
     
     return closest ? { x: closest.x, y: closest.y } : { x: 400, y: 300 };
+  }
+
+  private toggleFullscreen(): void {
+    if (this.scale.isFullscreen) {
+      this.scale.stopFullscreen();
+    } else {
+      this.scale.startFullscreen();
+    }
   }
 
   private renderCityMap(): void {
