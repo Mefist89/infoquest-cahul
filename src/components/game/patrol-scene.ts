@@ -283,7 +283,8 @@ export class PatrolScene extends Phaser.Scene {
         .setScrollFactor(0)
         .setStrokeStyle(2, 0xffffff, 0.5);
 
-      const hitArea = this.add.rectangle(0, 0, 180, 50)
+      // Create hitArea at the container's world position so it's at (0,0) local to container
+      const hitArea = this.add.rectangle(x, y, 180, 50)
         .setInteractive({ useHandCursor: true })
         .setDepth(2001)
         .setScrollFactor(0)
@@ -291,6 +292,7 @@ export class PatrolScene extends Phaser.Scene {
         .on("pointerover", () => itemBg.fillStyle(0x00d9ff, 0.2).fillRoundedRect(-90, -25, 180, 50, 12))
         .on("pointerout", () => itemBg.fillStyle(0x000000, 0.3).fillRoundedRect(-90, -25, 180, 50, 12));
 
+      // Add to container - hitArea is created at world position (x,y), so local position becomes (0,0) in container
       itemContainer.add([itemBg, indicator, hitArea]);
     } else {
       itemContainer.add(itemBg);
