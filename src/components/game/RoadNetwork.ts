@@ -298,24 +298,41 @@ export class RoadNetwork {
         const graphics = this.scene.add.graphics();
         
         if (this.isIntersection(tileId)) {
-          graphics.fillStyle(0x333333);
-          graphics.fillRect(px, py, this.tileSize, this.tileSize);
-          // Draw intersection markings
-          graphics.lineStyle(2, 0xffffff, 0.8);
-          graphics.strokeRect(px + 2, py + 2, this.tileSize - 4, this.tileSize - 4);
-        } else if (this.isRoad(tileId)) {
           graphics.fillStyle(0x2a2a2a);
           graphics.fillRect(px, py, this.tileSize, this.tileSize);
+          // Draw intersection markings - bright yellow lines
+          graphics.lineStyle(3, 0xffd700, 1);
+          graphics.strokeRect(px + 1, py + 1, this.tileSize - 2, this.tileSize - 2);
+          // Center cross
+          graphics.moveTo(px + this.tileSize / 2, py);
+          graphics.lineTo(px + this.tileSize / 2, py + this.tileSize);
+          graphics.moveTo(px, py + this.tileSize / 2);
+          graphics.lineTo(px + this.tileSize, py + this.tileSize / 2);
+          graphics.strokePath();
+        } else if (this.isRoad(tileId)) {
+          // Asphalt with subtle texture
+          graphics.fillStyle(0x3a3a3a);
+          graphics.fillRect(px, py, this.tileSize, this.tileSize);
+          // Road center line
+          graphics.lineStyle(2, 0xffd700, 0.8);
+          graphics.moveTo(px + this.tileSize / 2, py);
+          graphics.lineTo(px + this.tileSize / 2, py + this.tileSize);
+          graphics.strokePath();
         } else if (this.isSidewalk(tileId)) {
-          graphics.fillStyle(0x888888);
+          graphics.fillStyle(0x666666);
           graphics.fillRect(px, py, this.tileSize, this.tileSize);
-        } else if (this.isCrosswalk(tileId)) {
-          graphics.fillStyle(0xffffff);
-          graphics.fillRect(px, py, this.tileSize, this.tileSize);
-          // Crosswalk stripes
-          graphics.fillStyle(0x000000);
+          // Subtle texture
+          graphics.fillStyle(0x777777);
           for (let i = 0; i < this.tileSize; i += 4) {
-            graphics.fillRect(px, py + i, this.tileSize, 2);
+            graphics.fillRect(px, py + i, this.tileSize, 1);
+          }
+        } else if (this.isCrosswalk(tileId)) {
+          graphics.fillStyle(0x1a1a1a);
+          graphics.fillRect(px, py, this.tileSize, this.tileSize);
+          // Bright white crosswalk stripes
+          graphics.fillStyle(0xffffff);
+          for (let i = 0; i < this.tileSize; i += 5) {
+            graphics.fillRect(px, py + i, this.tileSize, 3);
           }
         }
       }
