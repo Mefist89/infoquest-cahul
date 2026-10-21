@@ -23,27 +23,10 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const [shadow, setShadow] = useState(SHADOW_START);
   const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">("loading");
   const [loading, setLoading] = useState(true);
-  const [fullscreen, setFullscreen] = useState(false);
+  
+  
 
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(console.error);
-      setFullscreen(true);
-    } else {
-      document.exitFullscreen().catch(console.error);
-      setFullscreen(false);
-    }
-  }, []);
 
-  useEffect(() => {
-    const handler = () => {
-      if (!document.fullscreenElement) {
-        setFullscreen(false);
-      }
-    };
-    document.addEventListener("fullscreenchange", handler);
-    return () => document.removeEventListener("fullscreenchange", handler);
-  }, []);
 
   const byId = useMemo(() => new Map(PATROL_NPCS.map((npc) => [npc.id, npc])), []);
 
@@ -183,21 +166,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         <p className="text-xs font-bold text-muted-foreground">
           {resolvedIds.length}/{PATROL_NPCS.length}
         </p>
-        <button
-          onClick={toggleFullscreen}
-          className="focus-ring p-2 rounded-xl border border-neon/30 bg-neon/10 text-neon text-xs font-bold uppercase tracking-widest transition-colors hover:bg-neon/20"
-          aria-label={fullscreen ? (locale === "ro" ? "Ieși din fullscreen" : "Выйти из полноэкранного") : (locale === "ro" ? "Fullscreen" : "На весь экран")}
-        >
-          {fullscreen ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l-5 5 5 5M9 9l11-11 5 5M15 15l-5 5 5 5" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 8l5 5m11-1V4m0 0h-4M4 16v4m0 0h4m-4-4l5 5m11-1V20m0 0h-4M4 16l5-5" />
-            </svg>
-          )}
-        </button>
+        
       </div>
 
       {loading ? (
