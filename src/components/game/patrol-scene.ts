@@ -30,6 +30,7 @@ export class PatrolScene extends Phaser.Scene {
   private roadNetwork!: RoadNetwork;
   private roadGraph!: RoadGraph;
   private cityConfig: CityMapConfig;
+  private obstacles?: Phaser.Physics.Arcade.StaticGroup;
 
   getNearNpcId(): string | null {
     return this.nearNpcId;
@@ -99,6 +100,11 @@ export class PatrolScene extends Phaser.Scene {
     // NPCs
     this.createNPCs();
 
+    // Add collision between player and NPCs
+    this.npcs.forEach((record) => {
+      this.physics.add.collider(this.player, record.sprite);
+    });
+
     // Управление
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D") as Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -120,6 +126,36 @@ export class PatrolScene extends Phaser.Scene {
       .text(12, 12, "", { fontSize: "18px", fontStyle: "bold", color: "#00d9ff", backgroundColor: "#060d1fcc", padding: { x: 10, y: 6 } })
       .setScrollFactor(0)
       .setDepth(100);
+
+    // Fullscreen button (top-right corner, left of settings)
+    this.fullscreenBtn = this.add
+      .rectangle(
+        this.cameras.main.width - 100,
+        20,
+        44,
+        44,
+        0x00d9ff,
+        0.4
+      )
+      .setStrokeStyle(3, 0xffffff, 1)
+      .setDepth(1000)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.toggleFullscreen())
+      .on("pointerover", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.6))
+      .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x00d9ff, 0.35));
+
+    this.fullscreenIcon = this.add
+      .text(0, 0, "⛶", {
+        fontSize: "22px",
+        color: "#ffffff",
+        fontStyle: "bold",
+        stroke: "#000000",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(201)
+      .setScrollFactor(0);
 
     // Settings button (top-right corner of game canvas)
     this.settingsBtn = this.add
@@ -151,24 +187,28 @@ export class PatrolScene extends Phaser.Scene {
       .setDepth(201)
       .setScrollFactor(0);
 
-    // Position settings button in top-right corner
-    const updateSettingsBtnPos = () => {
+    // Position fullscreen and settings buttons in top-right corner
+    const updateButtonPositions = () => {
       const cam = this.cameras.main;
-      this.settingsBtn!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 15);
-      if (this.fullscreenIcon) {
-        this.fullscreenIcon!.setPosition(cam.scrollX + cam.width - 50, cam.scrollY + 25);
-      }
+      const rightX = cam.scrollX + cam.width - 25;
+      // Settings button (rightmost)
+      this.settingsBtn!.setPosition(rightX, cam.scrollY + 20);
+      this.settingsIcon!.setPosition(rightX, cam.scrollY + 20);
+      // Fullscreen button (left of settings)
+      this.fullscreenBtn!.setPosition(rightX - 55, cam.scrollY + 20);
+      this.fullscreenIcon!.setPosition(rightX - 55, cam.scrollY + 20);
     };
-    this.cameras.main.on("scroll", updateSettingsBtnPos);
-    updateSettingsBtnPos();
+    this.cameras.main.on("scroll", updateButtonPositions);
+    updateButtonPositions();
 
     // Settings panel (initially hidden)
     this.createSettingsPanel();
 
     // Listen for fullscreen changes to update icon
     this.scale.on("fullscreenchange", () => {
-      if (this.fullscreenIcon) {
-        this.fullscreenBtn!.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.15);
+      if (this.fullscreenIcon && this.fullscreenBtn) {
+        this.fullscreenBtn.setFillStyle(this.scale.isFullscreen ? 0x34d399 : 0x00d9ff, 0.15);
+        this.fullscreenIcon.setText(this.scale.isFullscreen ? "⛶" : "⛶");
       }
     });
 
@@ -315,9 +355,45 @@ export class PatrolScene extends Phaser.Scene {
   }
 
   private createCollisions(): void {
-    // Создаем коллизии для зданий (непроходимые тайлы)
-    // В RoadNetwork isRoad/isSidewalk возвращают true для проходимых тайлов
-    // Здания и трава - непроходимые
+    // Создаем статические физические тела для непроходимых тайлов (здания, трава)
+    const tileMap = this.roadNetwork.getTileMap();
+    const height = tileMap.length;
+    const width = tileMap[0]?.length || 0;
+    const tileSize = 16;
+    const spacing = 1;
+    const effectiveTileSize = tileSize + spacing; // 17
+
+    // Группируем непроходимые тайлы по прямоугольникам для оптимизации
+    const obstacles: Phaser.Physics.Arcade.StaticGroup = this.physics.add.staticGroup();
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const tileId = tileMap[y][x];
+        // Если это НЕ дорога, НЕ тротуар, НЕ перекресток - значит непроходимо
+        const isWalkable = this.roadNetwork.isRoad(tileId) || 
+                          this.roadNetwork.isSidewalk(tileId) || 
+                          this.roadNetwork.isCrosswalk(tileId);
+        
+        if (!isWalkable && tileId > 0) {
+          const px = x * effectiveTileSize + tileSize / 2;
+          const py = y * effectiveTileSize + tileSize / 2;
+          
+          // Создаем невидимое статическое тело для коллизии
+          const obstacle = obstacles.create(px, py, 'tiles');
+          obstacle.setVisible(false);
+          obstacle.setSize(effectiveTileSize, effectiveTileSize);
+          obstacle.setImmovable(true);
+        }
+      }
+    }
+
+    // Добавляем коллизию между игроком и препятствиями
+    if (this.player) {
+      this.physics.add.collider(this.player, obstacles);
+    }
+    
+    // Сохраняем для возможного использования
+    this.obstacles = obstacles;
   }
 
   private createNPCs(): void {
@@ -408,9 +484,6 @@ export class PatrolScene extends Phaser.Scene {
       this.player.setFrame("idle");
     }
 
-    // Ограничиваем движение только по дорогам
-    this.constrainToRoads();
-
     // Ближайший неразобранный NPC в радиусе разговора.
     this.nearNpcId = null;
     let best = TALK_DISTANCE;
@@ -460,43 +533,6 @@ export class PatrolScene extends Phaser.Scene {
     const zone = this.getCurrentZone();
     const hint = this.locale === "ro" ? "WASD / săgeți — mișcare, E — dialog" : "WASD / стрелки — движение, E — разговор";
     this.hudText?.setText(zone ? `${zone.name[this.locale]} · ${hint}` : hint);
-  }
-
-  private constrainToRoads(): void {
-    // Ограничиваем движение игрока только по дорогам
-    // Проверяем, находится ли игрок на дороге
-    if (!this.roadGraph) return;
-    
-    const tileX = Math.floor(this.player.x / 17);
-    const tileY = Math.floor(this.player.y / 17);
-    const tileMap = this.roadNetwork.getTileMap();
-    const tileId = this.getTileIdSafe(tileMap, tileX, tileY);
-    if (!this.roadNetwork.isRoad(tileId)) {
-      // Игрок сбился с дороги - возвращаем на ближайшую дорогу
-      if (!this.roadGraph) return;
-      let closest: RoadNode | null = null;
-      let minDist = Infinity;
-      
-      for (const node of this.roadGraph.nodes.values()) {
-        const dist = Math.hypot(node.x - this.player.x, node.y - this.player.y);
-        if (dist < minDist) {
-          minDist = dist;
-          closest = node;
-        }
-      }
-      
-      if (closest) {
-        this.player.x = closest.x;
-        this.player.y = closest.y;
-        this.player.setVelocity(0, 0);
-      }
-    }
-  }
-
-  private getTileIdSafe(tileMap: number[][], tileX: number, tileY: number): number {
-    const row = tileMap[tileY];
-    if (!row) return -1;
-    return (row[tileX] ?? -1) as number;
   }
 
   private getCurrentZone(): District | undefined {
