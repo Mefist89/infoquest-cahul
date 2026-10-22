@@ -495,6 +495,17 @@ export const DELIVERY_SMS_UI: Record<
     summaryChecklist: string[];
     closeLabel: string;
     incomingSmsLabel: string;
+    timerLabel: string;
+    timerLocked: string;
+    timerPaused: string;
+    pauseBtn: string;
+    resumeBtn: string;
+    bonusTimeNotice: string;
+    penaltyTimeNotice: string;
+    timeoutTitle: string;
+    timeoutDesc: string;
+    retryTimerBtn: string;
+    hintBtn: string;
   }
 > = {
   ru: {
@@ -503,14 +514,14 @@ export const DELIVERY_SMS_UI: Record<
     stepSummary: "Шаг 3 · Итог",
     startPracticeBtn: "Перейти к разбору SMS (3 кейса) →",
     flagsCounter: "Найдено красных флагов",
-    clickHint: "Нажимай на подозрительные фразы прямо в тексте SMS, чтобы отметить все 3 улики",
-    allFlagsFound: "Все 3 красных флага найдены! Выбери безопасное решение:",
+    clickHint: "Нажимай на подозрительные фразы в тексте SMS (верная улика +4 сек, промах −3 сек)",
+    allFlagsFound: "Все 3 красных флага найдены! Таймер остановлен — выбери безопасное решение:",
     nextSmsBtn: "Следующее SMS →",
     finishTrainingBtn: "Перейти к итогам →",
     completePatrolBtn: "Защитить Марию и вернуться в город ✓",
     retryOptionHint: "Попробуй выбрать безопасное действие ещё раз:",
     summaryTitle: "Мария защищена от SMS-мошенников!",
-    summarySubtitle: "Ты разобрал всю цепочку из 3 фальшивых SMS о доставке и помог жительнице Почтового района.",
+    summarySubtitle: "Ты вовремя разобрал всю цепочку из 3 фальшивых SMS о доставке и помог жительнице Почтового района.",
     summaryScoreLabel: "Разобрано SMS-ловушек: 3 из 3 · Найдено улик: 9 из 9",
     summaryChecklistTitle: "Памятка по категории «SMS о доставке»:",
     summaryChecklist: [
@@ -521,6 +532,17 @@ export const DELIVERY_SMS_UI: Record<
     ],
     closeLabel: "Закрыть",
     incomingSmsLabel: "Входящее текстовое сообщение · SMS",
+    timerLabel: "Время на поиск улик",
+    timerLocked: "Улики собраны вовремя!",
+    timerPaused: "На паузе",
+    pauseBtn: "Пауза",
+    resumeBtn: "Продолжить",
+    bonusTimeNotice: "+4 сек за найденную улику!",
+    penaltyTimeNotice: "−3 сек: это нейтральная фраза!",
+    timeoutTitle: "Время вышло! Мошенники торопят Марию!",
+    timeoutDesc: "Когда человек спешит, он легко нажимает на фальшивую ссылку. Перезапусти таймер и найди все 3 красных флага.",
+    retryTimerBtn: "Попробовать снова (сбросить таймер) ↻",
+    hintBtn: "Подсветить 1 улику (−5 сек)",
   },
   ro: {
     stepTheory: "Pasul 1 · Ghid",
@@ -528,14 +550,14 @@ export const DELIVERY_SMS_UI: Record<
     stepSummary: "Pasul 3 · Rezumat",
     startPracticeBtn: "Treci la analiza SMS-urilor (3 cazuri) →",
     flagsCounter: "Semnale de alarmă găsite",
-    clickHint: "Apasă pe frazele suspecte direct în textul SMS-ului pentru a marca toate cele 3 indicii",
-    allFlagsFound: "Toate cele 3 semnale au fost găsite! Alege decizia sigură:",
+    clickHint: "Apasă pe frazele suspecte din SMS (indiciu corect +4 sec, greșeală −3 sec)",
+    allFlagsFound: "Toate cele 3 semnale au fost găsite! Cronometrul s-a oprit — alege decizia sigură:",
     nextSmsBtn: "Următorul SMS →",
     finishTrainingBtn: "Treci la rezumat →",
     completePatrolBtn: "Protejează-o pe Maria și revino în oraș ✓",
     retryOptionHint: "Încearcă din nou să alegi acțiunea sigură:",
     summaryTitle: "Maria este protejată de escrocii prin SMS!",
-    summarySubtitle: "Ai analizat întregul lanț de 3 SMS-uri false despre livrare și ai ajutat locuitoarea din cartierul Poștei.",
+    summarySubtitle: "Ai analizat la timp întregul lanț de 3 SMS-uri false despre livrare și ai ajutat locuitoarea din cartierul Poștei.",
     summaryScoreLabel: "Capcane SMS analizate: 3 din 3 · Indicii găsite: 9 din 9",
     summaryChecklistTitle: "Reguli pentru categoria «SMS-uri de livrare»:",
     summaryChecklist: [
@@ -546,5 +568,16 @@ export const DELIVERY_SMS_UI: Record<
     ],
     closeLabel: "Închide",
     incomingSmsLabel: "Mesaj text primit · SMS",
+    timerLabel: "Timp pentru găsirea indiciilor",
+    timerLocked: "Indicii adunate la timp!",
+    timerPaused: "În pauză",
+    pauseBtn: "Pauză",
+    resumeBtn: "Continuă",
+    bonusTimeNotice: "+4 sec pentru indiciul găsit!",
+    penaltyTimeNotice: "−3 sec: aceasta este o frază neutră!",
+    timeoutTitle: "Timpul a expirat! Escrocii o grăbesc pe Maria!",
+    timeoutDesc: "Când cineva se grăbește, apasă ușor pe un link fals. Repornește cronometrul și găsește cele 3 semnale.",
+    retryTimerBtn: "Încearcă din nou (resetează timpul) ↻",
+    hintBtn: "Evidențiază 1 indiciu (−5 sec)",
   },
 };
