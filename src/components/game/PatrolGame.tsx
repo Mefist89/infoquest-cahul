@@ -19,6 +19,7 @@ const SHADOW_DEFEAT = 100;
 export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
+  const sceneRef = useRef<PatrolScene | null>(null);
   const [resolvedIds, setResolvedIds] = useState<string[]>([]);
   const [shadow, setShadow] = useState(SHADOW_START);
   const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">("loading");
@@ -30,6 +31,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   usePatrolSpritePrefetch();
 
   function patrolScene(): PatrolScene | null {
+    if (sceneRef.current) return sceneRef.current;
     const scene = gameRef.current?.scene.getScene("patrol");
     return scene instanceof PatrolScene ? scene : null;
   }
@@ -42,6 +44,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     if (loading || !hostRef.current || gameRef.current) return;
     const hostElement = hostRef.current;
     const scene = new PatrolScene(locale);
+    sceneRef.current = scene;
     gameRef.current = new Phaser.Game({
       type: Phaser.AUTO,
       parent: hostElement,
@@ -63,6 +66,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     return () => {
       gameRef.current?.destroy(true);
       gameRef.current = null;
+      sceneRef.current = null;
     };
   }, [loading, locale, pauseGame]);
 
@@ -136,20 +140,21 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
 
   // Listen for dialogue completion from Phaser scene
   useEffect(() => {
+    if (loading) return;
     const scene = patrolScene();
     if (!scene) return;
 
-    const handleDialogueCompleteEvent = (correct: boolean) => {
-      const nearNpcId = scene.getNearNpcId();
-      if (!nearNpcId) return;
-      handleDialogueComplete(correct, nearNpcId);
+    const handleDialogueCompleteEvent = (correct: boolean, npcId?: string) => {
+      const targetNpcId = npcId ?? scene.getNearNpcId();
+      if (!targetNpcId) return;
+      handleDialogueComplete(correct, targetNpcId);
     };
 
     scene.events.on("dialogue-complete", handleDialogueCompleteEvent);
     return () => {
       scene.events.off("dialogue-complete", handleDialogueCompleteEvent);
     };
-  }, [resolvedIds, shadow, handleDialogueComplete]);
+  }, [loading, resolvedIds, shadow, handleDialogueComplete]);
 
   return (
     <div>

@@ -7,13 +7,13 @@ export type PatrolLocale = "ru" | "ro";
 export interface DialogueSceneData {
   npcId: string;
   locale: PatrolLocale;
-  onComplete: (correct: boolean) => void;
+  onComplete?: (correct: boolean) => void;
 }
 
 export class DialogueScene extends Phaser.Scene {
   private npcId!: string;
   private locale!: PatrolLocale;
-  private onComplete!: (correct: boolean) => void;
+  private onComplete?: (correct: boolean) => void;
   private npcData: (typeof PATROL_NPCS)[0] | undefined;
   private isSelecting = false;
 
@@ -117,7 +117,7 @@ export class DialogueScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 0);
 
-    // Контейнер вариантов ответа (гарантированно внутри нижней границы карточки)
+    // Варианты ответа (гарантированно внутри нижней границы карточки)
     const optionHeight = 64;
     const optionSpacing = 14;
     const optionWidth = contentWidth - 12;
@@ -125,19 +125,33 @@ export class DialogueScene extends Phaser.Scene {
     const totalOptionsHeight = optionCount * optionHeight + Math.max(0, optionCount - 1) * optionSpacing;
     const firstOptionY = cardBottom - 24 - totalOptionsHeight + optionHeight / 2;
 
-    const optionsContainer = this.add.container(contentCenterX, firstOptionY);
-
     this.npcData.options.forEach((option, index) => {
-      const y = index * (optionHeight + optionSpacing);
+      const optionY = firstOptionY + index * (optionHeight + optionSpacing);
 
       const bg = this.add.graphics();
-      bg.fillStyle(0x162440, 0.95);
-      bg.fillRoundedRect(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight, 14);
-      bg.lineStyle(2, 0x00d9ff, 0.35);
-      bg.strokeRoundedRect(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight, 14);
+      const drawBg = (hovered: boolean) => {
+        bg.clear();
+        bg.fillStyle(hovered ? 0x00d9ff : 0x162440, hovered ? 0.22 : 0.95);
+        bg.fillRoundedRect(
+          contentCenterX - optionWidth / 2,
+          optionY - optionHeight / 2,
+          optionWidth,
+          optionHeight,
+          14,
+        );
+        bg.lineStyle(2, 0x00d9ff, hovered ? 0.95 : 0.4);
+        bg.strokeRoundedRect(
+          contentCenterX - optionWidth / 2,
+          optionY - optionHeight / 2,
+          optionWidth,
+          optionHeight,
+          14,
+        );
+      };
+      drawBg(false);
 
       const text = this.add
-        .text(0, 0, `${index + 1}. ${option.text[this.locale]}`, {
+        .text(contentCenterX, optionY, `${index + 1}. ${option.text[this.locale]}`, {
           fontSize: "17px",
           fontStyle: "bold",
           color: "#ffffff",
@@ -147,56 +161,29 @@ export class DialogueScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
 
-      const optionContainer = this.add.container(0, y, [bg, text]);
-      optionContainer.setSize(optionWidth, optionHeight);
-      optionContainer.setInteractive(
-        new Phaser.Geom.Rectangle(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight),
-        Phaser.Geom.Rectangle.Contains,
-      );
+      const hitZone = this.add
+        .rectangle(contentCenterX, optionY, optionWidth, optionHeight, 0x000000, 0)
+        .setInteractive({ useHandCursor: true });
 
-      optionContainer.on("pointerover", () => {
-        bg.clear();
-        bg.fillStyle(0x00d9ff, 0.18);
-        bg.fillRoundedRect(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight, 14);
-        bg.lineStyle(2, 0x00d9ff, 0.9);
-        bg.strokeRoundedRect(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight, 14);
+      hitZone.on("pointerover", () => {
+        drawBg(true);
         text.setColor("#00d9ff");
       });
 
-      optionContainer.on("pointerout", () => {
-        bg.clear();
-        bg.fillStyle(0x162440, 0.95);
-        bg.fillRoundedRect(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight, 14);
-        bg.lineStyle(2, 0x00d9ff, 0.35);
-        bg.strokeRoundedRect(-optionWidth / 2, -optionHeight / 2, optionWidth, optionHeight, 14);
+      hitZone.on("pointerout", () => {
+        drawBg(false);
         text.setColor("#ffffff");
       });
 
-      optionContainer.on("pointerdown", () => {
+      hitZone.on("pointerdown", () => {
         this.selectOption(index);
       });
-
-      optionsContainer.add(optionContainer);
     });
 
-    // Keyboard navigation
+    // Навигация с клавиатуры (клавиши 1, 2, 3)
     this.input.keyboard?.on("keydown-ONE", () => this.selectOption(0));
     this.input.keyboard?.on("keydown-TWO", () => this.selectOption(1));
     this.input.keyboard?.on("keydown-THREE", () => this.selectOption(2));
-
-    // Перерисовка при изменении размера окна/выходе из полноэкранного режима
-    const onResize = () => {
-      if (!this.isSelecting && this.sys?.isActive()) {
-        this.scene.restart({ npcId: this.npcId, locale: this.locale, onComplete: this.onComplete });
-      }
-    };
-    this.scale.on("resize", onResize);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.scale.off("resize", onResize);
-    });
-
-    // Fade in animation
-    this.cameras.main.fadeIn(250, 0, 0, 0);
   }
 
   private selectOption(optionIndex: number) {
@@ -206,10 +193,9 @@ export class DialogueScene extends Phaser.Scene {
     if (!option) return;
 
     this.isSelecting = true;
-    this.cameras.main.fadeOut(220, 0, 0, 0);
-    this.cameras.main.once("camerafadeoutcomplete", () => {
-      this.events.emit("dialogue-complete", option.correct);
-      this.scene.stop();
-    });
+    const isCorrect = option.correct;
+    this.onComplete?.(isCorrect);
+    this.events.emit("dialogue-complete", isCorrect);
+    this.scene.stop();
   }
 }

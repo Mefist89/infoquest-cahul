@@ -441,26 +441,28 @@ export class PatrolScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         this.player.anims.stop();
         this.player.setFrame("idle");
+        let completed = false;
+        const finishDialogue = (correct: boolean) => {
+          if (completed) return;
+          completed = true;
+          this.scene.resume();
+          this.nearNpcId = activeNpcId;
+          this.events.emit("dialogue-complete", correct, activeNpcId);
+          if (correct) {
+            this.markResolved(activeNpcId);
+          } else {
+            this.cameras.main.shake(200, 0.01);
+          }
+          this.nearNpcId = null;
+          this.promptText?.setVisible(false);
+        };
+
         this.scene.launch("dialogue", {
           npcId: activeNpcId,
           locale: this.locale,
+          onComplete: finishDialogue,
         });
-
-        const dialogueScene = this.scene.get("dialogue");
-        if (dialogueScene) {
-          dialogueScene.events.once("dialogue-complete", (correct: boolean) => {
-            this.scene.resume();
-            this.nearNpcId = activeNpcId;
-            this.events.emit("dialogue-complete", correct);
-            if (correct) {
-              this.markResolved(activeNpcId);
-            } else {
-              this.cameras.main.shake(200, 0.01);
-            }
-            this.nearNpcId = null;
-            this.promptText?.setVisible(false);
-          });
-        }
+        this.scene.bringToTop("dialogue");
         this.scene.pause();
       }
     } else {
