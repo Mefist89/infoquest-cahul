@@ -491,6 +491,21 @@ export class PatrolScene extends Phaser.Scene {
           return;
         }
 
+        if (activeNpcId === "shop-seller") {
+          this.scene.launch("hacked-account", {
+            locale: this.locale,
+            onComplete: finishDialogue,
+            onClose: () => {
+              this.scene.resume();
+              this.nearNpcId = null;
+              this.promptText?.setVisible(false);
+            },
+          });
+          this.scene.bringToTop("hacked-account");
+          this.scene.pause();
+          return;
+        }
+
         this.scene.launch("dialogue", {
           npcId: activeNpcId,
           locale: this.locale,

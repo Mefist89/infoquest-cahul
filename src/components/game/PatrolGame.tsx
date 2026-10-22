@@ -10,6 +10,7 @@ import { PATROL_NPCS } from "@/data/patrol";
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
 import { DialogueScene } from "./DialogueScene";
 import { FakeCallScene } from "./FakeCallScene";
+import { HackedAccountScene } from "./HackedAccountScene";
 import { DeliverySmsTrainerModal } from "./DeliverySmsTrainerModal";
 import { PatrolLoadingFrame, usePatrolSpritePrefetch } from "./PatrolStartPanel";
 
@@ -100,7 +101,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         fullscreenTarget: fullscreenElement,
         expandParent: true,
       },
-      scene: [scene, DialogueScene, FakeCallScene],
+      scene: [scene, DialogueScene, FakeCallScene, HackedAccountScene],
     });
     if (process.env.NODE_ENV !== "production") {
       (window as unknown as { __patrolScene?: PatrolScene }).__patrolScene = scene;
