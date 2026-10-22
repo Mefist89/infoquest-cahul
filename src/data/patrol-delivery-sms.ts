@@ -137,13 +137,13 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
       {
         id: "s1-intro",
         text: {
-          ru: "Уведомление по отправлению #MD-4821.",
-          ro: "Notificare pentru trimiterea #MD-4821.",
+          ru: "Уведомление по отправлению #MD-4821 (вес 0.8 кг).",
+          ro: "Notificare pentru trimiterea #MD-4821 (greutate 0.8 kg).",
         },
         isFlag: false,
         explanation: {
-          ru: "Нейтральная фраза: сам по себе номер отправления используется для правдоподобности, ищи главные улики дальше.",
-          ro: "Frază neutră: numărul coletului este folosit doar pentru credibilitate, caută indiciile principale mai departe.",
+          ru: "Нейтральная деталь: номер и вес посылки добавлены для правдоподобности, но сами по себе угрозы не несут.",
+          ro: "Detaliu neutru: numărul și greutatea coletului sunt adăugate pentru credibilitate, dar nu reprezintă un pericol în sine.",
         },
       },
       {
@@ -160,6 +160,18 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
         explanation: {
           ru: "Почта хранит посылки в отделении много дней и никогда не ставит ультиматум «2 часа до возврата».",
           ro: "Poșta păstrează coletele în oficiu mai multe zile și nu impune niciodată un ultimatum de «2 ore».",
+        },
+      },
+      {
+        id: "s1-location",
+        text: {
+          ru: "Пункт назначения: г. Кагул, центральный узел связи.",
+          ro: "Destinație: or. Cahul, nodul central de comunicații.",
+        },
+        isFlag: false,
+        explanation: {
+          ru: "Нейтральная фраза: упоминание города нужно, чтобы усыпить бдительность получателя. Ищи финансовую ловушку и ссылку!",
+          ro: "Frază neutră: menționarea orașului are rolul de a adormi vigilența. Caută capcana financiară și linkul!",
         },
       },
       {
@@ -268,6 +280,18 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
         },
       },
       {
+        id: "s2-attempt",
+        text: {
+          ru: "Попытка вручения посылки зафиксирована сегодня в 12:30.",
+          ro: "Încercarea de livrare a coletului a fost înregistrată astăzi la 12:30.",
+        },
+        isFlag: false,
+        explanation: {
+          ru: "Нейтральная фраза: время доставки указано для убедительности, но само по себе не является главной уликой обмана.",
+          ro: "Frază neutră: ora livrării este indicată pentru credibilitate, dar nu este indiciul principal al fraudei.",
+        },
+      },
+      {
         id: "s2-neutral",
         text: {
           ru: "Не удалось вручить посылку из-за неполного номера дома.",
@@ -275,8 +299,8 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
         },
         isFlag: false,
         explanation: {
-          ru: "Это классическая легенда-приманка, но посмотри, что именно мошенники требуют сделать дальше.",
-          ro: "Aceasta este povestea-momeală, dar privește ce anume cer escrocii în continuare.",
+          ru: "Нейтральная легенда-приманка: курьер при проблеме с адресом обычно звонит, а не требует оплату по странной ссылке.",
+          ro: "Poveste-momeală neutră: când adresa e incompletă, curierul sună, nu cere bani printr-un link dubios.",
         },
       },
       {
@@ -369,6 +393,18 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
     },
     segments: [
       {
+        id: "s3-neutral-top",
+        text: {
+          ru: "Заявка обработана отделом претензий №14.",
+          ro: "Cererea a fost procesată de departamentul reclamații nr. 14.",
+        },
+        isFlag: false,
+        explanation: {
+          ru: "Официально звучащая фраза для создания доверия. Главная опасность — в обещании денег и запросе секретных кодов.",
+          ro: "Frază cu ton oficial pentru a inspira încredere. Pericolul real este în promisiunea banilor și cererea codurilor secrete.",
+        },
+      },
+      {
         id: "s3-bait",
         text: {
           ru: "Вам назначена компенсация и возврат 450 леев за утерянную посылку.",
@@ -385,15 +421,15 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
         },
       },
       {
-        id: "s3-neutral",
+        id: "s3-neutral-mid",
         text: {
-          ru: "Заявка обработана отделом претензий №14.",
-          ro: "Cererea a fost procesată de departamentul reclamații nr. 14.",
+          ru: "Расчёт произведён согласно базовому тарифу пересылки.",
+          ro: "Calculul a fost efectuat conform tarifului standard de expediere.",
         },
         isFlag: false,
         explanation: {
-          ru: "Официально звучащая фраза для создания доверия. Главная опасность — в том, какие данные они просят дальше.",
-          ro: "Frază cu ton oficial pentru a inspira încredere. Pericolul real este în datele cerute mai jos.",
+          ru: "Нейтральная фраза-наполнитель: имитирует канцелярский стиль, но не является главной уликой.",
+          ro: "Frază neutră de umplutură: imită stilul birocratic, dar nu reprezintă indiciul principal.",
         },
       },
       {
@@ -495,16 +531,13 @@ export const DELIVERY_SMS_UI: Record<
     summaryChecklist: string[];
     closeLabel: string;
     incomingSmsLabel: string;
-    timerLabel: string;
-    timerLocked: string;
-    timerPaused: string;
-    pauseBtn: string;
-    resumeBtn: string;
-    bonusTimeNotice: string;
-    penaltyTimeNotice: string;
-    timeoutTitle: string;
-    timeoutDesc: string;
-    retryTimerBtn: string;
+    focusLabel: string;
+    focusLocked: string;
+    hitNotice: string;
+    missNotice: string;
+    outOfFocusTitle: string;
+    outOfFocusDesc: string;
+    retryFocusBtn: string;
     hintBtn: string;
   }
 > = {
@@ -514,14 +547,14 @@ export const DELIVERY_SMS_UI: Record<
     stepSummary: "Шаг 3 · Итог",
     startPracticeBtn: "Перейти к разбору SMS (3 кейса) →",
     flagsCounter: "Найдено красных флагов",
-    clickHint: "Нажимай на подозрительные фразы в тексте SMS (верная улика +4 сек, промах −3 сек)",
-    allFlagsFound: "Все 3 красных флага найдены! Таймер остановлен — выбери безопасное решение:",
+    clickHint: "Читай внимательно без спешки: у тебя 3 заряда внимания ⚡ (промах по нейтральной фразе отнимает 1 ⚡)",
+    allFlagsFound: "Все 3 красных флага найдены! Выбери безопасное решение для Марии:",
     nextSmsBtn: "Следующее SMS →",
     finishTrainingBtn: "Перейти к итогам →",
     completePatrolBtn: "Защитить Марию и вернуться в город ✓",
     retryOptionHint: "Попробуй выбрать безопасное действие ещё раз:",
     summaryTitle: "Мария защищена от SMS-мошенников!",
-    summarySubtitle: "Ты вовремя разобрал всю цепочку из 3 фальшивых SMS о доставке и помог жительнице Почтового района.",
+    summarySubtitle: "Ты внимательно разобрал всю цепочку из 3 фальшивых SMS о доставке и помог жительнице Почтового района.",
     summaryScoreLabel: "Разобрано SMS-ловушек: 3 из 3 · Найдено улик: 9 из 9",
     summaryChecklistTitle: "Памятка по категории «SMS о доставке»:",
     summaryChecklist: [
@@ -532,17 +565,14 @@ export const DELIVERY_SMS_UI: Record<
     ],
     closeLabel: "Закрыть",
     incomingSmsLabel: "Входящее текстовое сообщение · SMS",
-    timerLabel: "Время на поиск улик",
-    timerLocked: "Улики собраны вовремя!",
-    timerPaused: "На паузе",
-    pauseBtn: "Пауза",
-    resumeBtn: "Продолжить",
-    bonusTimeNotice: "+4 сек за найденную улику!",
-    penaltyTimeNotice: "−3 сек: это нейтральная фраза!",
-    timeoutTitle: "Время вышло! Мошенники торопят Марию!",
-    timeoutDesc: "Когда человек спешит, он легко нажимает на фальшивую ссылку. Перезапусти таймер и найди все 3 красных флага.",
-    retryTimerBtn: "Попробовать снова (сбросить таймер) ↻",
-    hintBtn: "Подсветить 1 улику (−5 сек)",
+    focusLabel: "Точность детектива",
+    focusLocked: "Все улики найдены!",
+    hitNotice: "✓ Точно! Улика обнаружена",
+    missNotice: "−1 ⚡ Промах: это нейтральная фраза",
+    outOfFocusTitle: "Потеряна бдительность (0 из 3 ⚡)!",
+    outOfFocusDesc: "Нажимать наугад опасно: мошенники рассчитывают на невнимательность. Восстанови заряды внимания и отметь только реальные уловки.",
+    retryFocusBtn: "Восстановить 3 ⚡ и разобрать SMS заново ↻",
+    hintBtn: "Подсказка детектива (−1 ⚡)",
   },
   ro: {
     stepTheory: "Pasul 1 · Ghid",
@@ -550,14 +580,14 @@ export const DELIVERY_SMS_UI: Record<
     stepSummary: "Pasul 3 · Rezumat",
     startPracticeBtn: "Treci la analiza SMS-urilor (3 cazuri) →",
     flagsCounter: "Semnale de alarmă găsite",
-    clickHint: "Apasă pe frazele suspecte din SMS (indiciu corect +4 sec, greșeală −3 sec)",
-    allFlagsFound: "Toate cele 3 semnale au fost găsite! Cronometrul s-a oprit — alege decizia sigură:",
+    clickHint: "Citește atent, fără grabă: ai 3 încărcări de atenție ⚡ (o frază neutră scade 1 ⚡)",
+    allFlagsFound: "Toate cele 3 semnale au fost găsite! Alege decizia sigură pentru Maria:",
     nextSmsBtn: "Următorul SMS →",
     finishTrainingBtn: "Treci la rezumat →",
     completePatrolBtn: "Protejează-o pe Maria și revino în oraș ✓",
     retryOptionHint: "Încearcă din nou să alegi acțiunea sigură:",
     summaryTitle: "Maria este protejată de escrocii prin SMS!",
-    summarySubtitle: "Ai analizat la timp întregul lanț de 3 SMS-uri false despre livrare și ai ajutat locuitoarea din cartierul Poștei.",
+    summarySubtitle: "Ai analizat cu atenție întregul lanț de 3 SMS-uri false despre livrare și ai ajutat locuitoarea din cartierul Poștei.",
     summaryScoreLabel: "Capcane SMS analizate: 3 din 3 · Indicii găsite: 9 din 9",
     summaryChecklistTitle: "Reguli pentru categoria «SMS-uri de livrare»:",
     summaryChecklist: [
@@ -568,16 +598,13 @@ export const DELIVERY_SMS_UI: Record<
     ],
     closeLabel: "Închide",
     incomingSmsLabel: "Mesaj text primit · SMS",
-    timerLabel: "Timp pentru găsirea indiciilor",
-    timerLocked: "Indicii adunate la timp!",
-    timerPaused: "În pauză",
-    pauseBtn: "Pauză",
-    resumeBtn: "Continuă",
-    bonusTimeNotice: "+4 sec pentru indiciul găsit!",
-    penaltyTimeNotice: "−3 sec: aceasta este o frază neutră!",
-    timeoutTitle: "Timpul a expirat! Escrocii o grăbesc pe Maria!",
-    timeoutDesc: "Când cineva se grăbește, apasă ușor pe un link fals. Repornește cronometrul și găsește cele 3 semnale.",
-    retryTimerBtn: "Încearcă din nou (resetează timpul) ↻",
-    hintBtn: "Evidențiază 1 indiciu (−5 sec)",
+    focusLabel: "Precizia detectivului",
+    focusLocked: "Toate indiciile găsite!",
+    hitNotice: "✓ Exact! Indiciu descoperit",
+    missNotice: "−1 ⚡ Greșeală: frază neutră",
+    outOfFocusTitle: "Vigilență pierdută (0 din 3 ⚡)!",
+    outOfFocusDesc: "Apăsarea la întâmplare este periculoasă: escrocii mizează pe neatenție. Refă energia de atenție și marchează doar capcanele reale.",
+    retryFocusBtn: "Refă 3 ⚡ și analizează SMS-ul din nou ↻",
+    hintBtn: "Indiciu detectiv (−1 ⚡)",
   },
 };

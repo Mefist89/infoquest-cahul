@@ -7,17 +7,15 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
-  Clock,
   Info,
   Lightbulb,
   MessageSquareWarning,
-  Pause,
-  Play,
   RotateCcw,
   ShieldAlert,
   ShieldCheck,
   Smartphone,
   X,
+  Zap,
 } from "lucide-react";
 
 import type { PatrolLocale } from "@/data/patrol";
@@ -30,10 +28,7 @@ import {
 
 type TrainerStep = "theory" | "practice" | "summary";
 
-const CLUE_TIMER_SECONDS = 35;
-const CLUE_BONUS_SECONDS = 4;
-const CLUE_PENALTY_SECONDS = 3;
-const HINT_PENALTY_SECONDS = 5;
+const MAX_FOCUS_CHARGES = 3;
 
 export function DeliverySmsTrainerModal({
   locale,
@@ -48,13 +43,13 @@ export function DeliverySmsTrainerModal({
   const [step, setStep] = useState<TrainerStep>("theory");
   const [caseIndex, setCaseIndex] = useState(0);
   const [foundFlagIds, setFoundFlagIds] = useState<string[]>([]);
+  const [checkedNeutralIds, setCheckedNeutralIds] = useState<string[]>([]);
   const [activeSegment, setActiveSegment] = useState<SmsSegment | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
 
-  // Обратный отсчёт времени на сбор улик
-  const [secondsLeft, setSecondsLeft] = useState(CLUE_TIMER_SECONDS);
-  const [timerPaused, setTimerPaused] = useState(false);
-  const [timeDeltaBadge, setTimeDeltaBadge] = useState<{
+  // Шкала точности детектива (3 заряда внимания ⚡)
+  const [focusCharges, setFocusCharges] = useState(MAX_FOCUS_CHARGES);
+  const [focusNotice, setFocusNotice] = useState<{
     text: string;
     positive: boolean;
   } | null>(null);
@@ -62,7 +57,7 @@ export function DeliverySmsTrainerModal({
   const currentCase = DELIVERY_SMS_CASES[caseIndex] ?? DELIVERY_SMS_CASES[0];
   const totalFlagsInCase = currentCase.segments.filter((segment) => segment.isFlag).length;
   const allFlagsFound = foundFlagIds.length >= totalFlagsInCase;
-  const isTimedOut = step === "practice" && !allFlagsFound && secondsLeft <= 0;
+  const isOutOfFocus = step === "practice" && !allFlagsFound && focusCharges <= 0;
   const selectedOption = currentCase.options.find((opt) => opt.id === selectedOptionId) ?? null;
   const currentCaseSolved = Boolean(selectedOption?.correct);
 
@@ -93,23 +88,12 @@ export function DeliverySmsTrainerModal({
   const solvedSmsCount =
     step === "summary" ? totalCases : caseIndex + (currentCaseSolved ? 1 : 0);
 
-  // Тик таймера во время сбора улик
+  // Автоскрытие уведомления точности
   useEffect(() => {
-    if (step !== "practice" || allFlagsFound || timerPaused || secondsLeft <= 0) {
-      return;
-    }
-    const interval = window.setInterval(() => {
-      setSecondsLeft((prev) => Math.max(0, prev - 1));
-    }, 1000);
-    return () => window.clearInterval(interval);
-  }, [step, allFlagsFound, timerPaused, secondsLeft]);
-
-  // Автоскрытие бейджа +4 сек / -3 сек
-  useEffect(() => {
-    if (!timeDeltaBadge) return;
-    const timeout = window.setTimeout(() => setTimeDeltaBadge(null), 1800);
+    if (!focusNotice) return;
+    const timeout = window.setTimeout(() => setFocusNotice(null), 2000);
     return () => window.clearTimeout(timeout);
-  }, [timeDeltaBadge]);
+  }, [focusNotice]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -124,34 +108,34 @@ export function DeliverySmsTrainerModal({
 
   function startPracticeStep() {
     setStep("practice");
-    setSecondsLeft(CLUE_TIMER_SECONDS);
-    setTimerPaused(false);
-    setTimeDeltaBadge(null);
+    setFocusCharges(MAX_FOCUS_CHARGES);
+    setFocusNotice(null);
   }
 
   function handleSegmentClick(segment: SmsSegment) {
-    if (isTimedOut) return;
+    if (isOutOfFocus) return;
     setActiveSegment(segment);
 
     if (segment.isFlag) {
       if (!foundFlagIds.includes(segment.id)) {
         const nextFound = [...foundFlagIds, segment.id];
         setFoundFlagIds(nextFound);
-        if (nextFound.length < totalFlagsInCase) {
-          setSecondsLeft((prev) => Math.min(CLUE_TIMER_SECONDS, prev + CLUE_BONUS_SECONDS));
-          setTimeDeltaBadge({ text: ui.bonusTimeNotice, positive: true });
-        } else {
-          setTimeDeltaBadge({ text: ui.timerLocked, positive: true });
-        }
+        setFocusNotice({
+          text: nextFound.length >= totalFlagsInCase ? ui.focusLocked : ui.hitNotice,
+          positive: true,
+        });
       }
     } else if (!allFlagsFound) {
-      setSecondsLeft((prev) => Math.max(0, prev - CLUE_PENALTY_SECONDS));
-      setTimeDeltaBadge({ text: ui.penaltyTimeNotice, positive: false });
+      if (!checkedNeutralIds.includes(segment.id)) {
+        setCheckedNeutralIds((prev) => [...prev, segment.id]);
+      }
+      setFocusCharges((prev) => Math.max(0, prev - 1));
+      setFocusNotice({ text: ui.missNotice, positive: false });
     }
   }
 
   function handleUseHint() {
-    if (allFlagsFound || isTimedOut) return;
+    if (allFlagsFound || isOutOfFocus || focusCharges <= 1) return;
     const nextUnfoundFlag = currentCase.segments.find(
       (seg) => seg.isFlag && !foundFlagIds.includes(seg.id),
     );
@@ -160,52 +144,40 @@ export function DeliverySmsTrainerModal({
     const nextFound = [...foundFlagIds, nextUnfoundFlag.id];
     setFoundFlagIds(nextFound);
     setActiveSegment(nextUnfoundFlag);
-    if (nextFound.length < totalFlagsInCase) {
-      setSecondsLeft((prev) => Math.max(1, prev - HINT_PENALTY_SECONDS));
-    }
+    setFocusCharges((prev) => Math.max(1, prev - 1));
   }
 
-  function handleRetryCurrentCaseTimer() {
+  function handleRetryCurrentCaseFocus() {
     setFoundFlagIds([]);
+    setCheckedNeutralIds([]);
     setActiveSegment(null);
     setSelectedOptionId(null);
-    setSecondsLeft(CLUE_TIMER_SECONDS);
-    setTimerPaused(false);
-    setTimeDeltaBadge(null);
+    setFocusCharges(MAX_FOCUS_CHARGES);
+    setFocusNotice(null);
   }
 
   function handleNextCase() {
     if (caseIndex + 1 < DELIVERY_SMS_CASES.length) {
       setCaseIndex((prev) => prev + 1);
       setFoundFlagIds([]);
+      setCheckedNeutralIds([]);
       setActiveSegment(null);
       setSelectedOptionId(null);
-      setSecondsLeft(CLUE_TIMER_SECONDS);
-      setTimerPaused(false);
-      setTimeDeltaBadge(null);
+      setFocusCharges((prev) => Math.min(MAX_FOCUS_CHARGES, prev + 1));
+      setFocusNotice(null);
     } else {
       setStep("summary");
     }
   }
 
-  const timerPercent = Math.min(100, Math.round((secondsLeft / CLUE_TIMER_SECONDS) * 100));
-  const timerColorClass = allFlagsFound
-    ? "text-success border-success/45 bg-success/15"
-    : secondsLeft <= 7
-      ? "text-danger border-danger/60 bg-danger/20 animate-pulse"
-      : secondsLeft <= 14
-        ? "text-gold border-gold/50 bg-gold/15"
-        : "text-neon border-neon/40 bg-neon/10";
-
-  const timerBarColorClass = allFlagsFound
+  const focusPercent = Math.min(100, Math.round((focusCharges / MAX_FOCUS_CHARGES) * 100));
+  const focusBarColorClass = allFlagsFound
     ? "bg-success"
-    : secondsLeft <= 7
+    : focusCharges === 1
       ? "bg-danger"
-      : secondsLeft <= 14
+      : focusCharges === 2
         ? "bg-gold"
         : "bg-neon";
-
-  const formattedTimer = `00:${String(secondsLeft).padStart(2, "0")}`;
 
   const checkpoints = [
     {
@@ -426,68 +398,62 @@ export function DeliverySmsTrainerModal({
 
           {step === "practice" && (
             <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[1.08fr_0.92fr]">
-              {/* Левая колонка: экран смартфона с интерактивным текстом SMS + таймер */}
-              <div className="flex flex-col justify-between rounded-2xl border border-neon/35 bg-[#060d1f] p-4">
+              {/* Левая колонка: экран смартфона + Шкала точности детектива (3 ⚡) */}
+              <div className="flex flex-col justify-between rounded-2xl border border-neon/35 bg-[#060d1f] p-3.5">
                 <div>
-                  {/* Верхняя строка карточки SMS + Интерактивный таймер обратного отсчёта */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2.5">
+                  {/* Верхняя строка карточки SMS + 3 заряда внимания ⚡ */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
                     <span className="rounded-full border border-gold/45 bg-gold/15 px-3 py-0.5 text-xs font-black text-gold">
                       {currentCase.badge[locale]}
                     </span>
 
                     <div className="flex items-center gap-2">
-                      {timeDeltaBadge && (
+                      {focusNotice && (
                         <span
                           className={`rounded-lg border px-2 py-0.5 text-[11px] font-black ${
-                            timeDeltaBadge.positive
+                            focusNotice.positive
                               ? "border-success/50 bg-success/20 text-success"
                               : "border-danger/60 bg-danger/20 text-amber-200"
                           }`}
                         >
-                          {timeDeltaBadge.text}
+                          {focusNotice.text}
                         </span>
                       )}
 
                       <div
-                        className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 font-mono text-xs font-black ${timerColorClass}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-neon/35 bg-[#0f1d36] px-2.5 py-1 text-xs font-black"
+                        aria-label={`${ui.focusLabel}: ${focusCharges}/${MAX_FOCUS_CHARGES}`}
                       >
-                        <Clock className="size-3.5 shrink-0" aria-hidden="true" />
-                        <span>
-                          {allFlagsFound
-                            ? ui.timerLocked
-                            : timerPaused
-                              ? `${formattedTimer} (${ui.timerPaused})`
-                              : formattedTimer}
+                        <span className="text-slate-300">{ui.focusLabel}:</span>
+                        <span className="flex items-center gap-0.5">
+                          {[0, 1, 2].map((chargeIdx) => {
+                            const active = chargeIdx < focusCharges;
+                            return (
+                              <Zap
+                                key={chargeIdx}
+                                className={`size-4 transition ${
+                                  active
+                                    ? "fill-gold text-gold drop-shadow-[0_0_6px_rgba(255,209,102,0.7)]"
+                                    : "text-slate-600"
+                                }`}
+                                aria-hidden="true"
+                              />
+                            );
+                          })}
+                        </span>
+                        <span className="font-mono text-gold">
+                          {focusCharges}/{MAX_FOCUS_CHARGES}
                         </span>
                       </div>
-
-                      {!allFlagsFound && !isTimedOut && (
-                        <button
-                          type="button"
-                          onClick={() => setTimerPaused((prev) => !prev)}
-                          aria-label={timerPaused ? ui.resumeBtn : ui.pauseBtn}
-                          title={timerPaused ? ui.resumeBtn : ui.pauseBtn}
-                          className="focus-ring inline-flex size-7 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/90 text-slate-200 transition hover:border-neon hover:text-neon"
-                        >
-                          {timerPaused ? (
-                            <Play className="size-3.5" aria-hidden="true" />
-                          ) : (
-                            <Pause className="size-3.5" aria-hidden="true" />
-                          )}
-                        </button>
-                      )}
                     </div>
                   </div>
 
-                  {/* Полоска обратного отсчёта времени на поиск улик */}
+                  {/* Шкала точности и счётчик найденных красных флагов */}
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="shrink-0 text-[11px] font-bold text-slate-400">
-                      {ui.timerLabel}:
-                    </span>
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
                       <div
-                        className={`h-full rounded-full transition-[width] duration-300 ${timerBarColorClass}`}
-                        style={{ width: `${allFlagsFound ? 100 : timerPercent}%` }}
+                        className={`h-full rounded-full transition-[width] duration-300 ${focusBarColorClass}`}
+                        style={{ width: `${allFlagsFound ? 100 : focusPercent}%` }}
                       />
                     </div>
                     <span className="shrink-0 text-xs font-bold text-slate-300">
@@ -498,13 +464,13 @@ export function DeliverySmsTrainerModal({
                     </span>
                   </div>
 
-                  <p className="mt-2 text-xs leading-relaxed text-slate-300 sm:text-sm">
+                  <p className="mt-2 text-xs leading-relaxed text-slate-300">
                     {currentCase.context[locale]}
                   </p>
 
-                  {/* Экран входящего SMS */}
-                  <div className="mt-2 rounded-2xl border border-slate-700 bg-[#0f1d36] p-3.5 shadow-inner">
-                    <div className="flex items-center justify-between border-b border-slate-700/80 pb-2 text-xs">
+                  {/* Экран входящего SMS (5 фраз: 3 улики + 2 нейтральные) */}
+                  <div className="mt-2 rounded-2xl border border-slate-700 bg-[#0f1d36] p-3 shadow-inner">
+                    <div className="flex items-center justify-between border-b border-slate-700/80 pb-1.5 text-xs">
                       <div>
                         <span className="block text-[10px] uppercase tracking-wider text-slate-400">
                           {ui.incomingSmsLabel}
@@ -519,25 +485,25 @@ export function DeliverySmsTrainerModal({
                     </div>
 
                     {/* Фрагменты текста SMS */}
-                    <div className="mt-2.5 space-y-2">
+                    <div className="mt-2 space-y-1.5">
                       {currentCase.segments.map((segment) => {
                         const isFound = foundFlagIds.includes(segment.id);
-                        const isSelected = activeSegment?.id === segment.id;
+                        const isNeutralChecked = checkedNeutralIds.includes(segment.id);
 
                         return (
                           <button
                             key={segment.id}
                             type="button"
-                            disabled={isTimedOut}
+                            disabled={isOutOfFocus}
                             onClick={() => handleSegmentClick(segment)}
                             aria-pressed={isFound}
-                            className={`focus-ring block w-full rounded-xl border px-3.5 py-2 text-left text-xs leading-relaxed transition sm:text-sm ${
-                              isTimedOut
+                            className={`focus-ring block w-full rounded-xl border px-3 py-1.5 text-left text-xs leading-snug transition sm:text-sm ${
+                              isOutOfFocus
                                 ? "cursor-not-allowed border-slate-800 bg-slate-900/50 text-slate-500"
                                 : isFound
                                   ? "border-danger bg-danger/20 font-bold text-amber-100 shadow-[0_0_12px_rgba(239,68,68,0.25)]"
-                                  : isSelected && !segment.isFlag
-                                    ? "border-amber-500/60 bg-amber-500/10 text-amber-100"
+                                  : isNeutralChecked
+                                    ? "border-slate-600 bg-slate-800/70 text-slate-400"
                                     : "border-slate-700 bg-[#162847] text-slate-100 hover:border-neon/60 hover:bg-[#1c3258]"
                             }`}
                           >
@@ -546,6 +512,11 @@ export function DeliverySmsTrainerModal({
                               {isFound && (
                                 <span className="shrink-0 rounded-md bg-danger px-2 py-0.5 text-[10px] font-black uppercase text-white">
                                   {locale === "ro" ? "Semnal ✓" : "Улика ✓"}
+                                </span>
+                              )}
+                              {isNeutralChecked && (
+                                <span className="shrink-0 rounded-md bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                                  {locale === "ro" ? "Neutru" : "Нейтрально"}
                                 </span>
                               )}
                             </span>
@@ -560,7 +531,7 @@ export function DeliverySmsTrainerModal({
                 <div className="mt-2">
                   {activeSegment ? (
                     <div
-                      className={`rounded-xl border px-3.5 py-2 text-xs leading-relaxed sm:text-sm ${
+                      className={`rounded-xl border px-3.5 py-2 text-xs leading-relaxed ${
                         activeSegment.isFlag
                           ? "border-danger/50 bg-danger/15 text-amber-100"
                           : "border-amber-500/50 bg-amber-500/10 text-amber-100"
@@ -577,39 +548,39 @@ export function DeliverySmsTrainerModal({
                         {activeSegment.flagTitle
                           ? activeSegment.flagTitle[locale]
                           : locale === "ro"
-                            ? "Frază neutră (−3 sec)"
-                            : "Нейтральная фраза (−3 сек)"}
+                            ? "Frază neutră (−1 ⚡)"
+                            : "Нейтральная фраза (−1 ⚡)"}
                       </p>
                       <p className="mt-0.5">{activeSegment.explanation[locale]}</p>
                     </div>
                   ) : (
-                    <p className="rounded-xl border border-dashed border-neon/35 bg-neon/5 px-3.5 py-2 text-xs text-neon sm:text-sm">
+                    <p className="rounded-xl border border-dashed border-neon/35 bg-neon/5 px-3.5 py-2 text-xs text-neon">
                       {ui.clickHint}
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Правая колонка: список улик / экран тайм-аута / выбор безопасного решения */}
+              {/* Правая колонка: список улик / экран потери зарядов внимания / выбор решения */}
               <div className="flex flex-col justify-between rounded-2xl border border-neon/25 bg-[#112240]/75 p-4">
-                {isTimedOut ? (
+                {isOutOfFocus ? (
                   <div className="flex h-full flex-col items-center justify-center p-4 text-center" role="alert">
                     <span className="grid size-14 place-items-center rounded-2xl border border-danger/50 bg-danger/15 text-danger">
-                      <Clock className="size-8 animate-bounce" aria-hidden="true" />
+                      <Zap className="size-8" aria-hidden="true" />
                     </span>
                     <h3 className="mt-3 text-lg font-black text-danger sm:text-xl">
-                      {ui.timeoutTitle}
+                      {ui.outOfFocusTitle}
                     </h3>
                     <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-200 sm:text-sm">
-                      {ui.timeoutDesc}
+                      {ui.outOfFocusDesc}
                     </p>
                     <button
                       type="button"
-                      onClick={handleRetryCurrentCaseTimer}
+                      onClick={handleRetryCurrentCaseFocus}
                       className="focus-ring mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-slate-950 shadow-lg transition hover:brightness-110"
                     >
                       <RotateCcw className="size-4" aria-hidden="true" />
-                      <span>{ui.retryTimerBtn}</span>
+                      <span>{ui.retryFocusBtn}</span>
                     </button>
                   </div>
                 ) : !allFlagsFound ? (
@@ -620,13 +591,13 @@ export function DeliverySmsTrainerModal({
                       </span>
                       <h3 className="mt-2 text-base font-black text-white sm:text-lg">
                         {locale === "ro"
-                          ? `Pasul A: Găsește cele ${totalFlagsInCase} semnale înainte să expire timpul`
-                          : `Этап А: Найди все ${totalFlagsInCase} красных флага до окончания таймера`}
+                          ? `Pasul A: Găsește cele ${totalFlagsInCase} semnale de alarmă în SMS`
+                          : `Этап А: Найди все ${totalFlagsInCase} красных флага в тексте SMS слева`}
                       </h3>
                       <p className="mt-1 text-xs leading-relaxed text-slate-300">
                         {locale === "ro"
-                          ? "Fiecare indiciu găsit îți oferă +4 secunde bonus. Atenție la frazele neutre (−3 secunde)!"
-                          : "Каждая верная улика даёт +4 секунды бонуса. Осторожно: клик по нейтральной фразе отнимает 3 секунды!"}
+                          ? "Citește fără grabă fiecare frază. În mesaj sunt 3 capcane reale și 2 fraze neutre (fiecare greșeală scade 1 ⚡)."
+                          : "Читай без спешки каждую фразу. В сообщении 3 реальные уловки и 2 нейтральные фразы (промах отнимает 1 заряд ⚡)."}
                       </p>
                     </div>
 
@@ -673,8 +644,9 @@ export function DeliverySmsTrainerModal({
                       </span>
                       <button
                         type="button"
+                        disabled={focusCharges <= 1}
                         onClick={handleUseHint}
-                        className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold transition hover:bg-gold/25"
+                        className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold transition hover:bg-gold/25 disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         <Lightbulb className="size-3.5" aria-hidden="true" />
                         <span>{ui.hintBtn}</span>
