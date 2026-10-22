@@ -31,6 +31,7 @@ export class PatrolScene extends Phaser.Scene {
   private roadGraph!: RoadGraph;
   private cityConfig: CityMapConfig;
   private obstacles?: Phaser.Physics.Arcade.StaticGroup;
+  private onDomFullscreenChange?: () => void;
 
   getNearNpcId(): string | null {
     return this.nearNpcId;
@@ -134,7 +135,7 @@ export class PatrolScene extends Phaser.Scene {
 
     // Кнопка полного экрана
     this.fullscreenBtn = this.add
-      .rectangle(this.cameras.main.width - 85, 30, 42, 42, 0x060d1f, 0.85)
+      .rectangle(this.scale.width - 85, 30, 42, 42, 0x060d1f, 0.85)
       .setStrokeStyle(2, 0x00d9ff, 0.9)
       .setDepth(3000)
       .setScrollFactor(0)
@@ -144,7 +145,7 @@ export class PatrolScene extends Phaser.Scene {
       .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x060d1f, 0.85));
 
     this.fullscreenIcon = this.add
-      .text(this.cameras.main.width - 85, 30, "⛶", {
+      .text(this.scale.width - 85, 30, "⛶", {
         fontSize: "20px",
         color: "#00d9ff",
         fontStyle: "bold",
@@ -155,7 +156,7 @@ export class PatrolScene extends Phaser.Scene {
 
     // Кнопка настроек
     this.settingsBtn = this.add
-      .rectangle(this.cameras.main.width - 34, 30, 42, 42, 0x060d1f, 0.85)
+      .rectangle(this.scale.width - 34, 30, 42, 42, 0x060d1f, 0.85)
       .setStrokeStyle(2, 0x00d9ff, 0.9)
       .setDepth(3000)
       .setScrollFactor(0)
@@ -165,7 +166,7 @@ export class PatrolScene extends Phaser.Scene {
       .on("pointerout", () => this.settingsBtn!.setFillStyle(0x060d1f, 0.85));
 
     this.settingsIcon = this.add
-      .text(this.cameras.main.width - 34, 30, "⚙", {
+      .text(this.scale.width - 34, 30, "⚙", {
         fontSize: "20px",
         color: "#00d9ff",
         fontStyle: "bold",
@@ -175,6 +176,52 @@ export class PatrolScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.createSettingsPanel();
+
+    // Адаптация размеров холста и HUD при входе/выходе из полноэкранного режима
+    this.scale.on("resize", this.handleResize, this);
+    this.onDomFullscreenChange = () => {
+      this.syncFullscreenSize();
+      window.setTimeout(() => {
+        if (this.sys?.isActive()) {
+          this.syncFullscreenSize();
+        }
+      }, 60);
+    };
+    document.addEventListener("fullscreenchange", this.onDomFullscreenChange);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off("resize", this.handleResize, this);
+      if (this.onDomFullscreenChange) {
+        document.removeEventListener("fullscreenchange", this.onDomFullscreenChange);
+      }
+    });
+  }
+
+  private syncFullscreenSize(): void {
+    const isFs = Boolean(document.fullscreenElement) || this.scale.isFullscreen;
+    this.scale.getParentBounds();
+    if (isFs) {
+      const screenW = window.innerWidth || window.screen.width || 1920;
+      const screenH = window.innerHeight || window.screen.height || 1080;
+      const targetHeight = 600;
+      const targetWidth = Math.min(1560, Math.max(960, Math.round(targetHeight * (screenW / screenH))));
+      this.scale.setParentSize(screenW, screenH);
+      this.scale.setGameSize(targetWidth, targetHeight);
+    } else {
+      this.scale.setGameSize(960, 600);
+      this.scale.refresh();
+    }
+    this.handleResize(this.scale.gameSize);
+  }
+
+  private handleResize(gameSize: Phaser.Structs.Size): void {
+    const width = gameSize.width;
+    const height = gameSize.height;
+    this.cameras?.main?.setSize(width, height);
+    this.fullscreenBtn?.setPosition(width - 85, 30);
+    this.fullscreenIcon?.setPosition(width - 85, 30);
+    this.settingsBtn?.setPosition(width - 34, 30);
+    this.settingsIcon?.setPosition(width - 34, 30);
+    this.settingsPanel?.setPosition(width - 236, 60);
   }
 
   private findSafeSpawnPoint(): { x: number; y: number } {
@@ -195,7 +242,16 @@ export class PatrolScene extends Phaser.Scene {
   }
 
   private toggleFullscreen(): void {
-    if (this.scale.isFullscreen) {
+    const container = (this.game.canvas?.parentElement as HTMLElement | null) ?? this.game.canvas;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {
+        if (this.scale.isFullscreen) this.scale.stopFullscreen();
+      });
+    } else if (container?.requestFullscreen) {
+      void container.requestFullscreen().catch(() => {
+        this.scale.startFullscreen();
+      });
+    } else if (this.scale.isFullscreen) {
       this.scale.stopFullscreen();
     } else {
       this.scale.startFullscreen();
@@ -208,7 +264,7 @@ export class PatrolScene extends Phaser.Scene {
   }
 
   private createSettingsPanel(): void {
-    const panelX = this.cameras.main.width - 236;
+    const panelX = this.scale.width - 236;
     const panelY = 60;
 
     this.settingsPanel = this.add.container(panelX, panelY);
@@ -381,6 +437,10 @@ export class PatrolScene extends Phaser.Scene {
       this.promptText.setPosition(near.sprite.x, near.sprite.y - 84).setVisible(true);
       if (this.talkKey && Phaser.Input.Keyboard.JustDown(this.talkKey)) {
         const activeNpcId = near.id;
+        this.promptText.setVisible(false);
+        this.player.setVelocity(0, 0);
+        this.player.anims.stop();
+        this.player.setFrame("idle");
         this.scene.launch("dialogue", {
           npcId: activeNpcId,
           locale: this.locale,

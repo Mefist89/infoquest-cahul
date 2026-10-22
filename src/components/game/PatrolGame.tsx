@@ -23,10 +23,6 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const [shadow, setShadow] = useState(SHADOW_START);
   const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">("loading");
   const [loading, setLoading] = useState(true);
-  
-  
-
-
 
   const byId = useMemo(() => new Map(PATROL_NPCS.map((npc) => [npc.id, npc])), []);
 
@@ -44,15 +40,21 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
 
   useEffect(() => {
     if (loading || !hostRef.current || gameRef.current) return;
+    const hostElement = hostRef.current;
     const scene = new PatrolScene(locale);
     gameRef.current = new Phaser.Game({
       type: Phaser.AUTO,
-      parent: hostRef.current,
+      parent: hostElement,
       width: 960,
       height: 600,
       backgroundColor: "#060d1f",
       physics: { default: "arcade", arcade: { debug: false } },
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        fullscreenTarget: hostElement,
+        expandParent: true,
+      },
       scene: [scene, DialogueScene],
     });
     if (process.env.NODE_ENV !== "production") {
@@ -73,7 +75,6 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       if (!mounted) return;
       if (error) {
         console.error("Failed to load patrol progress:", error);
-        // Fallback to defaults
         setShadow(SHADOW_START);
         setResolvedIds([]);
         setPhase("playing");
@@ -91,44 +92,42 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       setLoading(false);
     }
     loadProgress();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const handleDialogueComplete = useCallback((correct: boolean, npcId: string) => {
-    const npc = byId.get(npcId);
-    if (!npc) return;
+  const handleDialogueComplete = useCallback(
+    (correct: boolean, npcId: string) => {
+      const npc = byId.get(npcId);
+      if (!npc) return;
 
-    // Optimistic update
-    const nextShadow = correct ? Math.max(0, shadow - SHADOW_HIT) : Math.min(SHADOW_DEFEAT, shadow + SHADOW_MISS);
-    const nextResolved = resolvedIds.includes(npcId) ? resolvedIds : [...resolvedIds, npcId];
-    setShadow(nextShadow);
-    setResolvedIds(nextResolved);
-    if (nextShadow >= SHADOW_DEFEAT) {
-      setPhase("lost");
-    } else if (nextResolved.length >= PATROL_NPCS.length) {
-      setPhase("won");
-    }
-    patrolScene()?.markResolved(npcId);
-
-    // Persist to Supabase
-    (async () => {
-      const supabase = createClient();
-      const { error } = await supabase.rpc("complete_patrol_npc", {
-        p_npc_id: npcId,
-        p_correct: correct,
-      });
-      if (error) {
-        console.error("Failed to save patrol progress:", error);
+      const nextShadow = correct ? Math.max(0, shadow - SHADOW_HIT) : Math.min(SHADOW_DEFEAT, shadow + SHADOW_MISS);
+      const nextResolved = resolvedIds.includes(npcId) ? resolvedIds : [...resolvedIds, npcId];
+      setShadow(nextShadow);
+      setResolvedIds(nextResolved);
+      if (nextShadow >= SHADOW_DEFEAT) {
+        setPhase("lost");
+      } else if (nextResolved.length >= PATROL_NPCS.length) {
+        setPhase("won");
       }
-    })();
-  }, [byId, resolvedIds, shadow]);
+      patrolScene()?.markResolved(npcId);
+
+      (async () => {
+        const supabase = createClient();
+        const { error } = await supabase.rpc("complete_patrol_npc", {
+          p_npc_id: npcId,
+          p_correct: correct,
+        });
+        if (error) {
+          console.error("Failed to save patrol progress:", error);
+        }
+      })();
+    },
+    [byId, resolvedIds, shadow],
+  );
 
   function retry() {
-    // Reset server state
-    (async () => {
-      // We can't easily reset via RPC, so we'll rely on the next load to get fresh state
-      // For now, just reset locally and let user reload if needed
-    })();
     patrolScene()?.resetPatrol();
     setResolvedIds([]);
     setShadow(SHADOW_START);
@@ -141,7 +140,6 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     if (!scene) return;
 
     const handleDialogueCompleteEvent = (correct: boolean) => {
-      // Get the NPC that was being talked to
       const nearNpcId = scene.getNearNpcId();
       if (!nearNpcId) return;
       handleDialogueComplete(correct, nearNpcId);
@@ -160,20 +158,29 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         <p className="text-xs font-black uppercase tracking-widest text-danger">
           {locale === "ro" ? "Umbra" : "Тень"}
         </p>
-        <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuenow={shadow} aria-valuemin={0} aria-valuemax={100} aria-label={locale === "ro" ? "Puterea Umbrei" : "Сила Тени"}>
+        <div
+          className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary"
+          role="progressbar"
+          aria-valuenow={shadow}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={locale === "ro" ? "Puterea Umbrei" : "Сила Тени"}
+        >
           <div className="h-full rounded-full bg-danger transition-[width] duration-500" style={{ width: `${shadow}%` }} />
         </div>
         <p className="text-xs font-bold text-muted-foreground">
           {resolvedIds.length}/{PATROL_NPCS.length}
         </p>
-        
       </div>
 
       {loading ? (
         <PatrolLoadingFrame label={locale === "ro" ? "Pregătire pentru patrulare..." : "Подготовка к патрулированию..."} />
       ) : (
         <div className="relative aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]">
-          <div ref={hostRef} className="absolute inset-0" />
+          <div
+            ref={hostRef}
+            className="h-full w-full bg-[#060d1f] [&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:bg-[#060d1f]"
+          />
         </div>
       )}
 
@@ -183,7 +190,11 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
             <p className="text-lg font-black text-success">
               {locale === "ro" ? "Patrula reușită! Orașul e în siguranță." : "Патруль удался! Город в безопасности."}
             </p>
-            <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground">
+            <button
+              type="button"
+              onClick={retry}
+              className="focus-ring mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground"
+            >
               <RotateCcw className="size-4" aria-hidden="true" />
               {locale === "ro" ? "Patrulează din nou" : "Патрулировать снова"}
             </button>
@@ -194,7 +205,11 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
             <p className="text-lg font-black text-danger">
               {locale === "ro" ? "Umbra a pus stăpânire pe oraș…" : "Тень захватила город…"}
             </p>
-            <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-danger px-6 text-sm font-black text-white">
+            <button
+              type="button"
+              onClick={retry}
+              className="focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-danger px-6 text-sm font-black text-white"
+            >
               <RotateCcw className="size-4" aria-hidden="true" />
               {locale === "ro" ? "Încearcă din nou" : "Попробовать ещё"}
             </button>
