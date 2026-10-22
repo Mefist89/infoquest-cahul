@@ -36,14 +36,21 @@ function loadSpriteXml(path: string) {
   );
 }
 
-/** Прогрев спрайтов: к моменту старта сцены Phaser берёт атласы из кэша. */
+/** Прогрев спрайтов: к моменту старта сцены Phaser берёт атласы и тайлсеты города из кэша. */
 export async function prefetchPatrolSprites(): Promise<void> {
-  await Promise.all(
-    SPRITE_BASES.flatMap((base) => [
+  const cityAssets = [
+    "/CP_V1.1.0_nyknck/CP_V1.0.4_nyknck/CP_V1.0.4.png",
+    "/CP_V1.1.0_nyknck/Animations/BD001.png",
+    "/CP_V1.1.0_nyknck/Animations/BL001.png",
+    "/CP_V1.1.0_nyknck/Animations/SL001.png",
+  ];
+  await Promise.all([
+    ...SPRITE_BASES.flatMap((base) => [
       loadSpriteImage(`/game/sprites/${base}.png`),
       loadSpriteXml(`/game/sprites/${base}.xml`),
     ]),
-  );
+    ...cityAssets.map((url) => loadSpriteImage(url)),
+  ]);
 }
 
 /** Кадр-«экран» патруля со спиннером: фаза между нажатием «Старт» и готовностью движка. */

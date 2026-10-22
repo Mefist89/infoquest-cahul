@@ -1,8 +1,19 @@
 import Phaser from "phaser";
+import {
+  CITY_BUILDINGS,
+  CITY_PROPS,
+  CITY_VEHICLES,
+  CP_DOOR_FRAMES,
+  CP_LIGHT_FRAMES,
+  CP_MAIN_FRAMES,
+  CP_STREETLIGHT_FRAMES,
+  DEFAULT_CITY_CONFIG,
+  TILE,
+} from "./RoadMapGenerator";
 
 export interface RoadTile {
   id: number;
-  type: 'road' | 'sidewalk' | 'building' | 'grass' | 'crosswalk' | 'marking';
+  type: "road" | "sidewalk" | "building" | "grass" | "crosswalk" | "marking";
   connections?: { up: boolean; down: boolean; left: boolean; right: boolean };
   rotation?: 0 | 90 | 180 | 270;
 }
@@ -22,67 +33,73 @@ export interface RoadGraph {
   intersections: RoadNode[];
 }
 
+export interface BuildingColliderSpec {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface ActiveVehicle {
+  sprite: Phaser.GameObjects.Image;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  speed: number;
+}
+
+interface DoorRecord {
+  sprite: Phaser.GameObjects.Sprite;
+  baseFrame: string;
+  x: number;
+  y: number;
+  isOpen: boolean;
+}
+
 export class RoadNetwork {
   private scene: Phaser.Scene;
-  private tileSize = 16;
-  private tileSpacing = 1;
-  private effectiveTileSize = 17; // 16 + 1 spacing
-  
+  private tileSize = DEFAULT_CITY_CONFIG.tileSize;
+  private scale = DEFAULT_CITY_CONFIG.scale;
+  private effectiveTileSize = DEFAULT_CITY_CONFIG.tileSize * DEFAULT_CITY_CONFIG.scale; // 32px
+
   private tileMap: number[][] = [];
   private roadGraph: RoadGraph = { nodes: new Map(), intersections: [] };
-  private tileTypes: Map<number, string> = new Map();
-  
-  private roadTiles = new Set<number>();
-  private intersectionTiles = new Set<number>();
-  private sidewalkTiles = new Set<number>();
-  private crosswalkTiles = new Set<number>();
+  private buildingColliders: BuildingColliderSpec[] = [];
+  private vehicles: ActiveVehicle[] = [];
+  private doors: DoorRecord[] = [];
+
+  private roadTiles = new Set<number>([
+    TILE.ROAD_PLAIN,
+    TILE.ROAD_DASH_H,
+    TILE.ROAD_DASH_V,
+    TILE.ROAD_YELLOW_H,
+    TILE.ROAD_YELLOW_V,
+    TILE.ROAD_DRAIN,
+    TILE.ROAD_MANHOLE,
+    TILE.ROAD_CROSS,
+  ]);
+  private intersectionTiles = new Set<number>([TILE.ROAD_CROSS, TILE.ROAD_MANHOLE]);
+  private sidewalkTiles = new Set<number>([
+    TILE.SIDEWALK_PLAIN,
+    TILE.SIDEWALK_GRID,
+    TILE.SIDEWALK_LIGHT,
+    TILE.PLAZA_DARK,
+    TILE.PLAZA_MID,
+    TILE.PLAZA_LIGHT,
+  ]);
+  private crosswalkTiles = new Set<number>([TILE.CROSSWALK_H, TILE.CROSSWALK_V]);
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+  }
 
   getTileMap(): number[][] {
     return this.tileMap;
   }
 
-  constructor(scene: Phaser.Scene) {
-    this.scene = scene;
-    this.classifyTiles();
-  }
-
-  private classifyTiles() {
-    // Kenney RPG Urban Pack tile classification (based on typical tile indices)
-    // Road tiles (straight, corners, T-junctions, 4-way)
-    this.roadTiles = new Set([
-      // Straight roads
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-      // Corners
-      13, 14, 15, 16, 17, 16, 18, 19, 20,
-      // T-junctions
-      21, 22, 23, 24,
-      // 4-way intersections
-      25, 26, 27, 28,
-      // Additional road variants
-      29, 30, 31, 32, 33, 34, 35, 36,
-    ]);
-
-    // Intersection tiles (4-way, T-junctions with markings)
-    this.intersectionTiles = new Set([25, 26, 27, 28, 21, 22, 23, 24]);
-
-    // Sidewalk tiles
-    this.sidewalkTiles = new Set([
-      37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-    ]);
-
-    // Crosswalk tiles
-    this.crosswalkTiles = new Set([49, 50, 51, 52]);
-
-    // Mark all as road type
-    [...this.roadTiles, ...this.intersectionTiles].forEach(id => {
-      this.tileTypes.set(id, 'road');
-    });
-    [...this.sidewalkTiles].forEach(id => this.tileTypes.set(id, 'sidewalk'));
-    [...this.crosswalkTiles].forEach(id => this.tileTypes.set(id, 'crosswalk'));
-  }
-
-  getTileType(tileId: number): string {
-    return this.tileTypes.get(tileId) || 'unknown';
+  getBuildingColliders(): BuildingColliderSpec[] {
+    return this.buildingColliders;
   }
 
   isRoad(tileId: number): boolean {
@@ -104,64 +121,30 @@ export class RoadNetwork {
   createRoadMap(width: number, height: number, tileMap?: number[][]): number[][] {
     if (tileMap) {
       this.tileMap = tileMap;
-    } else {
-      // Generate a default city grid
-      this.tileMap = this.generateCityGrid(width, height);
     }
     return this.tileMap;
   }
 
-  private generateCityGrid(width: number, height: number): number[][] {
-    const grid: number[][] = [];
-    
-    for (let y = 0; y < height; y++) {
-      const row: number[] = [];
-      for (let x = 0; x < width; x++) {
-        // Create a grid with roads every 4 tiles
-        const isMainRoad = (x % 5 === 0) || (y % 5 === 0);
-        const isSecondaryRoad = (x % 10 === 2) || (y % 10 === 2);
-        
-        if (isMainRoad && isMainRoad) {
-          // Intersection
-          row.push(25); // 4-way intersection
-        } else if (isMainRoad) {
-          row.push(1); // Horizontal road
-        } else if (isSecondaryRoad) {
-          row.push(2); // Vertical road (would need rotation)
-        } else {
-          // Buildings/grass
-          row.push(100 + Math.floor(Math.random() * 50));
-        }
-      }
-      grid.push(row);
-    }
-    
-    return grid;
-  }
-
   buildRoadGraph(): RoadGraph {
     const graph: RoadGraph = { nodes: new Map(), intersections: [] };
-    const tileMap = this.tileMap;
-    const height = tileMap.length;
-    const width = tileMap[0]?.length || 0;
+    const height = this.tileMap.length;
+    const width = this.tileMap[0]?.length || 0;
 
-    // First pass: create nodes for all road tiles
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const tileId = this.tileMap[y][x];
-        if (this.isRoad(tileId)) {
+        if (this.isRoad(tileId) || this.isSidewalk(tileId) || this.isCrosswalk(tileId)) {
           const key = `${x},${y}`;
           const node: RoadNode = {
-            id: `${x},${y}`,
-            x: x * this.effectiveTileSize + this.tileSize / 2,
-            y: y * this.effectiveTileSize + this.tileSize / 2,
+            id: key,
+            x: x * this.effectiveTileSize + this.effectiveTileSize / 2,
+            y: y * this.effectiveTileSize + this.effectiveTileSize / 2,
             tileX: x,
             tileY: y,
             connections: new Map(),
             intersection: this.isIntersection(tileId),
           };
           graph.nodes.set(key, node);
-          
           if (node.intersection) {
             graph.intersections.push(node);
           }
@@ -169,23 +152,17 @@ export class RoadNetwork {
       }
     }
 
-    // Second pass: connect adjacent road nodes
     for (const node of graph.nodes.values()) {
       const { tileX, tileY } = node;
-      const directions = [
-        { dx: 0, dy: -1, dir: 'up' },
-        { dx: 0, dy: 1, dir: 'down' },
-        { dx: -1, dy: 0, dir: 'left' },
-        { dx: 1, dy: 0, dir: 'right' },
+      const dirs = [
+        { dx: 0, dy: -1, dir: "up" },
+        { dx: 0, dy: 1, dir: "down" },
+        { dx: -1, dy: 0, dir: "left" },
+        { dx: 1, dy: 0, dir: "right" },
       ];
-
-      for (const { dx, dy, dir } of directions) {
-        const nx = tileX + dx;
-        const ny = tileY + dy;
-        const neighborKey = `${nx},${ny}`;
-        const neighbor = graph.nodes.get(neighborKey);
-        
-        if (neighbor && this.isRoad(this.tileMap[ny]?.[nx] ?? -1)) {
+      for (const { dx, dy, dir } of dirs) {
+        const neighbor = graph.nodes.get(`${tileX + dx},${tileY + dy}`);
+        if (neighbor) {
           node.connections.set(dir, neighbor);
         }
       }
@@ -195,197 +172,265 @@ export class RoadNetwork {
     return graph;
   }
 
-  getRoadGraph(): RoadGraph {
-    if (this.roadGraph.nodes.size === 0) {
-      this.buildRoadGraph();
-    }
-    return this.roadGraph;
-  }
-
-  findPath(startX: number, startY: number, endX: number, endY: number): { x: number; y: number }[] {
-    const graph = this.getRoadGraph();
-    
-    // Find closest road nodes
-    const startNode = this.findClosestNode(graph, startX, startY);
-    const endNode = this.findClosestNode(graph, endX, endY);
-    
-    if (!startNode || !endNode) return [];
-    
-    // A* pathfinding
-    return this.aStar(graph, startNode, endNode);
-  }
-
-  private findClosestNode(graph: RoadGraph, x: number, y: number): RoadNode | null {
-    let closest: RoadNode | null = null;
-    let minDist = Infinity;
-    
-    for (const node of graph.nodes.values()) {
-      const dist = Math.hypot(node.x - x, node.y - y);
-      if (dist < minDist) {
-        minDist = dist;
-        closest = node;
-      }
-    }
-    return closest;
-  }
-
-  private aStar(graph: RoadGraph, start: RoadNode, goal: RoadNode): { x: number; y: number }[] {
-    const openSet = new Set<RoadNode>([start]);
-    const cameFrom = new Map<RoadNode, RoadNode>();
-    const gScore = new Map<RoadNode, number>([[start, 0]]);
-    const fScore = new Map<RoadNode, number>([[start, this.heuristic(start, goal)]]);
-
-    while (openSet.size > 0) {
-      let current: RoadNode | null = null;
-      let minF = Infinity;
-      
-      for (const node of openSet) {
-        const f = fScore.get(node) ?? Infinity;
-        if (f < minF) {
-          minF = f;
-          current = node;
+  private registerTextureFrames(): void {
+    const registerSet = (texKey: string, map: Record<string, { x: number; y: number; w: number; h: number }>) => {
+      if (!this.scene.textures.exists(texKey)) return;
+      const tex = this.scene.textures.get(texKey);
+      tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      for (const [name, rect] of Object.entries(map)) {
+        if (!tex.has(name)) {
+          tex.add(name, 0, rect.x, rect.y, rect.w, rect.h);
         }
       }
+    };
 
-      if (!current || current === goal) {
-        return this.reconstructPath(cameFrom, goal);
-      }
+    registerSet("cp-city", CP_MAIN_FRAMES);
+    registerSet("cp-lights", CP_LIGHT_FRAMES);
+    registerSet("cp-doors", CP_DOOR_FRAMES);
+    registerSet("cp-streetlights", CP_STREETLIGHT_FRAMES);
 
-      openSet.delete(current!);
-
-      for (const [, neighbor] of current!.connections) {
-        const tentativeG = (gScore.get(current!) ?? Infinity) + 1;
-        if (tentativeG < (gScore.get(neighbor) ?? Infinity)) {
-          cameFrom.set(neighbor, current!);
-          gScore.set(neighbor, tentativeG);
-          fScore.set(neighbor, tentativeG + this.heuristic(neighbor, goal));
-          openSet.add(neighbor);
-        }
-      }
+    // Create traffic light animations if not already created
+    if (!this.scene.anims.exists("cp-tl-r")) {
+      this.scene.anims.create({
+        key: "cp-tl-r",
+        frames: [
+          { key: "cp-streetlights", frame: "tl_arm_r_0", duration: 3200 },
+          { key: "cp-streetlights", frame: "tl_arm_r_1", duration: 900 },
+          { key: "cp-streetlights", frame: "tl_arm_r_3", duration: 3200 },
+          { key: "cp-streetlights", frame: "tl_arm_r_2", duration: 1100 },
+        ],
+        repeat: -1,
+      });
     }
-
-    return [];
-  }
-
-  private heuristic(a: RoadNode, b: RoadNode): number {
-    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-  }
-
-  private reconstructPath(cameFrom: Map<RoadNode, RoadNode>, current: RoadNode): { x: number; y: number }[] {
-    const path = [{ x: current.x, y: current.y }];
-    let currentNode: RoadNode | null = current;
-    while (currentNode) {
-      const next: RoadNode | null = this.roadGraph.nodes.get(`${currentNode.tileX},${currentNode.tileY}`) ?? null;
-      currentNode = next;
+    if (!this.scene.anims.exists("cp-tl-l")) {
+      this.scene.anims.create({
+        key: "cp-tl-l",
+        frames: [
+          { key: "cp-streetlights", frame: "tl_arm_l_3", duration: 3200 },
+          { key: "cp-streetlights", frame: "tl_arm_l_2", duration: 1100 },
+          { key: "cp-streetlights", frame: "tl_arm_l_0", duration: 3200 },
+          { key: "cp-streetlights", frame: "tl_arm_l_1", duration: 900 },
+        ],
+        repeat: -1,
+      });
     }
-    return path.reverse();
   }
 
-  render(): void {
-    const tileMap = this.tileMap;
-    const height = tileMap.length;
-    const width = tileMap[0]?.length || 0;
+  private tileIdToFrame(tileId: number): string {
+    switch (tileId) {
+      case TILE.ROAD_PLAIN:
+      case TILE.ROAD_CROSS:
+        return "road_plain";
+      case TILE.ROAD_DASH_H:
+        return "road_dash_h";
+      case TILE.ROAD_DASH_V:
+        return "road_dash_v";
+      case TILE.ROAD_YELLOW_H:
+        return "road_yellow_h";
+      case TILE.ROAD_YELLOW_V:
+        return "road_yellow_v";
+      case TILE.ROAD_DRAIN:
+        return "road_drain";
+      case TILE.ROAD_MANHOLE:
+        return "road_manhole";
+      case TILE.CROSSWALK_H:
+        return "crosswalk_h";
+      case TILE.CROSSWALK_V:
+        return "crosswalk_v";
+      case TILE.SIDEWALK_PLAIN:
+        return "sidewalk_plain";
+      case TILE.SIDEWALK_GRID:
+        return "sidewalk_grid";
+      case TILE.SIDEWALK_LIGHT:
+        return "sidewalk_light";
+      case TILE.PLAZA_DARK:
+        return "plaza_dark";
+      case TILE.PLAZA_MID:
+        return "plaza_mid";
+      case TILE.PLAZA_LIGHT:
+        return "plaza_light";
+      case TILE.WATER:
+        return "water_plain";
+      case TILE.SAND:
+        return "sand_plain";
+      case TILE.GRASS:
+      default:
+        return "grass_plain";
+    }
+  }
+
+  render(locale: "ru" | "ro" = "ru"): void {
+    this.registerTextureFrames();
+    this.buildingColliders = [];
+    this.vehicles = [];
+    this.doors = [];
+
+    const height = this.tileMap.length;
+    const width = this.tileMap[0]?.length || 0;
+    const worldW = width * this.effectiveTileSize;
+    const worldH = height * this.effectiveTileSize;
+
+    // 1. Draw the entire ground tilemap onto a single GPU RenderTexture
+    const rt = this.scene.add.renderTexture(0, 0, worldW, worldH).setOrigin(0, 0).setDepth(0);
+    const stamp = this.scene.make.image({ key: "cp-city", frame: "grass_plain", add: false });
+    stamp.setOrigin(0, 0).setScale(this.scale);
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const tileId = tileMap[y][x];
-        if (tileId <= 0) continue;
+        const frame = this.tileIdToFrame(this.tileMap[y][x]);
+        stamp.setFrame(frame);
+        rt.draw(stamp, x * this.effectiveTileSize, y * this.effectiveTileSize);
+      }
+    }
+    stamp.destroy();
 
-        const px = x * this.effectiveTileSize;
-        const py = y * this.effectiveTileSize;
+    // Add collider for the two park ponds
+    this.buildingColliders.push(
+      { x: 7 * 32, y: 6.5 * 32, width: 64, height: 32 },
+      { x: 43 * 32, y: 6.5 * 32, width: 64, height: 32 },
+    );
 
-        // Render tile (simplified - would use actual texture atlas in production)
-        const graphics = this.scene.add.graphics();
-        
-        if (this.isIntersection(tileId)) {
-          graphics.fillStyle(0x2a2a2a);
-          graphics.fillRect(px, py, this.tileSize, this.tileSize);
-          // Draw intersection markings - bright yellow lines
-          graphics.lineStyle(3, 0xffd700, 1);
-          graphics.strokeRect(px + 1, py + 1, this.tileSize - 2, this.tileSize - 2);
-          // Center cross
-          graphics.moveTo(px + this.tileSize / 2, py);
-          graphics.lineTo(px + this.tileSize / 2, py + this.tileSize);
-          graphics.moveTo(px, py + this.tileSize / 2);
-          graphics.lineTo(px + this.tileSize, py + this.tileSize / 2);
-          graphics.strokePath();
-        } else if (this.isRoad(tileId)) {
-          // Asphalt with subtle texture
-          graphics.fillStyle(0x3a3a3a);
-          graphics.fillRect(px, py, this.tileSize, this.tileSize);
-          // Road center line
-          graphics.lineStyle(2, 0xffd700, 0.8);
-          graphics.moveTo(px + this.tileSize / 2, py);
-          graphics.lineTo(px + this.tileSize / 2, py + this.tileSize);
-          graphics.strokePath();
-        } else if (this.isSidewalk(tileId)) {
-          graphics.fillStyle(0x666666);
-          graphics.fillRect(px, py, this.tileSize, this.tileSize);
-          // Subtle texture
-          graphics.fillStyle(0x777777);
-          for (let i = 0; i < this.tileSize; i += 4) {
-            graphics.fillRect(px, py + i, this.tileSize, 1);
-          }
-        } else if (this.isCrosswalk(tileId)) {
-          graphics.fillStyle(0x1a1a1a);
-          graphics.fillRect(px, py, this.tileSize, this.tileSize);
-          // Bright white crosswalk stripes
-          graphics.fillStyle(0xffffff);
-          for (let i = 0; i < this.tileSize; i += 5) {
-            graphics.fillRect(px, py + i, this.tileSize, 3);
-          }
+    // 2. Render buildings (with BL001 window lights & BD001 doors)
+    for (const b of CITY_BUILDINGS) {
+      const rect = CP_MAIN_FRAMES[b.frame];
+      if (!rect) continue;
+      const bScale = b.scale ?? 2.2;
+      const dispW = rect.w * bScale;
+      const dispH = rect.h * bScale;
+
+      if (b.animatedDoor && CP_DOOR_FRAMES[`${b.frame}_d0`]) {
+        const doorSprite = this.scene.add
+          .sprite(b.x, b.y, "cp-doors", `${b.frame}_d0`)
+          .setOrigin(0.5, 1)
+          .setScale(bScale)
+          .setDepth(b.y);
+        this.doors.push({ sprite: doorSprite, baseFrame: b.frame, x: b.x, y: b.y, isOpen: false });
+      } else if (b.animatedLight && CP_LIGHT_FRAMES[`${b.frame}_on`]) {
+        const animKey = `cp-light-${b.frame}`;
+        if (!this.scene.anims.exists(animKey)) {
+          this.scene.anims.create({
+            key: animKey,
+            frames: [
+              { key: "cp-lights", frame: `${b.frame}_on`, duration: 4500 },
+              { key: "cp-lights", frame: `${b.frame}_off`, duration: 1800 },
+            ],
+            repeat: -1,
+          });
         }
+        const lightSprite = this.scene.add
+          .sprite(b.x, b.y, "cp-lights", `${b.frame}_on`)
+          .setOrigin(0.5, 1)
+          .setScale(bScale)
+          .setDepth(b.y);
+        lightSprite.play({ key: animKey, startFrame: Math.floor(Math.random() * 2) });
+      } else {
+        this.scene.add
+          .image(b.x, b.y, "cp-city", b.frame)
+          .setOrigin(0.5, 1)
+          .setScale(bScale)
+          .setDepth(b.y);
       }
-    }
-  }
 
-  // Export graph data for vehicle AI
-  exportGraphData(): { nodes: RoadNode[]; edges: { from: string; to: string; direction: string }[] } {
-    const graph = this.getRoadGraph();
-    const nodes: RoadNode[] = [];
-    const edges: { from: string; to: string; direction: string }[] = [];
+      if (b.label) {
+        this.scene.add
+          .text(b.x, b.y - dispH - 10, b.label[locale], {
+            fontSize: "13px",
+            fontStyle: "bold",
+            color: "#00d9ff",
+            backgroundColor: "#060d1fe6",
+            padding: { x: 8, y: 3 },
+          })
+          .setOrigin(0.5, 1)
+          .setDepth(b.y + 2);
+      }
 
-    for (const [key, node] of graph.nodes) {
-      nodes.push({
-        id: key,
-        x: node.x,
-        y: node.y,
-        tileX: node.tileX,
-        tileY: node.tileY,
-        connections: node.connections,
-        intersection: node.intersection,
+      // Solid physics footprint on the lower 55% of the building so rooftops have natural depth overlap
+      const colH = Math.max(40, dispH * 0.52);
+      this.buildingColliders.push({
+        x: b.x,
+        y: b.y - colH / 2,
+        width: dispW * 0.88,
+        height: colH,
       });
+    }
 
-      for (const [dir, neighbor] of node.connections) {
-        edges.push({
-          from: `${node.tileX},${node.tileY}`,
-          to: `${neighbor.tileX},${neighbor.tileY}`,
-          direction: dir,
-        });
+    // 3. Render street props, trees, traffic lights, and street lamps
+    for (const p of CITY_PROPS) {
+      const pScale = p.scale ?? 2.0;
+      if (p.kind === "traffic_light_r") {
+        this.scene.add
+          .sprite(p.x, p.y, "cp-streetlights", "tl_arm_r_0")
+          .setOrigin(0.5, 1)
+          .setScale(pScale)
+          .setDepth(p.y)
+          .play("cp-tl-r");
+      } else if (p.kind === "traffic_light_l") {
+        this.scene.add
+          .sprite(p.x, p.y, "cp-streetlights", "tl_arm_l_0")
+          .setOrigin(0.5, 1)
+          .setScale(pScale)
+          .setDepth(p.y)
+          .play("cp-tl-l");
+      } else if (p.kind === "street_lamp") {
+        this.scene.add
+          .image(p.x, p.y, "cp-streetlights", p.frame)
+          .setOrigin(0.5, 1)
+          .setScale(pScale)
+          .setDepth(p.y);
+      } else {
+        this.scene.add
+          .image(p.x, p.y, "cp-city", p.frame)
+          .setOrigin(0.5, 1)
+          .setScale(pScale)
+          .setDepth(p.y);
       }
     }
 
-    return { nodes, edges };
+    // 4. Spawn moving ambient vehicles on main roads
+    for (const v of CITY_VEHICLES) {
+      const sprite = this.scene.add
+        .image(v.startX, v.startY, "cp-city", v.frame)
+        .setOrigin(0.5, 0.5)
+        .setScale(1.85)
+        .setFlipX(Boolean(v.flipX))
+        .setDepth(v.startY);
+      this.vehicles.push({
+        sprite,
+        startX: v.startX,
+        startY: v.startY,
+        endX: v.endX,
+        endY: v.endY,
+        speed: v.speed,
+      });
+    }
   }
-}
 
-export interface RoadGraph {
-  nodes: Map<string, RoadNode>;
-  intersections: RoadNode[];
-}
+  /** Updates moving vehicles and proximity-activated building doors from BD001.png */
+  update(deltaMs: number, playerX: number, playerY: number): void {
+    const dt = deltaMs / 1000;
+    for (const v of this.vehicles) {
+      const dx = v.endX - v.startX;
+      const dy = v.endY - v.startY;
+      const len = Math.hypot(dx, dy) || 1;
+      v.sprite.x += (dx / len) * v.speed * dt;
+      v.sprite.y += (dy / len) * v.speed * dt;
+      v.sprite.setDepth(v.sprite.y);
 
-export interface RoadNode {
-  x: number;
-  y: number;
-  tileX: number;
-  tileY: number;
-  connections: Map<string, RoadNode>;
-  intersection: boolean;
-}
+      if ((dx > 0 && v.sprite.x > v.endX) || (dx < 0 && v.sprite.x < v.endX) || (dy > 0 && v.sprite.y > v.endY) || (dy < 0 && v.sprite.y < v.endY)) {
+        v.sprite.setPosition(v.startX, v.startY);
+      }
+    }
 
-export interface RoadTile {
-  id: number;
-  type: 'road' | 'sidewalk' | 'building' | 'grass' | 'crosswalk' | 'marking';
-  connections?: { up: boolean; down: boolean; left: boolean; right: boolean };
-  rotation?: 0 | 90 | 180 | 270;
+    // Animate doors in BD001.png when player approaches landmark entrance
+    for (const d of this.doors) {
+      const dist = Math.hypot(playerX - d.x, playerY - d.y);
+      const shouldOpen = dist < 135;
+      if (shouldOpen !== d.isOpen) {
+        d.isOpen = shouldOpen;
+        d.sprite.setFrame(`${d.baseFrame}_${shouldOpen ? "d2" : "d0"}`);
+      } else if (dist >= 135 && dist < 175) {
+        d.sprite.setFrame(`${d.baseFrame}_d1`);
+      }
+    }
+  }
 }

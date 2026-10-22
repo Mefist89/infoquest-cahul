@@ -55,6 +55,5 @@ next-env.d.ts
 # raw sprite source packs (only normalized copies in public/game are committed)
 /public/kenney_rpg-urban-pack/
 /public/kenney_toon-characters/
-/public/CP_V1.1.0_nyknck/
 
 supabase/.temp/
