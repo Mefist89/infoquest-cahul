@@ -11,6 +11,7 @@ const TALK_DISTANCE = 105;
 
 export class PatrolScene extends Phaser.Scene {
   private locale: PatrolLocale;
+  private onDialogueComplete?: (correct: boolean, npcId: string) => void;
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -37,9 +38,10 @@ export class PatrolScene extends Phaser.Scene {
     return this.nearNpcId;
   }
 
-  constructor(locale: PatrolLocale) {
+  constructor(locale: PatrolLocale, onDialogueComplete?: (correct: boolean, npcId: string) => void) {
     super("patrol");
     this.locale = locale;
+    this.onDialogueComplete = onDialogueComplete;
     this.cityConfig = { ...DEFAULT_CITY_CONFIG };
   }
 
@@ -447,12 +449,13 @@ export class PatrolScene extends Phaser.Scene {
           completed = true;
           this.scene.resume();
           this.nearNpcId = activeNpcId;
-          this.events.emit("dialogue-complete", correct, activeNpcId);
           if (correct) {
             this.markResolved(activeNpcId);
           } else {
             this.cameras.main.shake(200, 0.01);
           }
+          this.onDialogueComplete?.(correct, activeNpcId);
+          this.events?.emit("dialogue-complete", correct, activeNpcId);
           this.nearNpcId = null;
           this.promptText?.setVisible(false);
         };

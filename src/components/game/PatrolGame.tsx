@@ -31,19 +31,50 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   usePatrolSpritePrefetch();
 
   function patrolScene(): PatrolScene | null {
-    if (sceneRef.current) return sceneRef.current;
-    const scene = gameRef.current?.scene.getScene("patrol");
-    return scene instanceof PatrolScene ? scene : null;
+    return sceneRef.current;
   }
 
-  const pauseGame = useCallback(() => {
-    patrolScene()?.scene.pause();
-  }, []);
+  const handleDialogueComplete = useCallback(
+    (correct: boolean, npcId: string) => {
+      const npc = byId.get(npcId);
+      if (!npc) return;
+
+      const nextShadow = correct ? Math.max(0, shadow - SHADOW_HIT) : Math.min(SHADOW_DEFEAT, shadow + SHADOW_MISS);
+      const nextResolved = resolvedIds.includes(npcId) ? resolvedIds : [...resolvedIds, npcId];
+      setShadow(nextShadow);
+      setResolvedIds(nextResolved);
+      if (nextShadow >= SHADOW_DEFEAT) {
+        setPhase("lost");
+      } else if (nextResolved.length >= PATROL_NPCS.length) {
+        setPhase("won");
+      }
+      patrolScene()?.markResolved(npcId);
+
+      (async () => {
+        const supabase = createClient();
+        const { error } = await supabase.rpc("complete_patrol_npc", {
+          p_npc_id: npcId,
+          p_correct: correct,
+        });
+        if (error) {
+          console.error("Failed to save patrol progress:", error);
+        }
+      })();
+    },
+    [byId, resolvedIds, shadow],
+  );
+
+  const handleDialogueCompleteRef = useRef(handleDialogueComplete);
+  useEffect(() => {
+    handleDialogueCompleteRef.current = handleDialogueComplete;
+  }, [handleDialogueComplete]);
 
   useEffect(() => {
     if (loading || !hostRef.current || gameRef.current) return;
     const hostElement = hostRef.current;
-    const scene = new PatrolScene(locale);
+    const scene = new PatrolScene(locale, (correct, npcId) => {
+      handleDialogueCompleteRef.current(correct, npcId);
+    });
     sceneRef.current = scene;
     gameRef.current = new Phaser.Game({
       type: Phaser.AUTO,
@@ -68,7 +99,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       gameRef.current = null;
       sceneRef.current = null;
     };
-  }, [loading, locale, pauseGame]);
+  }, [loading, locale]);
 
   // Load patrol progress from Supabase
   useEffect(() => {
@@ -101,60 +132,12 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     };
   }, []);
 
-  const handleDialogueComplete = useCallback(
-    (correct: boolean, npcId: string) => {
-      const npc = byId.get(npcId);
-      if (!npc) return;
-
-      const nextShadow = correct ? Math.max(0, shadow - SHADOW_HIT) : Math.min(SHADOW_DEFEAT, shadow + SHADOW_MISS);
-      const nextResolved = resolvedIds.includes(npcId) ? resolvedIds : [...resolvedIds, npcId];
-      setShadow(nextShadow);
-      setResolvedIds(nextResolved);
-      if (nextShadow >= SHADOW_DEFEAT) {
-        setPhase("lost");
-      } else if (nextResolved.length >= PATROL_NPCS.length) {
-        setPhase("won");
-      }
-      patrolScene()?.markResolved(npcId);
-
-      (async () => {
-        const supabase = createClient();
-        const { error } = await supabase.rpc("complete_patrol_npc", {
-          p_npc_id: npcId,
-          p_correct: correct,
-        });
-        if (error) {
-          console.error("Failed to save patrol progress:", error);
-        }
-      })();
-    },
-    [byId, resolvedIds, shadow],
-  );
-
   function retry() {
     patrolScene()?.resetPatrol();
     setResolvedIds([]);
     setShadow(SHADOW_START);
     setPhase("playing");
   }
-
-  // Listen for dialogue completion from Phaser scene
-  useEffect(() => {
-    if (loading) return;
-    const scene = patrolScene();
-    if (!scene) return;
-
-    const handleDialogueCompleteEvent = (correct: boolean, npcId?: string) => {
-      const targetNpcId = npcId ?? scene.getNearNpcId();
-      if (!targetNpcId) return;
-      handleDialogueComplete(correct, targetNpcId);
-    };
-
-    scene.events.on("dialogue-complete", handleDialogueCompleteEvent);
-    return () => {
-      scene.events.off("dialogue-complete", handleDialogueCompleteEvent);
-    };
-  }, [loading, resolvedIds, shadow, handleDialogueComplete]);
 
   return (
     <div>
