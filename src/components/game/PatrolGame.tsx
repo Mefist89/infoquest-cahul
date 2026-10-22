@@ -9,6 +9,7 @@ import { PATROL_NPCS } from "@/data/patrol";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
 import { DialogueScene } from "./DialogueScene";
+import { DeliverySmsTrainerModal } from "./DeliverySmsTrainerModal";
 import { PatrolLoadingFrame, usePatrolSpritePrefetch } from "./PatrolStartPanel";
 
 const SHADOW_START = 40;
@@ -17,6 +18,7 @@ const SHADOW_MISS = 20;
 const SHADOW_DEFEAT = 100;
 
 export function PatrolGame({ locale }: { locale: PatrolLocale }) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const sceneRef = useRef<PatrolScene | null>(null);
@@ -24,6 +26,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   const [shadow, setShadow] = useState(SHADOW_START);
   const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">("loading");
   const [loading, setLoading] = useState(true);
+  const [smsTrainerOpen, setSmsTrainerOpen] = useState(false);
 
   const byId = useMemo(() => new Map(PATROL_NPCS.map((npc) => [npc.id, npc])), []);
 
@@ -72,9 +75,16 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   useEffect(() => {
     if (loading || !hostRef.current || gameRef.current) return;
     const hostElement = hostRef.current;
-    const scene = new PatrolScene(locale, (correct, npcId) => {
-      handleDialogueCompleteRef.current(correct, npcId);
-    });
+    const fullscreenElement = wrapperRef.current ?? hostElement;
+    const scene = new PatrolScene(
+      locale,
+      (correct, npcId) => {
+        handleDialogueCompleteRef.current(correct, npcId);
+      },
+      () => {
+        setSmsTrainerOpen(true);
+      },
+    );
     sceneRef.current = scene;
     gameRef.current = new Phaser.Game({
       type: Phaser.AUTO,
@@ -86,7 +96,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        fullscreenTarget: hostElement,
+        fullscreenTarget: fullscreenElement,
         expandParent: true,
       },
       scene: [scene, DialogueScene],
@@ -133,10 +143,23 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
   }, []);
 
   function retry() {
+    setSmsTrainerOpen(false);
     patrolScene()?.resetPatrol();
     setResolvedIds([]);
     setShadow(SHADOW_START);
     setPhase("playing");
+  }
+
+  function handleCloseSmsTrainer() {
+    setSmsTrainerOpen(false);
+    patrolScene()?.scene.resume();
+  }
+
+  function handleCompleteSmsTrainer(correct: boolean) {
+    setSmsTrainerOpen(false);
+    patrolScene()?.markResolved("post-maria");
+    patrolScene()?.scene.resume();
+    handleDialogueComplete(correct, "post-maria");
   }
 
   return (
@@ -164,11 +187,21 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
       {loading ? (
         <PatrolLoadingFrame label={locale === "ro" ? "Pregătire pentru patrulare..." : "Подготовка к патрулированию..."} />
       ) : (
-        <div className="relative aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f]">
+        <div
+          ref={wrapperRef}
+          className="relative aspect-[8/5] w-full overflow-hidden rounded-3xl border border-neon/30 bg-[#060d1f] [&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:rounded-none [&:fullscreen]:border-0 [&:fullscreen]:bg-[#060d1f]"
+        >
           <div
             ref={hostRef}
-            className="h-full w-full bg-[#060d1f] [&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:bg-[#060d1f]"
+            className="h-full w-full bg-[#060d1f]"
           />
+          {smsTrainerOpen && (
+            <DeliverySmsTrainerModal
+              locale={locale}
+              onClose={handleCloseSmsTrainer}
+              onComplete={handleCompleteSmsTrainer}
+            />
+          )}
         </div>
       )}
 

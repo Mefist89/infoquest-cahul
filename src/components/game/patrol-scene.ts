@@ -12,6 +12,7 @@ const TALK_DISTANCE = 105;
 export class PatrolScene extends Phaser.Scene {
   private locale: PatrolLocale;
   private onDialogueComplete?: (correct: boolean, npcId: string) => void;
+  private onOpenDeliverySmsTrainer?: (npcId: string) => void;
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -38,10 +39,15 @@ export class PatrolScene extends Phaser.Scene {
     return this.nearNpcId;
   }
 
-  constructor(locale: PatrolLocale, onDialogueComplete?: (correct: boolean, npcId: string) => void) {
+  constructor(
+    locale: PatrolLocale,
+    onDialogueComplete?: (correct: boolean, npcId: string) => void,
+    onOpenDeliverySmsTrainer?: (npcId: string) => void,
+  ) {
     super("patrol");
     this.locale = locale;
     this.onDialogueComplete = onDialogueComplete;
+    this.onOpenDeliverySmsTrainer = onOpenDeliverySmsTrainer;
     this.cityConfig = { ...DEFAULT_CITY_CONFIG };
   }
 
@@ -244,7 +250,10 @@ export class PatrolScene extends Phaser.Scene {
   }
 
   private toggleFullscreen(): void {
-    const container = (this.game.canvas?.parentElement as HTMLElement | null) ?? this.game.canvas;
+    const container =
+      (this.scale.fullscreenTarget as HTMLElement | null) ??
+      (this.game.canvas?.parentElement as HTMLElement | null) ??
+      this.game.canvas;
     if (document.fullscreenElement) {
       void document.exitFullscreen().catch(() => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen();
@@ -443,6 +452,13 @@ export class PatrolScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         this.player.anims.stop();
         this.player.setFrame("idle");
+
+        if (activeNpcId === "post-maria" && this.onOpenDeliverySmsTrainer) {
+          this.scene.pause();
+          this.onOpenDeliverySmsTrainer(activeNpcId);
+          return;
+        }
+
         let completed = false;
         const finishDialogue = (correct: boolean) => {
           if (completed) return;
