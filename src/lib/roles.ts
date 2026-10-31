@@ -15,7 +15,7 @@ export function isUserRole(value: unknown): value is UserRole {
 }
 
 export function canUseAi(role: UserRole | null | undefined) {
-  return role === "student" || role === "teacher" || role === "administrator";
+  return role != null && role !== "blocked";
 }
 
 export function isAdministrator(role: UserRole | null | undefined) {

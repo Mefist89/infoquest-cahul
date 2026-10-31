@@ -29,7 +29,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { strings, type Lang } from "@/data/home-data";
 import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MODULE_MAX_XP, TOTAL_MAX_XP, type ModuleDefinition as Mission, type ModuleId } from "@/data/module-catalog";
-import { canUseAi, isUserRole, type UserRole } from "@/lib/roles";
+import { isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -400,10 +400,11 @@ export default function HomePage() {
               {t.startInvestigation}
               <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
             </Link>
-            {headerProgress.isAuthenticated && !canUseAi(headerProgress.role) ? (
-              <span aria-disabled="true" title={t.aiRoleRequired} className="inline-flex min-h-12 cursor-not-allowed items-center gap-3 rounded-xl border border-border bg-secondary/70 px-6 text-sm font-extrabold text-muted-foreground opacity-75">
+            <div className="flex flex-col items-center gap-2">
+            {headerProgress.role === "blocked" ? (
+              <span aria-disabled="true" className="inline-flex min-h-12 cursor-not-allowed items-center gap-3 rounded-xl border border-border bg-secondary/70 px-6 text-sm font-extrabold text-muted-foreground opacity-75">
                 <Lock className="size-5" aria-hidden="true" />
-                <span>{t.aiHelp}<span className="ml-2 hidden text-xs font-medium sm:inline">· {t.aiRoleRequired}</span></span>
+                <span>{t.aiHelp}</span>
               </span>
             ) : (
               <Link
@@ -414,6 +415,8 @@ export default function HomePage() {
                 {t.aiHelp}
               </Link>
             )}
+            {!headerProgress.isAuthenticated && <p className="max-w-64 text-center text-xs text-muted-foreground">{t.aiGuestHint}</p>}
+            </div>
             </div>
             <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">{lang === "ru" ? "Расследуй цифровые происшествия, находи доказательства и учись защищать себя и друзей в интернете." : "Investighează incidente digitale, găsește dovezi și învață să te protejezi pe tine și pe prieteni pe internet."}</p>
           </div>
@@ -470,7 +473,7 @@ export default function HomePage() {
         <SkillsSection lang={lang} />
         <ProgressAndBadges lang={lang} progress={headerProgress} missions={missions} />
         <AudienceSection lang={lang} />
-        <AiAssistantSection lang={lang} restricted={headerProgress.isAuthenticated && !canUseAi(headerProgress.role)} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
+        <AiAssistantSection lang={lang} isGuest={!headerProgress.isAuthenticated} restricted={headerProgress.role === "blocked"} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
       </main>
 
       <SiteFooter lang={lang} beforeLegal={<FaqSection lang={lang} />} />

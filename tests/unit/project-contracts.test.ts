@@ -121,8 +121,10 @@ describe("роли и доступ к Chrono", () => {
     expect(isUserRole(null)).toBe(false);
   });
 
-  it("разрешает AI ученику, учителю и администратору", () => {
-    expect(canUseAi("user")).toBe(false);
+  it("разрешает AI всем вошедшим пользователям, кроме заблокированных", () => {
+    expect(canUseAi("user")).toBe(true);
+    expect(canUseAi(null)).toBe(false);
+    expect(canUseAi(undefined)).toBe(false);
     expect(canUseAi("student")).toBe(true);
     expect(canUseAi("teacher")).toBe(true);
     expect(canUseAi("administrator")).toBe(true);

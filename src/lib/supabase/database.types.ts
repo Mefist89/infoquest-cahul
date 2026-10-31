@@ -112,6 +112,8 @@ export type Database = {
           singleton: boolean
           updated_at: string
           user_daily_limit: number
+          user_role_daily_limit: number
+          user_role_audio_daily_limit: number
           user_monthly_limit: number
           warning_percent: number
         }
@@ -122,6 +124,8 @@ export type Database = {
           singleton?: boolean
           updated_at?: string
           user_daily_limit?: number
+          user_role_daily_limit?: number
+          user_role_audio_daily_limit?: number
           user_monthly_limit?: number
           warning_percent?: number
         }
@@ -132,6 +136,8 @@ export type Database = {
           singleton?: boolean
           updated_at?: string
           user_daily_limit?: number
+          user_role_daily_limit?: number
+          user_role_audio_daily_limit?: number
           user_monthly_limit?: number
           warning_percent?: number
         }

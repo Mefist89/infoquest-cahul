@@ -101,7 +101,7 @@ const copy = {
     questsHint: "Здесь появятся дополнительные игры, которые не влияют на обязательный прогресс восьми учебных миссий.",
     questsEmpty: "Первый квест ещё разрабатывается. Когда он будет готов, он появится на этой странице.",
     questsSoon: "Скоро",
-    aiRestricted: "AI-помощник Chrono доступен ученикам, учителям и администраторам. Администратор может изменить вашу роль.",
+    aiRestricted: "Chrono недоступен для этого аккаунта.",
     statuses: { not_started: "Не начато", in_progress: "В процессе", completed: "Пройдено" },
   },
   ro: {
@@ -143,7 +143,7 @@ const copy = {
     questsHint: "Aici vor apărea jocuri suplimentare care nu influențează progresul obligatoriu al celor opt misiuni educaționale.",
     questsEmpty: "Primul quest este încă în dezvoltare. Când va fi gata, va apărea pe această pagină.",
     questsSoon: "În curând",
-    aiRestricted: "Asistentul AI Chrono este disponibil elevilor, profesorilor și administratorilor. Un administrator îți poate schimba rolul.",
+    aiRestricted: "Chrono nu este disponibil pentru acest cont.",
     statuses: { not_started: "Neînceput", in_progress: "În desfășurare", completed: "Finalizat" },
   },
 } as const;
@@ -256,7 +256,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             <div className="flex items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
           </header>
 
-          {query.ai === "restricted" && <div role="alert" className="mt-6 rounded-2xl border border-gold/45 bg-gold/10 px-5 py-4 text-sm text-foreground"><strong className="text-gold">{t.role}: {ROLE_LABELS[userRole][locale]}.</strong> {t.aiRestricted}</div>}
+          {query.ai === "restricted" && userRole === "blocked" && <div role="alert" className="mt-6 rounded-2xl border border-gold/45 bg-gold/10 px-5 py-4 text-sm text-foreground"><strong className="text-gold">{t.role}: {ROLE_LABELS[userRole][locale]}.</strong> {t.aiRestricted}</div>}
 
           {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8 pb-10">
             <div className="flex flex-wrap items-end justify-between gap-5">
