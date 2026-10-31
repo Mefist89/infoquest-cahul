@@ -36,3 +36,20 @@ export function restartRetryPhase(progress: RetryProgress): RetryProgress {
 export function retryProgressScore(progress: RetryProgress, total = progress.questionIds.length) {
   return { correct: Object.values(progress.firstAttempts).filter(Boolean).length, total };
 }
+
+/** Lives are checked on Continue, so the last error's explanation stays visible. */
+export function continueRetryPhase(progress: RetryProgress, remainingLives: number) {
+  if (!progress.feedback) return { progress, outcome: "answering" as const };
+  if (remainingLives <= 0) return { progress, outcome: "gameover" as const };
+  const next = continueRetryProgress(progress);
+  return { progress: next, outcome: next.index >= next.questionIds.length ? "complete" as const : "answering" as const };
+}
+
+/** A visual question earns one result after all distinct clues have been found. */
+export function findRetryDetail(progress: RetryProgress, found: ReadonlySet<string>, targetId: string, correct: boolean, required: number) {
+  if (progress.feedback || found.has(targetId)) return { progress, found, ignored: true };
+  if (!correct) return { progress: continueRetryProgress(answerRetryQuestion(progress, false, "")), found, ignored: false };
+  const nextFound = new Set(found).add(targetId);
+  const next = nextFound.size >= required ? answerRetryQuestion(progress, true, "") : progress;
+  return { progress: next, found: nextFound, ignored: false };
+}

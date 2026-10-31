@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  answerRetryQuestion, continueRetryProgress, createRetryProgress, restartRetryPhase, retryProgressScore,
+  answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore,
 } from "@/features/modules/runner/retry-progress";
 
 const answer = (correct: boolean) => ({ correct, explanation: "Почему так" });
@@ -82,5 +82,50 @@ describe("повтор вопроса после объяснения", () => {
     expect(retryProgressScore(progress, 3)).toEqual({ correct: 2, total: 3 });
     const boss = createRetryProgress(["phase-3"], progress.firstAttempts);
     expect(retryProgressScore(continueRetryProgress(respond(boss, true)), 4)).toEqual({ correct: 3, total: 4 });
+  });
+});
+
+describe("финал: объяснение и визуальные улики", () => {
+  it("последняя жизнь на последнем вопросе не пропускает объяснение и не даёт победу", () => {
+    let progress = continueRetryProgress(respond(createRetryProgress(["q1", "q2"]), true));
+    progress = respond(progress, false);
+    expect(progress.feedback?.explanation).toBe("Почему так");
+    expect(progress.index).toBe(1);
+    const result = continueRetryPhase(progress, 0);
+    expect(result.outcome).toBe("gameover");
+    expect(result.progress).toBe(progress);
+    expect(restartRetryPhase(result.progress).index).toBe(0);
+  });
+
+  it("ошибка при оставшихся жизнях повторяет вопрос, верный последний ответ завершает фазу", () => {
+    let progress = respond(createRetryProgress(["q"]), false);
+    let result = continueRetryPhase(progress, 2);
+    expect(result.outcome).toBe("answering");
+    expect(result.progress.index).toBe(0);
+    progress = respond(result.progress, true);
+    result = continueRetryPhase(progress, 2);
+    expect(result.outcome).toBe("complete");
+    expect(retryProgressScore(result.progress)).toEqual({ correct: 0, total: 1 });
+  });
+
+  it("повторный клик по найденной улике ничего не прибавляет", () => {
+    const progress = createRetryProgress(["visual"]);
+    const first = findRetryDetail(progress, new Set(), "name", true, 2);
+    const duplicate = findRetryDetail(first.progress, first.found, "name", true, 2);
+    expect(duplicate.ignored).toBe(true);
+    expect(duplicate.found.size).toBe(1);
+    expect(duplicate.progress).toBe(first.progress);
+    expect(duplicate.progress.feedback).toBeNull();
+    const complete = findRetryDetail(duplicate.progress, duplicate.found, "number", true, 2);
+    expect(complete.progress.feedback?.complete).toBe(true);
+    expect(retryProgressScore(complete.progress)).toEqual({ correct: 1, total: 1 });
+    expect(findRetryDetail(complete.progress, complete.found, "number", true, 2).ignored).toBe(true);
+  });
+
+  it("ошибка до нахождения всех улик исключает вопрос из верных первых попыток", () => {
+    const failed = findRetryDetail(createRetryProgress(["visual"]), new Set(), "wrong", false, 1);
+    const corrected = findRetryDetail(failed.progress, failed.found, "number", true, 1);
+    expect(retryProgressScore(corrected.progress)).toEqual({ correct: 0, total: 1 });
+    expect(failed.found.size).toBe(0);
   });
 });

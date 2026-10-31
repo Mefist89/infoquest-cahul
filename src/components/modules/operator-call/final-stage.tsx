@@ -1,10 +1,12 @@
 "use client";
 
 import { Check, CheckCircle2, MessageCircle, Pause, Phone, Play, Skull, User, XCircle } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
+import { answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore, type RetryProgress } from "@/features/modules/runner/retry-progress";
+import { StageRetryFeedback } from "./stage-retry-feedback";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
 function VisualClueButton({ label, selected, foundText, onSelect, className, children }: { label: string; selected: boolean; foundText: string; onSelect: () => void; className: string; children: ReactNode }) {
@@ -35,7 +37,10 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   const [playerHp, setPlayerHp] = useState(MAX_PLAYER_HP);
   const [bossHp, setBossHp] = useState(MAX_BOSS_HP);
   const [currentPhase, setCurrentPhase] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
+  const phaseIds = useMemo(() => [content.phase1.map(item => item.id), content.phase2.map(item => item.id), content.phase3.map(item => item.id)], [content]);
+  const [progress, setProgress] = useState(() => createRetryProgress(phaseIds[0]));
+  const progressRef = useRef(progress);
+  const currentLevel = progress.index;
   const [foundDetails, setFoundDetails] = useState<Set<string>>(new Set());
   const [bossSelected, setBossSelected] = useState<Set<number>>(new Set());
   const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
@@ -43,147 +48,132 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   const [shake, setShake] = useState(false);
   const [blitzPaused, setBlitzPaused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
-  const [finalOk, setFinalOk] = useState(0);
-  const [finalMisses, setFinalMisses] = useState(0);
+  const foundDetailsRef = useRef(foundDetails);
   const phaseRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const a11y = accessibilityText[locale];
 
-  const takeDamage = useCallback(() => {
-    setShake(true);
-    setTimeout(() => setShake(false), 400);
-    setPlayerHp(prev => {
-      const next = prev - 1;
-      if (next <= 0) setStatus("gameover");
-      return next;
-    });
+  const updateProgress = useCallback((next: RetryProgress) => {
+    progressRef.current = next;
+    setProgress(next);
   }, []);
 
+  const takeDamage = useCallback((deferGameOver = false) => {
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+    setPlayerHp(hp => Math.max(0, hp - 1));
+    if (playerHp <= 1 && !deferGameOver) setStatus("gameover");
+  }, [playerHp]);
+
   const advanceLevel = useCallback(() => {
+    const next = continueRetryProgress(progressRef.current);
+    foundDetailsRef.current = new Set();
     setFoundDetails(new Set());
     setBossSelected(new Set());
-    setBossSelected(new Set());
-    if (currentLevel < 9) {
-      setCurrentLevel(prev => prev + 1);
-    } else {
+    if (next.index >= next.questionIds.length) {
       if (currentPhase < 2) {
-        setCurrentPhase(prev => prev + 1);
-        setCurrentLevel(0);
+        setCurrentPhase(phase => phase + 1);
+        updateProgress(createRetryProgress(phaseIds[currentPhase + 1], next.firstAttempts));
       } else {
+        updateProgress(next);
         setStatus("win");
       }
-    }
+    } else updateProgress(next);
     setBlitzTimeLeft(12);
     setBlitzPaused(false);
-  }, [currentLevel, currentPhase]);
+  }, [currentPhase, phaseIds, updateProgress]);
+
+  const showAnswer = useCallback((correct: boolean, explanation: string, complete = true) => {
+    if (progressRef.current.feedback) return;
+    updateProgress(answerRetryQuestion(progressRef.current, correct, explanation, complete));
+    setBlitzPaused(true);
+    setAnnouncement(correct ? a11y.correct : a11y.wrong);
+    playSound(correct ? "correct" : "wrong");
+    if (!correct) takeDamage(true);
+  }, [a11y.correct, a11y.wrong, takeDamage, updateProgress]);
 
   useEffect(() => {
-    if (status !== "playing" || currentPhase !== 1 || blitzPaused) return;
-
+    if (status !== "playing" || currentPhase !== 1 || blitzPaused || progress.feedback) return;
     const timer = window.setTimeout(() => {
-      if (blitzTimeLeft <= 1) {
-        playSound("timeout");
-        setAnnouncement(`${a11y.wrong}. ${locale === "ru" ? "Время вышло" : "Timpul a expirat"}`);
-        takeDamage();
-        advanceLevel();
-      } else {
-        setBlitzTimeLeft(blitzTimeLeft - 1);
-      }
+      if (blitzTimeLeft <= 1) showAnswer(false, content.phase2[currentLevel].explain);
+      else setBlitzTimeLeft(blitzTimeLeft - 1);
     }, 1000);
     return () => window.clearTimeout(timer);
-  }, [advanceLevel, a11y.wrong, blitzPaused, blitzTimeLeft, currentPhase, locale, status, takeDamage]);
+  }, [blitzPaused, blitzTimeLeft, content, currentLevel, currentPhase, progress.feedback, showAnswer, status]);
+
+  useEffect(() => {
+    if (status !== "playing" || currentPhase !== 0 || !progress.feedback?.complete) return;
+    const timer = window.setTimeout(advanceLevel, 300);
+    return () => window.clearTimeout(timer);
+  }, [advanceLevel, currentPhase, progress.feedback, status]);
 
   useEffect(() => {
     if (status === "playing") phaseRef.current?.focus();
     else statusRef.current?.focus();
-  }, [currentLevel, currentPhase, status]);
+  }, [currentLevel, currentPhase, status, progress.feedback]);
 
   const handleVisualClick = (targetId: string, isCorrect: boolean) => {
+    if (status !== "playing" || progressRef.current.feedback || foundDetails.has(targetId) || foundDetailsRef.current.has(targetId)) return;
+    const result = findRetryDetail(progressRef.current, foundDetailsRef.current, targetId, isCorrect, content.phase1[currentLevel].correctTargets.length);
+    if (result.ignored) return;
+    updateProgress(result.progress);
     if (isCorrect) {
       playSound("correct");
-      setFinalOk((count) => count + 1);
       setAnnouncement(`${a11y.correct}. ${a11y.found}: ${targetId}`);
-      setFoundDetails(prev => {
-        const next = new Set(prev);
-        next.add(targetId);
-
-        const required = content.phase1[currentLevel].correctTargets.length || 1;
-        if (next.size >= required) {
-          setTimeout(() => advanceLevel(), 300);
-          return new Set();
-        }
-        return next;
-      });
+      const next = new Set(result.found);
+      foundDetailsRef.current = next;
+      setFoundDetails(next);
     } else {
       playSound("wrong");
-      setFinalMisses((count) => count + 1);
       setAnnouncement(a11y.wrong);
       takeDamage();
     }
   };
 
-const handleBlitzClick = (optionIndex: number) => {
-    const isCorrect = optionIndex === content.phase2[currentLevel].answer;
-    if (isCorrect) {
-      playSound("correct");
-      setFinalOk((count) => count + 1);
-      setAnnouncement(a11y.correct);
-      advanceLevel();
-    } else {
-      playSound("wrong");
-      setFinalMisses((count) => count + 1);
-      setAnnouncement(a11y.wrong);
-      takeDamage();
-      advanceLevel();
-    }
+  const handleBlitzClick = (optionIndex: number) => {
+    if (status !== "playing" || progressRef.current.feedback) return;
+    const question = content.phase2[currentLevel];
+    showAnswer(optionIndex === question.answer, question.explain);
   };
 
   const handleBossClick = (optionIndex: number) => {
-    const answers = content.phase3[currentLevel].answers;
-    const isCorrect = answers.includes(optionIndex);
-
-    if (isCorrect) {
-      playSound("correct");
-      setFinalOk((count) => count + 1);
-      setAnnouncement(`${a11y.correct}. ${a11y.selected}`);
-      setBossSelected(prev => {
-        const next = new Set(prev);
-        next.add(optionIndex);
-
-        if (next.size >= answers.length) {
-          setBossHp(hp => {
-            const nextHp = hp - 1;
-            setTimeout(() => {
-              if (nextHp <= 0) {
-                setStatus("win");
-              } else {
-                advanceLevel();
-              }
-            }, 300);
-            return nextHp;
-          });
-          return new Set();
-        }
-        return next;
-      });
-    } else {
-      playSound("wrong");
-      setFinalMisses((count) => count + 1);
-      setAnnouncement(a11y.wrong);
-      takeDamage();
-      setBossSelected(new Set());
-    }
+    if (status !== "playing" || progressRef.current.feedback || bossSelected.has(optionIndex)) return;
+    const question = content.phase3[currentLevel];
+    const correct = question.answers.includes(optionIndex);
+    const next = new Set(bossSelected).add(optionIndex);
+    const complete = correct && next.size >= question.answers.length;
+    if (correct) setBossSelected(next);
+    if (complete) setBossHp(hp => Math.max(0, hp - 1));
+    showAnswer(correct, question.explain, complete);
   };
 
-const restart = () => {
+  function continueExplanation() {
+    const answer = progressRef.current.feedback;
+    if (!answer) return;
+    const result = continueRetryPhase(progressRef.current, playerHp);
+    if (result.outcome === "gameover") {
+      setStatus("gameover");
+      return;
+    }
+    if (answer.complete) advanceLevel();
+    else {
+      updateProgress(result.progress);
+      if (!answer.correct) setBossSelected(new Set());
+      setBlitzTimeLeft(12);
+      setBlitzPaused(false);
+    }
+  }
+
+  const restart = () => {
     setPlayerHp(MAX_PLAYER_HP);
-    setBossHp(MAX_BOSS_HP);
-    setCurrentPhase(0);
-    setCurrentLevel(0);
+    if (currentPhase === 2) setBossHp(MAX_BOSS_HP);
+    updateProgress(restartRetryPhase(progressRef.current));
     setStatus("playing");
     setBlitzTimeLeft(12);
     setBlitzPaused(false);
+    foundDetailsRef.current = new Set();
     setFoundDetails(new Set());
+    setBossSelected(new Set());
   };
 
   if (status === "gameover") {
@@ -202,7 +192,7 @@ const restart = () => {
          <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
          {feedback && <ScoreFeedback score={feedback.score} />}
-         <ActionButton disabled={saving} onClick={() => onSubmit({ correct: finalOk, total: finalOk + finalMisses })} center>{check}</ActionButton>
+         <ActionButton disabled={saving} onClick={() => onSubmit(retryProgressScore(progress, phaseIds.reduce((total, ids) => total + ids.length, 0)))} center>{check}</ActionButton>
       </div>
     );
   }
@@ -286,7 +276,11 @@ const restart = () => {
         </div>
       )}
 
-      {currentPhase === 1 && (
+      {currentPhase > 0 && progress.feedback && (
+        <StageRetryFeedback locale={locale} feedback={progress.feedback} onContinue={continueExplanation} />
+      )}
+
+      {currentPhase === 1 && !progress.feedback && (
         <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
           <p className="font-bold text-center text-lg text-warning mb-6">{content.phase2Intro}</p>
           <div className="w-full bg-slate-900 border-2 border-warning/50 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
@@ -312,7 +306,7 @@ const restart = () => {
         </div>
       )}
 
-      {currentPhase === 2 && (
+      {currentPhase === 2 && !progress.feedback && (
         <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in zoom-in-95">
           <p className="font-bold text-center text-lg text-danger mb-6">{content.phase3Intro}</p>
           <div className="w-full bg-slate-950 border-2 border-danger rounded-3xl p-6 shadow-[0_0_50px_rgba(239,68,68,0.3)] relative overflow-hidden">
