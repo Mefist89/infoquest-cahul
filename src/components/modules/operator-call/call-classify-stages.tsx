@@ -1,63 +1,52 @@
 "use client";
 
-import { Check, CheckCircle2, ShieldAlert, Volume2 } from "lucide-react";
+import { Check, CheckCircle2, Pause, Play, ShieldAlert, Volume2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
 import { answerRetryQuestion, continueRetryProgress, createRetryProgress, retryProgressScore } from "@/features/modules/runner/retry-progress";
+import { useNoTimer } from "@/features/modules/runner/use-no-timer";
+import { NoTimerToggle } from "../shared/timer-setting";
+import { useCallPhraseAudio } from "./use-call-phrase-audio";
 import { StageRetryFeedback } from "./stage-retry-feedback";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
+
+const CALL_SECONDS = 20;
 
 function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
   const phrases = useMemo(() => content.levels.flatMap((level, levelIndex) => level.phrases.map((phrase, phraseIndex) => ({ ...phrase, levelIndex, phraseIndex }))), [content.levels]);
   const [progress, setProgress] = useState(() => createRetryProgress(phrases.map((_, index) => String(index))));
   const progressRef = useRef(progress);
   const [status, setStatus] = useState<"idle" | "playing" | "won">("idle");
-  const [timeLeft, setTimeLeft] = useState(100);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [timeLeft, setTimeLeft] = useState(CALL_SECONDS);
+  const [paused, setPaused] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const noTimer = useNoTimer();
+  const a11y = accessibilityText[locale];
   const phrase = phrases[progress.index];
   const currentLevelIndex = phrase?.levelIndex ?? 0;
   const currentPhraseIndex = phrase?.phraseIndex ?? 0;
   const explaining = progress.feedback !== null;
+  const levelNum = currentLevelIndex + 1;
+  const phraseNum = currentPhraseIndex + 1;
+  const src = levelNum === 1 ? `/audio/${levelNum}/${locale}.mp3` : `/audio/${levelNum}/${locale}${phraseNum}.mp3`;
+  const audioFinished = useCallPhraseAudio({ src, playbackKey: `${currentLevelIndex}:${currentPhraseIndex}:${attempt}`, active: status === "playing" && !explaining, paused });
 
   useEffect(() => {
-    if (status !== "playing" || explaining) return;
+    if (status !== "playing" || explaining || paused || noTimer || !audioFinished) return;
     const timer = window.setTimeout(() => {
-      if (timeLeft <= 0) {
+      if (timeLeft <= 1) {
         const next = answerRetryQuestion(progressRef.current, false, `${content.timeout} ${phrase.explain}`);
         progressRef.current = next;
         setProgress(next);
+        setTimeLeft(0);
         playSound("timeout");
       } else setTimeLeft(timeLeft - 1);
-    }, 100);
+    }, 1000);
     return () => window.clearTimeout(timer);
-  }, [status, explaining, timeLeft, content.timeout, phrase]);
-
-  useEffect(() => {
-    if (status !== "playing" || explaining || !phrase) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      return;
-    }
-
-    const levelNum = currentLevelIndex + 1;
-    const phraseNum = currentPhraseIndex + 1;
-    const audioSrc = levelNum === 1
-      ? `/audio/${levelNum}/${locale}.mp3`
-      : `/audio/${levelNum}/${locale}${phraseNum}.mp3`;
-
-    const audio = new Audio(audioSrc);
-    audioRef.current = audio;
-    audio.play().catch(e => console.error("Audio play failed:", e));
-
-    return () => {
-      audio.pause();
-    };
-  }, [status, explaining, currentLevelIndex, currentPhraseIndex, locale, phrase]);
+  }, [status, explaining, paused, noTimer, audioFinished, timeLeft, content.timeout, phrase, currentLevelIndex, currentPhraseIndex]);
 
   function handleAction(isDangerAction: boolean) {
     if (status !== "playing" || progressRef.current.feedback || !phrase) return;
@@ -72,7 +61,9 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
     const next = continueRetryProgress(progressRef.current);
     progressRef.current = next;
     setProgress(next);
-    setTimeLeft(100);
+    setTimeLeft(CALL_SECONDS);
+    setPaused(false);
+    setAttempt(value => value + 1);
     if (next.index >= phrases.length) setStatus("won");
   }
 
@@ -80,7 +71,9 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
     const next = createRetryProgress(phrases.map((_, index) => String(index)));
     progressRef.current = next;
     setProgress(next);
-    setTimeLeft(100);
+    setTimeLeft(CALL_SECONDS);
+    setPaused(false);
+    setAttempt(value => value + 1);
     setStatus("playing");
   }
 
@@ -89,9 +82,9 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
       <p className="font-semibold text-foreground/90 sm:text-lg">{content.prompt}</p>
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-neon/30 bg-slate-950 shadow-2xl relative">
-        <div className="absolute top-0 w-full h-1.5 bg-secondary/50">
-           <div className={`h-full ${timeLeft < 30 ? 'bg-danger' : 'bg-neon'} transition-all duration-75`} style={{ width: `${timeLeft}%` }} />
-        </div>
+        {!noTimer && <div className="absolute top-0 w-full h-1.5 bg-secondary/50">
+           <div className={`h-full ${timeLeft <= 5 ? 'bg-danger' : 'bg-neon'} transition-all duration-75`} style={{ width: `${timeLeft / CALL_SECONDS * 100}%` }} />
+        </div>}
 
         <div className="p-6 sm:p-8 text-center min-h-[340px] flex flex-col justify-center items-center relative">
           {status === "idle" && (
@@ -99,6 +92,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
               <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-neon/10 border border-neon/40 text-neon animate-pulse">
                 <Volume2 className="size-10" />
               </div>
+              <div className="mt-5"><NoTimerToggle locale={locale} /></div>
               <button onClick={start} className="mt-8 rounded-xl bg-neon px-8 py-3 text-sm font-black text-primary-foreground focus-ring hover:scale-105 transition">{content.startBtn}</button>
             </div>
           )}
@@ -118,6 +112,12 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
                 </h3>
               </div>
 
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                {!noTimer && <span role="timer" className="text-xl font-black tabular-nums">0:{timeLeft.toString().padStart(2, "0")}</span>}
+                <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-bold">
+                  {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}{paused ? a11y.resume : a11y.pause}
+                </button>
+              </div>
               <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
                 <button
                   onClick={() => handleAction(false)}

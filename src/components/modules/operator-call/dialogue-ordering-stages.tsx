@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
+import { useNoTimer } from "@/features/modules/runner/use-no-timer";
+import { TimerGameStart } from "../shared/timer-setting";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
 function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["dialogue"] | (typeof operatorCallContent)["ro"]["dialogue"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
@@ -140,6 +142,8 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
 }
 
 function OrderingStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["ordering"] | (typeof operatorCallContent)["ro"]["ordering"]; check: string; retry: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
+  const noTimer = useNoTimer();
+  const [started, setStarted] = useState(false);
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [status, setStatus] = useState<"playing" | "failed" | "won">("playing");
   const [timeLeft, setTimeLeft] = useState<number>(() => content.levels[0]?.time ?? 0);
@@ -157,7 +161,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
   const level = content.levels?.[currentLevelIndex];
 
   useEffect(() => {
-    if (status !== "playing" || !level || paused) return;
+    if (!started || noTimer || status !== "playing" || !level || paused) return;
 
     const timer = window.setTimeout(() => {
       if (timeLeft <= 1) {
@@ -170,12 +174,14 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
     }, 1000);
 
     return () => window.clearTimeout(timer);
-  }, [a11y.wrong, content.fail, paused, status, timeLeft, level]);
+  }, [a11y.wrong, content.fail, paused, status, timeLeft, level, started, noTimer]);
 
   useEffect(() => {
     if (status === "failed" || !level) statusRef.current?.focus();
     else levelPanelRef.current?.focus();
-  }, [currentLevelIndex, level, status]);
+  }, [currentLevelIndex, level, status, started]);
+
+  if (!started) return <TimerGameStart locale={locale} onStart={() => setStarted(true)} />;
 
   if (!level) {
     return (
@@ -215,7 +221,6 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
       playSound("wrong");
       setOrderedWrong((count) => count + 1);
       setAnnouncement(`${a11y.wrong}. ${locale === "ru" ? "Попробуйте выбрать другой шаг" : "Încearcă să alegi alt pas"}`);
-      setTimeLeft(prev => Math.max(0, prev - 3));
       setFlashError(true);
       setTimeout(() => setFlashError(false), 300);
     }
@@ -239,7 +244,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
     );
   }
 
-  const isLowTime = timeLeft <= 5;
+  const isLowTime = !noTimer && timeLeft <= 5;
   const isErrorState = isLowTime || flashError;
 
   return (
@@ -251,13 +256,13 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
         <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
           {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
         </span>
-        <div className="flex items-center gap-3">
-          <span role="timer" aria-label={`${timeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-2xl font-black tabular-nums transition-colors duration-200 ${isErrorState ? 'text-danger animate-pulse scale-110' : 'text-neon'}`}>0:{timeLeft.toString().padStart(2, '0')}</span>
+        {!noTimer && <div className="flex items-center gap-3">
+          <span role="timer" aria-label={`${timeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-2xl font-black tabular-nums transition-colors duration-200 ${isErrorState ? 'text-danger animate-pulse scale-110' : 'text-neon'}`}>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
           <button type="button" onClick={() => { setPaused(value => !value); setAnnouncement(paused ? a11y.resume : a11y.paused); }} aria-pressed={paused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/50 px-3 text-xs font-bold text-foreground">
             {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
             {paused ? a11y.resume : a11y.pause}
           </button>
-        </div>
+        </div>}
       </div>
 
       <div ref={levelPanelRef} tabIndex={-1} className={`focus-ring w-full rounded-3xl p-6 sm:p-8 border-2 transition-all duration-300 ${isErrorState ? 'border-danger bg-danger/5 shadow-[0_0_50px_rgba(255,0,0,0.3)]' : 'border-border bg-slate-900 shadow-[0_10px_30px_rgba(0,0,0,0.3)]'}`}>

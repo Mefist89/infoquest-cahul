@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
 import { answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore, type RetryProgress } from "@/features/modules/runner/retry-progress";
+import { useNoTimer } from "@/features/modules/runner/use-no-timer";
+import { TimerGameStart } from "../shared/timer-setting";
 import { StageRetryFeedback } from "./stage-retry-feedback";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
@@ -30,7 +32,11 @@ type VisualScenario = {
   correctTargets: readonly string[];
 };
 
+const BLITZ_SECONDS = 25;
+
 function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: (result: StageResult) => void }) {
+  const noTimer = useNoTimer();
+  const [started, setStarted] = useState(false);
   const MAX_PLAYER_HP = 3;
   const MAX_BOSS_HP = 10;
 
@@ -44,7 +50,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   const [foundDetails, setFoundDetails] = useState<Set<string>>(new Set());
   const [bossSelected, setBossSelected] = useState<Set<number>>(new Set());
   const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
-  const [blitzTimeLeft, setBlitzTimeLeft] = useState(12);
+  const [blitzTimeLeft, setBlitzTimeLeft] = useState(BLITZ_SECONDS);
   const [shake, setShake] = useState(false);
   const [blitzPaused, setBlitzPaused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
@@ -79,7 +85,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
         setStatus("win");
       }
     } else updateProgress(next);
-    setBlitzTimeLeft(12);
+    setBlitzTimeLeft(BLITZ_SECONDS);
     setBlitzPaused(false);
   }, [currentPhase, phaseIds, updateProgress]);
 
@@ -93,13 +99,13 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   }, [a11y.correct, a11y.wrong, takeDamage, updateProgress]);
 
   useEffect(() => {
-    if (status !== "playing" || currentPhase !== 1 || blitzPaused || progress.feedback) return;
+    if (!started || noTimer || status !== "playing" || currentPhase !== 1 || blitzPaused || progress.feedback) return;
     const timer = window.setTimeout(() => {
       if (blitzTimeLeft <= 1) showAnswer(false, content.phase2[currentLevel].explain);
       else setBlitzTimeLeft(blitzTimeLeft - 1);
     }, 1000);
     return () => window.clearTimeout(timer);
-  }, [blitzPaused, blitzTimeLeft, content, currentLevel, currentPhase, progress.feedback, showAnswer, status]);
+  }, [blitzPaused, blitzTimeLeft, content, currentLevel, currentPhase, progress.feedback, showAnswer, status, started, noTimer]);
 
   useEffect(() => {
     if (status !== "playing" || currentPhase !== 0 || !progress.feedback?.complete) return;
@@ -110,7 +116,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   useEffect(() => {
     if (status === "playing") phaseRef.current?.focus();
     else statusRef.current?.focus();
-  }, [currentLevel, currentPhase, status, progress.feedback]);
+  }, [currentLevel, currentPhase, status, progress.feedback, started]);
 
   const handleVisualClick = (targetId: string, isCorrect: boolean) => {
     if (status !== "playing" || progressRef.current.feedback || foundDetails.has(targetId) || foundDetailsRef.current.has(targetId)) return;
@@ -159,7 +165,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
     else {
       updateProgress(result.progress);
       if (!answer.correct) setBossSelected(new Set());
-      setBlitzTimeLeft(12);
+      setBlitzTimeLeft(BLITZ_SECONDS);
       setBlitzPaused(false);
     }
   }
@@ -169,12 +175,14 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
     if (currentPhase === 2) setBossHp(MAX_BOSS_HP);
     updateProgress(restartRetryPhase(progressRef.current));
     setStatus("playing");
-    setBlitzTimeLeft(12);
+    setBlitzTimeLeft(BLITZ_SECONDS);
     setBlitzPaused(false);
     foundDetailsRef.current = new Set();
     setFoundDetails(new Set());
     setBossSelected(new Set());
   };
+
+  if (!started) return <TimerGameStart locale={locale} onStart={() => setStarted(true)} />;
 
   if (status === "gameover") {
     return (
@@ -282,17 +290,17 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
 
       {currentPhase === 1 && !progress.feedback && (
         <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
-          <p className="font-bold text-center text-lg text-warning mb-6">{content.phase2Intro}</p>
+          <p className="font-bold text-center text-lg text-warning mb-6">{noTimer ? (locale === "ru" ? "Фаза 2: Блиц. Отвечай в своём темпе." : "Faza 2: Blitz. Răspunde în ritmul tău.") : content.phase2Intro}</p>
           <div className="w-full bg-slate-900 border-2 border-warning/50 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
             <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{currentLevel + 1} / 10</span>
-               <div className="flex items-center gap-3">
+               {!noTimer && <div className="flex items-center gap-3">
                  <span role="timer" aria-label={`${blitzTimeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-3xl font-black tabular-nums transition-colors ${blitzTimeLeft <= 3 ? 'text-danger animate-pulse' : 'text-warning'}`}>0:{blitzTimeLeft.toString().padStart(2, "0")}</span>
                  <button type="button" onClick={() => { setBlitzPaused(value => !value); setAnnouncement(blitzPaused ? a11y.resume : a11y.paused); }} aria-pressed={blitzPaused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-warning/40 bg-background/50 px-3 text-xs font-bold text-foreground">
                    {blitzPaused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
                    {blitzPaused ? a11y.resume : a11y.pause}
                  </button>
-               </div>
+               </div>}
             </div>
             <p className="text-xl sm:text-2xl font-bold mb-8 text-foreground">{content.phase2[currentLevel].text}</p>
             <div className="flex flex-col gap-3">

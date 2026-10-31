@@ -28,6 +28,7 @@ import { CallSimulatorStage, ClassifyStage } from "./operator-call/call-classify
 import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-stages";
 import { FinalStage } from "./operator-call/final-stage";
 import { IntroStage, TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
+import { NoTimerToggle } from "./shared/timer-setting";
 import { NextButtonContext } from "./operator-call/stage-support";
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
@@ -83,6 +84,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
     <main className="circuit-bg min-h-screen px-4 py-6 sm:py-10">
       <div className="mx-auto max-w-7xl">
         <header className="flex flex-wrap items-center gap-3">
+          <NoTimerToggle locale={locale} />
           <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-neon transition hover:border-neon/60">
             <ArrowLeft className="size-4" aria-hidden="true" /> {t.back}
           </Link>

@@ -61,6 +61,32 @@ export function Composer({
   clearAttachment: () => void;
   setAnalyzerInputMode: Dispatch<SetStateAction<AnalyzerInputMode>>;
 }) {
+  if (!dataConsent) {
+    return (
+      <div className="max-h-[60dvh] shrink-0 overflow-y-auto border-t border-border/70 bg-background/95 p-3 sm:p-5">
+        <div className="rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs leading-relaxed text-muted-foreground">
+          <p>{t.privacySummary}</p>
+          <details className="mt-1">
+            <summary className="focus-ring inline-flex cursor-pointer rounded font-bold text-neon hover:underline">
+              {t.privacyMore}
+            </summary>
+            <div className="mt-2 border-l border-gold/30 pl-3">
+              <p>{mode === "analyzer" ? t.privacyNotice : t.chatPrivacyNotice}</p>
+              <Link href={`/${locale}/privacy`} className="mt-2 inline-flex font-bold text-neon hover:underline">
+                {t.privacyLink}
+              </Link>
+            </div>
+          </details>
+          <p className="mt-2 font-semibold text-foreground">{t.historyNotice}</p>
+          <p className="mt-3 text-foreground">{t.consent}</p>
+          <button type="button" onClick={() => onConsentChange(true)} className="focus-ring mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground transition hover:brightness-110">
+            {t.acceptConsent}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
                 <form onSubmit={submit} className="sticky bottom-0 z-20 shrink-0 border-t border-border/70 bg-background/95 p-3 backdrop-blur-xl sm:p-5">
               {mode === "analyzer" && (
@@ -82,30 +108,6 @@ export function Composer({
                   <audio src={attachment.url} controls className="mt-3 w-full" />
                 </div>
               )}
-              <div className="mb-3 rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs leading-relaxed text-muted-foreground">
-                <p>{t.privacySummary}</p>
-                <details className="mt-1">
-                  <summary className="focus-ring inline-flex cursor-pointer rounded font-bold text-neon hover:underline">
-                    {t.privacyMore}
-                  </summary>
-                  <div className="mt-2 border-l border-gold/30 pl-3">
-                    <p>{mode === "analyzer" ? t.privacyNotice : t.chatPrivacyNotice}</p>
-                    <Link href={`/${locale}/privacy`} className="mt-2 inline-flex font-bold text-neon hover:underline">
-                      {t.privacyLink}
-                    </Link>
-                  </div>
-                </details>
-                <p className="mt-2 font-semibold text-foreground">{t.historyNotice}</p>
-                <label className="mt-3 flex cursor-pointer items-start gap-3 text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={dataConsent}
-                    onChange={(event) => onConsentChange(event.target.checked)}
-                    className="mt-0.5 size-4 shrink-0 accent-[var(--neon)]"
-                  />
-                  <span>{t.consent}</span>
-                </label>
-              </div>
               {mode === "analyzer" && analyzerInputMode === "audio" ? (
                 <div className="rounded-2xl border border-border bg-card/85 p-4">
                   <div className="flex flex-wrap items-center gap-4">

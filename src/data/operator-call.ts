@@ -262,14 +262,14 @@ export const operatorCallContent = {
       ]
     },
     ordering: {
-      prompt: "Выстраивай шаги в правильном хронологическом порядке. Спеши, время идет! Ошибка отнимет 3 секунды.",
+      prompt: "Выстраивай шаги в правильном порядке. Ошибка не отнимает время.",
       levelText: "Уровень",
       win: "Бомба обезврежена! Отличная работа.",
       fail: "Время вышло! Вы не успели.",
       levels: [
         {
           id: 1,
-          time: 30,
+          time: 45,
           steps: [
             { id: "s1", text: "Положить трубку." },
             { id: "s2", text: "Никому не сообщать код из SMS." },
@@ -278,7 +278,7 @@ export const operatorCallContent = {
         },
         {
           id: 2,
-          time: 35,
+          time: 53,
           steps: [
             { id: "s1", text: "Отказаться от быстрого решения по телефону." },
             { id: "s2", text: "Завершить звонок." },
@@ -288,7 +288,7 @@ export const operatorCallContent = {
         },
         {
           id: 3,
-          time: 40,
+          time: 60,
           steps: [
             { id: "s1", text: "Не поддаваться панике." },
             { id: "s2", text: "Прервать телефонный разговор." },
@@ -299,7 +299,7 @@ export const operatorCallContent = {
         },
         {
           id: 4,
-          time: 45,
+          time: 68,
           steps: [
             { id: "s1", text: "Отказаться от установки любых программ." },
             { id: "s2", text: "Положить трубку." },
@@ -311,7 +311,7 @@ export const operatorCallContent = {
         },
         {
           id: 5,
-          time: 55,
+          time: 83,
           steps: [
             { id: "s1", text: "Немедленно завершить разговор." },
             { id: "s2", text: "Зайти в официальное приложение оператора." },
@@ -330,7 +330,7 @@ export const operatorCallContent = {
       win: "Победа! Тень повержена, а твой номер в безопасности.",
       clues: "Улики",
       phase1Intro: "Фаза 1: Визуальный тест. Кликни на деталь, которая выдает мошенника.",
-      phase2Intro: "Фаза 2: Блиц. У тебя 12 секунд на ответ!",
+      phase2Intro: "Фаза 2: Блиц. У тебя 25 секунд на ответ!",
       phase3Intro: "Фаза 3: Битва с Боссом. Парируй его уловки!",
       phase1: [
         { id: "p1_1", type: "sms", sender: "MinTel", text: "Ваш тариф истекает. Продлите по ссылке:", fakeLink: "mintei-support.com", realLink: "mintel.md", correctTargets: ["fakeLink"] },
@@ -522,7 +522,7 @@ export const operatorCallContent = {
       win: "Victorie! Umbra a fost învinsă, iar numărul tău este în siguranță.",
       clues: "Indicii",
       phase1Intro: "Faza 1: Test vizual. Dă click pe detaliul care trădează escrocul.",
-      phase2Intro: "Faza 2: Blitz. Ai 12 secunde pentru a răspunde!",
+      phase2Intro: "Faza 2: Blitz. Ai 25 de secunde pentru a răspunde!",
       phase3Intro: "Faza 3: Lupta cu Boss-ul. Parează atacurile lui!",
       phase1: [
         {
@@ -679,14 +679,14 @@ export const operatorCallContent = {
       ]
     },
     ordering: {
-      prompt: "Apasă acțiunile în ordinea cronologică corectă. Grăbește-te, timpul trece! O greșeală scade 3 secunde.",
+      prompt: "Apasă acțiunile în ordinea cronologică corectă. O greșeală nu scade din timp.",
       levelText: "Nivelul",
       win: "Bomba a fost dezamorsată! O treabă excelentă.",
       fail: "Timpul a expirat! Nu ai reușit.",
       levels: [
         {
           id: 1,
-          time: 30,
+          time: 45,
           steps: [
             { id: "s1", text: "Închideți apelul." },
             { id: "s2", text: "Nu comunicați nimănui codul din SMS." },
@@ -695,7 +695,7 @@ export const operatorCallContent = {
         },
         {
           id: 2,
-          time: 35,
+          time: 53,
           steps: [
             { id: "s1", text: "Refuzați luarea unei decizii rapide la telefon." },
             { id: "s2", text: "Încheiați apelul." },
@@ -705,7 +705,7 @@ export const operatorCallContent = {
         },
         {
           id: 3,
-          time: 40,
+          time: 60,
           steps: [
             { id: "s1", text: "Nu intrați în panică." },
             { id: "s2", text: "Întrerupeți conversația telefonică." },
@@ -716,7 +716,7 @@ export const operatorCallContent = {
         },
         {
           id: 4,
-          time: 45,
+          time: 68,
           steps: [
             { id: "s1", text: "Refuzați instalarea oricăror programe." },
             { id: "s2", text: "Închideți apelul." },
@@ -728,7 +728,7 @@ export const operatorCallContent = {
         },
         {
           id: 5,
-          time: 55,
+          time: 83,
           steps: [
             { id: "s1", text: "Încheiați imediat conversația." },
             { id: "s2", text: "Accesați aplicația oficială a operatorului." },

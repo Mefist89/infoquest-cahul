@@ -32,6 +32,7 @@ import { LinkClassifyStage } from "./fake-link/link-classify-stage";
 import { DialogueReactStage } from "./fake-link/dialogue-react-stage";
 import { OrderStepsStage } from "./fake-link/order-steps-stage";
 import { FinalBattleStage } from "./fake-link/final-battle-stage";
+import { NoTimerToggle } from "./shared/timer-setting";
 import { NextButtonContext } from "./operator-call/stage-support";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
@@ -73,6 +74,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
     <main className="circuit-bg min-h-screen px-4 py-6 sm:py-10">
       <div className="mx-auto max-w-7xl">
         <header className="flex flex-wrap items-center gap-3">
+          <NoTimerToggle locale={locale} />
           <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-neon transition hover:border-neon/60">
             <ArrowLeft className="size-4" aria-hidden="true" /> {t.back}
           </Link>
