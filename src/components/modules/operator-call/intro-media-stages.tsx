@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { BookOpen, CheckCircle2, ChevronRight, Play, Volume2 } from "lucide-react";
+import { CheckCircle2, ChevronRight, Play, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
@@ -159,12 +159,6 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
     <p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p>
 
     <div className="mt-8 flex flex-col sm:flex-row justify-center sm:justify-start gap-4">
-      {'bookletText' in content && 'bookletFile' in content && content.bookletText && content.bookletFile && (
-        <a href={content.bookletFile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 border-2 border-slate-700 p-4 transition-colors hover:border-neon hover:bg-slate-800 text-foreground group focus-ring">
-          <BookOpen className="text-neon size-6 group-hover:scale-110 transition-transform" />
-          <span className="font-bold text-sm sm:text-base">{content.bookletText}</span>
-        </a>
-      )}
       {'audioText' in content && 'audioFile' in content && content.audioText && content.audioFile && (
         <button type="button" onClick={toggleMp3} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 border-2 border-slate-700 p-4 transition-colors hover:border-neon hover:bg-slate-800 text-foreground group focus-ring">
           {playingMp3 ? <Volume2 className="text-neon size-6 group-hover:scale-110 transition-transform animate-pulse" /> : <Play className="text-neon size-6 group-hover:scale-110 transition-transform" />}
@@ -207,7 +201,7 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 
   return (
     <div>
-      <VideoPlaceholder title={content.title} hint={content.hint} src={content.videoUrl} />
+      <VideoPlaceholder title={content.title} src={content.videoUrl} />
       <ul className="mt-5 grid gap-3 sm:grid-cols-2">
         {content.points.map((point) => (
           <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm">
@@ -238,7 +232,7 @@ function VideoExampleStage({ content, button, saving, onComplete }: { content: (
   </div>;
 }
 
-function VideoPlaceholder({ title, hint, src }: { title: string; hint: string; src?: string }) {
+function VideoPlaceholder({ title, hint, src }: { title: string; hint?: string; src?: string }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
       {src && <video
@@ -251,7 +245,7 @@ function VideoPlaceholder({ title, hint, src }: { title: string; hint: string; s
       </video>}
       <div className="border-t border-border bg-card p-4">
         <h3 className="font-bold">{title}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
+        {hint && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
       </div>
     </div>
   );

@@ -105,7 +105,6 @@ export const operatorCallContent = {
     videoExplanation: {
       title: "Как распознать социальную инженерию",
       placeholder: "Место для видеообъяснения",
-      hint: "Видео будет подключено отдельным MP4. Пока используй краткий конспект.",
       points: ["Не доверяй номеру на экране — его можно подменить.", "Код из SMS, пароль и PIN никогда не называют по телефону.", "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
       videoUrl: "/video/2-video_ru.mp4",
       audioText: "Прослушать текст",
@@ -124,7 +123,7 @@ export const operatorCallContent = {
       levelText: "Уровень",
       win: "Отличная реакция! Ты отбил все атаки.",
       loseThreat: "Ошибка! Это был мошенник. Нужно было сбросить звонок.",
-      loseSafe: "Ошибка! Ты сбросил звонок реального оператора. Здесь не было угрозы.",
+      loseSafe: "Положить трубку — никогда не ошибка: потом сам позвони на официальный номер оператора. Но в этой фразе уловки пока нет: послушай дальше и найди момент, где начинается обман.",
       timeout: "Время вышло. Прочитай объяснение и попробуй эту фразу ещё раз",
       levels: [
         {
@@ -317,7 +316,7 @@ export const operatorCallContent = {
             { id: "s2", text: "Зайти в официальное приложение оператора." },
             { id: "s3", text: "Завершить все активные сессии (выйти со всех устройств)." },
             { id: "s4", text: "Изменить пароль для входа." },
-            { id: "s5", text: "Связаться с банком, чтобы заблокировать переводы с баланса телефона." },
+            { id: "s5", text: "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта." },
             { id: "s6", text: "Позвонить в настоящую поддержку MinTel." },
             { id: "s7", text: "Сообщить о факте утечки данных." }
           ]
@@ -432,7 +431,6 @@ export const operatorCallContent = {
     videoExplanation: {
       title: "Cum recunoști ingineria socială",
       placeholder: "Loc pentru explicația video",
-      hint: "Videoclipul va fi conectat ca MP4 separat. Până atunci folosește rezumatul.",
       points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", "Codul SMS, parola și PIN-ul nu se comunică telefonic.", "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
       videoUrl: "/video/2-video_ro.mp4",
       audioText: "Ascultă textul",
@@ -451,7 +449,7 @@ export const operatorCallContent = {
       levelText: "Nivelul",
       win: "Reacție excelentă! Ai respins toate atacurile.",
       loseThreat: "Greșeală! Era un escroc. Trebuia să închizi apelul.",
-      loseSafe: "Greșeală! Ai închis unui operator real. Aici nu era nicio amenințare.",
+      loseSafe: "Să închizi nu e niciodată o greșeală: apoi sună tu la numărul oficial al operatorului. Dar în această frază încă nu e nicio capcană: ascultă mai departe și găsește momentul în care începe înșelătoria.",
       timeout: "Timpul a expirat. Citește explicația și încearcă din nou această frază",
       levels: [
         {
@@ -734,7 +732,7 @@ export const operatorCallContent = {
             { id: "s2", text: "Accesați aplicația oficială a operatorului." },
             { id: "s3", text: "Închideți toate sesiunile active (ieșiți de pe toate dispozitivele)." },
             { id: "s4", text: "Schimbați parola de acces." },
-            { id: "s5", text: "Contactați banca pentru a bloca transferurile de pe soldul telefonului." },
+            { id: "s5", text: "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial." },
             { id: "s6", text: "Sunați la suportul real MinTel." },
             { id: "s7", text: "Raportați scurgerea de date." }
           ]
