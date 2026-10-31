@@ -213,9 +213,9 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   const sectionLabel = section === "overview" ? t.overview : section === "missions" ? t.missions : section === "achievements" ? t.achievements : t.quests;
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,rgba(2,8,23,0.98),rgba(7,20,48,0.96))]">
-      <div className="mx-auto grid min-h-screen max-w-[1680px] lg:grid-cols-[17.5rem_minmax(0,1fr)]">
-        <aside className="border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
+    <main className="min-h-screen w-full bg-[#050e20]">
+      <div className="mx-auto grid min-h-screen max-w-[1680px] grid-cols-1 lg:grid-cols-[17.5rem_minmax(0,1fr)]">
+        <aside className="min-w-0 border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
           <Link href={`/${locale}`} className="focus-ring flex items-center gap-3 rounded-xl">
             <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-6" aria-hidden="true" /></span>
             <span><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Detective center</span></span>
@@ -229,7 +229,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
           </div>
 
           <p className="mt-7 hidden px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
-          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible" aria-label={t.navigation}>
+          <nav className="mt-4 grid grid-cols-2 gap-2 pb-1 lg:grid-cols-1" aria-label={t.navigation}>
             <DashboardNavLink href={`/${locale}/profile`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
             <DashboardNavLink href={`/${locale}/profile/missions`} icon={GraduationCap} label={t.missions} active={section === "missions"} />
             <DashboardNavLink href={`/${locale}/profile/achievements`} icon={Trophy} label={t.achievements} active={section === "achievements"} />
@@ -253,14 +253,14 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
             <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
-            <div className="flex items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
+            <div className="flex max-w-full flex-wrap items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
           </header>
 
           {query.ai === "restricted" && userRole === "blocked" && <div role="alert" className="mt-6 rounded-2xl border border-gold/45 bg-gold/10 px-5 py-4 text-sm text-foreground"><strong className="text-gold">{t.role}: {ROLE_LABELS[userRole][locale]}.</strong> {t.aiRestricted}</div>}
 
           {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8 pb-10">
             <div className="flex flex-wrap items-end justify-between gap-5">
-              <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-neon">{t.detective}</p><h1 className="mt-2 text-3xl font-black sm:text-4xl xl:text-5xl">{t.greeting}, {displayName}</h1><p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">{t.greetingText}</p></div>
+              <div className="min-w-0 max-w-full"><p className="text-sm font-bold uppercase tracking-[0.18em] text-neon">{t.detective}</p><h1 className="mt-2 break-words text-3xl font-black sm:text-4xl xl:text-5xl">{t.greeting}, {displayName}</h1><p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">{t.greetingText}</p></div>
               <Link href={`/${locale}${currentModule.route}`} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground shadow-[0_0_25px_rgba(0,217,255,0.2)] transition hover:-translate-y-0.5"><PhoneCall className="size-4" aria-hidden="true" />{t.continue}<ChevronRight className="size-4" aria-hidden="true" /></Link>
             </div>
 
@@ -325,7 +325,7 @@ function LanguageNav({ locale, sectionPath }: { locale: ProfileLocale; sectionPa
 }
 
 function DashboardNavLink({ href, icon: Icon, label, active = false }: { href: string; icon: LucideIcon; label: string; active?: boolean }) {
-  return <Link href={href} className={`focus-ring flex min-h-11 shrink-0 items-center gap-3 rounded-xl border px-3 text-sm font-semibold transition ${active ? "border-neon/30 bg-neon/10 text-neon" : "border-transparent text-muted-foreground hover:bg-card hover:text-foreground"}`}><Icon className="size-4" aria-hidden="true" />{label}</Link>;
+  return <Link href={href} className={`focus-ring flex min-h-11 min-w-0 items-center gap-3 rounded-xl border px-3 text-sm font-semibold transition ${active ? "border-neon/30 bg-neon/10 text-neon" : "border-transparent text-muted-foreground hover:bg-card hover:text-foreground"}`}><Icon className="size-4 shrink-0" aria-hidden="true" /><span className="min-w-0 break-words">{label}</span></Link>;
 }
 
 function StatCard({ icon: Icon, label, value, color }: { icon: LucideIcon; label: string; value: string; color: string }) {
