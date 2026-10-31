@@ -354,7 +354,7 @@ export const operatorCallContent = {
         { id: "p2_7", text: "Может ли настоящий оператор попросить продиктовать SMS-код?", options: ["Да, для верификации", "Никогда", "Только при блокировке"], answer: 1, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
         { id: "p2_8", text: "Что делать, если позвонил «сотрудник спецслужб» и просит помочь в поимке вора?", options: ["Помочь", "Положить трубку", "Спросить его звание"], answer: 1, explain: "Звание и просьба о секретной помощи не подтверждают личность. Положи трубку и проверь обращение по официальному номеру ведомства" },
         { id: "p2_9", text: "Если ссылка выглядит как mintel-support.com, она...", options: ["Официальная", "Фальшивая", "Резервная"], answer: 1, explain: "Похожее название сайта не делает его официальным. Открой известный тебе официальный сайт самостоятельно" },
-        { id: "p2_10", text: "Какую информацию безопасно сообщать по телефону?", options: ["Номер паспорта", "Свой текущий тариф", "Код из SMS"], answer: 1, explain: "Название тарифа не даёт доступа к аккаунту. Паспортные данные и SMS-код не сообщай незнакомому звонящему" }
+        { id: "p2_10", text: "Какую информацию безопасно сообщать по телефону?", options: ["Номер паспорта", "Ничего — положу трубку и сам позвоню на официальный номер", "Код из SMS"], answer: 1, explain: "Название тарифа не даёт доступа к аккаунту. Паспортные данные и SMS-код не сообщай незнакомому звонящему" }
       ],
       phase3: [
         { id: "p3_1", bossText: "Если не назовешь код, через 5 минут спишутся все деньги с баланса!", options: ["Я сейчас сам перезвоню в поддержку.", "Хорошо, диктую: 4-5-2..."], answers: [0], explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
@@ -565,7 +565,7 @@ export const operatorCallContent = {
         { id: "p2_7", text: "Poate un operator real să vă ceară să dictați un cod SMS?", options: ["Da, pentru verificare", "Niciodată", "Doar la blocare"], answer: 1, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." },
         { id: "p2_8", text: "Ce faceți dacă sună un «angajat al serviciilor speciale» și cere ajutor?", options: ["Îl ajut", "Închid apelul", "Îi întreb gradul"], answer: 1, explain: "Gradul și cererea de ajutor secret nu confirmă identitatea. Închide și verifică solicitarea la numărul oficial al instituției" },
         { id: "p2_9", text: "Dacă link-ul arată ca mintel-support.com, acesta este...", options: ["Oficial", "Fals", "De rezervă"], answer: 1, explain: "Un nume de site asemănător nu îl face oficial. Deschide singur site-ul oficial pe care îl cunoști" },
-        { id: "p2_10", text: "Ce informații sunt sigure de comunicat la telefon?", options: ["Numărul pașaportului", "Planul tarifar curent", "Codul din SMS"], answer: 1, explain: "Numele tarifului nu oferă acces la cont. Nu comunica datele din buletin sau codul SMS unui apelant necunoscut" }
+        { id: "p2_10", text: "Ce informații sunt sigure de comunicat la telefon?", options: ["Numărul pașaportului", "Nimic — închid și sun eu la numărul oficial", "Codul din SMS"], answer: 1, explain: "Numele tarifului nu oferă acces la cont. Nu comunica datele din buletin sau codul SMS unui apelant necunoscut" }
       ],
       phase3: [
         { 

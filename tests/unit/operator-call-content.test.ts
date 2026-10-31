@@ -23,3 +23,16 @@ describe("согласованность данных operator-call RU/RO", () =
     expect(source.answer).toBeLessThan(source.options.length);
   });
 });
+
+describe("пункт 19: безопасная реакция на незнакомый звонок", () => {
+  it.each([
+    ["ru", "Ничего — положу трубку и сам позвоню на официальный номер"],
+    ["ro", "Nimic — închid și sun eu la numărul oficial"],
+  ] as const)("сохраняет правильный индекс и три варианта в %s", (locale, correctText) => {
+    const question = operatorCallContent[locale].final.phase2.find(item => item.id === "p2_10")!;
+    expect(question.id).toBe("p2_10");
+    expect(question.options).toHaveLength(3);
+    expect(question.answer).toBe(1);
+    expect(question.options[question.answer]).toBe(correctText);
+  });
+});
