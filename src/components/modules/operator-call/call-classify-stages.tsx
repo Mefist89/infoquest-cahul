@@ -1,43 +1,42 @@
 "use client";
 
 import { Check, CheckCircle2, ShieldAlert, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
+import { answerRetryQuestion, continueRetryProgress, createRetryProgress, retryProgressScore } from "@/features/modules/runner/retry-progress";
+import { StageRetryFeedback } from "./stage-retry-feedback";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
 function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["callSimulator"] | (typeof operatorCallContent)["ro"]["callSimulator"]; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: (result: StageResult) => void }) {
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
-  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [status, setStatus] = useState<"idle" | "playing" | "failed" | "won">("idle");
-  const [failReason, setFailReason] = useState<string | null>(null);
+  const phrases = useMemo(() => content.levels.flatMap((level, levelIndex) => level.phrases.map((phrase, phraseIndex) => ({ ...phrase, levelIndex, phraseIndex }))), [content.levels]);
+  const [progress, setProgress] = useState(() => createRetryProgress(phrases.map((_, index) => String(index))));
+  const progressRef = useRef(progress);
+  const [status, setStatus] = useState<"idle" | "playing" | "won">("idle");
   const [timeLeft, setTimeLeft] = useState(100);
-  const [correctActions, setCorrectActions] = useState(0);
-  const [wrongActions, setWrongActions] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const level = content.levels[currentLevelIndex];
-  const phrase = level?.phrases[currentPhraseIndex];
+  const phrase = phrases[progress.index];
+  const currentLevelIndex = phrase?.levelIndex ?? 0;
+  const currentPhraseIndex = phrase?.phraseIndex ?? 0;
+  const explaining = progress.feedback !== null;
 
   useEffect(() => {
-    if (status !== "playing") return;
-    const timer = window.setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 0) {
-          setStatus("failed");
-          setFailReason(content.timeout);
-          return 0;
-        }
-        return prev - 1;
-      });
+    if (status !== "playing" || explaining) return;
+    const timer = window.setTimeout(() => {
+      if (timeLeft <= 0) {
+        const next = answerRetryQuestion(progressRef.current, false, `${content.timeout} ${phrase.explain}`);
+        progressRef.current = next;
+        setProgress(next);
+        playSound("timeout");
+      } else setTimeLeft(timeLeft - 1);
     }, 100);
-    return () => window.clearInterval(timer);
-  }, [status, content.timeout, currentPhraseIndex]);
+    return () => window.clearTimeout(timer);
+  }, [status, explaining, timeLeft, content.timeout, phrase]);
 
   useEffect(() => {
-    if (status !== "playing" || !phrase) {
+    if (status !== "playing" || explaining || !phrase) {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -58,41 +57,31 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
     return () => {
       audio.pause();
     };
-  }, [status, currentLevelIndex, currentPhraseIndex, locale, phrase]);
+  }, [status, explaining, currentLevelIndex, currentPhraseIndex, locale, phrase]);
 
   function handleAction(isDangerAction: boolean) {
-    if (status !== "playing" || !phrase) return;
-    if (phrase.isThreat) {
-      if (isDangerAction) { playSound("correct"); setCorrectActions((count) => count + 1); advanceLevel(); }
-      else { playSound("wrong"); setWrongActions((count) => count + 1); setStatus("failed"); setFailReason(content.loseThreat); }
-    } else {
-      if (isDangerAction) { playSound("wrong"); setWrongActions((count) => count + 1); setStatus("failed"); setFailReason(content.loseSafe); }
-      else {
-        if (currentPhraseIndex < level.phrases.length - 1) {
-          setCorrectActions((count) => count + 1);
-          setCurrentPhraseIndex((prev) => prev + 1);
-          setTimeLeft(100);
-        } else { playSound("correct"); setCorrectActions((count) => count + 1); advanceLevel(); }
-      }
-    }
+    if (status !== "playing" || progressRef.current.feedback || !phrase) return;
+    const correct = isDangerAction === phrase.isThreat;
+    const next = answerRetryQuestion(progressRef.current, correct, phrase.explain);
+    progressRef.current = next;
+    setProgress(next);
+    playSound(correct ? "correct" : "wrong");
   }
 
-  function advanceLevel() {
-    if (currentLevelIndex < content.levels.length - 1) {
-      setCurrentLevelIndex((prev) => prev + 1);
-      setCurrentPhraseIndex(0);
-      setTimeLeft(100);
-    } else {
-      setStatus("won");
-    }
+  function continuePhrase() {
+    const next = continueRetryProgress(progressRef.current);
+    progressRef.current = next;
+    setProgress(next);
+    setTimeLeft(100);
+    if (next.index >= phrases.length) setStatus("won");
   }
 
   function start() {
-    setCurrentLevelIndex(0);
-    setCurrentPhraseIndex(0);
+    const next = createRetryProgress(phrases.map((_, index) => String(index)));
+    progressRef.current = next;
+    setProgress(next);
     setTimeLeft(100);
     setStatus("playing");
-    setFailReason(null);
   }
 
   return (
@@ -114,7 +103,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
             </div>
           )}
 
-          {status === "playing" && phrase && (
+          {status === "playing" && !explaining && phrase && (
             <div className="w-full max-w-lg animate-in fade-in zoom-in-95">
               <div className="mb-6 text-xs font-black text-neon/60 uppercase tracking-widest">
                 {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
@@ -146,16 +135,8 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
             </div>
           )}
 
-          {status === "failed" && (
-            <div className="w-full max-w-sm animate-in fade-in zoom-in">
-               <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-danger/10 text-danger border border-danger/30 mb-5">
-                 <ShieldAlert className="size-10" />
-               </div>
-               <p className="text-lg font-bold text-danger">{failReason}</p>
-               <button onClick={start} className="mt-8 rounded-xl border-2 border-danger/40 bg-danger/10 px-8 py-3 text-sm font-black text-danger focus-ring hover:bg-danger/20 transition">
-                 {content.retryBtn}
-               </button>
-            </div>
+          {status === "playing" && progress.feedback && (
+            <StageRetryFeedback locale={locale} feedback={progress.feedback} retry={!progress.feedback.correct} onContinue={continuePhrase} />
           )}
 
           {status === "won" && (
@@ -172,7 +153,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
       {status === "won" && (
         <div className="mt-6 w-full animate-in fade-in slide-in-from-bottom-4">
           {feedback && <ScoreFeedback score={feedback.score} />}
-          <ActionButton disabled={saving} onClick={() => onSubmit({ correct: correctActions, total: correctActions + wrongActions })} center>{check}</ActionButton>
+          <ActionButton disabled={saving} onClick={() => onSubmit(retryProgressScore(progress))} center>{check}</ActionButton>
         </div>
       )}
     </div>

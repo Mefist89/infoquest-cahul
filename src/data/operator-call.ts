@@ -132,43 +132,43 @@ export const operatorCallContent = {
       win: "Отличная реакция! Ты отбил все атаки.",
       loseThreat: "Ошибка! Это был мошенник. Нужно было сбросить звонок.",
       loseSafe: "Ошибка! Ты сбросил звонок реального оператора. Здесь не было угрозы.",
-      timeout: "Время вышло! Мошенник успел тебя запутать.",
+      timeout: "Время вышло. Прочитай объяснение и попробуй эту фразу ещё раз",
       levels: [
         {
           id: 1,
           phrases: [
-            { text: "Ваш номер блокируется через 5 минут, срочно назовите код из SMS!", isThreat: true }
+            { text: "Ваш номер блокируется через 5 минут, срочно назовите код из SMS!", isThreat: true, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." }
           ]
         },
         {
           id: 2,
           phrases: [
-            { text: "Здравствуйте, меня зовут Иван, компания MinTel.", isThreat: false },
-            { text: "Мы зафиксировали сбой. Для безопасности продиктуйте пароль от личного кабинета.", isThreat: true }
+            { text: "Здравствуйте, меня зовут Иван, компания MinTel.", isThreat: false, explain: "Обычное приветствие не содержит опасной просьбы. Название компании ещё не подтверждает личность звонящего" },
+            { text: "Мы зафиксировали сбой. Для безопасности продиктуйте пароль от личного кабинета.", isThreat: true, explain: "Пароль открывает доступ к аккаунту. Не диктуй его звонящему" }
           ]
         },
         {
           id: 3,
           phrases: [
-            { text: "Добрый день. Служба поддержки.", isThreat: false },
-            { text: "Мы меняем вышки связи в вашем районе.", isThreat: false },
-            { text: "Нужно обновить договор. Перейдите по ссылке, которую я вам скинул.", isThreat: true }
+            { text: "Добрый день. Служба поддержки.", isThreat: false, explain: "Представиться службой поддержки — обычное начало разговора. Пока здесь нет просьбы раскрыть данные или открыть ссылку" },
+            { text: "Мы меняем вышки связи в вашем районе.", isThreat: false, explain: "Сообщение о работах само по себе не требует опасных действий. Проверить его можно в официальном приложении" },
+            { text: "Нужно обновить договор. Перейдите по ссылке, которую я вам скинул.", isThreat: true, explain: "Ссылка от незнакомого звонящего может вести на поддельный сайт. Открой официальный сайт или приложение самостоятельно" }
           ]
         },
         {
           id: 4,
           phrases: [
-            { text: "Здравствуйте! Это техподдержка. Ваш номер работает нормально?", isThreat: false },
-            { text: "Отлично. Хотите подключить бесплатный антиспам?", isThreat: false },
-            { text: "Тогда не кладите трубку, сейчас придет SMS-код подтверждения, назовите его.", isThreat: true }
+            { text: "Здравствуйте! Это техподдержка. Ваш номер работает нормально?", isThreat: false, explain: "Вопрос о качестве связи сам по себе обычный. Не сообщай секретные данные, если их попросят дальше" },
+            { text: "Отлично. Хотите подключить бесплатный антиспам?", isThreat: false, explain: "Предложение услуги само по себе не требует передачи секретов. Условия можно проверить самостоятельно в официальном приложении" },
+            { text: "Тогда не кладите трубку, сейчас придет SMS-код подтверждения, назовите его.", isThreat: true, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." }
           ]
         },
         {
           id: 5,
           phrases: [
-            { text: "Добрый день, это уведомление MinTel.", isThreat: false },
-            { text: "Напоминаем о необходимости пополнить счет до конца месяца.", isThreat: false },
-            { text: "Вы можете сделать это через официальное приложение. Всего доброго!", isThreat: false }
+            { text: "Добрый день, это уведомление MinTel.", isThreat: false, explain: "Это обычное уведомление без опасной просьбы. Имя компании само по себе не доказывает подлинность звонка" },
+            { text: "Напоминаем о необходимости пополнить счет до конца месяца.", isThreat: false, explain: "Напоминание о пополнении не просит сообщить пароль или код. Проверь баланс самостоятельно в официальном приложении" },
+            { text: "Вы можете сделать это через официальное приложение. Всего доброго!", isThreat: false, explain: "Самостоятельно открыть официальное приложение — безопасный способ проверить и пополнить счёт" }
           ]
         }
       ]
@@ -468,43 +468,43 @@ export const operatorCallContent = {
       win: "Reacție excelentă! Ai respins toate atacurile.",
       loseThreat: "Greșeală! Era un escroc. Trebuia să închizi apelul.",
       loseSafe: "Greșeală! Ai închis unui operator real. Aici nu era nicio amenințare.",
-      timeout: "Timpul a expirat! Escrocul a reușit să te deruteze.",
+      timeout: "Timpul a expirat. Citește explicația și încearcă din nou această frază",
       levels: [
         {
           id: 1,
           phrases: [
-            { text: "Numărul tău va fi blocat în 5 minute, spune-mi urgent codul din SMS!", isThreat: true }
+            { text: "Numărul tău va fi blocat în 5 minute, spune-mi urgent codul din SMS!", isThreat: true, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." }
           ]
         },
         {
           id: 2,
           phrases: [
-            { text: "Bună ziua, mă numesc Ion, de la compania MinTel.", isThreat: false },
-            { text: "Am detectat o eroare. Pentru siguranță, dictați parola contului personal.", isThreat: true }
+            { text: "Bună ziua, mă numesc Ion, de la compania MinTel.", isThreat: false, explain: "Un salut obișnuit nu conține o cerere periculoasă. Numele companiei nu confirmă încă identitatea apelantului" },
+            { text: "Am detectat o eroare. Pentru siguranță, dictați parola contului personal.", isThreat: true, explain: "Parola oferă acces la cont. Nu o dicta apelantului" }
           ]
         },
         {
           id: 3,
           phrases: [
-            { text: "Bună ziua. Serviciul de asistență.", isThreat: false },
-            { text: "Schimbăm turnurile de comunicație din zona ta.", isThreat: false },
-            { text: "Trebuie să actualizăm contractul. Accesează linkul pe care ți l-am trimis.", isThreat: true }
+            { text: "Bună ziua. Serviciul de asistență.", isThreat: false, explain: "Prezentarea ca serviciu de asistență este un început obișnuit de conversație. Deocamdată nu ți se cere să divulgi date sau să deschizi un link" },
+            { text: "Schimbăm turnurile de comunicație din zona ta.", isThreat: false, explain: "Anunțul despre lucrări nu cere în sine acțiuni periculoase. Îl poți verifica în aplicația oficială" },
+            { text: "Trebuie să actualizăm contractul. Accesează linkul pe care ți l-am trimis.", isThreat: true, explain: "Linkul trimis de un apelant necunoscut poate duce la un site fals. Deschide singur site-ul sau aplicația oficială" }
           ]
         },
         {
           id: 4,
           phrases: [
-            { text: "Bună ziua! Suport tehnic. Numărul funcționează normal?", isThreat: false },
-            { text: "Perfect. Vrei să activezi un sistem anti-spam gratuit?", isThreat: false },
-            { text: "Atunci nu închide, vei primi acum un cod SMS de confirmare, spune-mi-l.", isThreat: true }
+            { text: "Bună ziua! Suport tehnic. Numărul funcționează normal?", isThreat: false, explain: "O întrebare despre calitatea conexiunii este în sine obișnuită. Nu divulga date secrete dacă ți se cer mai târziu" },
+            { text: "Perfect. Vrei să activezi un sistem anti-spam gratuit?", isThreat: false, explain: "Oferta unui serviciu nu cere în sine transmiterea secretelor. Poți verifica singur condițiile în aplicația oficială" },
+            { text: "Atunci nu închide, vei primi acum un cod SMS de confirmare, spune-mi-l.", isThreat: true, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." }
           ]
         },
         {
           id: 5,
           phrases: [
-            { text: "Bună ziua, este o notificare MinTel.", isThreat: false },
-            { text: "Îți reamintim să suplinești contul până la sfârșitul lunii.", isThreat: false },
-            { text: "O poți face oricând prin aplicația oficială. O zi bună!", isThreat: false }
+            { text: "Bună ziua, este o notificare MinTel.", isThreat: false, explain: "Este o notificare obișnuită, fără o cerere periculoasă. Numele companiei nu dovedește singur autenticitatea apelului" },
+            { text: "Îți reamintim să suplinești contul până la sfârșitul lunii.", isThreat: false, explain: "Reamintirea despre suplinirea contului nu cere parola sau codul. Verifică singur soldul în aplicația oficială" },
+            { text: "O poți face oricând prin aplicația oficială. O zi bună!", isThreat: false, explain: "Deschiderea aplicației oficiale din proprie inițiativă este o metodă sigură de a verifica și suplini contul" }
           ]
         }
       ]
