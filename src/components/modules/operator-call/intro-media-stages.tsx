@@ -207,7 +207,7 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 
   return (
     <div>
-      <VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} src={content.videoUrl} />
+      <VideoPlaceholder title={content.title} hint={content.hint} src={content.videoUrl} />
       <ul className="mt-5 grid gap-3 sm:grid-cols-2">
         {content.points.map((point) => (
           <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm">
@@ -232,66 +232,26 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 }
 
 function VideoExampleStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExample"] | (typeof operatorCallContent)["ro"]["videoExample"]; button: string; saving: boolean; onComplete: () => void }) {
-  const [playingMp3, setPlayingMp3] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    if ('audioFile' in content && content.audioFile) {
-       audioRef.current = new Audio(content.audioFile as string);
-       audioRef.current.onended = () => setPlayingMp3(false);
-    }
-    return () => {
-       if (audioRef.current) {
-         audioRef.current.pause();
-         audioRef.current.src = "";
-       }
-    };
-  }, [content]);
-
-  function toggleMp3() {
-    if (!audioRef.current) return;
-    if (playingMp3) {
-      audioRef.current.pause();
-      setPlayingMp3(false);
-    } else {
-      audioRef.current.play().catch(() => {});
-      setPlayingMp3(true);
-    }
-  }
-
   return <div>
-    <VideoPlaceholder title={content.title} placeholder={content.placeholder} hint={content.hint} src="/video/3video.mp4" />
-    <div className="mt-5 space-y-3">
-      {content.transcript.map((line, index) => <div key={`${line.speaker}-${index}`} className={`max-w-[88%] rounded-2xl border p-4 ${index % 2 === 0 ? "border-danger/25 bg-danger/5" : "ml-auto border-neon/25 bg-neon/5"}`}><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{line.speaker}</p><p className="mt-1 text-sm">{line.text}</p></div>)}
-    </div>
-
-    {'audioText' in content && 'audioFile' in content && content.audioText && content.audioFile && (
-      <div className="mt-8 flex justify-center sm:justify-start">
-        <button type="button" onClick={toggleMp3} className="inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 border-2 border-slate-700 p-4 transition-colors hover:border-neon hover:bg-slate-800 text-foreground group focus-ring">
-          {playingMp3 ? <Volume2 className="text-neon size-6 group-hover:scale-110 transition-transform animate-pulse" /> : <Play className="text-neon size-6 group-hover:scale-110 transition-transform" />}
-          <span className="font-bold text-sm sm:text-base">{content.audioText}</span>
-        </button>
-      </div>
-    )}
-
+    <VideoPlaceholder title={content.title} hint={content.hint} src="/video/3video.mp4" />
     <ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton>
   </div>;
 }
 
-function VideoPlaceholder({ title, placeholder, hint, src }: { title: string; placeholder: string; hint: string; src?: string }) {
+function VideoPlaceholder({ title, hint, src }: { title: string; hint: string; src?: string }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
-      <video
+      {src && <video
         className="aspect-video w-full bg-black object-cover"
         controls
         preload="metadata"
       >
-        <source src={src || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"} type="video/mp4" />
+        <source src={src} type="video/mp4" />
         <p>Your browser doesn&apos;t support HTML5 video.</p>
-      </video>
+      </video>}
       <div className="border-t border-border bg-card p-4">
         <h3 className="font-bold">{title}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{placeholder} — {hint}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{hint}</p>
       </div>
     </div>
   );

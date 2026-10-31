@@ -79,7 +79,7 @@ export const operatorCallContent = {
     stages: [
       { title: "Теория", subtitle: "Как устроен звонок мошенника" },
       { title: "Видеообъяснение", subtitle: "Пять признаков опасного звонка" },
-      { title: "Видеопример", subtitle: "Разговор с «оператором MinTel»" },
+      { title: "Видеопример", subtitle: "Звонок мошенника" },
       { title: "Игра: найди сигналы", subtitle: "Отметь подозрительные детали" },
       { title: "Игра: классификация", subtitle: "Безопасная или опасная фраза" },
       { title: "Игра: диалог", subtitle: "Выбери правильный ответ" },
@@ -112,17 +112,8 @@ export const operatorCallContent = {
       audioFile: "/module/2_video_ru.mp3",
     },
     videoExample: {
-      title: "Учебный звонок от вымышленного оператора MinTel",
-      placeholder: "Место для видеопримера",
-      hint: "Никакой сотовый оператор не просит подтверждение СМС. В примере нет реальных телефонов, брендов или данных.",
-      audioText: "Прослушать текст",
-      audioFile: "/module/3_exemple_ru.mp3",
-      transcript: [
-        { speaker: "Звонящий", text: "Здравствуйте! Ваш номер будет заблокирован через десять минут." },
-        { speaker: "Мария", text: "Почему? Как я могу это проверить?" },
-        { speaker: "Звонящий", text: "Сейчас придёт SMS. Назовите код и откройте ссылку — иначе номер отключится." },
-        { speaker: "Мария", text: "Я завершу звонок и сама свяжусь с оператором по официальному номеру." },
-      ],
+      title: "Пример звонка мошенника (видео из интернета)",
+      hint: "Номер и код в видео скрыты. Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
     },
     callSimulator: {
       prompt: "Выслушай звонящего. Если фраза подозрительная — жми ТРЕВОГА. Если обычная — ВСЁ НОРМАЛЬНО.",
@@ -415,7 +406,7 @@ export const operatorCallContent = {
     stages: [
       { title: "Teorie", subtitle: "Cum funcționează apelul fraudulos" },
       { title: "Explicație video", subtitle: "Cinci semne ale unui apel periculos" },
-      { title: "Exemplu video", subtitle: "Discuția cu „operatorul MinTel”" },
+      { title: "Exemplu video", subtitle: "Apelul unui escroc" },
       { title: "Joc: găsește semnele", subtitle: "Marchează detaliile suspecte" },
       { title: "Joc: clasificare", subtitle: "Frază sigură sau periculoasă" },
       { title: "Joc: dialog", subtitle: "Alege răspunsul corect" },
@@ -448,17 +439,8 @@ export const operatorCallContent = {
       audioFile: "/module/2_video_ro.mp3",
     },
     videoExample: {
-      title: "Apel educațional de la operatorul fictiv MinTel",
-      placeholder: "Loc pentru exemplul video",
-      hint: "Niciun operator de telefonie mobilă nu cere confirmare prin SMS. Exemplul nu folosește telefoane, mărci sau date reale.",
-      audioText: "Ascultă textul",
-      audioFile: "/module/3_exemple_ro.mp3",
-      transcript: [
-        { speaker: "Apelant", text: "Bună ziua! Numărul dvs. va fi blocat în zece minute." },
-        { speaker: "Maria", text: "De ce? Cum pot verifica acest lucru?" },
-        { speaker: "Apelant", text: "Veți primi un SMS. Spuneți codul și deschideți linkul, altfel numărul va fi dezactivat." },
-        { speaker: "Maria", text: "Închei apelul și contactez singură operatorul la numărul oficial." },
-      ],
+      title: "Exemplu de apel al unui escroc (video de pe internet)",
+      hint: "Numărul și codul din video sunt ascunse. Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
     },
     callSimulator: {
       prompt: "Ascultă apelantul. Dacă fraza este suspectă — apasă ALARMĂ. Dacă este normală — TOTUL E BINE.",
