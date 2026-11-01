@@ -50,3 +50,14 @@ describe("пункт 11: улики в SMS", () => {
     });
   }
 });
+
+describe("пункт 12: понятные улики вместо аватара", () => {
+  it.each(["ru", "ro"] as const)("%s: аватар и формат номера не дают очки в p1_8", locale => {
+    const questions = operatorCallContent[locale].final.phase1;
+    const call = questions.find(item => item.id === "p1_8")!;
+    expect(call.correctTargets).toEqual(["caller"]);
+    expect("caller" in call && call.caller).toContain("WhatsApp");
+    expect("number" in call && call.number).toBe("+373 22 000 000");
+    expect(questions.find(item => item.id === "p1_9")!.correctTargets).toEqual(["name", "accountType"]);
+  });
+});

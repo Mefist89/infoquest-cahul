@@ -97,6 +97,7 @@ export const operatorCallContent = {
         { title: "Самостоятельный перезвон", text: "Положи трубку и сам перезвони по официальному номеру поддержки MinTel." },
       ],
       notes: [
+        "Сомневаешься, что звонила полиция? Положи трубку и позвони 112.",
         "Галочка у профиля не гарантирует, что это оператор. Если в мессенджере просят код, данные или перейти по ссылке — это мошенник.",
         "В Молдове это Orange, Moldcell, Unite. Номер поддержки — в договоре, на сайте или в приложении оператора. Номер банка — на обороте карты. О мошенничестве сообщай в полицию: 112.",
       ],
@@ -343,8 +344,8 @@ export const operatorCallContent = {
         { id: "p1_5", type: "call", caller: "Техподдержка (WhatsApp)", number: "+44 77 00 900077", correctTargets: ["caller", "number"] },
         { id: "p1_6", type: "profile", name: "MinTeI Official", accountType: "Написал первым в WhatsApp и просит подтвердить данные", correctTargets: ["name", "accountType"] },
         { id: "p1_7", type: "sms", sender: "Info", text: "Вам одобрен кредит от MinTel Bank. Срочно перейдите:", fakeLink: "mint.el-bank.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink", "sender"] },
-        { id: "p1_8", type: "call", caller: "Полиция", number: "+373 999 999 999", correctTargets: ["avatar", "caller", "number"] },
-        { id: "p1_9", type: "profile", name: "Поддержка абонентов", accountType: "Скрытый номер", correctTargets: ["avatar", "name", "accountType"] },
+        { id: "p1_8", type: "call", caller: "Полиция (звонок в WhatsApp)", number: "+373 22 000 000", correctTargets: ["caller"] },
+        { id: "p1_9", type: "profile", name: "Поддержка абонентов", accountType: "Скрытый номер", correctTargets: ["name", "accountType"] },
         { id: "p1_10", type: "sms", sender: "MinTel", text: "Срочно! Вы выиграли iPhone 16! Перейдите для получения:", fakeLink: "mintel-prize.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink"] }
       ],
       phase2: [
@@ -427,6 +428,7 @@ export const operatorCallContent = {
         { title: "Apelul independent", text: "Închide și sună personal la numărul oficial de suport MinTel." },
       ],
       notes: [
+        "Ai dubii că a sunat poliția? Închide și sună la 112.",
         "Bifa de lângă profil nu garantează că e operatorul. Dacă pe mesagerie ți se cere un cod, date sau să deschizi un link — e un escroc.",
         "În Moldova aceștia sunt Orange, Moldcell, Unite. Numărul de suport e în contract, pe site sau în aplicația operatorului. Numărul băncii e pe spatele cardului. Frauda se raportează la poliție: 112.",
       ],
@@ -558,8 +560,8 @@ export const operatorCallContent = {
         { id: "p1_5", type: "call", caller: "Suport Tehnic (WhatsApp)", number: "+44 77 00 900077", correctTargets: ["caller", "number"] },
         { id: "p1_6", type: "profile", name: "MinTeI Official", accountType: "V-a scris primul pe WhatsApp și cere confirmarea datelor", correctTargets: ["name", "accountType"] },
         { id: "p1_7", type: "sms", sender: "Info", text: "Vi s-a aprobat un credit de la MinTel Bank. Accesați urgent:", fakeLink: "mint.el-bank.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink", "sender"] },
-        { id: "p1_8", type: "call", caller: "Poliția", number: "+373 999 999 999", correctTargets: ["avatar", "caller", "number"] },
-        { id: "p1_9", type: "profile", name: "Suport Clienți", accountType: "Număr ascuns", correctTargets: ["avatar", "name", "accountType"] },
+        { id: "p1_8", type: "call", caller: "Poliția (apel WhatsApp)", number: "+373 22 000 000", correctTargets: ["caller"] },
+        { id: "p1_9", type: "profile", name: "Suport Clienți", accountType: "Număr ascuns", correctTargets: ["name", "accountType"] },
         { id: "p1_10", type: "sms", sender: "MinTel", text: "Urgent! Ați câștigat un iPhone 16! Accesați:", fakeLink: "mintel-prize.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink"] }
       ],
       phase2: [
