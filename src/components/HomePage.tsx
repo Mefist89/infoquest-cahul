@@ -12,9 +12,7 @@ import {
   Link2Off,
   Lock,
   MapPin,
-  Pause,
   PhoneCall,
-  Play,
   ScanFace,
   ShieldAlert,
   UserLock,
@@ -161,18 +159,11 @@ function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgre
 
 function CaseSlider({ lang }: { lang: Lang }) {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const slide = caseSlides[active];
   const mission = missions[active];
   const Icon = icons[mission.icon];
   const t = strings[lang];
-
-  useEffect(() => {
-    if (paused) return;
-    const timer = window.setInterval(() => setActive((index) => (index + 1) % caseSlides.length), 7000);
-    return () => window.clearInterval(timer);
-  }, [paused]);
 
   function selectSlide(index: number) {
     setActive(index);
@@ -188,18 +179,11 @@ function CaseSlider({ lang }: { lang: Lang }) {
       className="home-content-width relative mx-auto mt-12"
       aria-roledescription="carousel"
       aria-label={t.storyTitle}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}
     >
       <div className="overflow-hidden rounded-3xl border border-neon/30 bg-card/75 shadow-[0_20px_70px_rgba(0,0,0,0.25)] backdrop-blur">
         <div className="flex items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
           <span className="grid size-10 place-items-center rounded-xl border border-neon/35 bg-neon/10 text-neon"><ShieldAlert className="size-5" aria-hidden="true" /></span>
           <div><h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2><p className="text-xs text-muted-foreground">{lang === "ro" ? `${MODULE_COUNT} dosare ale rețelei Umbra` : `${MODULE_COUNT} дел сети Тени`}</p></div>
-          <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? (lang === "ro" ? "Pornește rotația" : "Запустить слайдер") : (lang === "ro" ? "Oprește rotația" : "Остановить слайдер")} className="focus-ring ml-auto grid size-10 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon">
-            {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
-          </button>
         </div>
 
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
@@ -216,12 +200,12 @@ function CaseSlider({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 border-t border-border/70 px-5 py-4 sm:px-6">
-          <button type="button" onClick={() => move(-1)} aria-label={lang === "ro" ? "Dosarul anterior" : "Предыдущее дело"} className="focus-ring grid size-10 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronLeft className="size-5" aria-hidden="true" /></button>
-          <div className="flex flex-1 justify-center gap-1.5" role="tablist" aria-label={lang === "ro" ? "Alege dosarul" : "Выберите дело"}>
-            {caseSlides.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={active === index} aria-label={`${index + 1}`} onClick={() => selectSlide(index)} className={`focus-ring h-2 rounded-full transition-all ${active === index ? "w-7 bg-neon" : "w-2 bg-secondary hover:bg-muted-foreground"}`} />)}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/70 px-5 py-4 sm:px-6">
+          <button type="button" onClick={() => move(-1)} aria-label={lang === "ro" ? "Dosarul anterior" : "Предыдущее дело"} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronLeft className="size-5" aria-hidden="true" /></button>
+          <div className="order-last grid w-full grid-cols-4 justify-items-center gap-1 sm:order-none sm:flex sm:w-auto sm:flex-1 sm:flex-wrap sm:justify-center" role="tablist" aria-label={lang === "ro" ? "Alege dosarul" : "Выберите дело"}>
+            {caseSlides.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={active === index} aria-label={`${index + 1}`} onClick={() => selectSlide(index)} className="focus-ring grid size-11 place-items-center rounded-xl hover:bg-neon/10"><span aria-hidden="true" className={`h-2 rounded-full motion-safe:transition-all ${active === index ? "w-7 bg-neon" : "w-2 bg-secondary"}`} /></button>)}
           </div>
-          <button type="button" onClick={() => move(1)} aria-label={lang === "ro" ? "Dosarul următor" : "Следующее дело"} className="focus-ring grid size-10 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronRight className="size-5" aria-hidden="true" /></button>
+          <button type="button" onClick={() => move(1)} aria-label={lang === "ro" ? "Dosarul următor" : "Следующее дело"} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronRight className="size-5" aria-hidden="true" /></button>
         </div>
       </div>
     </section>
@@ -348,8 +332,8 @@ export default function HomePage() {
         <section id="missions" aria-label="Mission map" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10">
           <h2 className="home-title">{lang === "ru" ? "Выбери своё первое дело" : "Alege primul tău dosar"}</h2>
           <div className="mb-7 mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label={lang === "ru" ? "Фильтр дел" : "Filtru dosare"}>
-            <button type="button" aria-pressed={missionFilter === null} onClick={() => setMissionFilter(null)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === null ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{lang === "ru" ? "Все" : "Toate"}</button>
-            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId === missionFilter ? null : mission.moduleId)} className={`focus-ring min-h-9 rounded-full border px-4 text-xs font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
+            <button type="button" aria-pressed={missionFilter === null} onClick={() => setMissionFilter(null)} className={`focus-ring min-h-11 min-w-11 rounded-full border px-4 text-sm font-bold transition ${missionFilter === null ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{lang === "ru" ? "Все" : "Toate"}</button>
+            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId === missionFilter ? null : mission.moduleId)} className={`focus-ring min-h-11 min-w-11 rounded-full border px-4 text-sm font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
           </div>
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">

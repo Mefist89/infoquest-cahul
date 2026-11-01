@@ -85,7 +85,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
             </Link>
           )}
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
-            {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/modules/scam-or-real`} className={`focus-ring rounded-full px-3 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
+            {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/modules/scam-or-real`} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
           </nav>
         </header>
 

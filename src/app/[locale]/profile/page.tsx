@@ -327,7 +327,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
 }
 
 function LanguageNav({ locale, sectionPath }: { locale: ProfileLocale; sectionPath: string }) {
-  return <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/profile${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>;
+  return <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/profile${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2.5 py-2 text-base font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>;
 }
 
 function DashboardNavLink({ href, icon: Icon, label, active = false }: { href: string; icon: LucideIcon; label: string; active?: boolean }) {

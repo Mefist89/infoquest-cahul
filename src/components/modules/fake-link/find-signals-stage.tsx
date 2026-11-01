@@ -33,7 +33,7 @@ function Hotspot({
       onClick={onToggle}
       aria-pressed={found}
       aria-label={zone}
-      className={`focus-ring absolute inset-0 rounded-lg transition ${
+      className={`min-h-11 min-w-11 focus-ring absolute inset-0 rounded-lg transition ${
         found
           ? "bg-neon/15 outline outline-2 outline-neon"
           : revealed
@@ -112,11 +112,11 @@ export function FindSignalsStage({
             <span className="size-2.5 rounded-full bg-success/70" />
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-background/60 px-3 py-1.5 font-mono text-xs text-muted-foreground sm:text-sm">
-            <span className="relative shrink-0">
-              <span className="relative block" aria-hidden="true"><Lock className="size-3.5 text-danger" /><span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-45 bg-danger" /></span>
+            <span className="relative inline-flex size-11 shrink-0 items-center justify-center">
+              <span className="relative block" aria-hidden="true"><Lock className="size-5 text-danger" /><span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-45 bg-danger" /></span>
               <Hotspot zone={`${zoneWord} 2`} found={selected.has("no-https")} revealed={submitted && !selected.has("no-https")} disabled={submitted || saving} onToggle={() => toggle("no-https")} />
             </span>
-            <span className="relative truncate">
+            <span className="relative inline-flex min-h-11 min-w-11 items-center overflow-hidden">
               http://banca-noroc-online.com/login
               <Hotspot zone={`${zoneWord} 1`} found={selected.has("domain")} revealed={submitted && !selected.has("domain")} disabled={submitted || saving} onToggle={() => toggle("domain")} />
             </span>
@@ -125,7 +125,7 @@ export function FindSignalsStage({
 
         <div className="space-y-3 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
-            <span className="relative inline-block rounded-lg bg-secondary/60 px-4 py-2">
+            <span className="min-h-11 min-w-11 relative inline-block rounded-lg bg-secondary/60 px-4 py-2">
               <span className="text-lg font-black tracking-wide text-foreground blur-[2px]" aria-hidden="true">Banca Noroc</span>
               <Hotspot zone={`${zoneWord} 4`} found={selected.has("logo")} revealed={submitted && !selected.has("logo")} disabled={submitted || saving} onToggle={() => toggle("logo")} />
             </span>
@@ -136,7 +136,7 @@ export function FindSignalsStage({
             </span>
           </div>
 
-          <div className="relative rounded-xl border border-danger/50 bg-danger/10 p-3 text-center">
+          <div className="min-h-11 min-w-11 relative rounded-xl border border-danger/50 bg-danger/10 p-3 text-center">
             <p className="text-sm font-black text-danger sm:text-base">
               {locale === "ro" ? "Contul tău va fi blocat! Conectează-te în 10 minute!" : "Твой аккаунт будет заблокирован! Войди в течение 10 минут!"}
             </p>
@@ -148,7 +148,7 @@ export function FindSignalsStage({
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <span className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground">{locale === "ro" ? "Utilizator" : "Логин"}</span>
               <span className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground">••••••••</span>
-              <span className="relative rounded-lg border border-danger/50 bg-danger/5 px-3 py-2 text-sm text-muted-foreground sm:col-span-2">
+              <span className="min-h-11 min-w-11 relative rounded-lg border border-danger/50 bg-danger/5 px-3 py-2 text-sm text-muted-foreground sm:col-span-2">
                 {locale === "ro" ? "PIN card + codul CVV (3 cifre de pe spatele cardului) (obligatoriu)" : "PIN карты + код CVV (3 цифры на обороте карты) (обязательно)"}
                 <Hotspot zone={`${zoneWord} 5`} found={selected.has("form")} revealed={submitted && !selected.has("form")} disabled={submitted || saving} onToggle={() => toggle("form")} />
               </span>
@@ -158,7 +158,7 @@ export function FindSignalsStage({
             </span>
           </div>
 
-          <div className="relative">
+          <div className="min-h-11 min-w-11 relative">
             <div aria-hidden="true" className={`rounded-xl border px-4 py-3 text-center text-sm font-black transition ${selected.has("prize") ? "border-neon bg-neon/15 text-neon" : "border-gold/50 bg-gold/10 text-gold"}`}>
               {locale === "ro" ? "Ai câștigat un telefon! Ridică premiul" : "Ты выиграл телефон! Забрать приз"}
             </div>
@@ -196,7 +196,7 @@ export function FindSignalsStage({
               })}
             </ul>
             {!passed && (
-              <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5">
+              <button type="button" onClick={retry} className="min-w-11 focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-base font-black text-primary-foreground transition hover:-translate-y-0.5">
                 {retryLabel}
               </button>
             )}
@@ -206,7 +206,7 @@ export function FindSignalsStage({
             type="button"
             onClick={submit}
             disabled={saving || foundCount === 0}
-            className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60"
+            className="min-w-11 focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-base font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60"
           >
             {checkLabel} ({foundCount}/{SIGNAL_COUNT})
           </button>

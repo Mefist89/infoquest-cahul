@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BadgeCheck, ShieldAlert, Tag } from "lucide-react";
+import { BadgeCheck, ShieldAlert, Tag, Check, X } from "lucide-react";
 
 import type { scamOrRealContent } from "@/data/scam-or-real";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
@@ -84,7 +84,7 @@ export function OfferClassifyStage({
                   <button
                     type="button"
                     onClick={() => choose("honest")}
-                    className="focus-ring flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-sm font-black text-success transition hover:bg-success/20"
+                    className="focus-ring min-w-11 flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-base font-black text-success transition hover:bg-success/20"
                   >
                     <BadgeCheck className="size-5" aria-hidden="true" />
                     {content.honest}
@@ -92,7 +92,7 @@ export function OfferClassifyStage({
                   <button
                     type="button"
                     onClick={() => choose("scam")}
-                    className="focus-ring flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-sm font-black text-danger transition hover:bg-danger/20"
+                    className="focus-ring min-w-11 flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-base font-black text-danger transition hover:bg-danger/20"
                   >
                     <ShieldAlert className="size-5" aria-hidden="true" />
                     {content.scam}
@@ -100,15 +100,15 @@ export function OfferClassifyStage({
                 </div>
               ) : (
                 <div className={`mt-5 rounded-xl border p-4 text-left ${isCorrect ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
-                  <p className={`text-sm font-black ${isCorrect ? "text-success" : "text-danger"}`}>
-                    {isCorrect ? content.correctMark : content.wrongMark}
+                  <p className={`flex items-center gap-2 text-base font-black ${isCorrect ? "text-success" : "text-danger"}`}>
+                    {isCorrect ? <Check className="size-5 shrink-0" aria-hidden="true" /> : <X className="size-5 shrink-0" aria-hidden="true" />}{isCorrect ? content.correctMark : content.wrongMark}
                   </p>
                   <p className="mt-1 text-sm text-foreground/90">{item.explain}</p>
                   <button
                     type="button"
                     onClick={advance}
                     disabled={saving}
-                    className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
+                    className="focus-ring min-w-11 mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-base font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
                   >
                     {content.next}
                   </button>
@@ -129,7 +129,7 @@ export function OfferClassifyStage({
                   <li key={entry.id} className={`rounded-xl border p-3 text-sm ${hit ? "border-success/40 bg-success/5" : "border-border bg-background/40"}`}>
                     <p className="font-bold text-foreground">{entry.offer}</p>
                     <p className={`mt-1 font-bold ${hit ? "text-success" : "text-danger"}`}>
-                      {hit ? content.correctMark : content.wrongMark} {entry.verdict === "honest" ? content.honest : content.scam}
+                      {hit ? <Check className="mr-2 inline size-5" aria-hidden="true" /> : <X className="mr-2 inline size-5" aria-hidden="true" />}{hit ? content.correctMark : content.wrongMark} {entry.verdict === "honest" ? content.honest : content.scam}
                     </p>
                     {!hit && <p className="mt-1 text-muted-foreground">{entry.explain}</p>}
                   </li>
@@ -137,7 +137,7 @@ export function OfferClassifyStage({
               })}
             </ul>
             {!passed && (
-              <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5">
+              <button type="button" onClick={retry} className="focus-ring min-w-11 mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-base font-black text-primary-foreground transition hover:-translate-y-0.5">
                 {retryLabel}
               </button>
             )}

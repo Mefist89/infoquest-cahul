@@ -96,13 +96,13 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
                 <Volume2 className="size-10" />
               </div>
               <div className="mt-5"><NoTimerToggle locale={locale} /></div>
-              <button onClick={start} className="mt-8 rounded-xl bg-neon px-8 py-3 text-sm font-black text-primary-foreground focus-ring hover:scale-105 transition">{content.startBtn}</button>
+              <button onClick={start} className="mt-8 rounded-xl bg-neon px-8 py-3 text-base font-black text-primary-foreground focus-ring min-w-11 min-h-11 hover:scale-105 transition">{content.startBtn}</button>
             </div>
           )}
 
           {status === "playing" && !explaining && phrase && (
             <div className="w-full max-w-lg animate-in fade-in zoom-in-95">
-              <div className="mb-6 text-xs font-black text-neon/60 uppercase tracking-widest">
+              <div className="mb-6 text-xs font-black text-neon uppercase tracking-widest">
                 {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
               </div>
               <div className="flex flex-col items-center gap-5">
@@ -118,20 +118,20 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
                 {!soundEnabled && <button type="button" onClick={playPhrase} disabled={paused} className="focus-ring inline-flex min-h-11 min-w-11 items-center gap-2 rounded-xl border border-border px-4 py-2 text-base font-bold disabled:opacity-50"><Volume2 className="size-5" aria-hidden="true" />{locale === "ru" ? "Прослушать" : "Ascultă"}</button>}
                 {!noTimer && <span role="timer" className="text-xl font-black tabular-nums">0:{timeLeft.toString().padStart(2, "0")}</span>}
-                <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-bold">
+                <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} className="focus-ring min-w-11 inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-base font-bold">
                   {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}{paused ? a11y.resume : a11y.pause}
                 </button>
               </div>
               <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
                 <button
                   onClick={() => handleAction(false)}
-                  className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-sm font-black text-success transition hover:bg-success/20 hover:border-success/60 focus-ring"
+                  className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-base font-black text-success transition hover:bg-success/20 hover:border-success/60 focus-ring min-w-11"
                 >
                   {content.safeBtn}
                 </button>
                 <button
                   onClick={() => handleAction(true)}
-                  className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-sm font-black text-danger transition hover:bg-danger/20 hover:border-danger/60 focus-ring"
+                  className="flex min-h-16 items-center justify-center rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-base font-black text-danger transition hover:bg-danger/20 hover:border-danger/60 focus-ring min-w-11"
                 >
                   {content.dangerBtn}
                 </button>

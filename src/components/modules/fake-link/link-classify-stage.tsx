@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Link2, ShieldAlert } from "lucide-react";
+import { Check, X, Link2, ShieldAlert } from "lucide-react";
 
 import type { fakeLinkContent } from "@/data/fake-link";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
@@ -86,7 +86,7 @@ export function LinkClassifyStage({
                   <button
                     type="button"
                     onClick={() => choose("safe")}
-                    className="focus-ring flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-sm font-black text-success transition hover:bg-success/20"
+                    className="focus-ring min-w-11 flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-success/40 bg-success/10 px-2 text-center text-base font-black text-success transition hover:bg-success/20"
                   >
                     <Check className="size-5" aria-hidden="true" />
                     {content.safe}
@@ -94,7 +94,7 @@ export function LinkClassifyStage({
                   <button
                     type="button"
                     onClick={() => choose("phishing")}
-                    className="focus-ring flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-sm font-black text-danger transition hover:bg-danger/20"
+                    className="focus-ring min-w-11 flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-danger/40 bg-danger/10 px-2 text-center text-base font-black text-danger transition hover:bg-danger/20"
                   >
                     <ShieldAlert className="size-5" aria-hidden="true" />
                     {content.danger}
@@ -102,15 +102,15 @@ export function LinkClassifyStage({
                 </div>
               ) : (
                 <div className={`mt-5 rounded-xl border p-4 ${isCorrect ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
-                  <p className={`text-sm font-black ${isCorrect ? "text-success" : "text-danger"}`}>
-                    {isCorrect ? content.correctMark : content.wrongMark}
+                  <p className={`flex items-center gap-2 text-base font-black ${isCorrect ? "text-success" : "text-danger"}`}>
+                    {isCorrect ? <Check className="size-5 shrink-0" aria-hidden="true" /> : <X className="size-5 shrink-0" aria-hidden="true" />}{isCorrect ? content.correctMark : content.wrongMark}
                   </p>
                   <p className="mt-1 text-sm text-foreground/90">{item.explain}</p>
                   <button
                     type="button"
                     onClick={advance}
                     disabled={saving}
-                    className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
+                    className="focus-ring min-w-11 mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-base font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
                   >
                     {content.next}
                   </button>
@@ -131,7 +131,7 @@ export function LinkClassifyStage({
                   <li key={entry.id} className={`rounded-xl border p-3 text-sm ${hit ? "border-success/40 bg-success/5" : "border-border bg-background/40"}`}>
                     <p className="font-mono font-bold break-all text-foreground">{entry.url}</p>
                     <p className={`mt-1 font-bold ${hit ? "text-success" : "text-danger"}`}>
-                      {hit ? content.correctMark : content.wrongMark} {entry.verdict === "safe" ? content.safe : content.danger}
+                      {hit ? <Check className="mr-2 inline size-5" aria-hidden="true" /> : <X className="mr-2 inline size-5" aria-hidden="true" />}{hit ? content.correctMark : content.wrongMark} {entry.verdict === "safe" ? content.safe : content.danger}
                     </p>
                     {!hit && <p className="mt-1 text-muted-foreground">{entry.explain}</p>}
                   </li>
@@ -139,7 +139,7 @@ export function LinkClassifyStage({
               })}
             </ul>
             {!passed && (
-              <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5">
+              <button type="button" onClick={retry} className="focus-ring min-w-11 mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-base font-black text-primary-foreground transition hover:-translate-y-0.5">
                 {retryLabel}
               </button>
             )}

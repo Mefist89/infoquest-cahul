@@ -33,7 +33,7 @@ function Hotspot({
       onClick={onToggle}
       aria-pressed={found}
       aria-label={zone}
-      className={`focus-ring absolute inset-0 rounded-lg transition ${
+      className={`min-h-11 min-w-11 focus-ring absolute inset-0 rounded-lg transition ${
         found
           ? "bg-neon/15 outline outline-2 outline-neon"
           : revealed
@@ -112,7 +112,7 @@ export function DealSignalsStage({
         </div>
 
         <div className="space-y-3 p-4 sm:p-5">
-          <div className="relative rounded-xl border border-danger/50 bg-danger/10 p-3 text-center">
+          <div className="min-h-11 min-w-11 relative rounded-xl border border-danger/50 bg-danger/10 p-3 text-center">
             <p className="flex items-center justify-center gap-2 text-sm font-black text-danger sm:text-base">
               <Timer className="size-4" aria-hidden="true" />
               {locale === "ro" ? "Oferta expiră în 04:59! Au rămas 2 bucăți!" : "Скидка сгорит через 04:59! Осталось 2 штуки!"}
@@ -121,17 +121,17 @@ export function DealSignalsStage({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="relative grid min-h-40 place-items-center overflow-hidden rounded-xl border border-border bg-secondary/40">
+            <div className="min-w-11 relative grid min-h-40 place-items-center overflow-hidden rounded-xl border border-border bg-secondary/40">
               <span aria-hidden="true" className="px-4 text-center text-4xl font-black tracking-widest text-muted-foreground blur-[3px]">ULTRA X</span>
               <Hotspot zone={`${zoneWord} 6`} found={selected.has("photo")} revealed={submitted && !selected.has("photo")} disabled={submitted || saving} onToggle={() => toggle("photo")} />
             </div>
             <div className="flex flex-col gap-2">
-              <div className="relative rounded-xl border border-gold/50 bg-gold/10 p-3 text-center">
+              <div className="min-h-11 min-w-11 relative rounded-xl border border-gold/50 bg-gold/10 p-3 text-center">
                 <p className="text-xs text-muted-foreground line-through">12000 {locale === "ro" ? "lei" : "леев"}</p>
                 <p className="text-2xl font-black text-gold">5999 {locale === "ro" ? "lei" : "леев"}</p>
                 <Hotspot zone={`${zoneWord} 1`} found={selected.has("price")} revealed={submitted && !selected.has("price")} disabled={submitted || saving} onToggle={() => toggle("price")} />
               </div>
-              <div className="relative rounded-xl border border-border bg-card/60 p-3">
+              <div className="min-h-11 min-w-11 relative rounded-xl border border-border bg-card/60 p-3">
                 <p className="text-sm font-bold text-foreground">MagazinSuper_2026</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {locale === "ro" ? "Pe site de 6 zile · 0 recenzii" : "На сайте 6 дней · 0 отзывов"}
@@ -141,14 +141,14 @@ export function DealSignalsStage({
             </div>
           </div>
 
-          <div className="relative rounded-xl border border-danger/50 bg-danger/5 p-3">
+          <div className="min-h-11 min-w-11 relative rounded-xl border border-danger/50 bg-danger/5 p-3">
             <p className="text-sm font-bold text-foreground">
               {locale === "ro" ? "Plată 100% în avans pe cardul vânzătorului" : "Оплата 100% вперёд на карту продавца"}
             </p>
             <Hotspot zone={`${zoneWord} 2`} found={selected.has("prepay")} revealed={submitted && !selected.has("prepay")} disabled={submitted || saving} onToggle={() => toggle("prepay")} />
           </div>
 
-          <div className="relative rounded-xl border border-border bg-card/60 p-3">
+          <div className="min-h-11 min-w-11 relative rounded-xl border border-border bg-card/60 p-3">
             <p className="text-sm text-muted-foreground">
               {locale === "ro" ? "Contacte: scrieți-ne în mesager!" : "Контакты: пишите нам в мессенджер!"}
             </p>
@@ -180,7 +180,7 @@ export function DealSignalsStage({
               })}
             </ul>
             {!passed && (
-              <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5">
+              <button type="button" onClick={retry} className="min-w-11 focus-ring mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-base font-black text-primary-foreground transition hover:-translate-y-0.5">
                 {retryLabel}
               </button>
             )}
@@ -190,7 +190,7 @@ export function DealSignalsStage({
             type="button"
             onClick={submit}
             disabled={saving || foundCount === 0}
-            className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60"
+            className="min-w-11 focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-base font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60"
           >
             {checkLabel} ({foundCount}/{SIGNAL_COUNT})
           </button>

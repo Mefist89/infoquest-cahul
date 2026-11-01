@@ -90,7 +90,7 @@ export function BreachSignsStage({
                     disabled={hit || saving}
                     aria-pressed={hit}
                     aria-label={`${position + 1}. ${item.title}. ${item.detail}`}
-                    className={`focus-ring rounded-2xl border p-4 text-left transition ${
+                    className={`focus-ring min-w-11 min-h-11 rounded-2xl border p-4 text-left transition ${
                       hit
                         ? "border-success/40 bg-success/10"
                         : flashMiss === key
@@ -103,9 +103,9 @@ export function BreachSignsStage({
                         {hit ? <Check className="size-4" /> : <ShieldAlert className="size-4" />}
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-sm font-bold text-foreground sm:text-base">{item.title}</span>
-                        <span className="mt-0.5 block font-mono text-xs text-muted-foreground sm:text-sm">{item.detail}</span>
-                        {hit && item.explain && <span className="mt-1 block text-sm text-success">{item.explain}</span>}
+                        <span className="block text-base font-bold text-foreground sm:text-base">{item.title}</span>
+                        <span className="mt-0.5 block font-mono text-base text-muted-foreground sm:text-base">{item.detail}</span>
+                        {hit && item.explain && <span className="mt-1 block text-base text-success">{item.explain}</span>}
                       </span>
                     </span>
                   </button>
@@ -120,7 +120,7 @@ export function BreachSignsStage({
                   type="button"
                   onClick={advance}
                   disabled={saving}
-                  className="focus-ring mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="focus-ring min-w-11 mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-5 text-base font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {content.nextLevel}
                   <ChevronRight className="size-4" aria-hidden="true" />

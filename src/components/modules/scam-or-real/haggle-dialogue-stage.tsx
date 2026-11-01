@@ -99,7 +99,7 @@ export function HaggleDialogueStage({
                     type="button"
                     onClick={() => choose(option.id, option.correct, option.text)}
                     disabled={disabled || saving}
-                    className="focus-ring min-h-12 rounded-xl border border-border bg-card/70 px-4 py-3 text-left text-sm font-semibold text-foreground transition hover:border-neon/60 hover:bg-neon/5 disabled:cursor-not-allowed disabled:opacity-45 sm:text-base"
+                    className="focus-ring min-w-11 min-h-12 rounded-xl border border-border bg-card/70 px-4 py-3 text-left text-base font-semibold text-foreground transition hover:border-neon/60 hover:bg-neon/5 disabled:cursor-not-allowed disabled:opacity-45 sm:text-base"
                   >
                     {option.text}
                   </button>

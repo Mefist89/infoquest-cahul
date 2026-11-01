@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, MessageSquareText, ShieldAlert } from "lucide-react";
+import { Check, X, MessageSquareText, ShieldAlert } from "lucide-react";
 
 import type { fakeLinkContent } from "@/data/fake-link";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
@@ -98,7 +98,7 @@ export function DialogueReactStage({
                     key={option.id}
                     type="button"
                     onClick={() => choose(option.id)}
-                    className="focus-ring min-h-12 rounded-xl border border-border bg-card/70 px-4 py-3 text-left text-sm font-semibold text-foreground transition hover:border-neon/60 hover:bg-neon/5 sm:text-base"
+                    className="focus-ring min-w-11 min-h-12 rounded-xl border border-border bg-card/70 px-4 py-3 text-left text-base font-semibold text-foreground transition hover:border-neon/60 hover:bg-neon/5 sm:text-base"
                   >
                     {option.text}
                   </button>
@@ -106,15 +106,15 @@ export function DialogueReactStage({
               </div>
             ) : (
               <div className={`mt-3 rounded-xl border p-4 ${isCorrect ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
-                <p className={`text-sm font-black ${isCorrect ? "text-success" : "text-danger"}`}>
-                  {isCorrect ? content.correctMark : content.wrongMark}
+                <p className={`flex items-center gap-2 text-base font-black ${isCorrect ? "text-success" : "text-danger"}`}>
+                  {isCorrect ? <Check className="size-5 shrink-0" aria-hidden="true" /> : <X className="size-5 shrink-0" aria-hidden="true" />}{isCorrect ? content.correctMark : content.wrongMark}
                 </p>
                 <p className="mt-1 text-sm text-foreground/90">{scenario.explain}</p>
                 <button
                   type="button"
                   onClick={advance}
                   disabled={saving}
-                  className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="focus-ring min-w-11 mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-base font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {content.next}
                 </button>
@@ -137,7 +137,7 @@ export function DialogueReactStage({
                   <li key={entry.id} className={`rounded-xl border p-3 text-sm ${hit ? "border-success/40 bg-success/5" : "border-border bg-background/40"}`}>
                     <p className="font-bold text-foreground">{entry.title}</p>
                     <p className={`mt-1 font-bold ${hit ? "text-success" : "text-danger"}`}>
-                      {hit ? content.correctMark : content.wrongMark}
+                      {hit ? <Check className="mr-2 inline size-5" aria-hidden="true" /> : <X className="mr-2 inline size-5" aria-hidden="true" />}{hit ? content.correctMark : content.wrongMark}
                     </p>
                     {!hit && <p className="mt-1 text-muted-foreground">{entry.explain}</p>}
                   </li>
@@ -145,7 +145,7 @@ export function DialogueReactStage({
               })}
             </ul>
             {!passed && (
-              <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5">
+              <button type="button" onClick={retry} className="focus-ring min-w-11 mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-base font-black text-primary-foreground transition hover:-translate-y-0.5">
                 {retryLabel}
               </button>
             )}

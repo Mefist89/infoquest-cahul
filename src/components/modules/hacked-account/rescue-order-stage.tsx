@@ -80,7 +80,7 @@ export function RescueOrderStage({
                   onClick={() => toggle(id)}
                   disabled={submitted || saving}
                   aria-label={`${position + 1}. ${byId.get(id)?.text ?? id}. ${content.tapToRemove}`}
-                  className="focus-ring flex w-full items-center gap-3 rounded-xl border border-neon/40 bg-neon/10 px-3 py-2.5 text-left text-sm font-semibold text-foreground transition hover:border-neon disabled:cursor-default"
+                  className="focus-ring min-w-11 min-h-14 flex w-full items-center gap-3 rounded-xl border border-neon/40 bg-neon/10 px-3 py-2.5 text-left text-base font-semibold text-foreground transition hover:border-neon disabled:cursor-default"
                 >
                   <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-lg bg-neon font-black text-primary-foreground">
                     {position + 1}
@@ -110,7 +110,7 @@ export function RescueOrderStage({
                   onClick={() => toggle(step.id)}
                   disabled={submitted || saving}
                   aria-pressed={picked}
-                  className={`focus-ring min-h-12 rounded-xl border px-4 py-2.5 text-left text-sm font-semibold transition ${
+                  className={`focus-ring min-w-11 min-h-14 rounded-xl border px-4 py-2.5 text-left text-base font-semibold transition ${
                     picked
                       ? "border-border/40 bg-secondary/40 text-muted-foreground opacity-60"
                       : "border-border bg-card/70 text-foreground hover:border-neon/60 hover:bg-neon/5"
@@ -130,7 +130,7 @@ export function RescueOrderStage({
             type="button"
             onClick={submit}
             disabled={saving || !complete}
-            className="focus-ring inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60"
+            className="focus-ring min-w-11 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-base font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60"
           >
             {checkLabel}
           </button>
@@ -155,7 +155,7 @@ export function RescueOrderStage({
               })}
             </ol>
             {!passed && (
-              <button type="button" onClick={retry} className="focus-ring mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5">
+              <button type="button" onClick={retry} className="focus-ring min-w-11 mt-4 inline-flex min-h-12 items-center rounded-xl bg-neon px-6 text-base font-black text-primary-foreground transition hover:-translate-y-0.5">
                 {retryLabel}
               </button>
             )}

@@ -112,7 +112,7 @@ export function FinalBattleStage({
         <ShieldAlert className="mb-4 size-16 text-danger" aria-hidden="true" />
         <p className="text-xl font-black text-foreground">{content.gameOverTitle}</p>
         <p className="mt-2 text-sm font-bold text-muted-foreground">{content.resultCount.replace("{score}", String(correctHits))}</p>
-        <button type="button" onClick={retry} className="focus-ring mt-6 inline-flex min-h-12 items-center rounded-xl bg-danger px-8 text-sm font-black text-white transition hover:-translate-y-0.5">
+        <button type="button" onClick={retry} className="focus-ring min-w-11 mt-6 inline-flex min-h-12 items-center rounded-xl bg-danger px-8 text-base font-black text-white transition hover:-translate-y-0.5">
           {retryLabel}
         </button>
       </div>
@@ -167,7 +167,7 @@ export function FinalBattleStage({
                     type="button"
                     onClick={() => toggle(option.id)}
                     aria-pressed={question.multi ? active : undefined}
-                    className={`focus-ring min-h-12 rounded-xl border px-4 py-2.5 text-left text-sm font-semibold transition sm:text-base ${
+                    className={`focus-ring min-w-11 min-h-14 rounded-xl border px-4 py-2.5 text-left text-base font-semibold transition sm:text-base ${
                       active
                         ? "border-success bg-success/20 text-success"
                         : "border-border bg-card/70 text-foreground hover:border-danger/60"
@@ -182,7 +182,7 @@ export function FinalBattleStage({
                   type="button"
                   onClick={() => resolve(picked)}
                   disabled={saving || picked.size === 0}
-                  className="focus-ring mt-1 inline-flex min-h-12 items-center justify-center rounded-xl bg-danger px-6 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="focus-ring min-w-11 mt-1 inline-flex min-h-12 items-center justify-center rounded-xl bg-danger px-6 text-base font-black text-white transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {content.strike}
                 </button>
@@ -196,7 +196,7 @@ export function FinalBattleStage({
                   type="button"
                   onClick={advance}
                   disabled={saving}
-                  className="focus-ring mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="focus-ring min-w-11 mt-3 inline-flex min-h-11 items-center rounded-xl bg-neon px-5 text-base font-black text-primary-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {nextLabel}
                 </button>

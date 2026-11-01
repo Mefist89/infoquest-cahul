@@ -89,7 +89,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
 
       <div className="w-full flex justify-between items-center mb-4 px-2">
-        <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
+        <span className="text-base font-black tracking-widest text-neon uppercase">
           {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
         </span>
         <span className="text-xs font-black text-muted-foreground">
@@ -104,7 +104,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
           const isSelected = selectedParts.has(part.id);
           const selectedStyle = "bg-danger/30 text-danger-foreground border-b-2 border-danger";
           const hoverStyle = "hover:bg-foreground/10";
-           const baseStyle = "focus-ring inline min-h-11 rounded px-1 py-1 text-left align-baseline transition-colors duration-200 select-none";
+           const baseStyle = "focus-ring inline-flex min-h-11 min-w-11 rounded px-2 py-2 text-left align-baseline transition-colors duration-200 select-none";
 
           return (
              <button
@@ -132,7 +132,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
       <button
         type="button"
         onClick={verify}
-        className="rounded-xl bg-neon px-12 py-4 text-sm font-black text-primary-foreground focus-ring hover:scale-105 transition shadow-[0_0_20px_rgba(0,217,255,0.4)]"
+        className="rounded-xl bg-neon px-12 py-4 text-base font-black text-primary-foreground focus-ring min-w-11 min-h-11 hover:scale-105 transition shadow-[0_0_20px_rgba(0,217,255,0.4)]"
       >
         {content.verifyBtn}
       </button>
@@ -239,7 +239,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
       <div ref={statusRef} tabIndex={-1} role="alert" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
          <XCircle className="size-16 text-danger mb-4" aria-hidden="true" />
          <p className="text-2xl font-black mb-8 text-foreground">{content.fail}</p>
-         <button type="button" onClick={restartLevel} className="rounded-xl bg-danger px-12 py-4 text-sm font-black text-danger-foreground focus-ring hover:scale-105 transition">{retry}</button>
+         <button type="button" onClick={restartLevel} className="rounded-xl bg-danger px-12 py-4 text-base font-black text-danger-foreground focus-ring min-w-11 min-h-11 hover:scale-105 transition">{retry}</button>
       </div>
     );
   }
@@ -254,12 +254,12 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
 
       <div className="w-full flex justify-between items-center mb-4 px-2">
-        <span className="text-xs font-black tracking-widest text-neon/60 uppercase">
+        <span className="text-base font-black tracking-widest text-neon uppercase">
           {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
         </span>
         {!noTimer && <div className="flex items-center gap-3">
           <span role="timer" aria-label={`${timeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-2xl font-black tabular-nums transition-colors duration-200 ${isErrorState ? 'text-danger animate-pulse scale-110' : 'text-neon'}`}>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
-          <button type="button" onClick={() => { setPaused(value => !value); setAnnouncement(paused ? a11y.resume : a11y.paused); }} aria-pressed={paused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/50 px-3 text-xs font-bold text-foreground">
+          <button type="button" onClick={() => { setPaused(value => !value); setAnnouncement(paused ? a11y.resume : a11y.paused); }} aria-pressed={paused} className="focus-ring min-w-11 inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-background/50 px-3 text-base font-bold text-foreground">
             {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
             {paused ? a11y.resume : a11y.pause}
           </button>
@@ -279,7 +279,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
                 type="button"
                 onClick={() => handleStepClick(step.id)}
                 disabled={isSelected}
-                className={`focus-ring relative flex items-center p-4 rounded-2xl border-2 text-left transition-all duration-300
+                className={`focus-ring min-w-11 min-h-14 relative flex items-center p-4 rounded-2xl border-2 text-left transition-all duration-300
                   ${isSelected
                     ? 'border-neon/50 bg-neon/10 text-foreground/80 scale-[0.98] opacity-60'
                     : 'border-border bg-background/50 hover:bg-background/80 hover:border-neon/30 active:scale-[0.99]'
@@ -291,8 +291,8 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
                      {indexNumber}
                    </div>
                 )}
-                <span className="text-sm sm:text-base font-medium">{step.text}</span>
-                {isSelected && <span className="ml-auto pl-3 text-xs font-bold text-neon"><Check className="mr-1 inline size-4" aria-hidden="true" />{a11y.selected}: {indexNumber}</span>}
+                <span className="text-base font-medium">{step.text}</span>
+                {isSelected && <span className="ml-auto pl-3 text-base font-bold text-neon"><Check className="mr-1 inline size-4" aria-hidden="true" />{a11y.selected}: {indexNumber}</span>}
               </button>
             )
           })}

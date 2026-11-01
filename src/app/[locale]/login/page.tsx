@@ -74,7 +74,7 @@ export default async function LoginPage({
                 key={language}
                 href={`/${language}/login`}
                 aria-current={locale === language ? "page" : undefined}
-                className={`focus-ring rounded-full px-3 py-2 text-xs font-bold uppercase transition ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-bold uppercase transition ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {language}
               </Link>

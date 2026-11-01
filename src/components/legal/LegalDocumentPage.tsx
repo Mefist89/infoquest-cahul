@@ -25,7 +25,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
                 key={item}
                 href={`/${item}/${kind}`}
                 aria-current={locale === item ? "page" : undefined}
-                className={`focus-ring min-h-9 rounded-full px-3 py-2 text-xs font-bold uppercase transition ${
+                className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-bold uppercase transition ${
                   locale === item
                     ? "bg-neon text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
