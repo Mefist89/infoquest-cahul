@@ -212,7 +212,7 @@ export const fakeLinkContent = {
             multi: false,
             options: [
               { id: "pin", text: "Назвать PIN — иначе ведь заблокируют", correct: false },
-              { id: "hangup", text: "Положить трубку и перезвонить в банк самому", correct: true },
+              { id: "hangup", text: "Положить трубку и самому позвонить в банк по номеру на обороте карты", correct: true },
               { id: "partial", text: "Назвать только номер карты, без PIN", correct: false },
             ],
             explain: "Если звонят тебе — не называй ни код из SMS, ни PIN, ни CVV, ни номер карты. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
@@ -450,7 +450,7 @@ export const fakeLinkContent = {
             multi: false,
             options: [
               { id: "pin", text: "Spun PIN-ul — altfel blochează", correct: false },
-              { id: "hangup", text: "Închid și sun eu înapoi la bancă", correct: true },
+              { id: "hangup", text: "Închid și sun eu la bancă, la numărul de pe spatele cardului", correct: true },
               { id: "partial", text: "Dau doar numărul cardului, fără PIN", correct: false },
             ],
             explain: "Dacă te sună cineva — nu spune nici codul din SMS, nici PIN-ul, nici CVV-ul, nici numărul cardului. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
