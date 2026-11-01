@@ -52,6 +52,7 @@ export const fakeLinkContent = {
         { title: "Срочный призыв", text: "Сообщения «Ваш аккаунт взломан, войдите немедленно» часто содержат вредоносные ссылки." },
         { title: "Внешний вид обманчив.", text: "Подделка может выглядеть точь-в-точь как настоящий сайт. Кривой логотип или ошибки — повод уйти, но красивый сайт ещё ничего не доказывает. Проверяй адрес." }
       ],
+      recoveryTitle: "Уже ввёл данные?",
       recovery: "Если уже ввёл данные: сразу позвони в банк по номеру на обороте карты и попроси заблокировать карту, смени пароль, расскажи близким. Если украли деньги — звони в полицию: 112.",
       rule: "Всегда проверяйте адрес в строке браузера перед тем, как ввести свои данные. При малейших сомнениях вводите адрес сайта вручную.",
       },
@@ -83,10 +84,10 @@ export const fakeLinkContent = {
         items: [
           { id: "bank-official", url: "https://banca-noroc.md/login", context: "Ты сам набрал этот адрес в браузере.", verdict: "safe", explain: "Адрес точно совпадает с официальным banca-noroc.md, и ты набрал его сам. Решает именно адрес, а не замок." },
           { id: "bank-fake", url: "http://banca-noroc-online.com/login", context: "Пришла по SMS с неизвестного номера.", verdict: "phishing", explain: "Нет замка (http), лишние слова в адресе и .com вместо .md." },
-          { id: "posta-official", url: "https://posta.md/colete", context: "Ссылка с официального сайта почты.", verdict: "safe", explain: "Это точный адрес почты — posta.md, и ты перешёл на него с официального сайта." },
+          { id: "posta-official", url: "https://posta.md/colete", context: "SMS с уведомлением о посылке.", verdict: "safe", explain: "Это точный адрес почты — posta.md. Проверяй сам адрес: сообщение по SMS само по себе не доказывает ни подлинность, ни подделку сайта." },
           { id: "posta-fake", url: "https://posta-md-livrare.top/primeste-coletul", context: "SMS: «посылка задержана, забери сегодня».", verdict: "phishing", explain: "Настоящий адрес — posta.md. Здесь «posta-md» — лишь часть чужого адреса, к тому же с окончанием .top. Плюс срочность — классика фишинга. Замок здесь есть — но адрес чужой." },
           { id: "search-official", url: "https://google.com", context: "Адрес введён вручную.", verdict: "safe", explain: "Точный адрес google.com, набран вручную." },
-          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Письмо: «подтвердите аккаунт в течение суток».", verdict: "phishing", explain: "Нули вместо букв «о» и приписка «-securitate» — настоящий адрес просто google.com." },
+          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Рекламная ссылка в результатах поиска.", verdict: "phishing", explain: "Нули вместо букв «о» и приписка «-securitate» — настоящий адрес просто google.com." },
         ],
       },
       dialogueReact: {
@@ -105,7 +106,7 @@ export const fakeLinkContent = {
             incoming: ["POSTA-MD: Посылка задержана на складе. Оплати 20 леев за хранение: posta-md-livrare.top/oplata"],
             options: [
               { id: "pay", text: "Оплатить по ссылке, чтобы не потерять посылку", correct: false },
-              { id: "check", text: "Удалить SMS и проверить трек на официальном сайте posta.md", correct: true },
+              { id: "check", text: "Удалить SMS и проверить посылку по номеру на posta.md", correct: true },
               { id: "forward", text: "Переслать сообщение друзьям — вдруг их тоже касается", correct: false },
             ],
             explain: "Не плати по ссылке из SMS, даже если отправитель подписан «POSTA-MD» — имя отправителя легко подделать. Проверь посылку сам на posta.md или в отделении почты.",
@@ -116,7 +117,7 @@ export const fakeLinkContent = {
             incoming: ["Здравствуйте, это служба безопасности банка. Ваша карта заблокирована. Назовите код из SMS, чтобы разблокировать."],
             options: [
               { id: "code", text: "Продиктовать код — сотрудник же представился", correct: false },
-              { id: "callback", text: "Положить трубку и перезвонить в банк по номеру на карте", correct: true },
+              { id: "callback", text: "Положить трубку и перезвонить в банк по номеру на обороте карты", correct: true },
               { id: "data", text: "Назвать номер карты, но не код — это же не код", correct: false },
             ],
             explain: "Если звонят тебе — не называй ни код из SMS, ни PIN, ни CVV, ни номер карты. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
@@ -288,6 +289,7 @@ export const fakeLinkContent = {
         { title: "Apel urgent", text: "Mesajele de tipul «Contul dvs. a fost spart, conectați-vă imediat» conțin adesea linkuri malițioase." },
         { title: "Aspectul înșală.", text: "Falsul poate arăta exact ca site-ul real. Un logo strâmb sau greșelile sunt motiv să pleci, dar un site frumos nu dovedește nimic. Verifică adresa." }
       ],
+      recoveryTitle: "Ai introdus deja datele?",
       recovery: "Dacă ai introdus deja datele: sună imediat la bancă la numărul de pe spatele cardului și cere blocarea cardului, schimbă parola, spune-le celor apropiați. Dacă ți s-au furat bani — sună la poliție: 112.",
       rule: "Verificați mereu adresa din bara browserului înainte de a introduce datele. Dacă aveți cea mai mică îndoială, introduceți manual adresa site-ului.",
       },
@@ -320,10 +322,10 @@ export const fakeLinkContent = {
         items: [
           { id: "bank-official", url: "https://banca-noroc.md/login", context: "Ai scris singur această adresă în browser.", verdict: "safe", explain: "Adresa coincide exact cu cea oficială banca-noroc.md și ai scris-o singur. Decide adresa, nu lacătul." },
           { id: "bank-fake", url: "http://banca-noroc-online.com/login", context: "Primit prin SMS de la număr necunoscut.", verdict: "phishing", explain: "Lipsește lacătul (http), cuvinte în plus și .com în loc de .md." },
-          { id: "posta-official", url: "https://posta.md/colete", context: "Link de pe site-ul oficial al poștei.", verdict: "safe", explain: "Este adresa exactă a poștei — posta.md, și ai ajuns aici de pe site-ul oficial." },
+          { id: "posta-official", url: "https://posta.md/colete", context: "SMS cu o notificare despre un colet.", verdict: "safe", explain: "Este adresa exactă a poștei — posta.md. Verifică adresa: un mesaj prin SMS nu dovedește în sine nici că site-ul e real, nici că e fals." },
           { id: "posta-fake", url: "https://posta-md-livrare.top/primeste-coletul", context: "SMS: «coletul e reținut, ridică-l azi».", verdict: "phishing", explain: "Adresa reală e posta.md. Aici «posta-md» e doar o parte dintr-o adresă străină, și, pe deasupra, cu terminația .top. Plus urgența — phishing clasic. Lacătul există — dar adresa e străină." },
           { id: "search-official", url: "https://google.com", context: "Adresă introdusă manual.", verdict: "safe", explain: "Adresa exactă google.com, scrisă manual." },
-          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Email: «confirmă contul în 24 de ore».", verdict: "phishing", explain: "Zerouri în loc de «o» și adaosul «-securitate» — adresa reală e simplu google.com." },
+          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Link publicitar în rezultatele căutării.", verdict: "phishing", explain: "Zerouri în loc de «o» și adaosul «-securitate» — adresa reală e simplu google.com." },
         ],
       },
       dialogueReact: {
@@ -342,7 +344,7 @@ export const fakeLinkContent = {
             incoming: ["POSTA-MD: Coletul e reținut în depozit. Plătește 20 de lei pentru păstrare: posta-md-livrare.top/oplata"],
             options: [
               { id: "pay", text: "Plătesc prin link, ca să nu pierd coletul", correct: false },
-              { id: "check", text: "Șterg SMS-ul și verific trackingul pe site-ul oficial posta.md", correct: true },
+              { id: "check", text: "Șterg SMS-ul și verific coletul după număr pe posta.md", correct: true },
               { id: "forward", text: "Trimit mesajul prietenilor — poate îi privește și pe ei", correct: false },
             ],
             explain: "Nu plăti prin linkul din SMS, chiar dacă expeditorul apare ca «POSTA-MD» — numele expeditorului se falsifică ușor. Verifică singur coletul pe posta.md sau la oficiul poștal.",
@@ -353,7 +355,7 @@ export const fakeLinkContent = {
             incoming: ["Bună ziua, sunt de la securitatea băncii. Cardul dvs. e blocat. Spuneți codul din SMS pentru deblocare."],
             options: [
               { id: "code", text: "Dictez codul — angajatul s-a prezentat", correct: false },
-              { id: "callback", text: "Închid și sun înapoi la bancă la numărul de pe card", correct: true },
+              { id: "callback", text: "Închid și sun înapoi la bancă la numărul de pe spatele cardului", correct: true },
               { id: "data", text: "Dau numărul cardului, dar nu codul — doar codul e secret", correct: false },
             ],
             explain: "Dacă te sună cineva — nu spune nici codul din SMS, nici PIN-ul, nici CVV-ul, nici numărul cardului. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",

@@ -6,6 +6,31 @@ const correctDialogue = { "parcel-sms": ["check"], "bank-call": ["callback"], "f
 const correctFinal = { "q-link": ["phishing"], "q-react": ["calm"], "q-link-safe": ["safe"], "q-react-bank": ["hangup"], "q-boss": ["block", "delete"] };
 
 describe("контент fake-link: сохранение ID и правильных ответов", () => {
+  it.each(["ru", "ro"] as const)("%s: совет перезвонить указывает номер на обороте карты", locale => {
+    const content = fakeLinkContent[locale];
+    const strings = (value: unknown): string[] => typeof value === "string"
+      ? [value]
+      : value && typeof value === "object" ? Object.values(value).flatMap(strings) : [];
+    const callbacks = strings(content).filter(text => /перезвон|sun\s+înapoi/i.test(text));
+    expect(callbacks.length).toBeGreaterThan(0);
+    for (const text of callbacks) {
+      expect(text).toContain(locale === "ru" ? "по номеру на обороте карты" : "numărul de pe spatele cardului");
+    }
+    const form = content.findSignals.signals.find(signal => signal.id === "form")!;
+    expect(form.explain).not.toMatch(/нужны только логин и пароль|trebuie doar login și parolă/);
+    expect(form.explain).toContain("SMS");
+  });
+
+  it.each(["ru", "ro"] as const)("%s: источник ссылки не подсказывает её вердикт", locale => {
+    const items = fakeLinkContent[locale].linkClassify.items;
+    const smsItems = items.filter(item => /SMS/.test(item.context));
+    expect(smsItems.some(item => item.verdict === "safe")).toBe(true);
+    expect(smsItems.some(item => item.verdict === "phishing")).toBe(true);
+    const searchItem = items.find(item => item.id === "search-fake")!;
+    expect(searchItem.context).toMatch(/поиск|căutări/);
+    expect(searchItem.verdict).toBe("phishing");
+  });
+
   it.each(["ru", "ro"] as const)("%s: ровно пять шагов с прежними ID", locale => {
     const steps = fakeLinkContent[locale].orderSteps.steps;
     expect(steps).toHaveLength(5);
