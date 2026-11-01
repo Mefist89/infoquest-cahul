@@ -138,7 +138,7 @@ export const fakeLinkContent = {
             incoming: ["Поздравляем! Ты выиграл телефон. Забери приз сегодня: super-prizy-online.com/zabrat. Только никому не рассказывай!"],            options: [
               { id: "claim", text: "Забрать приз, пока не забрали другие", correct: false },
               { id: "secret", text: "Молчать, как просят, но приз забрать", correct: false },
-              { id: "ignore", text: "Проигнорировать: в конкурсах я не участвовал, а секретность — признак обмана", correct: true },
+              { id: "ignore", text: "Не переходить по ссылке и рассказать взрослым: настоящий приз не требует секретности и спешки", correct: true },
             ],
             explain: "Неожиданные призы и просьба молчать — классические признаки мошенничества.",
           },
@@ -376,7 +376,7 @@ export const fakeLinkContent = {
             options: [
               { id: "claim", text: "Ridic premiul, până nu-l iau alții", correct: false },
               { id: "secret", text: "Tac, cum mi se cere, dar premiul îl iau", correct: false },
-              { id: "ignore", text: "Ignor: n-am participat la concursuri, iar secretul e semn de înșelătorie", correct: true },
+              { id: "ignore", text: "Nu deschid linkul și le spun adulților: un premiu adevărat nu cere secret și grabă", correct: true },
             ],
             explain: "Premiile neașteptate și rugămintea de a tăcea sunt semne clasice de escrocherie.",
           },
