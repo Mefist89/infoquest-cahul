@@ -225,7 +225,7 @@ export const fakeLinkContent = {
             options: [
               { id: "send", text: "Отправить код — аккаунт дороже", correct: false },
               { id: "block", text: "Заблокировать отправителя и пожаловаться", correct: true },
-              { id: "delete", text: "Удалить сообщение", correct: true },
+              { id: "delete", text: "Сделать скриншот, затем удалить сообщение", correct: true },
               { id: "link", text: "Перейти по ссылке «для проверки»", correct: false },
             ],
             explain: "Коды из SMS никому нельзя отправлять. Атаку отбивают блокировкой, жалобой и удалением.",
@@ -463,7 +463,7 @@ export const fakeLinkContent = {
             options: [
               { id: "send", text: "Trimit codul — contul e mai scump", correct: false },
               { id: "block", text: "Blochez expeditorul și raportez", correct: true },
-              { id: "delete", text: "Șterg mesajul", correct: true },
+              { id: "delete", text: "Fac o captură de ecran, apoi șterg mesajul", correct: true },
               { id: "link", text: "Accesez linkul «pentru verificare»", correct: false },
             ],
             explain: "Codurile din SMS nu se trimit nimănui. Atacul se respinge prin blocare, raportare și ștergere.",
