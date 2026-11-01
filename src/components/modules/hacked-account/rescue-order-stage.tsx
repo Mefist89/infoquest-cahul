@@ -5,13 +5,13 @@ import { Check, ListOrdered, X } from "lucide-react";
 
 import type { hackedAccountContent } from "@/data/hacked-account";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
+import { evaluateRescueOrder } from "@/features/modules/runner/rescue-order";
 
 type RescueOrderContent =
   | (typeof hackedAccountContent)["ru"]["rescueOrder"]
   | (typeof hackedAccountContent)["ro"]["rescueOrder"];
 
 const STEP_COUNT = 5;
-const PASS_COUNT = 4;
 // Фиксированный перемешанный порядок: одинаковый для обеих локалей.
 const SHUFFLED = [2, 0, 4, 1, 3];
 
@@ -36,7 +36,8 @@ export function RescueOrderStage({
   const shuffledSteps = useMemo(() => SHUFFLED.map((position) => content.steps[position]), [content]);
   const byId = useMemo(() => new Map<string, (typeof content.steps)[number]>(content.steps.map((step) => [step.id, step])), [content]);
 
-  const exactPositions = correctOrder.filter((id, position) => chosen[position] === id).length;
+  const result = evaluateRescueOrder(chosen, correctOrder);
+  const reviewOrder = result.passed ? chosen : correctOrder;
   const complete = chosen.length === STEP_COUNT;
 
   function toggle(id: string) {
@@ -49,9 +50,9 @@ export function RescueOrderStage({
   function submit() {
     if (saving || !complete) return;
     setSubmitted(true);
-    if (exactPositions >= PASS_COUNT) {
+    if (result.passed) {
       setPassed(true);
-      onComplete({ correct: exactPositions, total: STEP_COUNT });
+      onComplete({ correct: result.correct, total: result.total });
     }
   }
 
@@ -137,13 +138,13 @@ export function RescueOrderStage({
         ) : (
           <div className={`rounded-2xl border p-5 ${passed ? "border-success/40 bg-success/10" : "border-danger/40 bg-danger/10"}`}>
             <p className={`flex items-center gap-2 text-base font-black ${passed ? "text-success" : "text-danger"}`}>
-              <Check className="size-5" aria-hidden="true" />
+              {passed ? <Check className="size-5" aria-hidden="true" /> : <X className="size-5" aria-hidden="true" />}
               {passed ? content.successTitle : content.failTitle}
             </p>
-            <p className="mt-1 text-sm font-bold text-foreground">{content.resultCount.replace("{score}", String(exactPositions))}</p>
+            <p className="mt-1 text-sm font-bold text-foreground">{content.resultCount.replace("{score}", String(result.correct))}</p>
             <ol className="mt-4 grid gap-2">
-              {correctOrder.map((id, position) => {
-                const hit = chosen[position] === id;
+              {reviewOrder.map((id, position) => {
+                const hit = result.passed;
                 return (
                   <li key={id} className={`flex items-center gap-3 rounded-xl border p-3 text-sm ${hit ? "border-success/40 bg-success/5" : "border-border bg-background/40"}`}>
                     <span aria-hidden="true" className={`grid size-7 shrink-0 place-items-center rounded-lg font-black ${hit ? "bg-success text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>

@@ -153,6 +153,16 @@ export const hackedAccountContent = {
           correction: "Не во всех сервисах смена пароля выкидывает того, кто уже внутри. Открой список устройств и закрой все чужие.",
         },
         {
+          id: "audit",
+          messages: ["Сессии закрыты. Но взломщик мог оставить себе лазейку для сброса пароля. Что проверяем?"],
+          options: [
+            { id: "avatar", text: "Сменить аватарку — для настроения", correct: false },
+            { id: "audit", text: "Проверь почту и телефон для восстановления, удали чужие приложения", correct: true },
+            { id: "done", text: "Ничего — и так уже много сделано", correct: false },
+          ],
+          correction: "Если оставить чужую почту или приложение, взломщик сможет вернуться. Проверь почту для восстановления и подключённые приложения.",
+        },
+        {
           id: "lock",
           messages: ["Почта и приложения проверены. Как не пустить взломщика обратно?"],
           options: [
@@ -172,32 +182,22 @@ export const hackedAccountContent = {
           ],
           correction: "Молчание оставляет друзей беззащитными, а пароль — только твой. Предупреди всех.",
         },
-        {
-          id: "audit",
-          messages: ["Сессии закрыты. Но взломщик мог оставить себе лазейку для сброса пароля. Что проверяем?"],
-          options: [
-            { id: "avatar", text: "Сменить аватарку — для настроения", correct: false },
-            { id: "audit", text: "Проверь почту и телефон для восстановления, удали чужие приложения", correct: true },
-            { id: "done", text: "Ничего — и так уже много сделано", correct: false },
-          ],
-          correction: "Если оставить чужую почту или приложение, взломщик сможет вернуться. Проверь почту для восстановления и подключённые приложения.",
-        },
       ],
     },
     rescueOrder: {
       prompt: "Собери правильный порядок спасения взломанного аккаунта: нажимай шаги по очереди.",
-      passNote: "Нужно минимум 4 шага из 5 на своих местах.",
+      passNote: "Можно и в другом порядке, главное — сначала пароль.",
       yourOrder: "Твой порядок",
       available: "Шаги",
       tapToRemove: "Нажми на шаг, чтобы убрать его.",
       successTitle: "Аккаунт спасён! Порядок верный.",
       failTitle: "Порядок перепутан — посмотри верный алгоритм и попробуй ещё.",
-      resultCount: "На месте: {score}/5",      steps: [
+      resultCount: "{score}/5",      steps: [
         { id: "password", text: "Сменить пароль со своего телефона или компьютера, в котором нет вирусов" },
         { id: "sessions", text: "Выйти из аккаунта на всех чужих устройствах" },
+        { id: "audit", text: "Проверь почту и телефон для восстановления, удали чужие приложения" },
         { id: "lock", text: "Включи двухэтапную проверку" },
         { id: "friends", text: "Предупреди друзей" },
-        { id: "audit", text: "Проверь почту и телефон для восстановления, удали чужие приложения" },
       ],
     },
     shadowBattle: {
@@ -424,6 +424,16 @@ export const hackedAccountContent = {
           correction: "Nu în toate serviciile schimbarea parolei îl dă afară pe cel intrat deja. Deschide lista de dispozitive și închide-le pe cele străine.",
         },
         {
+          id: "audit",
+          messages: ["Sesiunile sunt închise. Dar e posibil ca spărgătorul să-și fi lăsat o cale de resetare a parolei. Ce verificăm?"],
+          options: [
+            { id: "avatar", text: "Schimb poza — pentru dispoziție", correct: false },
+            { id: "audit", text: "Verifică emailul și telefonul de recuperare, șterge aplicațiile străine", correct: true },
+            { id: "done", text: "Nimic — și așa s-a făcut mult", correct: false },
+          ],
+          correction: "Dacă lași emailul sau aplicația străină, spărgătorul se poate întoarce. Verifică emailul de recuperare și aplicațiile conectate.",
+        },
+        {
           id: "lock",
           messages: ["Emailul și aplicațiile sunt verificate. Cum nu-l lăsăm pe spărgător înapoi?"],
           options: [
@@ -443,33 +453,23 @@ export const hackedAccountContent = {
           ],
           correction: "Tăcerea îi lasă pe prieteni fără apărare, iar parola e doar a ta. Avertizează-i pe toți.",
         },
-        {
-          id: "audit",
-          messages: ["Sesiunile sunt închise. Dar e posibil ca spărgătorul să-și fi lăsat o cale de resetare a parolei. Ce verificăm?"],
-          options: [
-            { id: "avatar", text: "Schimb poza — pentru dispoziție", correct: false },
-            { id: "audit", text: "Verifică emailul și telefonul de recuperare, șterge aplicațiile străine", correct: true },
-            { id: "done", text: "Nimic — și așa s-a făcut mult", correct: false },
-          ],
-          correction: "Dacă lași emailul sau aplicația străină, spărgătorul se poate întoarce. Verifică emailul de recuperare și aplicațiile conectate.",
-        },
       ],
     },
     rescueOrder: {
       prompt: "Construiește ordinea corectă de salvare a unui cont spart: apasă pașii pe rând.",
-      passNote: "Ai nevoie de cel puțin 4 pași din 5 la locurile lor.",
+      passNote: "Se poate și în altă ordine, important e să începi cu parola.",
       yourOrder: "Ordinea ta",
       available: "Pași",
       tapToRemove: "Apasă pe un pas ca să-l scoți.",
       successTitle: "Cont salvat! Ordinea e corectă.",
       failTitle: "Ordinea e încurcată — privește algoritmul corect și mai încearcă.",
-      resultCount: "La loc: {score}/5",
+      resultCount: "{score}/5",
       steps: [
         { id: "password", text: "Schimb parola de pe telefonul sau calculatorul meu, fără viruși" },
         { id: "sessions", text: "Ies din cont pe toate dispozitivele străine" },
+        { id: "audit", text: "Verifică emailul și telefonul de recuperare, șterge aplicațiile străine" },
         { id: "lock", text: "Activează verificarea în doi pași" },
         { id: "friends", text: "Avertizează-ți prietenii" },
-        { id: "audit", text: "Verifică emailul și telefonul de recuperare, șterge aplicațiile străine" },
       ],
     },
     shadowBattle: {
