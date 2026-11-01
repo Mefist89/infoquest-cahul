@@ -23,11 +23,12 @@ describe("recording usability", () => {
 describe("WAV conversion", () => {
   it("measures the final mixed samples and closes the audio context", async () => {
     const close = vi.fn(async () => {});
+    const channels = [new Float32Array(32_000).fill(0.04), new Float32Array(32_000).fill(-0.02)];
     vi.stubGlobal("AudioContext", class {
       close = close;
       decodeAudioData = async () => ({
         duration: 2, sampleRate: 16_000, length: 32_000, numberOfChannels: 2,
-        getChannelData: (channel: number) => new Float32Array(32_000).fill(channel ? -0.02 : 0.04),
+        getChannelData: (channel: number) => channels[channel],
       });
     });
     const result = await convertToWhisperWav(new Blob(["audio"]));
