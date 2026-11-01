@@ -174,11 +174,11 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
         router.push(`/${locale}/login?next=${encodeURIComponent(`/${locale}/ai-help`)}`);
         return;
       }
-      if (!response.ok || (currentMode === "analyzer" ? !result.analysis : !result.reply)) throw new Error(result.error || t.networkError);
       setQuota((current) => ({
         audioRemaining: typeof result.audioRemaining === "number" ? result.audioRemaining : current.audioRemaining,
         dailyRemaining: typeof result.dailyRemaining === "number" ? result.dailyRemaining : current.dailyRemaining,
       }));
+      if (!response.ok || (currentMode === "analyzer" ? !result.analysis : !result.reply)) throw new Error(result.error || t.networkError);
       const reply = currentMode === "analyzer" ? result.analysis!.reply : result.reply!;
       if (currentMode === "analyzer" && result.analysis) {
         setAnalysisAnnouncement(`${t.analysisReady}. ${t.risk}: ${result.analysis.risk}%. ${t.verdicts[result.analysis.verdict]}. ${result.analysis.summary}`);

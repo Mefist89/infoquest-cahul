@@ -244,48 +244,72 @@ export async function POST(request: Request) {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), getRequestTimeoutMs());
+  let refund = false;
+  const execute = async () => {
 
-  try {
-    if (mode === "chat") {
-      const reply = await provider.chat([...chatHistory, { role: "user", content: message }], locale, controller.signal);
-      return jsonResponse({
-        reply,
+    try {
+      if (mode === "chat") {
+        const reply = await provider.chat([...chatHistory, { role: "user", content: message }], locale, controller.signal);
+        if (!reply.trim()) throw new Error("Empty AI reply");
+        const response = jsonResponse({
+          reply,
+          dailyRemaining: Math.max(0, quota.user_daily_limit - quota.user_daily_used),
+        });
+        return response;
+      }
+
+      let transcript = audio ? await provider.transcribeAudio(audio, locale, controller.signal) : "";
+      if (audio) {
+        try {
+          transcript = validateTranscript(transcript);
+        } catch (error) {
+          if (error instanceof AudioValidationError) {
+            refund = error.code === "audio_silent";
+            const errorCode = error.code === "audio_silent" ? "audioSilent" : "transcriptSize";
+            return jsonResponse({ error: errorText(locale, errorCode), code: error.code === "audio_silent" ? "audio_empty" : "transcript_too_large" }, 422);
+          }
+          throw error;
+        }
+      }
+      const combinedInput = [
+        message ? `User question:\n${message}` : "",
+        transcript ? `Audio transcript:\n${transcript}` : "",
+      ].filter(Boolean).join("\n\n");
+      const analysis = await provider.analyzeContent(combinedInput, locale, controller.signal);
+      if (!analysis.reply.trim() || !analysis.summary.trim()) throw new Error("Empty AI analysis");
+      const response = jsonResponse({
+        analysis,
+        transcript,
+        audioRemaining: audio ? Math.max(0, quota.audio_limit - quota.audio_used) : undefined,
         dailyRemaining: Math.max(0, quota.user_daily_limit - quota.user_daily_used),
       });
-    }
-
-    let transcript = audio ? await provider.transcribeAudio(audio, locale, controller.signal) : "";
-    if (audio) {
-      try {
-        transcript = validateTranscript(transcript);
-      } catch (error) {
-        if (error instanceof AudioValidationError) {
-          const errorCode = error.code === "audio_silent" ? "audioSilent" : "transcriptSize";
-          return jsonResponse({ error: errorText(locale, errorCode), code: error.code === "audio_silent" ? "audio_empty" : "transcript_too_large" }, 422);
-        }
-        throw error;
+      return response;
+    } catch (error) {
+      const status = error instanceof Error && "status" in error ? error.status : undefined;
+      refund = typeof status !== "number" || status === 429 || status >= 500;
+      if (error instanceof Error && error.name === "AbortError") {
+        return jsonResponse({ error: errorText(locale, "timeout"), code: "provider_timeout" }, 504);
       }
+      console.error("Chrono AI analysis failed", error instanceof Error ? error.message : error);
+      return jsonResponse({ error: errorText(locale, "service") }, 502);
     }
-    const combinedInput = [
-      message ? `User question:\n${message}` : "",
-      transcript ? `Audio transcript:\n${transcript}` : "",
-    ].filter(Boolean).join("\n\n");
-    const analysis = await provider.analyzeContent(combinedInput, locale, controller.signal);
-    return jsonResponse({
-      analysis,
-      transcript,
-      audioRemaining: audio ? Math.max(0, quota.audio_limit - quota.audio_used) : undefined,
-      dailyRemaining: Math.max(0, quota.user_daily_limit - quota.user_daily_used),
-    });
+  };
+
+  const response = await execute().finally(() => clearTimeout(timeout));
+  try {
+    const { error: releaseError } = await supabase.rpc("release_ai_request", { p_request_id: requestId, p_refund: refund });
+    if (releaseError) {
+      console.error("Chrono quota settlement failed", releaseError.message);
+    } else if (!response.ok) {
+      const body = await response.json();
+      return jsonResponse({
+        ...body,
+        dailyRemaining: Math.max(0, quota.user_daily_limit - quota.user_daily_used + (refund ? 1 : 0)),
+        audioRemaining: audio ? Math.max(0, quota.audio_limit - quota.audio_used + (refund ? 1 : 0)) : undefined,
+      }, response.status);
+    }
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      return jsonResponse({ error: errorText(locale, "timeout"), code: "provider_timeout" }, 504);
-    }
-    console.error("Chrono AI analysis failed", error instanceof Error ? error.message : error);
-    return jsonResponse({ error: errorText(locale, "service") }, 502);
-  } finally {
-    clearTimeout(timeout);
-    const { error: releaseError } = await supabase.rpc("release_ai_request", { p_request_id: requestId });
-    if (releaseError) console.error("Chrono quota release failed", releaseError.message);
+    console.error("Chrono quota settlement failed", error instanceof Error ? error.message : error);
   }
+  return response;
 }

@@ -24,6 +24,13 @@ export interface AiProvider {
   chat(messages: AiChatMessage[], locale: AiLocale, signal: AbortSignal): Promise<string>;
 }
 
+export class AiProviderHttpError extends Error {
+  constructor(readonly status: number) {
+    super(`AI provider HTTP ${status}`);
+    this.name = "AiProviderHttpError";
+  }
+}
+
 type ProviderConfig = {
   apiKey: string;
   baseUrl: string;
@@ -110,8 +117,9 @@ class OpenAiCompatibleProvider implements AiProvider {
       body,
       signal,
     });
+    if (!response.ok) throw new AiProviderHttpError(response.status);
     const payload = await response.json() as { text?: string; error?: { message?: string } };
-    if (!response.ok || typeof payload.text !== "string") throw new Error(payload.error?.message || "Audio transcription failed");
+    if (typeof payload.text !== "string") throw new Error("Audio transcription failed");
     return payload.text.trim();
   }
 
@@ -141,8 +149,8 @@ class OpenAiCompatibleProvider implements AiProvider {
       signal,
     });
 
+    if (!response.ok) throw new AiProviderHttpError(response.status);
     const payload = await response.json() as ChatCompletionResponse;
-    if (!response.ok) throw new Error(payload.error?.message || "Chat Completions request failed");
     const parsed = JSON.parse(extractChatText(payload)) as unknown;
     if (!isFraudAnalysis(parsed)) throw new Error("Invalid structured analysis");
     return parsed;
@@ -170,8 +178,8 @@ class OpenAiCompatibleProvider implements AiProvider {
       signal,
     });
 
+    if (!response.ok) throw new AiProviderHttpError(response.status);
     const payload = await response.json() as ChatCompletionResponse;
-    if (!response.ok) throw new Error(payload.error?.message || "Chat Completions request failed");
     return extractChatText(payload).trim();
   }
 }

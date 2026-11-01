@@ -74,6 +74,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_request_receipts: {
+        Row: {
+          request_id: string
+          user_id: string
+          usage_date: string
+          has_audio: boolean
+          succeeded: boolean | null
+          finished_at: string | null
+          created_at: string
+        }
+        Insert: {
+          request_id: string
+          user_id: string
+          usage_date: string
+          has_audio: boolean
+          succeeded?: boolean | null
+          finished_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          request_id?: string
+          user_id?: string
+          usage_date?: string
+          has_audio?: boolean
+          succeeded?: boolean | null
+          finished_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       ai_usage_daily: {
         Row: {
           active_request_id: string | null
@@ -638,7 +668,7 @@ export type Database = {
           total_count: number
         }[]
       }
-      release_ai_request: { Args: { p_request_id: string }; Returns: undefined }
+      release_ai_request: { Args: { p_request_id: string; p_refund?: boolean }; Returns: undefined }
       set_user_ip_block: {
         Args: { p_blocked: boolean; p_reason?: string; p_user_id: string }
         Returns: undefined
