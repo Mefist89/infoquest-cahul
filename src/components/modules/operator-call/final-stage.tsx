@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CheckCircle2, MessageCircle, Pause, Phone, Play, Skull, User, XCircle } from "lucide-react";
+import { Check, CheckCircle2, Pause, Play, Skull, User, XCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
@@ -9,11 +9,12 @@ import { answerRetryQuestion, continueRetryPhase, continueRetryProgress, createR
 import { useNoTimer } from "@/features/modules/runner/use-no-timer";
 import { TimerGameStart } from "../shared/timer-setting";
 import { StageRetryFeedback } from "./stage-retry-feedback";
+import { FinalVisualActions } from "./final-visual-actions";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
 
 function VisualClueButton({ label, selected, foundText, onSelect, className, children }: { label: string; selected: boolean; foundText: string; onSelect: () => void; className: string; children: ReactNode }) {
   return (
-    <button type="button" aria-pressed={selected} aria-label={`${label}. ${selected ? foundText : ""}`} onClick={onSelect} className={`focus-ring min-w-11 min-h-11 relative ${className}`}>
+    <button type="button" disabled={selected} aria-pressed={selected} aria-label={`${label}. ${selected ? foundText : ""}`} onClick={onSelect} className={`focus-ring min-w-11 min-h-11 relative ${className}`}>
       {children}
       {selected && <span className="mt-1 block text-base font-black uppercase tracking-wide text-success"><Check className="mr-1 inline size-3" aria-hidden="true" />{foundText}</span>}
     </button>
@@ -262,10 +263,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
                   <VisualClueButton label={a11y.avatar} selected={foundDetails.has("avatar")} foundText={a11y.found} onSelect={() => handleVisualClick("avatar", currentVisual.correctTargets.includes("avatar"))} className={`mb-4 flex min-h-20 w-24 flex-col items-center justify-center rounded-full border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10 text-success" : "border-transparent bg-slate-300 dark:bg-slate-800"}`}><User className="size-10 text-slate-700 dark:text-slate-200" aria-hidden="true" /></VisualClueButton>
                   <VisualClueButton label={`${a11y.caller}: ${currentVisual.caller}`} selected={foundDetails.has("caller")} foundText={a11y.found} onSelect={() => handleVisualClick("caller", currentVisual.correctTargets.includes("caller"))} className={`mb-1 w-full rounded-lg border-2 p-2 text-xl font-bold ${foundDetails.has("caller") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-800 dark:text-slate-100"}`}>{currentVisual.caller}</VisualClueButton>
                   <VisualClueButton label={`${a11y.number}: ${currentVisual.number}`} selected={foundDetails.has("number")} foundText={a11y.found} onSelect={() => handleVisualClick("number", currentVisual.correctTargets.includes("number"))} className={`rounded-lg border-2 px-3 py-2 text-lg font-black tracking-wider ${foundDetails.has("number") ? "border-success bg-success/10 text-success" : "border-danger/20 bg-danger/10 text-danger"}`}>{currentVisual.number}</VisualClueButton>
-                  <div className="flex gap-8 mt-12 w-full justify-center">
-                    <button type="button" aria-label={a11y.callAction} onClick={() => handleVisualClick("action", false)} className="focus-ring min-w-11 grid min-h-14 w-14 place-items-center rounded-full bg-danger shadow-lg"><Phone className="text-white transform rotate-[135deg]" aria-hidden="true" /></button>
-                    <button type="button" aria-label={a11y.callAction} onClick={() => handleVisualClick("action", false)} className="focus-ring min-w-11 grid min-h-14 w-14 place-items-center rounded-full bg-success shadow-lg"><Phone className="text-white" aria-hidden="true" /></button>
-                  </div>
+                  <FinalVisualActions key={currentLevel} locale={locale} kind="call" />
                 </div>
               )}
               {currentVisual.type === "profile" && (
@@ -273,10 +271,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
                   <VisualClueButton label={a11y.avatar} selected={foundDetails.has("avatar")} foundText={a11y.found} onSelect={() => handleVisualClick("avatar", currentVisual.correctTargets.includes("avatar"))} className={`mb-4 flex min-h-24 w-28 flex-col items-center justify-center rounded-full border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10" : "border-neon bg-neon/20"}`}><CheckCircle2 className={`size-12 ${foundDetails.has("avatar") ? "text-success" : "text-neon"}`} aria-hidden="true" /></VisualClueButton>
                   <VisualClueButton label={`${a11y.profileName}: ${currentVisual.name}`} selected={foundDetails.has("name")} foundText={a11y.found} onSelect={() => handleVisualClick("name", currentVisual.correctTargets.includes("name"))} className={`mb-2 w-full rounded-lg border-2 p-2 text-2xl font-bold ${foundDetails.has("name") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-800 dark:text-slate-100"}`}>{currentVisual.name}</VisualClueButton>
                   <VisualClueButton label={`${a11y.accountType}: ${currentVisual.accountType}`} selected={foundDetails.has("accountType")} foundText={a11y.found} onSelect={() => handleVisualClick("accountType", currentVisual.correctTargets.includes("accountType"))} className={`mb-6 rounded-xl border-2 px-4 py-2 text-base font-bold ${foundDetails.has("accountType") ? "border-success bg-success/10 text-success" : "border-transparent bg-slate-200 text-slate-700 dark:text-slate-200 dark:bg-slate-800"}`}>{currentVisual.accountType}</VisualClueButton>
-                  <div className="w-full flex justify-around border-t border-slate-300 dark:border-slate-800 pt-4">
-                     <button type="button" onClick={() => handleVisualClick("action", false)} className="focus-ring min-w-11 flex min-h-11 flex-col items-center rounded-xl p-2 text-neon"><Phone className="size-6 mb-1" aria-hidden="true"/><span className="text-base">{a11y.callAction}</span></button>
-                     <button type="button" onClick={() => handleVisualClick("action", false)} className="focus-ring min-w-11 flex min-h-11 flex-col items-center rounded-xl p-2 text-neon"><MessageCircle className="size-6 mb-1" aria-hidden="true"/><span className="text-base">{a11y.messageAction}</span></button>
-                  </div>
+                  <FinalVisualActions key={currentLevel} locale={locale} kind="profile" />
                 </div>
               )}
             </div>

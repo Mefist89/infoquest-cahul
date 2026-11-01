@@ -128,4 +128,20 @@ describe("финал: объяснение и визуальные улики", 
     expect(retryProgressScore(corrected.progress)).toEqual({ correct: 0, total: 1 });
     expect(failed.found.size).toBe(0);
   });
+
+  it("серия повторов улики не завершает вопрос и не накручивает результат", () => {
+    let result = findRetryDetail(createRetryProgress(["visual", "next"]), new Set(), "name", true, 2);
+    for (let click = 0; click < 100; click += 1) {
+      const duplicate = findRetryDetail(result.progress, result.found, "name", true, 2);
+      expect(duplicate.ignored).toBe(true);
+      expect(duplicate.progress).toBe(result.progress);
+      result = duplicate;
+    }
+    expect(result.found.size).toBe(1);
+    expect(result.progress.index).toBe(0);
+    expect(retryProgressScore(result.progress)).toEqual({ correct: 0, total: 2 });
+    const complete = findRetryDetail(result.progress, result.found, "number", true, 2);
+    expect(retryProgressScore(complete.progress)).toEqual({ correct: 1, total: 2 });
+    expect(findRetryDetail(complete.progress, complete.found, "number", true, 2).ignored).toBe(true);
+  });
 });
