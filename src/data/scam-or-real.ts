@@ -148,7 +148,7 @@ export const scamOrRealContent = {
       ],
     },
     sellerCheck: {
-      prompt: "Собери правильный порядок проверки продавца: нажимай шаги по очереди.",
+      prompt: "Собери правильный порядок проверки продавца: нажимай шаги по очереди. При сомнениях — откажись и посоветуйся.",
       passNote: "Нужно минимум 4 шага из 5 на своих местах.",
       yourOrder: "Твой порядок",
       available: "Шаги",
@@ -158,10 +158,10 @@ export const scamOrRealContent = {
       resultCount: "На месте: {score}/5",
       steps: [
         { id: "offer", text: "Прочитай объявление: цену и условия" },
-        { id: "seller", text: "Проверь продавца: возраст сайта и отзывы" },
-        { id: "contacts", text: "Проверь контакты и адрес" },
-        { id: "payment", text: "Проверь оплату и возврат" },
-        { id: "doubt", text: "При сомнениях — откажись и посоветуйся" },
+        { id: "seller", text: "Проверь продавца: отзывы на других сайтах и цену в известных магазинах" },
+        { id: "contacts", text: "Договорись об оплате после осмотра товара, без предоплаты" },
+        { id: "payment", text: "Получи товар и осмотри его" },
+        { id: "doubt", text: "Только после этого плати" },
       ],
     },
     shopBattle: {
@@ -383,7 +383,7 @@ export const scamOrRealContent = {
       ],
     },
     sellerCheck: {
-      prompt: "Construiește ordinea corectă de verificare a vânzătorului: apasă pașii pe rând.",
+      prompt: "Construiește ordinea corectă de verificare a vânzătorului: apasă pașii pe rând. La îndoieli — refuză și cere sfat.",
       passNote: "Ai nevoie de cel puțin 4 pași din 5 la locurile lor.",
       yourOrder: "Ordinea ta",
       available: "Pași",
@@ -393,10 +393,10 @@ export const scamOrRealContent = {
       resultCount: "La loc: {score}/5",
       steps: [
         { id: "offer", text: "Citește anunțul: prețul și condițiile" },
-        { id: "seller", text: "Verifică vânzătorul: vechimea site-ului și recenziile" },
-        { id: "contacts", text: "Verifică contactele și adresa" },
-        { id: "payment", text: "Verifică plata și returul" },
-        { id: "doubt", text: "La îndoieli — refuză și cere sfat" },
+        { id: "seller", text: "Verifică vânzătorul: recenzii pe alte site-uri și prețul în magazinele cunoscute" },
+        { id: "contacts", text: "Stabilește plata după verificarea mărfii, fără avans" },
+        { id: "payment", text: "Primește marfa și verific-o" },
+        { id: "doubt", text: "Abia după asta plătește" },
       ],
     },
     shopBattle: {

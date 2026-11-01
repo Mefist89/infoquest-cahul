@@ -32,6 +32,16 @@ describe("scam-or-real: согласованность данных RU и RO", (
     expect(boss.options.find(option => option.id === "prepay")!.text).toMatch(/личную карту|card personal/);
   });
 
+  it.each(["ru", "ro"] as const)("%s: пять шагов сохраняют ID, осмотр предшествует оплате", locale => {
+    const content = scamOrRealContent[locale].sellerCheck;
+    expect(content.steps).toHaveLength(5);
+    expect(content.steps.map(step => step.id)).toEqual(["offer", "seller", "contacts", "payment", "doubt"]);
+    expect(content.steps[2].text).toMatch(/после осмотра товара|după verificarea mărfii/);
+    expect(content.steps[3].text).toMatch(/Получи товар и осмотри|Primește marfa și verific/);
+    expect(content.steps[4].text).toMatch(/Только после этого плати|Abia după asta plătește/);
+    expect(content.prompt).toMatch(/При сомнениях|La îndoieli/);
+  });
+
   it("классификация сохраняет ID и вердикты в обоих языках", () => {
     const expected = { "phone-half": "scam", "shop-address": "honest", "prize-fee": "scam", "sale-10": "honest", "sms-code": "scam", "bike-meet": "honest" };
     for (const content of [ru, ro]) {
