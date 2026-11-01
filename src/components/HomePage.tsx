@@ -27,6 +27,7 @@ import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MO
 import { isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
+import { ProjectMaterials } from "@/components/ProjectMaterials";
 import { SiteFooter } from "@/components/SiteFooter";
 import {
   AiAssistantSection,
@@ -377,6 +378,9 @@ export default function HomePage() {
         <SkillsSection lang={lang} />
         <ProgressAndBadges lang={lang} progress={headerProgress} missions={missions} />
         <AudienceSection lang={lang} />
+        <section id="materials" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
+          <ProjectMaterials lang={lang} />
+        </section>
         <AiAssistantSection lang={lang} isGuest={!headerProgress.isAuthenticated} restricted={headerProgress.role === "blocked"} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
       </main>
 

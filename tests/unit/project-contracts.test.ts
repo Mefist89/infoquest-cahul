@@ -573,6 +573,9 @@ describe("repository completeness and SEO", () => {
     expect(home).toContain('className="home-content-width relative mx-auto mt-12"');
     expect(learningSections).toContain('role="status"');
     expect(learningSections).toContain("content[lang]");
-    expect(footer).toContain('id="materials"');
+    expect(home).toContain('id="materials"');
+    expect(home).toContain("<ProjectMaterials lang={lang} />");
+    expect(footer).not.toContain("QRCodeSVG");
+    expect(footer).not.toContain('id="materials"');
   });
 });
