@@ -48,19 +48,19 @@ const content = {
     showAnswer: "Показать ответ",
     pickFirst: "Сначала выбери сообщение.",
     correct: "Верно! Это фишинговое сообщение.",
-    retry: "Посмотри ещё раз: мошенническое сообщение находится справа.",
+    retry: "Посмотри ещё раз: подозрительное сообщение — от «Супер-приза».",
     explanation: "Срочность, обещание дорогого приза и незнакомая ссылка — типичные признаки мошенничества.",
     goMission: "Перейти к расследованию",
     messages: [
-      ["BankSecure", "Операция отклонена. Откройте официальное приложение банка — ссылок в сообщении нет."],
+      ["Твой банк", "Оплата 350 леев в магазине отклонена: недостаточно средств. Подробности — в приложении банка"],
       ["Анна", "Привет! Скинь, пожалуйста, домашку по математике, а то я пропустила урок 😊"],
-      ["Супер-приз", "Поздравляем! Вы выиграли iPhone 15! Забери приз здесь: win-prize-now.ru"],
+      ["Супер-приз", "Поздравляем! Вы выиграли iPhone 15! Заберите приз в течение 1 часа: win-prize-now.ru"],
     ],
     skillsTitle: "Твои суперспособности в цифровом мире",
     skills: [
       ["Проверять ссылки", "Не переходи на опасные сайты"],
       ["Распознавать мошенников", "Замечай обман и угрозы"],
-      ["Защищать аккаунты", "Используй надёжные пароли и 2FA"],
+      ["Защищать аккаунты", "Используй надёжные пароли и вход с кодом подтверждения"],
       ["Отличать дипфейки", "Анализируй видео и изображения"],
       ["Проверять слухи", "Ищи факты, а не домыслы"],
       ["Реагировать на троллинг", "Поддержи себя и друзей"],
@@ -105,19 +105,19 @@ const content = {
     showAnswer: "Arată răspunsul",
     pickFirst: "Alege mai întâi un mesaj.",
     correct: "Corect! Acesta este un mesaj de phishing.",
-    retry: "Privește din nou: mesajul fraudulos este în dreapta.",
+    retry: "Privește din nou: mesajul suspect este cel de la «Super-premiu».",
     explanation: "Urgența, promisiunea unui premiu scump și linkul necunoscut sunt semne tipice de fraudă.",
     goMission: "Mergi la investigație",
     messages: [
-      ["BankSecure", "Operațiunea a fost respinsă. Deschide aplicația oficială a băncii — mesajul nu conține linkuri."],
+      ["Banca ta", "Plata de 350 lei la magazin a fost respinsă: fonduri insuficiente. Detalii — în aplicația băncii"],
       ["Ana", "Salut! Trimite-mi, te rog, tema la matematică. Am lipsit de la lecție 😊"],
-      ["Super-premiu", "Felicitări! Ai câștigat un iPhone 15! Ridică premiul: win-prize-now.ru"],
+      ["Super-premiu", "Felicitări! Ai câștigat un iPhone 15! Ridică premiul în decurs de o oră: win-prize-now.ru"],
     ],
     skillsTitle: "Superputerile tale în lumea digitală",
     skills: [
       ["Verifică linkurile", "Evită site-urile periculoase"],
       ["Recunoaște escrocii", "Observă manipularea și amenințările"],
-      ["Protejează conturile", "Folosește parole sigure și 2FA"],
+      ["Protejează conturile", "Folosește parole sigure și autentificarea cu cod de confirmare"],
       ["Distinge deepfake-uri", "Analizează video și imagini"],
       ["Verifică zvonurile", "Caută fapte, nu presupuneri"],
       ["Răspunde la trolling", "Protejează-te pe tine și pe prieteni"],
@@ -165,7 +165,7 @@ export function MiniChallenge({ lang }: { lang: Lang }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const correct = 2;
-  return <section className="home-panel"><h2 className="home-title">{t.attention}</h2><p className="mt-1 text-center text-sm text-muted-foreground">{t.question}</p><div className="mt-5 grid gap-4 md:grid-cols-3">{t.messages.map(([sender, message], index) => { const chosen = selected === index; const isCorrect = revealed && index === correct; const isWrong = revealed && chosen && index !== correct; return <button key={sender} type="button" aria-pressed={chosen} onClick={() => { setSelected(index); setRevealed(false); }} className={`focus-ring min-h-36 rounded-3xl border p-5 text-left transition ${isCorrect ? "border-success bg-success/10" : isWrong ? "border-danger bg-danger/10" : chosen ? "border-neon bg-neon/10" : "border-border bg-card/65 hover:border-neon/45"}`}><span className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-secondary"><MessageSquareMore className="size-5 text-neon" aria-hidden="true" /></span><strong>{sender}</strong>{isCorrect && <CheckCircle2 className="ml-auto size-5 text-success" aria-hidden="true" />}</span><span className="mt-4 block text-sm leading-relaxed text-muted-foreground">{message}</span></button>; })}</div><div className="mt-5 flex flex-wrap items-center gap-4"><button type="button" onClick={() => setRevealed(true)} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/45 bg-neon/10 px-5 text-sm font-bold text-neon"><Eye className="size-4" aria-hidden="true" />{t.showAnswer}</button><p className="text-sm text-muted-foreground" role="status">{selected === null && revealed ? t.pickFirst : !revealed ? t.choose : selected === correct ? t.correct : t.retry}</p></div>{revealed && selected !== null && <div className={`mt-4 flex flex-wrap items-center gap-4 rounded-2xl border p-4 ${selected === correct ? "border-success/45 bg-success/10" : "border-gold/45 bg-gold/10"}`}><ShieldQuestion className={`size-9 shrink-0 ${selected === correct ? "text-success" : "text-gold"}`} aria-hidden="true" /><p className="min-w-0 flex-1 text-sm leading-relaxed">{t.explanation}</p><Link href={`/${lang}/modules/operator-call`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground">{t.goMission}<ArrowRight className="size-4" aria-hidden="true" /></Link></div>}</section>;
+  return <section className="home-panel"><h2 className="home-title">{t.attention}</h2><p className="mt-1 text-center text-sm text-muted-foreground">{t.question}</p><div className="mt-5 grid gap-4 md:grid-cols-3">{t.messages.map(([sender, message], index) => { const chosen = selected === index; const isCorrect = revealed && index === correct; const isWrong = revealed && chosen && index !== correct; return <button key={sender} type="button" aria-pressed={chosen} onClick={() => { setSelected(index); setRevealed(false); }} className={`focus-ring min-h-36 rounded-3xl border p-5 text-left transition ${isCorrect ? "border-success bg-success/10" : isWrong ? "border-danger bg-danger/10" : chosen ? "border-neon bg-neon/10" : "border-border bg-card/65 hover:border-neon/45"}`}><span className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-secondary"><MessageSquareMore className="size-5 text-neon" aria-hidden="true" /></span><strong>{sender}</strong>{isCorrect && <CheckCircle2 className="ml-auto size-5 text-success" aria-hidden="true" />}</span><span className="mt-4 block text-sm leading-relaxed text-muted-foreground">{message}</span></button>; })}</div><div className="mt-5 flex flex-wrap items-center gap-4"><button type="button" onClick={() => setRevealed(true)} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/45 bg-neon/10 px-5 text-sm font-bold text-neon"><Eye className="size-4" aria-hidden="true" />{t.showAnswer}</button><p className="text-sm text-muted-foreground" role="status">{selected === null && revealed ? t.pickFirst : !revealed ? t.choose : selected === correct ? t.correct : t.retry}</p></div>{revealed && selected !== null && <div className={`mt-4 flex flex-wrap items-center gap-4 rounded-2xl border p-4 ${selected === correct ? "border-success/45 bg-success/10" : "border-gold/45 bg-gold/10"}`}><ShieldQuestion className={`size-9 shrink-0 ${selected === correct ? "text-success" : "text-gold"}`} aria-hidden="true" /><p className="min-w-0 flex-1 basis-48 text-sm leading-relaxed">{t.explanation}</p><Link href={`/${lang}/modules/operator-call`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground">{t.goMission}<ArrowRight className="size-4" aria-hidden="true" /></Link></div>}</section>;
 }
 
 export function SkillsSection({ lang }: { lang: Lang }) {
