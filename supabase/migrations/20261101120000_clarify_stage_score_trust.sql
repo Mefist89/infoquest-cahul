@@ -1,0 +1,1 @@
+comment on function public.complete_module_stage(text, smallint, smallint, smallint) is 'Сохраняет завершение этапа. Score вычисляется сервером из пары (correct, total), которую присылает клиент; сами ответы сервер не проверяет. Пассивные этапы получают 100.';

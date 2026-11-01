@@ -225,7 +225,13 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             <div className="relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-neon/35 bg-background font-bold text-neon">
               {safeAvatar ? <Image src={safeAvatar} alt="" fill sizes="48px" className="object-cover" /> : initials}
             </div>
-            <div className="min-w-0"><p className="truncate text-sm font-bold">{displayName}</p><p className="truncate text-[11px] text-neon">{ROLE_LABELS[userRole][locale]}</p></div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold">{displayName}</p>
+              <p className="mt-1.5 inline-flex max-w-full flex-wrap gap-x-1 rounded-full border border-neon/30 bg-neon/10 px-2.5 py-1 text-xs leading-relaxed">
+                <span className="text-muted-foreground">{t.role}:</span>
+                <span className="min-w-0 break-words font-bold text-neon">{ROLE_LABELS[userRole][locale]}</span>
+              </p>
+            </div>
           </div>
 
           <p className="mt-7 hidden px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>

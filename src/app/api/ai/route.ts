@@ -9,6 +9,7 @@ import {
 import { createAiProvider, type AiChatMessage, type AiLocale as Locale } from "@/features/ai-help/server/openai-compatible-provider";
 import { canUseAi, isUserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
+import { requestIp, hashIp } from "@/lib/request-ip";
 
 export const runtime = "nodejs";
 
@@ -45,7 +46,7 @@ function parseChatHistory(value: FormDataEntryValue | null): AiChatMessage[] {
   }
 }
 
-function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService") {
+function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService" | "blocked") {
   const messages = {
     ro: {
       key: "Serviciul AI nu este configurat încă. Adaugă AI_API_KEY în variabilele de mediu.",
@@ -67,6 +68,7 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSiz
       projectBudget: "Bugetul temporar Chrono al proiectului a fost atins. Serviciul va reveni după resetarea limitei.",
       busy: "Chrono analizează deja o altă solicitare a ta. Așteaptă finalizarea ei.",
       quotaService: "Chrono nu poate verifica limita de utilizare acum. Încearcă din nou peste puțin timp.",
+      blocked: "Accesul la InfoQuest pentru acest cont este restricționat.",
     },
     ru: {
       key: "AI-сервис пока не настроен. Добавьте AI_API_KEY в переменные окружения.",
@@ -88,6 +90,7 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSiz
       projectBudget: "Временный бюджет Chrono для всего проекта исчерпан. Сервис вернётся после обновления лимита.",
       busy: "Chrono уже обрабатывает другой ваш запрос. Дождитесь его завершения.",
       quotaService: "Сейчас Chrono не может проверить лимит использования. Попробуйте немного позже.",
+      blocked: "Доступ к InfoQuest для этого аккаунта ограничен.",
     },
   } as const;
   return messages[locale][code];
@@ -106,6 +109,23 @@ function getRequestTimeoutMs() {
   return Math.max(10_000, Math.min(55_000, Math.round(configured)));
 }
 
+async function checkAiAccess(request: Request, supabase: Awaited<ReturnType<typeof createClient>>, locale: Locale) {
+  try {
+    const ipHash = await hashIp(requestIp(request.headers));
+    const { data, error } = await supabase
+      .rpc("check_access_status", { p_ip_hash: ipHash ?? undefined })
+      .maybeSingle();
+    if (error) {
+      console.error("Access block check failed", error.message);
+    } else if (data?.is_blocked) {
+      return jsonResponse({ error: errorText(locale, "blocked"), code: "access_blocked" }, 403);
+    }
+  } catch {
+    console.error("Access block check failed");
+  }
+  return null;
+}
+
 export async function GET(request: Request) {
   const supabase = await createClient();
   const requestLocale: Locale = request.headers.get("x-infoquest-locale") === "ro" ? "ro" : "ru";
@@ -113,6 +133,9 @@ export async function GET(request: Request) {
   if (authError || !authData.user) {
     return jsonResponse({ error: errorText(requestLocale, "auth"), code: "authentication_required" }, 401);
   }
+
+  const accessResponse = await checkAiAccess(request, supabase, requestLocale);
+  if (accessResponse) return accessResponse;
 
   const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle();
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {
@@ -149,6 +172,9 @@ export async function POST(request: Request) {
   if (authError || !authData.user) {
     return jsonResponse({ error: errorText(requestLocale, "auth"), code: "authentication_required" }, 401);
   }
+
+  const accessResponse = await checkAiAccess(request, supabase, requestLocale);
+  if (accessResponse) return accessResponse;
 
   const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle();
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {
