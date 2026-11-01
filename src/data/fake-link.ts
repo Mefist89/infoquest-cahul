@@ -156,7 +156,7 @@ export const fakeLinkContent = {
         steps: [
           { id: "stop", text: "Остановись: не кликай и не вводи данные" },
           { id: "domain", text: "Прочитай имя сайта — часть адреса между «//» и следующей «/»: совпадает ли оно буква в букву с официальным? …особенно конец имени перед первой «/»: banca-noroc.md.secure.top — это не banca-noroc.md" },
-          { id: "lock", text: "Проверь замок и HTTPS в адресной строке" },
+          { id: "lock", text: "Если адрес хоть немного отличается от официального — не открывай ссылку" },
           { id: "manual", text: "Зайди вручную через официальный сайт или приложение" },
           { id: "report", text: "Удали сообщение и предупреди близких" },
         ],
@@ -394,7 +394,7 @@ export const fakeLinkContent = {
         steps: [
           { id: "stop", text: "Oprește-te: nu da clic și nu introduce date" },
           { id: "domain", text: "Citește numele site-ului — partea adresei dintre «//» și următoarea «/»: coincide literă cu literă cu cel oficial? …mai ales sfârșitul numelui înainte de primul «/»: banca-noroc.md.secure.top nu e banca-noroc.md" },
-          { id: "lock", text: "Verifică lacătul și HTTPS în bara de adrese" },
+          { id: "lock", text: "Dacă adresa diferă chiar și puțin de cea oficială — nu deschide linkul" },
           { id: "manual", text: "Intră manual prin site-ul oficial sau aplicație" },
           { id: "report", text: "Șterge mesajul și avertizează-i pe cei apropiați" },
         ],
