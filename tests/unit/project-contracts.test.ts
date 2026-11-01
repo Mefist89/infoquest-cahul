@@ -165,12 +165,12 @@ describe("серверная проверка аудио Chrono", () => {
 });
 
 describe("контракт клавиатурной доступности первого модуля", () => {
-  const moduleDirectory = join(process.cwd(), "src/components/modules/operator-call");
+  const moduleDirectories = ["operator-call", "shared"].map(directory => join(process.cwd(), "src/components/modules", directory));
   const source = [
     readFileSync(join(process.cwd(), "src/components/modules/OperatorCallModule.tsx"), "utf8"),
-    ...readdirSync(moduleDirectory)
+    ...moduleDirectories.flatMap(moduleDirectory => readdirSync(moduleDirectory)
       .filter((file) => file.endsWith(".tsx"))
-      .map((file) => readFileSync(join(moduleDirectory, file), "utf8")),
+      .map((file) => readFileSync(join(moduleDirectory, file), "utf8"))),
   ].join("\n");
 
   it("не использует кликабельные div, span или p", () => {
@@ -369,9 +369,13 @@ describe("UX and accessibility contracts", () => {
   });
 
   it("allows skipping typewriter animation and respects reduced motion", () => {
-    const source = readFileSync(join(process.cwd(), "src/components/modules/operator-call/intro-media-stages.tsx"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/components/modules/shared/mentor-intro.tsx"), "utf8");
     expect(source).toContain('prefers-reduced-motion: reduce');
-    expect(source).toContain("showAllLabel");
+    expect(source).not.toMatch(/\{typingDone\s*&&/u);
+    for (const name of ["OperatorCall", "FakeLink", "HackedAccount", "ScamOrReal"]) {
+      const coordinator = readFileSync(join(process.cwd(), `src/components/modules/${name}Module.tsx`), "utf8");
+      expect(coordinator).not.toContain("function TypewriterText");
+    }
   });
 
   it("announces AI thinking and names attachment removal", () => {

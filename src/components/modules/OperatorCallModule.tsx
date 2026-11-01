@@ -27,8 +27,9 @@ import { useModuleRunner, stageDisplayScore, type ModuleProgress, type StageProg
 import { CallSimulatorStage, ClassifyStage } from "./operator-call/call-classify-stages";
 import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-stages";
 import { FinalStage } from "./operator-call/final-stage";
-import { IntroStage, TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
+import { TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
+import { MentorIntro } from "./shared/mentor-intro";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { GameSoundToggle, SoundChoiceBanner } from "./operator-call/game-sound-toggle";
 import { NextButtonContext } from "./operator-call/stage-support";
@@ -165,7 +166,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
               ) : null
             }>
               <div className="mt-7">
-                {currentStage === 0 && <IntroStage content={t.intro} locale={locale} onFinish={() => runner.openStage(firstOpenStage)} />}
+                {currentStage === 0 && <MentorIntro imageSrc="/characters/02_woman_glasses_book_left.png" content={t.intro} locale={locale} onFinish={() => runner.openStage(firstOpenStage)} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => runner.completeStage(1)} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => runner.completeStage(2)} />}
                 {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => runner.completeStage(3)} />}

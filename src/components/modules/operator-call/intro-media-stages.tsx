@@ -1,129 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { CheckCircle2, ChevronRight, Play, Volume2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { CheckCircle2, Play, Volume2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
+import type { operatorCallContent } from "@/data/operator-call";
 import { ActionButton } from "./stage-support";
-
-function IntroStage({ content, locale, onFinish }: { content: (typeof operatorCallContent)["ru"]["intro"] | (typeof operatorCallContent)["ro"]["intro"]; locale: OperatorLocale; onFinish: () => void }) {
-  const [lineIndex, setLineIndex] = useState(0);
-  const [typingDone, setTypingDone] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const lastLine = lineIndex === content.lines.length - 1;
-  const fullText = content.lines[lineIndex];
-  const finishTyping = useCallback(() => setTypingDone(true), []);
-
-  useEffect(() => () => {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-  }, []);
-
-  function listen() {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(fullText);
-    utterance.lang = locale === "ru" ? "ru-RU" : "ro-RO";
-    utterance.rate = 0.95;
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utterance);
-  }
-
-  function advance() {
-    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    setSpeaking(false);
-    if (lastLine) {
-      onFinish();
-      return;
-    }
-    setTypingDone(false);
-    setLineIndex((index) => index + 1);
-  }
-
-  return (
-    <div className="relative overflow-hidden rounded-3xl border border-neon/25 bg-[radial-gradient(circle_at_25%_60%,rgba(0,217,255,0.13),transparent_42%),rgba(2,10,30,0.72)]">
-      <div className="grid min-h-[31rem] items-end gap-2 px-5 pt-6 sm:grid-cols-[minmax(13rem,0.75fr)_minmax(18rem,1.25fr)] sm:px-8">
-        <div className="relative mx-auto h-72 w-full max-w-64 self-end sm:h-[30rem] sm:max-w-sm">
-          <Image src="/characters/02_woman_glasses_book_left.png" alt={content.name} fill sizes="(max-width: 640px) 256px, 384px" className="object-contain object-bottom drop-shadow-[0_0_28px_rgba(0,217,255,0.22)]" priority />
-        </div>
-        <div className="relative z-10 self-center pb-8 sm:pb-0">
-          <div className="rounded-3xl rounded-bl-md border border-neon/35 bg-card/95 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] sm:p-7">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{content.name}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{content.role}</p>
-            <p className="sr-only">{fullText}</p>
-            <TypewriterText
-              key={lineIndex}
-              text={fullText}
-              onDone={finishTyping}
-              showAllLabel={locale === "ro" ? "Arată tot textul" : "Показать весь текст"}
-            />
-            <div className="mt-5 flex items-center justify-between gap-4">
-              <div className="flex gap-1.5" aria-label={`${lineIndex + 1}/${content.lines.length}`}>{content.lines.map((_, index) => <span key={index} className={`h-1.5 rounded-full transition-all ${index === lineIndex ? "w-7 bg-neon" : index < lineIndex ? "w-3 bg-success" : "w-3 bg-secondary"}`} />)}</div>
-              {typingDone && (
-                <div className="flex flex-wrap justify-end gap-2">
-                  <button type="button" onClick={listen} disabled={speaking} className="focus-ring inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-4 text-sm font-bold text-neon disabled:opacity-60">
-                    <Volume2 className={`size-4 ${speaking ? "animate-pulse" : ""}`} aria-hidden="true" />{speaking ? content.listening : content.listen}
-                  </button>
-                  <button type="button" onClick={advance} className="focus-ring inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground">
-                    {lastLine ? content.start : content.next}<ChevronRight className="size-4" aria-hidden="true" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TypewriterText({ text, onDone, showAllLabel }: { text: string; onDone: () => void; showAllLabel: string }) {
-  const [visibleCharacters, setVisibleCharacters] = useState(0);
-  const completedRef = useRef(false);
-
-  const complete = useCallback(() => {
-    if (completedRef.current) return;
-    completedRef.current = true;
-    setVisibleCharacters(text.length);
-    onDone();
-  }, [onDone, text.length]);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const reducedMotionTimer = window.setTimeout(complete, 0);
-      return () => window.clearTimeout(reducedMotionTimer);
-    }
-
-    let character = 0;
-    const timer = window.setInterval(() => {
-      character += 1;
-      setVisibleCharacters(character);
-      if (character >= text.length) {
-        window.clearInterval(timer);
-        complete();
-      }
-    }, 28);
-    return () => window.clearInterval(timer);
-  }, [complete, text]);
-
-  const done = visibleCharacters >= text.length;
-  return (
-    <div className="mt-5">
-      <p aria-hidden="true" className="min-h-20 text-base font-semibold leading-relaxed text-foreground sm:text-lg">
-        {text.slice(0, visibleCharacters)}
-        {!done && <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-neon align-middle motion-reduce:hidden" />}
-      </p>
-      {!done && (
-        <button type="button" onClick={complete} className="focus-ring mt-3 min-h-11 rounded-xl border border-neon/35 px-4 text-sm font-bold text-neon hover:bg-neon/10">
-          {showAllLabel}
-        </button>
-      )}
-    </div>
-  );
-}
-
 
 function TheoryStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["theory"] | (typeof operatorCallContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
   const [playingMp3, setPlayingMp3] = useState(false);
@@ -255,4 +136,4 @@ function StageVideo({ title, description, src, videoFallback }: { title: string;
 }
 
 
-export { IntroStage, TheoryStage, VideoExplanationStage, VideoExampleStage };
+export { TheoryStage, VideoExplanationStage, VideoExampleStage };
