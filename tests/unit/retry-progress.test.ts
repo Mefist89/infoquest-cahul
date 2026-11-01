@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore,
   advanceRetryRound, retryFailedQuestions,
+  retainCorrectOrder, toggleOrderSlot,
 } from "@/features/modules/runner/retry-progress";
 
 const answer = (correct: boolean) => ({ correct, explanation: "Почему так" });
@@ -175,5 +176,36 @@ describe("повтор только ошибочных вопросов", () => 
     expect(next.questionIds).toEqual(["a", "c"]);
     expect(next.feedback).toBeNull();
     expect(advanceRetryRound(next)).toBe(next);
+  });
+});
+
+describe("повтор неверного окончания порядка шагов", () => {
+  it("сохраняет только верное начало и не закрепляет правильный шаг после ошибки", () => {
+    const required = ["a", "b", "c", "d", "e"];
+    const retry = retainCorrectOrder(["a", "d", "c", "e", "b"], required);
+    expect(retry.slots).toEqual(["a", null, null, null, null]);
+    expect([...retry.locked]).toEqual([0]);
+    expect(toggleOrderSlot(retry.slots, retry.locked, "a")).toBe(retry.slots);
+    let slots = toggleOrderSlot(retry.slots, retry.locked, "b");
+    slots = toggleOrderSlot(slots, retry.locked, "e");
+    expect(slots).toEqual(["a", "b", "e", null, null]);
+    slots = toggleOrderSlot(slots, retry.locked, "b");
+    expect(slots).toEqual(["a", null, "e", null, null]);
+    slots = toggleOrderSlot(slots, retry.locked, "b");
+    slots = toggleOrderSlot(slots, retry.locked, "c");
+    slots = toggleOrderSlot(slots, retry.locked, "d");
+    expect(slots).toEqual(["a", "b", "e", "c", "d"]);
+    expect(toggleOrderSlot(slots, retry.locked, "other")).toBe(slots);
+  });
+
+  it.each([
+    [["e", "b", "c", "d", "a"], 0],
+    [["a", "b", "d", "c", "e"], 2],
+    [["a", "b", "c", "d", "e"], 5],
+  ] as const)("длина сохранённого начала для %s равна %s", (chosen, length) => {
+    const result = retainCorrectOrder(chosen, ["a", "b", "c", "d", "e"]);
+    expect(result.locked.size).toBe(length);
+    expect(result.slots.slice(length).every(id => id === null)).toBe(true);
+    expect(result.slots.slice(0, length)).toEqual(chosen.slice(0, length));
   });
 });

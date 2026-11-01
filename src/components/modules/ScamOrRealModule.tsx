@@ -162,7 +162,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
                 {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
                 {currentStage === 5 && <OfferClassifyStage locale={locale} content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
-                {currentStage === 7 && <SellerCheckStage content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
+                {currentStage === 7 && <SellerCheckStage locale={locale} content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
                 {currentStage === 8 && <FinalBattleStage content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
                 {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && currentStage !== 7 && currentStage !== 8 && (
                   <div className="py-20 text-center">

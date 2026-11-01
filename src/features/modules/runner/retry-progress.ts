@@ -64,3 +64,22 @@ export function advanceRetryRound(progress: RetryProgress): RetryProgress {
 export function retryFailedQuestions(progress: RetryProgress, results: Readonly<Record<string, boolean>>): RetryProgress {
   return createRetryProgress(progress.questionIds.filter(id => results[id] !== true), progress.firstAttempts);
 }
+
+export type OrderSlots = readonly (string | null)[];
+
+/** Keep only the correct beginning; a correct step after the first error is retried. */
+export function retainCorrectOrder(chosen: OrderSlots, required: readonly string[]) {
+  let prefixLength = 0;
+  while (prefixLength < required.length && chosen[prefixLength] === required[prefixLength]) prefixLength += 1;
+  const slots = required.map((id, index) => index < prefixLength ? id : null);
+  return { slots, locked: new Set(slots.flatMap((id, index) => id === null ? [] : [index])) };
+}
+
+/** Removing a step leaves a hole instead of moving the locked steps around it. */
+export function toggleOrderSlot(slots: OrderSlots, locked: ReadonlySet<number>, id: string): OrderSlots {
+  const existing = slots.indexOf(id);
+  if (existing >= 0 && locked.has(existing)) return slots;
+  const position = existing >= 0 ? existing : slots.indexOf(null);
+  if (position < 0) return slots;
+  return slots.map((value, index) => index === position ? existing >= 0 ? null : id : value);
+}
