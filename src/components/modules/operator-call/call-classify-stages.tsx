@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-mo
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
 import { answerRetryQuestion, continueRetryProgress, createRetryProgress, retryProgressScore } from "@/features/modules/runner/retry-progress";
+import { answerClassification, continueClassification, type ClassificationProgress } from "@/features/modules/runner/classification-progress";
 import { useNoTimer } from "@/features/modules/runner/use-no-timer";
 import { NoTimerToggle } from "../shared/timer-setting";
 import { useCallPhraseAudio } from "./use-call-phrase-audio";
@@ -161,82 +162,86 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
 }
 
 function ClassifyStage({ locale, content, answers, setAnswers, check, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["classify"] | (typeof operatorCallContent)["ro"]["classify"]; answers: Record<string, "safe" | "danger">; setAnswers: Dispatch<SetStateAction<Record<string, "safe" | "danger">>>; check: string; saving: boolean; feedback: { score: number } | null; onSubmit: () => void }) {
-  const answeredCount = Object.keys(answers).length;
-  const isComplete = answeredCount >= content.items.length;
-  const a11y = accessibilityText[locale];
+  const answeredCount = content.items.filter(item => answers[item.id] !== undefined).length;
+  const correctCount = content.items.filter(item => answers[item.id] === item.answer).length;
+  const explanationRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState<ClassificationProgress>(() => ({ index: answeredCount, feedback: null }));
+  const progressRef = useRef(progress);
+  const isComplete = progress.index >= content.items.length;
   const firstActionRef = useRef<HTMLButtonElement>(null);
   const completionRef = useRef<HTMLDivElement>(null);
-  const [announcement, setAnnouncement] = useState("");
-  const currentItem = content.items[answeredCount];
+  const currentItem = content.items[progress.index];
 
-  const handleSwipe = (direction: "left" | "right") => {
-    if (!currentItem) return;
+  function handleSwipe(direction: "left" | "right") {
+    if (!currentItem || progressRef.current.feedback || saving) return;
     const answer = direction === "left" ? "danger" : "safe";
-    const isCorrect = answer === currentItem.answer;
-    if (isCorrect) playSound("correct");
-    else playSound("wrong");
-    setAnnouncement(`${isCorrect ? a11y.correct : a11y.wrong}. ${answeredCount + 1 < content.items.length ? a11y.nextCard : content.completeMessage}`);
-    setAnswers(prev => ({ ...prev, [currentItem.id]: answer }));
-  };
+    const correct = answer === currentItem.answer;
+    const next = answerClassification(progressRef.current, correct, currentItem.explain);
+    progressRef.current = next;
+    setProgress(next);
+    setAnswers(previous => ({ ...previous, [currentItem.id]: answer }));
+    playSound(correct ? "correct" : "wrong");
+  }
+
+  function advance() {
+    const next = continueClassification(progressRef.current);
+    progressRef.current = next;
+    setProgress(next);
+  }
 
   useEffect(() => {
     if (isComplete) completionRef.current?.focus();
+    else if (progress.feedback) explanationRef.current?.querySelector("button")?.focus();
     else firstActionRef.current?.focus();
-  }, [answeredCount, isComplete]);
+  }, [progress.index, progress.feedback, isComplete]);
 
   return (
-    <div className="flex flex-col items-center w-full overflow-hidden pb-10">
-      <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-8">{content.prompt}</p>
-      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
+    <div className="flex w-full flex-col items-center overflow-hidden pb-10">
+      <p className="mb-5 text-center text-lg font-bold text-foreground/90 sm:text-xl">{content.prompt}</p>
+      <div className="mb-5 flex w-full max-w-lg flex-wrap justify-between gap-2 text-base font-semibold text-muted-foreground" aria-live="polite">
+        <p>{content.progressText.replace("{current}", String(Math.min(progress.index + 1, content.items.length))).replace("{total}", String(content.items.length))}</p>
+        <p>{content.correctText.replace("{count}", String(correctCount))}</p>
+        <p>{content.remainingText.replace("{count}", String(content.items.length - answeredCount))}</p>
+      </div>
 
-      {!isComplete ? (
-        <div className="relative w-full max-w-sm aspect-[4/5] sm:aspect-square flex items-center justify-center">
-          <AnimatePresence mode="popLayout">
-             {currentItem && (
-               <SwipeCard
-                  key={currentItem.id}
-                  item={currentItem}
-                  onSwipe={handleSwipe}
-                  safeText={content.safe}
-                  dangerText={content.danger}
-               />
-             )}
-          </AnimatePresence>
+      {!isComplete && currentItem && (progress.feedback ? (
+        <div ref={explanationRef} className="w-full max-w-lg">
+          <p className="mb-4 rounded-2xl border border-border bg-card/50 p-5 text-center text-xl font-semibold leading-relaxed">«{currentItem.text}»</p>
+          <StageRetryFeedback locale={locale} feedback={progress.feedback} onContinue={advance} />
         </div>
       ) : (
-        <div ref={completionRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
-           <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
-           <p className="text-2xl font-black mb-8 text-foreground">{content.completeMessage}</p>
-           {feedback && <ScoreFeedback score={feedback.score} />}
-        </div>
-      )}
+        <>
+          <div className="relative flex aspect-[4/5] w-full max-w-sm items-center justify-center sm:aspect-square">
+            <AnimatePresence mode="popLayout">
+              <SwipeCard key={currentItem.id} item={currentItem} onSwipe={handleSwipe} safeText={content.safe} dangerText={content.danger} />
+            </AnimatePresence>
+          </div>
+          <div className="mt-6 flex w-full max-w-sm justify-between gap-4 px-4">
+            <button ref={firstActionRef} type="button" disabled={saving} onClick={() => handleSwipe("left")} className="focus-ring flex min-h-12 flex-col items-center gap-2 rounded-2xl p-2 text-danger transition hover:scale-105 disabled:opacity-50">
+              <span className="flex size-16 items-center justify-center rounded-full border-2 border-danger bg-danger/10"><ShieldAlert className="size-8" aria-hidden="true" /></span>
+              <span className="text-base font-bold">{content.danger}</span>
+            </button>
+            <button type="button" disabled={saving} onClick={() => handleSwipe("right")} className="focus-ring flex min-h-12 flex-col items-center gap-2 rounded-2xl p-2 text-success transition hover:scale-105 disabled:opacity-50">
+              <span className="flex size-16 items-center justify-center rounded-full border-2 border-success bg-success/10"><Check className="size-8" aria-hidden="true" /></span>
+              <span className="text-base font-bold">{content.safe}</span>
+            </button>
+          </div>
+        </>
+      ))}
 
-      {!isComplete && (
-         <div className="flex justify-between w-full max-w-sm mt-8 px-4">
-             <button ref={firstActionRef} type="button" onClick={() => handleSwipe("left")} className="focus-ring flex min-h-11 flex-col items-center gap-2 rounded-2xl p-2 text-danger transition hover:scale-110">
-               <div className="size-16 rounded-full border-2 border-danger flex items-center justify-center bg-danger/10 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                  <ShieldAlert className="size-8" aria-hidden="true" />
-              </div>
-              <span className="font-bold text-xs uppercase tracking-wider">{content.danger}</span>
-            </button>
-             <button type="button" onClick={() => handleSwipe("right")} className="focus-ring flex min-h-11 flex-col items-center gap-2 rounded-2xl p-2 text-success transition hover:scale-110">
-               <div className="size-16 rounded-full border-2 border-success flex items-center justify-center bg-success/10 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-                  <Check className="size-8" aria-hidden="true" />
-              </div>
-              <span className="font-bold text-xs uppercase tracking-wider">{content.safe}</span>
-            </button>
-         </div>
-      )}
-      {isComplete && (
-        <div className="mt-6 w-full">
-          <ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton>
+      {isComplete && <>
+        <div ref={completionRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center rounded-3xl border-2 border-neon/40 bg-neon/10 p-8 text-center">
+          <CheckCircle2 className="mb-4 size-16 text-neon" aria-hidden="true" />
+          <p className="mb-8 text-2xl font-black text-foreground">{content.completeMessage}</p>
+          {feedback && <ScoreFeedback score={feedback.score} />}
         </div>
-      )}
+        <div className="mt-6 w-full"><ActionButton disabled={saving} onClick={onSubmit} center>{check}</ActionButton></div>
+      </>}
     </div>
   );
 }
 
-function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: { id: string; text: string; answer: string }, onSwipe: (dir: "left" | "right") => void, safeText: string, dangerText: string }) {
+function SwipeCard({ item, onSwipe, safeText, dangerText }: { item: { id: string; text: string; answer: string; explain: string }, onSwipe: (dir: "left" | "right") => void, safeText: string, dangerText: string }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
