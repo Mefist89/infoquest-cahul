@@ -9,8 +9,8 @@ describe("согласованность данных operator-call RU/RO", () =
       id: level.id, steps: level.steps.map(step => step.id),
     }));
     expect(structure(ro.ordering)).toEqual(structure(ru.ordering));
-    expect(ru.ordering.levels[4].steps[4].id).toBe("s5");
-    expect(ro.ordering.levels[4].steps[4].id).toBe("s5");
+    expect(ru.ordering.levels[4].steps.map(step => step.id)).toEqual(["s1", "s5", "s4", "s7"]);
+    expect(ro.ordering.levels[4].steps.map(step => step.id)).toEqual(["s1", "s5", "s4", "s7"]);
   });
 
   it.each(ru.final.phase2.map(question => question.id))("согласует число вариантов и правильный ответ блица %s", id => {
@@ -110,5 +110,17 @@ describe("пункт 19: проверка тарифа без обязатель
   ] as const)("%s: принимает приложение или официальный номер", (locale, text) => {
     const question = operatorCallContent[locale].final.phase2.find(item => item.id === "p2_6")!;
     expect(question.options[question.answer]).toBe(text);
+  });
+});
+
+describe("пункты 14 и 21: согласованные последовательности действий", () => {
+  it.each(["ru", "ro"] as const)("%s: сохраняет ID при изменении порядка и удалении шагов", locale => {
+    const levels = operatorCallContent[locale].ordering.levels;
+    expect(levels[0].steps.map(step => step.id)).toEqual(["s2", "s1", "s3"]);
+    expect(levels[3].steps.map(step => step.id)).toEqual(["s1", "s2", "s3", "s5", "s6"]);
+    expect(levels[4].steps.map(step => step.id)).toEqual(["s1", "s5", "s4", "s7"]);
+    expect(levels[4].situation).toBeTruthy();
+    expect(levels.map(level => level.time)).toEqual([45, 53, 60, 68, 83]);
+    levels.forEach(level => expect(new Set(level.steps.map(step => step.id)).size).toBe(level.steps.length));
   });
 });

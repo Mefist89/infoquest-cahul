@@ -250,6 +250,7 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto pb-10">
       <p className="font-bold text-center text-lg sm:text-xl text-foreground/90 mb-6">{content.prompt}</p>
+      {"situation" in level && <p className="mb-6 w-full rounded-xl border border-gold/30 bg-gold/10 p-4 text-lg font-bold text-foreground">{level.situation}</p>}
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
 
       <div className="w-full flex justify-between items-center mb-4 px-2">

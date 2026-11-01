@@ -275,9 +275,9 @@ export const operatorCallContent = {
           id: 1,
           time: 45,
           steps: [
-            { id: "s1", text: "Положить трубку." },
-            { id: "s2", text: "Никому не сообщать код из SMS." },
-            { id: "s3", text: "Заблокировать номер звонившего." }
+            { id: "s2", text: "Не называть код" },
+            { id: "s1", text: "Положить трубку" },
+            { id: "s3", text: "Заблокировать номер" }
           ]
         },
         {
@@ -308,7 +308,6 @@ export const operatorCallContent = {
             { id: "s1", text: "Отказаться от установки любых программ." },
             { id: "s2", text: "Положить трубку." },
             { id: "s3", text: "Удалить SMS со странными ссылками." },
-            { id: "s4", text: "Проверить телефон встроенным антивирусом." },
             { id: "s5", text: "Сменить пароль от личного кабинета MinTel." },
             { id: "s6", text: "Включить вход с подтверждением по коду (двухэтапную проверку)" }
           ]
@@ -316,14 +315,12 @@ export const operatorCallContent = {
         {
           id: 5,
           time: 83,
+          situation: "Ты продиктовал код из SMS",
           steps: [
-            { id: "s1", text: "Немедленно завершить разговор." },
-            { id: "s2", text: "Зайти в официальное приложение оператора." },
-            { id: "s3", text: "Выйти из аккаунта на всех других устройствах" },
-            { id: "s4", text: "Изменить пароль для входа." },
-            { id: "s5", text: "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта." },
-            { id: "s6", text: "Позвонить в настоящую поддержку MinTel." },
-            { id: "s7", text: "Сообщить о факте утечки данных." }
+            { id: "s1", text: "Завершить разговор" },
+            { id: "s5", text: "Позвонить в банк (номер на обороте карты) и оператору (официальный номер)" },
+            { id: "s4", text: "Сменить пароли" },
+            { id: "s7", text: "Сообщить в полицию (112)" }
           ]
         }
       ]
@@ -696,9 +693,9 @@ export const operatorCallContent = {
           id: 1,
           time: 45,
           steps: [
-            { id: "s1", text: "Închideți apelul." },
-            { id: "s2", text: "Nu comunicați nimănui codul din SMS." },
-            { id: "s3", text: "Blocați numărul apelantului." }
+            { id: "s2", text: "Nu spuneți codul" },
+            { id: "s1", text: "Închideți apelul" },
+            { id: "s3", text: "Blocați numărul" }
           ]
         },
         {
@@ -729,7 +726,6 @@ export const operatorCallContent = {
             { id: "s1", text: "Refuzați instalarea oricăror programe." },
             { id: "s2", text: "Închideți apelul." },
             { id: "s3", text: "Ștergeți SMS-urile cu linkuri dubioase." },
-            { id: "s4", text: "Verificați telefonul cu antivirusul integrat." },
             { id: "s5", text: "Schimbați parola contului personal MinTel." },
             { id: "s6", text: "Activați confirmarea intrării prin cod (verificarea în doi pași)" }
           ]
@@ -737,14 +733,12 @@ export const operatorCallContent = {
         {
           id: 5,
           time: 83,
+          situation: "Ai dictat codul din SMS",
           steps: [
-            { id: "s1", text: "Încheiați imediat conversația." },
-            { id: "s2", text: "Accesați aplicația oficială a operatorului." },
-            { id: "s3", text: "Ieșiți din cont pe toate celelalte dispozitive" },
-            { id: "s4", text: "Schimbați parola de acces." },
-            { id: "s5", text: "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial." },
-            { id: "s6", text: "Sunați la suportul real MinTel." },
-            { id: "s7", text: "Raportați scurgerea de date." }
+            { id: "s1", text: "Încheiați apelul" },
+            { id: "s5", text: "Sunați la bancă (numărul de pe spatele cardului) și la operator (numărul oficial)" },
+            { id: "s4", text: "Schimbați parolele" },
+            { id: "s7", text: "Anunțați poliția (112)" }
           ]
         }
       ]
