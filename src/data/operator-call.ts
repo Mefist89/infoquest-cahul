@@ -109,7 +109,8 @@ export const operatorCallContent = {
     },
     videoExplanation: {
       title: "Как распознать социальную инженерию",
-      placeholder: "Место для видеообъяснения",
+      description: "Видео: как распознать мошенника по телефону.",
+      videoFallback: "Ваш браузер не может показать это видео.",
       points: ["Не доверяй номеру на экране — его можно подменить.", "Код из SMS, пароль и PIN никогда не называют по телефону.", "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
       videoUrl: "/video/2-video_ru.mp4",
       audioText: "Прослушать текст",
@@ -117,7 +118,9 @@ export const operatorCallContent = {
     },
     videoExample: {
       title: "Пример звонка мошенника (видео из интернета)",
-      hint: "Номер и код в видео скрыты. Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
+      description: "Номер и код в видео скрыты. Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
+      videoUrl: "/video/3video.mp4",
+      videoFallback: "Ваш браузер не может показать это видео.",
     },
     callSimulator: {
       prompt: "Выслушай звонящего. Если фраза подозрительная — жми ТРЕВОГА. Если обычная — ВСЁ НОРМАЛЬНО.",
@@ -438,7 +441,8 @@ export const operatorCallContent = {
     },
     videoExplanation: {
       title: "Cum recunoști ingineria socială",
-      placeholder: "Loc pentru explicația video",
+      description: "Video: cum recunoști un escroc la telefon.",
+      videoFallback: "Browserul tău nu poate reda acest video.",
       points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", "Codul SMS, parola și PIN-ul nu se comunică telefonic.", "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
       videoUrl: "/video/2-video_ro.mp4",
       audioText: "Ascultă textul",
@@ -446,7 +450,9 @@ export const operatorCallContent = {
     },
     videoExample: {
       title: "Exemplu de apel al unui escroc (video de pe internet)",
-      hint: "Numărul și codul din video sunt ascunse. Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
+      description: "Numărul și codul din video sunt ascunse. Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
+      videoUrl: "/video/3video.mp4",
+      videoFallback: "Browserul tău nu poate reda acest video.",
     },
     callSimulator: {
       prompt: "Ascultă apelantul. Dacă fraza este suspectă — apasă ALARMĂ. Dacă este normală — TOTUL E BINE.",

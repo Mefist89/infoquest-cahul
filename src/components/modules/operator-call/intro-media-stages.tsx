@@ -202,7 +202,7 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 
   return (
     <div>
-      <VideoPlaceholder title={content.title} src={content.videoUrl} />
+      <StageVideo title={content.title} description={content.description} src={content.videoUrl} videoFallback={content.videoFallback} />
       <ul className="mt-5 grid gap-3 sm:grid-cols-2">
         {content.points.map((point) => (
           <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm">
@@ -228,25 +228,27 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
 
 function VideoExampleStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["videoExample"] | (typeof operatorCallContent)["ro"]["videoExample"]; button: string; saving: boolean; onComplete: () => void }) {
   return <div>
-    <VideoPlaceholder title={content.title} hint={content.hint} src="/video/3video.mp4" />
+    <StageVideo title={content.title} description={content.description} src={content.videoUrl} videoFallback={content.videoFallback} />
     <ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton>
   </div>;
 }
 
-function VideoPlaceholder({ title, hint, src }: { title: string; hint?: string; src?: string }) {
+function StageVideo({ title, description, src, videoFallback }: { title: string; description: string; src?: string; videoFallback: string }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
       {src && <video
+        aria-label={title}
         className="aspect-video w-full bg-black object-cover"
         controls
         preload="metadata"
+        playsInline
       >
         <source src={src} type="video/mp4" />
-        <p>Your browser doesn&apos;t support HTML5 video.</p>
+        <p>{videoFallback}</p>
       </video>}
       <div className="border-t border-border bg-card p-4">
         <h3 className="font-bold">{title}</h3>
-        {hint && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
   );
