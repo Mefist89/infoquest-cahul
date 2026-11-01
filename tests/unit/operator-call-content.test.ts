@@ -102,3 +102,13 @@ describe("пункт 16: одинаковая сложность босса RU/R
     }
   });
 });
+
+describe("пункт 19: проверка тарифа без обязательного смартфона", () => {
+  it.each([
+    ["ru", "В приложении или по официальному номеру оператора"],
+    ["ro", "În aplicație sau la numărul oficial al operatorului"],
+  ] as const)("%s: принимает приложение или официальный номер", (locale, text) => {
+    const question = operatorCallContent[locale].final.phase2.find(item => item.id === "p2_6")!;
+    expect(question.options[question.answer]).toBe(text);
+  });
+});
