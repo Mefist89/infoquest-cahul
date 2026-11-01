@@ -1,6 +1,21 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("авторизованный путь Google-пользователя", () => {
+  test("на телефоне «Наверх» не перекрывает отправку в Chrono", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/ru/ai-help");
+    await expect(page).toHaveURL(/\/ru\/ai-help$/u);
+    await expect(page.getByRole("heading", { level: 2, name: /Онлайн-помощник/ })).toBeVisible();
+    const consent = page.getByRole("button", { name: "Принять", exact: true });
+    if (await consent.isVisible()) await consent.click();
+    await page.getByRole("textbox", { name: "Вставьте подозрительное сообщение или опишите звонок…" }).fill("Мне звонят из банка и просят назвать код.");
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+    await expect(page.getByRole("button", { name: "Наверх", exact: true })).toHaveCount(0);
+    const send = page.getByRole("button", { name: "Отправить сообщение", exact: true });
+    await expect(send).toBeEnabled();
+    await send.click({ trial: true });
+  });
+
   test("сохранённая Google-сессия открывает профиль", async ({ page }) => {
     await page.goto("/ru/profile");
 

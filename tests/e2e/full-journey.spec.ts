@@ -1,6 +1,19 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("публичный путь пользователя", () => {
+  test("на телефоне кнопка «Наверх» возвращает к началу главной", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/ru");
+    await expect(page.getByRole("heading", { level: 1, name: "InfoQuest" })).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+    const scrollToTop = page.getByRole("button", { name: "Наверх", exact: true });
+    await expect(scrollToTop).toBeVisible();
+    await scrollToTop.click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
+    await expect(scrollToTop).toHaveCount(0);
+  });
+
   test("русская главная ведёт на отдельную страницу входа", async ({ page }) => {
     await page.goto("/ru");
 
