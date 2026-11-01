@@ -35,8 +35,8 @@ export const PATROL_NPCS: PatrolNpc[] = [
       },
     ],
     success: {
-      ru: "Верно! Почта не просит оплату по ссылкам из SMS.",
-      ro: "Corect! Poșta nu cere plăți prin linkuri din SMS.",
+      ru: "Верно! Не плати по ссылке из SMS — проверь посылку сам на posta.md.",
+      ro: "Corect! Nu plăti prin linkul din SMS — verifică singur coletul pe posta.md.",
     },
     fail: {
       ru: "Мимо! Ссылка ведёт мошенникам — трек проверяют только на официальном сайте.",
@@ -64,12 +64,12 @@ export const PATROL_NPCS: PatrolNpc[] = [
       },
     ],
     success: {
-      ru: "Верно! Банк никогда не просит коды по телефону.",
-      ro: "Corect! Banca nu cere niciodată coduri la telefon.",
+      ru: "Верно! Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
+      ro: "Corect! Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
     },
     fail: {
-      ru: "Мимо! Код из SMS — ключ от денег. Клади трубку и перезванивай сам.",
-      ro: "Greșit! Codul din SMS e cheia banilor. Închizi și suni tu înapoi.",
+      ru: "Мимо! Код из SMS — ключ от денег. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
+      ro: "Greșit! Codul din SMS e cheia banilor. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
     },
   },
   {

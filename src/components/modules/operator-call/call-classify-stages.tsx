@@ -9,6 +9,7 @@ import type { StageResult } from "@/features/modules/runner/use-module-runner";
 import { answerRetryQuestion, continueRetryProgress, createRetryProgress, retryProgressScore } from "@/features/modules/runner/retry-progress";
 import { answerClassification, continueClassification, type ClassificationProgress } from "@/features/modules/runner/classification-progress";
 import { useNoTimer } from "@/features/modules/runner/use-no-timer";
+import { useSoundEnabled } from "@/features/sound/use-sound-enabled";
 import { NoTimerToggle } from "../shared/timer-setting";
 import { useCallPhraseAudio } from "./use-call-phrase-audio";
 import { StageRetryFeedback } from "./stage-retry-feedback";
@@ -25,6 +26,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
   const [paused, setPaused] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const noTimer = useNoTimer();
+  const soundEnabled = useSoundEnabled();
   const a11y = accessibilityText[locale];
   const phrase = phrases[progress.index];
   const currentLevelIndex = phrase?.levelIndex ?? 0;
@@ -33,7 +35,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
   const levelNum = currentLevelIndex + 1;
   const phraseNum = currentPhraseIndex + 1;
   const src = levelNum === 1 ? `/audio/${levelNum}/${locale}.mp3` : `/audio/${levelNum}/${locale}${phraseNum}.mp3`;
-  const audioFinished = useCallPhraseAudio({ src, playbackKey: `${currentLevelIndex}:${currentPhraseIndex}:${attempt}`, active: status === "playing" && !explaining, paused });
+  const { audioFinished, playPhrase } = useCallPhraseAudio({ src, playbackKey: `${currentLevelIndex}:${currentPhraseIndex}:${attempt}`, active: status === "playing" && !explaining, paused, enabled: soundEnabled });
 
   useEffect(() => {
     if (status !== "playing" || explaining || paused || noTimer || !audioFinished) return;
@@ -114,6 +116,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                {!soundEnabled && <button type="button" onClick={playPhrase} disabled={paused} className="focus-ring inline-flex min-h-11 min-w-11 items-center gap-2 rounded-xl border border-border px-4 py-2 text-base font-bold disabled:opacity-50"><Volume2 className="size-5" aria-hidden="true" />{locale === "ru" ? "Прослушать" : "Ascultă"}</button>}
                 {!noTimer && <span role="timer" className="text-xl font-black tabular-nums">0:{timeLeft.toString().padStart(2, "0")}</span>}
                 <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-bold">
                   {paused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}{paused ? a11y.resume : a11y.pause}

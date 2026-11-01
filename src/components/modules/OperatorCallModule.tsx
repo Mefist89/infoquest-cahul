@@ -29,6 +29,7 @@ import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-
 import { FinalStage } from "./operator-call/final-stage";
 import { IntroStage, TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
 import { NoTimerToggle } from "./shared/timer-setting";
+import { GameSoundToggle, SoundChoiceBanner } from "./operator-call/game-sound-toggle";
 import { NextButtonContext } from "./operator-call/stage-support";
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
@@ -95,6 +96,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
               <span className="hidden sm:inline">{locale === "ro" ? "Administrare" : "Админ"}</span>
             </Link>
           )}
+          <GameSoundToggle locale={locale} />
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/modules/operator-call`} className={`focus-ring rounded-full px-3 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
           </nav>
@@ -118,6 +120,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
           </div>
         </section>
 
+        <SoundChoiceBanner locale={locale} />
         <div className="mt-6 grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
           <aside className="rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
             <p className="px-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>

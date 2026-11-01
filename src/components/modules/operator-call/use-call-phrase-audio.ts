@@ -1,51 +1,78 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getSoundEnabled, subscribe } from "@/features/sound/sound-settings";
 
-/** A phrase's clock becomes ready after playback ends or cannot start. */
-export function useCallPhraseAudio({ src, playbackKey, active, paused, enabled = true }: {
-  src: string; playbackKey: string; active: boolean; paused: boolean; enabled?: boolean;
+/** Automatic voice delays the clock; manual listening remains available while muted. */
+export function useCallPhraseAudio({ src, playbackKey, active, paused, enabled }: {
+  src: string; playbackKey: string; active: boolean; paused: boolean; enabled: boolean;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
+  const finishRef = useRef<(() => void) | null>(null);
   const [finishedKey, setFinishedKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!active || !enabled) return;
-    let disposed = false;
+  const prepareAudio = useCallback(() => {
+    cleanupRef.current?.();
     let audio: HTMLAudioElement;
-    const finish = () => { if (!disposed) setFinishedKey(playbackKey); };
-    try {
-      audio = new Audio(src);
-      audioRef.current = audio;
-      audio.addEventListener("ended", finish);
-      audio.addEventListener("error", finish);
-    } catch {
-      queueMicrotask(finish);
-      return () => { disposed = true; };
+    const finish = () => {
+      if (audioRef.current !== audio) return;
+      setFinishedKey(playbackKey);
+      cleanupRef.current?.();
+    };
+    try { audio = new Audio(src); } catch {
+      queueMicrotask(() => setFinishedKey(playbackKey));
+      return;
     }
-    return () => {
-      disposed = true;
+    audio.volume = 0.4;
+    audioRef.current = audio;
+    finishRef.current = finish;
+    audio.addEventListener("ended", finish);
+    audio.addEventListener("error", finish);
+    cleanupRef.current = () => {
       audio.pause();
       audio.removeEventListener("ended", finish);
       audio.removeEventListener("error", finish);
-      if (audioRef.current === audio) audioRef.current = null;
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+        finishRef.current = null;
+        cleanupRef.current = null;
+      }
     };
-  }, [active, enabled, playbackKey, src]);
+  }, [playbackKey, src]);
 
-  useEffect(() => {
+  const resumeAudio = useCallback(() => {
     const audio = audioRef.current;
-    if (!active || !enabled || !audio) return;
-    if (paused) { audio.pause(); return; }
-    if (audio.ended) return;
+    const finish = finishRef.current;
+    if (!audio || audio.ended) return;
     try {
       void audio.play().catch(error => {
         if (audioRef.current !== audio || (error?.name === "AbortError" && audio.paused)) return;
-        setFinishedKey(playbackKey);
+        finish?.();
       });
-    } catch {
-      queueMicrotask(() => { if (audioRef.current === audio) setFinishedKey(playbackKey); });
-    }
-  }, [active, enabled, paused, playbackKey, src]);
+    } catch { queueMicrotask(() => { if (audioRef.current === audio) finish?.(); }); }
+  }, []);
 
-  return !enabled || finishedKey === playbackKey;
+  useEffect(() => {
+    if (active && enabled) prepareAudio();
+    return () => { cleanupRef.current?.(); };
+  }, [active, enabled, prepareAudio]);
+
+  useEffect(() => {
+    if (!active) return;
+    if (paused) audioRef.current?.pause();
+    else resumeAudio();
+  }, [active, enabled, paused, prepareAudio, resumeAudio]);
+
+  useEffect(() => subscribe(() => {
+    if (!getSoundEnabled()) cleanupRef.current?.();
+  }), []);
+
+  function playPhrase() {
+    if (!active || paused) return;
+    prepareAudio();
+    resumeAudio();
+  }
+
+  return { audioFinished: !enabled || finishedKey === playbackKey, playPhrase };
 }
