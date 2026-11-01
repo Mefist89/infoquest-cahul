@@ -36,3 +36,17 @@ describe("пункт 19: безопасная реакция на незнако
     expect(question.options[question.answer]).toBe(correctText);
   });
 });
+
+describe("пункт 11: улики в SMS", () => {
+  const expected = {
+    p1_1: ["fakeLink", "text"], p1_4: ["fakeLink", "text"],
+    p1_7: ["text", "fakeLink", "sender"], p1_10: ["text", "fakeLink"],
+  };
+  for (const locale of ["ru", "ro"] as const) {
+    it.each(Object.entries(expected))(locale + ": %s принимает согласованные улики", (id, targets) => {
+      const question = operatorCallContent[locale].final.phase1.find(item => item.id === id)!;
+      expect(question.correctTargets).toEqual(targets);
+      expect(new Set(question.correctTargets).size).toBe(question.correctTargets.length);
+    });
+  }
+});
