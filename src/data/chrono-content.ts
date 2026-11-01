@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 /** Тексты Chrono — единый источник; в клиентский чанк попадает только выбранная страница локаль (проп contentAi). */
 export type AiLocale = "ro" | "ru";
 
@@ -30,7 +32,7 @@ export const chronoContent = {
     verdicts: { likely_scam: "Probabil fraudă", suspicious: "Suspect", unclear: "Neclar", likely_safe: "Probabil sigur" },
     demo: "Analiză AI",
     demoHint: "Chrono transcrie înregistrarea, explică semnalele de fraudă și recomandă pași siguri.",
-    privacyNotice: "Textul și fișierul audio sunt trimise prin serverul InfoQuest către un furnizor AI extern pentru transcriere și analiză. Nu trimite parole, coduri SMS, date bancare, documente sau înregistrări ale altor persoane fără acordul lor.",
+    privacyNotice: `Textul și fișierul audio sunt trimise prin serverul InfoQuest către un furnizor AI extern pentru transcriere și analiză. Nu trimite parole, date bancare, documente sau înregistrări ale altor persoane fără acordul lor. ${SAFETY_PHRASES.ro.smsCode}`,
     privacySummary: "Textul sau fișierul audio va fi transmis unui furnizor AI extern. Nu trimite date personale.",
     privacyMore: "Detalii",
     historyNotice: "Istoricul verificărilor nu se salvează după închiderea paginii.",
@@ -51,7 +53,7 @@ export const chronoContent = {
     analyzerHint: "Verifică text sau audio și primește o evaluare structurată a riscului.",
     chatHint: "Discută cu Chrono și pune întrebări suplimentare în același context.",
     chatThinking: "Chrono pregătește răspunsul…",
-    chatPrivacyNotice: "Mesajele din conversație sunt trimise prin serverul InfoQuest către un furnizor AI extern. Nu trimite parole, coduri SMS, date bancare sau documente.",
+    chatPrivacyNotice: `Mesajele din conversație sunt trimise prin serverul InfoQuest către un furnizor AI extern. Nu trimite parole, date bancare sau documente. ${SAFETY_PHRASES.ro.smsCode}`,
     textMode: "Scrie un mesaj",
     audioMode: "Verifică audio",
     quota: "Astăzi",
@@ -105,7 +107,7 @@ export const chronoContent = {
     verdicts: { likely_scam: "Вероятно мошенничество", suspicious: "Подозрительно", unclear: "Недостаточно данных", likely_safe: "Вероятно безопасно" },
     demo: "AI-анализ",
     demoHint: "Chrono расшифрует запись, объяснит признаки мошенничества и предложит безопасные действия.",
-    privacyNotice: "Текст и аудиофайл передаются через сервер InfoQuest внешнему AI-провайдеру для расшифровки и анализа. Не отправляйте пароли, SMS-коды, банковские данные, документы или записи других людей без их согласия.",
+    privacyNotice: `Текст и аудиофайл передаются через сервер InfoQuest внешнему AI-провайдеру для расшифровки и анализа. Не отправляйте пароли, банковские данные, документы или записи других людей без их согласия. ${SAFETY_PHRASES.ru.smsCode}`,
     privacySummary: "Ваш текст или аудио будет передан внешнему AI-провайдеру. Не отправляйте личные данные.",
     privacyMore: "Подробнее",
     historyNotice: "История проверок не сохраняется после закрытия страницы.",
@@ -126,7 +128,7 @@ export const chronoContent = {
     analyzerHint: "Проверяйте текст или аудио и получайте структурированную оценку риска.",
     chatHint: "Общайтесь с Chrono и задавайте уточняющие вопросы в одном контексте.",
     chatThinking: "Chrono готовит ответ…",
-    chatPrivacyNotice: "Сообщения разговора передаются через сервер InfoQuest внешнему AI-провайдеру. Не отправляйте пароли, SMS-коды, банковские данные или документы.",
+    chatPrivacyNotice: `Сообщения разговора передаются через сервер InfoQuest внешнему AI-провайдеру. Не отправляйте пароли, банковские данные или документы. ${SAFETY_PHRASES.ru.smsCode}`,
     textMode: "Написать сообщение",
     audioMode: "Проверить аудио",
     quota: "Сегодня",

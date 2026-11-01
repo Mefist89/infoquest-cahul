@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 export type OperatorLocale = "ru" | "ro";
 
 type FinalVisualScenario = {
@@ -81,7 +83,7 @@ export const operatorCallContent = {
       lines: [
         "Привет! Я Наталья, и сегодня мы разберём опасный телефонный звонок.",
         "Мошенник представится сотрудником оператора и попробует заставить тебя спешить.",
-        "Запомни: настоящий сотрудник никогда не просит пароль или код из SMS.",
+        SAFETY_PHRASES.ru.smsCode,
         "Будь внимателен, проверяй каждую деталь — и останови атаку Тени.",
       ],
     },
@@ -96,18 +98,18 @@ export const operatorCallContent = {
       { title: "Финальная схватка", subtitle: "Останови атаку Тени" },
     ],
     theory: {
-      lead: "Мошенник старается не убедить фактами, а заставить действовать быстро. Настоящему оператору не нужен код из твоего SMS.",
+      lead: `Мошенник старается не убедить фактами, а заставить действовать быстро. ${SAFETY_PHRASES.ru.smsCode}`,
       cards: [
         { title: "Срочность и Давление", text: "Мошенник чаще всего торопит и пугает отключением номера. Но бывает и вежливым — проверяй, о чём просят." },
-        { title: "Коды из SMS", text: "Никогда не диктуй код из SMS. Это ключ к твоему личному кабинету или банку." },
+        { title: "Коды из SMS", text: SAFETY_PHRASES.ru.smsCode },
         { title: "Переход по ссылкам", text: "Не открывай ссылки из сообщений, которые присылает звонящий." },
         { title: "Личные данные", text: "Если звонят тебе — не называй пароли и данные удостоверения (IDNP, серию, номер), даже частично. Проверку личности проходят, только когда ты сам звонишь на официальный номер." },
         { title: "Проверка номера", text: "Номер на экране может быть поддельным (спуфинг). Не доверяй ему вслепую." },
-        { title: "Самостоятельный перезвон", text: "Положи трубку и сам перезвони по официальному номеру поддержки MinTel." },
+        { title: "Самостоятельный звонок", text: "Положи трубку и сам позвони по официальному номеру поддержки MinTel." },
       ],
       notes: [
         "Сомневаешься, что звонила полиция? Положи трубку и позвони 112.",
-        "Галочка у профиля не гарантирует, что это оператор. Если в мессенджере просят код, данные или перейти по ссылке — это мошенник.",
+        `Галочка у профиля не гарантирует, что это оператор. ${SAFETY_PHRASES.ru.smsCode} Если в мессенджере просят данные или перейти по ссылке — это мошенник.`,
         "В Молдове это Orange, Moldcell, Unite. Номер поддержки — в договоре, на сайте или в приложении оператора. Номер банка — на обороте карты. О мошенничестве сообщай в полицию: 112.",
       ],
       rule: "Главное правило: положи трубку, ничего не сообщай и проверь информацию через официальный канал.",
@@ -120,14 +122,14 @@ export const operatorCallContent = {
       title: "Как распознать социальную инженерию",
       description: "Видео: как распознать мошенника по телефону.",
       videoFallback: "Ваш браузер не может показать это видео.",
-      points: ["Не доверяй номеру на экране — его можно подменить.", "Код из SMS, пароль и PIN никогда не называют по телефону.", "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
+      points: ["Не доверяй номеру на экране — его можно подменить.", SAFETY_PHRASES.ru.smsCode, "Срочность и угрозы — повод остановить разговор.", "Проверяй информацию самостоятельно, а не по ссылке звонящего."],
       videoUrl: "/video/2-video_ru.mp4",
       audioText: "Прослушать текст",
       audioFile: "/module/2_video_ru.mp3",
     },
     videoExample: {
       title: "Пример звонка мошенника (видео из интернета)",
-      description: "Номер и код в видео скрыты. Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
+      description: `Номер и код в видео скрыты. ${SAFETY_PHRASES.ru.smsCode}`,
       videoUrl: "/video/3video.mp4",
       videoFallback: "Ваш браузер не может показать это видео.",
     },
@@ -146,7 +148,7 @@ export const operatorCallContent = {
         {
           id: 1,
           phrases: [
-            { text: "Ваш номер блокируется через 5 минут, срочно назовите код из SMS!", isThreat: true, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." }
+            { text: "Ваш номер блокируется через 5 минут, срочно назовите код из SMS!", isThreat: true, explain: SAFETY_PHRASES.ru.smsCode }
           ]
         },
         {
@@ -169,14 +171,14 @@ export const operatorCallContent = {
           phrases: [
             { text: "Здравствуйте! Это техподдержка. Ваш номер работает нормально?", isThreat: false, explain: "Вопрос о качестве связи сам по себе обычный. Не сообщай секретные данные, если их попросят дальше" },
             { text: "Отлично. У нас появился новый тариф, могу рассказать.", isThreat: false, explain: "Предложение услуги само по себе не требует передачи секретов. Условия можно проверить самостоятельно в официальном приложении" },
-            { text: "Тогда не кладите трубку, сейчас придет SMS-код подтверждения, назовите его.", isThreat: true, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." }
+            { text: "Тогда не кладите трубку, сейчас придет SMS-код подтверждения, назовите его.", isThreat: true, explain: SAFETY_PHRASES.ru.smsCode }
           ]
         },
         {
           id: 5,
           phrases: [
             { text: "Добрый день, это уведомление MinTel.", isThreat: false, explain: "Это обычное уведомление без опасной просьбы. Имя компании само по себе не доказывает подлинность звонка" },
-            { text: "Напоминаем о необходимости пополнить счет до конца месяца.", isThreat: false, explain: "Напоминание о пополнении не просит сообщить пароль или код. Проверь баланс самостоятельно в официальном приложении" },
+            { text: "Напоминаем о необходимости пополнить счет до конца месяца.", isThreat: false, explain: `Напоминание о пополнении не просит сообщить пароль или код. Проверь баланс самостоятельно в официальном приложении. ${SAFETY_PHRASES.ru.smsCode}` },
             { text: "Вы можете сделать это через официальное приложение. Всего доброго!", isThreat: false, explain: "Самостоятельно открыть официальное приложение — безопасный способ проверить и пополнить счёт" }
           ]
         }
@@ -191,20 +193,20 @@ export const operatorCallContent = {
       remainingText: "Осталось: {count}",
       correctText: "Верных ответов: {count}",
       items: [
-        { id: "c1", text: "Назовите код из SMS для отмены операции.", answer: "danger", explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
+        { id: "c1", text: "Назовите код из SMS для отмены операции.", answer: "danger", explain: SAFETY_PHRASES.ru.smsCode },
         { id: "c2", text: "Ваш номер заблокирован, перейдите по ссылке для разблокировки.", answer: "danger", explain: "Сообщение пугает блокировкой и отправляет по ссылке. Проверь состояние номера в приложении, которое открыл сам, или по официальному номеру оператора." },
-        { id: "c3", text: "Здравствуйте, меня зовут Анна, компания MinTel.", answer: "safe", explain: "Собеседник только представился и пока ничего не просит. Опасно, когда просят код, пароль или перейти по ссылке — одно имя и название компании не подтверждают, кто звонит." },
+        { id: "c3", text: "Здравствуйте, меня зовут Анна, компания MinTel.", answer: "safe", explain: `Собеседник только представился и пока ничего не просит. Опасно, когда просят пароль или перейти по ссылке — одно имя и название компании не подтверждают, кто звонит. ${SAFETY_PHRASES.ru.smsCode}` },
         { id: "c4", text: "Продиктуйте ваши паспортные данные для подтверждения.", answer: "danger", explain: "В неожиданном звонке просят паспортные данные. Не сообщай их: положи трубку и проверь запрос по официальному номеру организации." },
-        { id: "c5", text: "Служба поддержки слушает вас. Чем могу помочь?", answer: "safe", explain: "В этой фразе нет просьбы о коде, деньгах или личных данных. Сама фраза не доказывает, что перед тобой настоящая поддержка." },
+        { id: "c5", text: "Служба поддержки слушает вас. Чем могу помочь?", answer: "safe", explain: `В этой фразе нет просьбы о коде, деньгах или личных данных. Сама фраза не доказывает, что перед тобой настоящая поддержка. ${SAFETY_PHRASES.ru.smsCode}` },
         { id: "c6", text: "Вы позвонили на официальный номер оператора. Спасибо за обращение, разговор завершён.", answer: "safe", explain: "Ты сам позвонил на официальный номер, и разговор уже завершён. Здесь ничего не требуют и не просят передать данные." },
         { id: "c7", text: "Мы зафиксировали взлом. Срочно скачайте антивирус по ссылке в SMS.", answer: "danger", explain: "Тебя торопят установить программу по ссылке из SMS. Не устанавливай её: положи трубку и проверь сообщение по официальному номеру оператора." },
         { id: "c8", text: "Спасибо за звонок, все детали есть в вашем официальном приложении.", answer: "safe", explain: "Предлагается проверить детали в официальном приложении, без передачи данных звонящему. Открой приложение сам, а не по присланной ссылке." },
         { id: "c9", text: "Оставайтесь на линии! У вас есть всего одна минута, чтобы согласиться!", answer: "danger", explain: "Ограничение в одну минуту мешает спокойно проверить предложение. Можно закончить разговор и проверить условия самостоятельно." },
         { id: "c10", text: "Мы меняем ваш тариф. Чтобы отказаться, продиктуйте старый пароль.", answer: "danger", explain: "Для отказа от тарифа просят назвать пароль. Не сообщай пароль: проверь тариф в приложении или по официальному номеру оператора." },
-        { id: "c11", text: "Напоминаем: баланс ниже нуля. Пополнить счёт можно в приложении или в терминале.", answer: "safe", explain: "Собеседник только напомнил о балансе и не просит код, пароль или перейти по ссылке. Если такие просьбы появятся, это опасно; баланс проверь в приложении, которое открыл сам." },
+        { id: "c11", text: "Напоминаем: баланс ниже нуля. Пополнить счёт можно в приложении или в терминале.", answer: "safe", explain: `Собеседник только напомнил о балансе и не просит код, пароль или перейти по ссылке. ${SAFETY_PHRASES.ru.smsCode} Баланс проверь в приложении, которое открыл сам.` },
         { id: "c12", text: "Это автоинформатор. Ваша заявка на смену номера принята. Если это не вы — оставайтесь на линии.", answer: "danger", explain: "Неожиданное сообщение о смене номера пугает и удерживает на линии. Если заявку не подавал, положи трубку и сам позвони по официальному номеру оператора." },
-        { id: "c13", text: "Для вашей защиты мы прислали системный код. Просто введите его на клавиатуре телефона во время звонка.", answer: "danger", explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
-        { id: "c14", text: "Если вы сомневаетесь, что я оператор — положите трубку и перезвоните нам сами.", answer: "safe", explain: "Безопасное действие — закончить разговор и самому позвонить по официальному номеру из договора, сайта или приложения оператора. Не используй номер из звонка или SMS." },
+        { id: "c13", text: "Для вашей защиты мы прислали системный код. Просто введите его на клавиатуре телефона во время звонка.", answer: "danger", explain: SAFETY_PHRASES.ru.smsCode },
+        { id: "c14", text: "Если сомневаешься, что это оператор — положи трубку и сам позвони по официальному номеру оператора.", answer: "safe", explain: "Безопасное действие — закончить разговор и самому позвонить по официальному номеру из договора, сайта или приложения оператора. Не используй номер из звонка или SMS." },
         { id: "c15", text: "Мы не просим пароли. Просто скажите чётко «ДА», чтобы подтвердить продление договора.", answer: "danger", explain: "Тебя просят подтвердить продление договора без проверки условий. Закончи разговор и уточни условия по официальному номеру оператора." }
       ],
     },
@@ -290,7 +292,7 @@ export const operatorCallContent = {
           id: 1,
           time: 45,
           steps: [
-            { id: "s2", text: "Не называть код" },
+            { id: "s2", text: SAFETY_PHRASES.ru.smsCode },
             { id: "s1", text: "Положить трубку" },
             { id: "s3", text: "Заблокировать номер" }
           ]
@@ -334,7 +336,7 @@ export const operatorCallContent = {
           steps: [
             { id: "s1", text: "Завершить разговор" },
             { id: "s6", text: "Попросить оператора запретить платные услуги и переводы с баланса." },
-            { id: "s5", text: "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта." },
+            { id: "s5", text: `Если называл код или данные карты: ${SAFETY_PHRASES.ru.bankCall}` },
             { id: "s4", text: "Сменить пароли" },
             { id: "s7", text: "Сообщить в полицию (112)" }
           ]
@@ -362,28 +364,28 @@ export const operatorCallContent = {
         { id: "p1_10", type: "sms", sender: "MinTel", text: "Срочно! Вы выиграли iPhone 16! Перейдите для получения:", fakeLink: "mintel-prize.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink"] }
       ],
       phase2: [
-        { id: "p2_1", text: "Оператор срочно просит код из SMS для отмены блокировки.", options: ["Сбросить вызов", "Продиктовать половину", "Назвать"], answer: 0, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
+        { id: "p2_1", text: "Оператор срочно просит код из SMS для отмены блокировки.", options: ["Сбросить вызов", "Продиктовать половину", "Назвать"], answer: 0, explain: SAFETY_PHRASES.ru.smsCode },
         { id: "p2_2", text: "Номер звонящего совпадает с номером на сайте. Можно верить?", options: ["Да", "Нет, номер можно подменить", "Только если это +373"], answer: 1, explain: "Номер звонящего можно подменить. Положи трубку и сам позвони по официальному номеру, а не по номеру из звонка или SMS" },
         { id: "p2_3", text: "Куда переходить для проверки состояния счета?", options: ["Найти в Google и нажать на первую рекламу", "По ссылке из SMS", "Самому открыть оф. приложение"], answer: 2, explain: "Открой официальное приложение самостоятельно. Ссылка из SMS и первое объявление в поиске могут вести на поддельный сайт"
         },
         { id: "p2_4", text: "Кто должен инициировать звонок для безопасного решения проблем?", options: ["Сам абонент", "Оператор", "Робот"], answer: 0, explain: "Для проверки подозрительного звонка положи трубку и сам позвони по официальному номеру. Не используй номер из звонка или SMS" },
         { id: "p2_5", text: "Если вам звонят и торопят принять решение, это...", options: ["Манипуляция мошенников", "Сбой в системе", "Стандартная процедура"], answer: 0, explain: "Спешка мешает спокойно проверить информацию. Прерви разговор и проверь предложение самостоятельно" },
         { id: "p2_6", text: "Где лучше всего проверять статус своего тарифа?", options: ["В Google", "В SMS", "В приложении или по официальному номеру оператора"], answer: 2, explain: "Актуальный тариф проверь в официальном приложении, которое открыл сам" },
-        { id: "p2_7", text: "Может ли настоящий оператор попросить продиктовать SMS-код?", options: ["Да, для верификации", "Никогда", "Только при блокировке"], answer: 1, explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
+        { id: "p2_7", text: "Может ли настоящий оператор попросить продиктовать SMS-код?", options: ["Да, для верификации", "Никогда", "Только при блокировке"], answer: 1, explain: SAFETY_PHRASES.ru.smsCode },
         { id: "p2_8", text: "Что делать, если позвонил «сотрудник спецслужб» и просит помочь в поимке вора?", options: ["Спросить его звание", "Помочь", "Положить трубку"], answer: 2, explain: "Звание и просьба о секретной помощи не подтверждают личность. Положи трубку и проверь обращение по официальному номеру ведомства" },
         { id: "p2_9", text: "Официальный сайт — mintel.md. Ссылка mintel-support.com — это...", options: ["Фальшивая", "Резервная", "Официальная"], answer: 0, explain: "Похожее название сайта не делает его официальным. Открой известный тебе официальный сайт самостоятельно" },
-        { id: "p2_10", text: "Что можно сообщить незнакомцу, который сам позвонил?", options: ["Номер паспорта", "Ничего — положу трубку и сам позвоню на официальный номер", "Код из SMS"], answer: 1, explain: "Название тарифа не даёт доступа к аккаунту. Паспортные данные и SMS-код не сообщай незнакомому звонящему" }
+        { id: "p2_10", text: "Что можно сообщить незнакомцу, который сам позвонил?", options: ["Номер паспорта", "Ничего — положу трубку и сам позвоню на официальный номер", "Код из SMS"], answer: 1, explain: `Название тарифа не даёт доступа к аккаунту. Паспортные данные не сообщай незнакомому звонящему. ${SAFETY_PHRASES.ru.smsCode}` }
       ],
       phase3: [
-        { id: "p3_1", bossText: "Если не назовешь код, через 5 минут спишутся все деньги с баланса!", options: ["Хорошо, диктую: 4-5-2...", "Я сейчас сам перезвоню в поддержку."], answers: [1], explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
+        { id: "p3_1", bossText: "Если не назовешь код, через 5 минут спишутся все деньги с баланса!", options: ["Хорошо, диктую: 4-5-2...", "Положи трубку и сам позвони по официальному номеру оператора."], answers: [1], explain: SAFETY_PHRASES.ru.smsCode },
         { id: "p3_2", bossText: "Я следователь. Оператор MinTel украл ваши данные, помогите следствию поимке преступника!", options: ["Вызывайте меня официальной повесткой. До свидания.", "Что мне нужно сделать для помощи?"], answers: [0], explain: "Звание и просьба о секретной помощи не подтверждают личность. Положи трубку и проверь обращение по официальному номеру ведомства" },
         { id: "p3_3", bossText: "Ладно, просто скачайте наше защитное приложение по ссылке, чтобы обезопасить телефон!", options: ["Ничего скачивать по ссылке не буду. До свидания.", "Давайте ссылку, я установлю."], answers: [0], explain: "Программа из ссылки звонящего может дать доступ к телефону. Не устанавливай её; проверь обращение через официальный канал" },
-        { id: "p3_4", bossText: "Ваш номер пытаются переоформить в другом городе. Срочно назовите код отмены!", options: ["Код 4521", "Повешу трубку и позвоню в поддержку."], answers: [1], explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник." },
+        { id: "p3_4", bossText: "Ваш номер пытаются переоформить в другом городе. Срочно назовите код отмены!", options: ["Код 4521", "Повешу трубку и позвоню в поддержку."], answers: [1], explain: SAFETY_PHRASES.ru.smsCode },
         { id: "p3_5", bossText: "Мы уже выслали к вам наряд полиции за соучастие в мошенничестве, если вы не подтвердите личность!", options: ["Ой, что нужно сказать?", "А можно договориться без полиции?", "Положу трубку и сам позвоню в полицию по 112."], answers: [2], explain: "Угроза полицией используется для давления. Не передавай данные; проверь обращение по официальному номеру ведомства" },
-        { id: "p3_6", bossText: "У вас подключена платная услуга на 500 лей в день. Чтобы отключить, нужен код.", options: ["Продиктуйте мне ваши ФИО, я запишу.", "Я отключу её сам через приложение.", "Конечно, код 9912."], answers: [1], explain: "Проверь платные услуги самостоятельно в официальном приложении. Для этого не нужно сообщать код звонящему" },
+        { id: "p3_6", bossText: "У вас подключена платная услуга на 500 лей в день. Чтобы отключить, нужен код.", options: ["Продиктуйте мне ваши ФИО, я запишу.", "Я отключу её сам через приложение.", "Конечно, код 9912."], answers: [1], explain: `Проверь платные услуги самостоятельно в официальном приложении. ${SAFETY_PHRASES.ru.smsCode}` },
         { id: "p3_7", bossText: "Я ваш персональный менеджер. Вижу, у вас плохая связь, давайте я обновлю вышки удаленно.", options: ["У меня всё работает, до свидания.", "Да, давайте обновим.", "Какая связь? Я на Wi-Fi."], answers: [0], explain: "Обещание улучшить связь не подтверждает личность звонящего. Можно завершить разговор и проверить предложение через официальный канал" },
         { id: "p3_8", bossText: "Вы выиграли в лотерее от MinTel! Для зачисления денег перейдите по ссылке, которую я вам сейчас скину.", options: ["Жду ссылку!", "Зайду в личный кабинет и посмотрю там.", "Продиктуйте номер карты.", "Спасибо, я проверю это на сайте MinTel."], answers: [1, 3], explain: "Приз проверь на официальном сайте или в личном кабинете, которые открыл сам. Не переходи по ссылке звонящего" },
-        { id: "p3_9", bossText: "Я из банка. Ваш телефон взломан, мошенники снимают деньги. Быстро скажите код!", options: ["Сброшу вызов и заблокирую карту через приложение.", "Переведите мои деньги на безопасный счет.", "Я сам сейчас позвоню в свой банк.", "Какой кошмар, код 1234!"], answers: [0, 2], explain: "Положи трубку и сам позвони в банк по официальному номеру, а не по номеру из звонка или SMS. При необходимости заблокируй карту в официальном приложении" },
+        { id: "p3_9", bossText: "Я из банка. Ваш телефон взломан, мошенники снимают деньги. Быстро скажите код!", options: ["Сброшу вызов и заблокирую карту через приложение.", "Переведите мои деньги на безопасный счет.", SAFETY_PHRASES.ru.bankCall, "Какой кошмар, код 1234!"], answers: [0, 2], explain: `${SAFETY_PHRASES.ru.bankCall} При необходимости заблокируй карту в официальном приложении` },
         { id: "p3_10", bossText: "Это последняя попытка. Не скажете код — сим-карта сгорит прямо сейчас!", options: ["Сделаю, как скажете, только не отключайте!", "Пусть горит.", "Только не сим-карта, вот код!", "Позвоню настоящему оператору с другого телефона."], answers: [1, 3], explain: "Угроза уничтожить SIM-карту подталкивает к спешке. Заверши разговор и сам позвони оператору по официальному номеру, а не по номеру из звонка или SMS" }
       ]
     } satisfies OperatorFinalContent,
@@ -425,7 +427,7 @@ export const operatorCallContent = {
       lines: [
         "Salut! Sunt Natalia și astăzi vom analiza un apel telefonic periculos.",
         "Escrocul se va prezenta drept operator și va încerca să te facă să te grăbești.",
-        "Reține: un angajat real nu solicită niciodată parola sau codul din SMS.",
+        SAFETY_PHRASES.ro.smsCode,
         "Fii atent, verifică fiecare detaliu și oprește atacul Umbrei.",
       ],
     },
@@ -440,10 +442,10 @@ export const operatorCallContent = {
       { title: "Confruntarea finală", subtitle: "Oprește atacul Umbrei" },
     ],
     theory: {
-      lead: "Escrocul nu încearcă să convingă prin fapte, ci să te facă să acționezi rapid. Un operator real nu are nevoie de codul tău SMS.",
+      lead: `Escrocul nu încearcă să convingă prin fapte, ci să te facă să acționezi rapid. ${SAFETY_PHRASES.ro.smsCode}`,
       cards: [
         { title: "Urgență și Presiune", text: "Escrocul de cele mai multe ori te grăbește și te sperie cu blocarea numărului. Dar poate fi și politicos — verifică ce ți se cere." },
-        { title: "Coduri din SMS", text: "Nu dicta niciodată codul din SMS. Acesta este cheia contului sau a băncii tale." },
+        { title: "Coduri din SMS", text: SAFETY_PHRASES.ro.smsCode },
         { title: "Accesarea linkurilor", text: "Nu deschide linkurile din mesajele pe care ți le trimite apelantul." },
         { title: "Date personale", text: "Dacă te sună cineva — nu spune parole sau date din buletin (IDNP, seria, numărul), nici măcar parțial. Identitatea se confirmă doar când suni tu la numărul oficial." },
         { title: "Verificarea numărului", text: "Numărul de pe ecran poate fi falsificat (spoofing). Nu avea încredere oarbă în el." },
@@ -451,7 +453,7 @@ export const operatorCallContent = {
       ],
       notes: [
         "Ai dubii că a sunat poliția? Închide și sună la 112.",
-        "Bifa de lângă profil nu garantează că e operatorul. Dacă pe mesagerie ți se cere un cod, date sau să deschizi un link — e un escroc.",
+        `Bifa de lângă profil nu garantează că e operatorul. ${SAFETY_PHRASES.ro.smsCode} Dacă pe mesagerie ți se cer date sau să deschizi un link — e un escroc.`,
         "În Moldova aceștia sunt Orange, Moldcell, Unite. Numărul de suport e în contract, pe site sau în aplicația operatorului. Numărul băncii e pe spatele cardului. Frauda se raportează la poliție: 112.",
       ],
       rule: "Regula principală: închide, nu comunica nimic și verifică informația printr-un canal oficial.",
@@ -464,14 +466,14 @@ export const operatorCallContent = {
       title: "Cum recunoști ingineria socială",
       description: "Video: cum recunoști un escroc la telefon.",
       videoFallback: "Browserul tău nu poate reda acest video.",
-      points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", "Codul SMS, parola și PIN-ul nu se comunică telefonic.", "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
+      points: ["Nu te baza pe numărul afișat — acesta poate fi falsificat.", SAFETY_PHRASES.ro.smsCode, "Urgența și amenințările sunt motive să oprești conversația.", "Verifică independent, nu prin linkul apelantului."],
       videoUrl: "/video/2-video_ro.mp4",
       audioText: "Ascultă textul",
       audioFile: "/module/2_video_ro.mp3",
     },
     videoExample: {
       title: "Exemplu de apel al unui escroc (video de pe internet)",
-      description: "Numărul și codul din video sunt ascunse. Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
+      description: `Numărul și codul din video sunt ascunse. ${SAFETY_PHRASES.ro.smsCode}`,
       videoUrl: "/video/3video.mp4",
       videoFallback: "Browserul tău nu poate reda acest video.",
     },
@@ -490,7 +492,7 @@ export const operatorCallContent = {
         {
           id: 1,
           phrases: [
-            { text: "Numărul tău va fi blocat în 5 minute, spune-mi urgent codul din SMS!", isThreat: true, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." }
+            { text: "Numărul tău va fi blocat în 5 minute, spune-mi urgent codul din SMS!", isThreat: true, explain: SAFETY_PHRASES.ro.smsCode }
           ]
         },
         {
@@ -513,14 +515,14 @@ export const operatorCallContent = {
           phrases: [
             { text: "Bună ziua! Suport tehnic. Numărul funcționează normal?", isThreat: false, explain: "O întrebare despre calitatea conexiunii este în sine obișnuită. Nu divulga date secrete dacă ți se cer mai târziu" },
             { text: "Perfect. Avem un tarif nou, vă pot povesti despre el.", isThreat: false, explain: "Oferta unui serviciu nu cere în sine transmiterea secretelor. Poți verifica singur condițiile în aplicația oficială" },
-            { text: "Atunci nu închide, vei primi acum un cod SMS de confirmare, spune-mi-l.", isThreat: true, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." }
+            { text: "Atunci nu închide, vei primi acum un cod SMS de confirmare, spune-mi-l.", isThreat: true, explain: SAFETY_PHRASES.ro.smsCode }
           ]
         },
         {
           id: 5,
           phrases: [
             { text: "Bună ziua, este o notificare MinTel.", isThreat: false, explain: "Este o notificare obișnuită, fără o cerere periculoasă. Numele companiei nu dovedește singur autenticitatea apelului" },
-            { text: "Îți reamintim să suplinești contul până la sfârșitul lunii.", isThreat: false, explain: "Reamintirea despre suplinirea contului nu cere parola sau codul. Verifică singur soldul în aplicația oficială" },
+            { text: "Îți reamintim să suplinești contul până la sfârșitul lunii.", isThreat: false, explain: `Reamintirea despre suplinirea contului nu cere parola sau codul. Verifică singur soldul în aplicația oficială. ${SAFETY_PHRASES.ro.smsCode}` },
             { text: "O poți face oricând prin aplicația oficială. O zi bună!", isThreat: false, explain: "Deschiderea aplicației oficiale din proprie inițiativă este o metodă sigură de a verifica și suplini contul" }
           ]
         }
@@ -535,20 +537,20 @@ export const operatorCallContent = {
       remainingText: "Au rămas: {count}",
       correctText: "Răspunsuri corecte: {count}",
       items: [
-        { id: "c1", text: "Spuneți codul din SMS pentru a anula operațiunea.", answer: "danger", explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." },
+        { id: "c1", text: "Spuneți codul din SMS pentru a anula operațiunea.", answer: "danger", explain: SAFETY_PHRASES.ro.smsCode },
         { id: "c2", text: "Numărul dvs. este blocat, accesați linkul pentru deblocare.", answer: "danger", explain: "Mesajul te sperie cu blocarea și te trimite la un link. Verifică starea numărului în aplicația pe care ai deschis-o singur sau la numărul oficial al operatorului." },
-        { id: "c3", text: "Bună ziua, mă numesc Ana, compania MinTel.", answer: "safe", explain: "Persoana doar s-a prezentat și încă nu cere nimic. Este periculos când ți se cere un cod, o parolă sau să accesezi un link — numele și compania nu confirmă cine sună." },
+        { id: "c3", text: "Bună ziua, mă numesc Ana, compania MinTel.", answer: "safe", explain: `Persoana doar s-a prezentat și încă nu cere nimic. Este periculos când ți se cere o parolă sau să accesezi un link — numele și compania nu confirmă cine sună. ${SAFETY_PHRASES.ro.smsCode}` },
         { id: "c4", text: "Dictați datele din buletin pentru confirmare.", answer: "danger", explain: "Într-un apel neașteptat ți se cer datele din buletin. Nu le comunica: închide și verifică solicitarea la numărul oficial al organizației." },
-        { id: "c5", text: "Serviciul de asistență vă ascultă. Cu ce vă pot ajuta?", answer: "safe", explain: "În această frază nu se cer coduri, bani sau date personale. Fraza în sine nu dovedește că vorbești cu suportul adevărat." },
+        { id: "c5", text: "Serviciul de asistență vă ascultă. Cu ce vă pot ajuta?", answer: "safe", explain: `În această frază nu se cer coduri, bani sau date personale. Fraza în sine nu dovedește că vorbești cu suportul adevărat. ${SAFETY_PHRASES.ro.smsCode}` },
         { id: "c6", text: "Ați sunat la numărul oficial al operatorului. Vă mulțumim pentru apel, convorbirea s-a încheiat.", answer: "safe", explain: "Ai sunat singur la numărul oficial, iar convorbirea s-a încheiat. Aici nu se cere nimic și nu ți se solicită date." },
         { id: "c7", text: "Am detectat o spargere. Descărcați urgent antivirusul din linkul SMS.", answer: "danger", explain: "Ești presat să instalezi un program printr-un link din SMS. Nu-l instala: închide și verifică mesajul la numărul oficial al operatorului." },
         { id: "c8", text: "Vă mulțumim pentru apel, detaliile le găsiți în aplicația oficială.", answer: "safe", explain: "Ți se propune să verifici detaliile în aplicația oficială, fără să transmiți date apelantului. Deschide aplicația singur, nu printr-un link primit." },
         { id: "c9", text: "Rămâneți pe fir! Aveți la dispoziție doar un minut pentru a accepta!", answer: "danger", explain: "Limita de un minut te împiedică să verifici oferta cu calm. Poți încheia convorbirea și verifica singur condițiile." },
         { id: "c10", text: "Vă schimbăm tariful. Pentru a refuza, dictați vechea parolă.", answer: "danger", explain: "Pentru a refuza tariful ți se cere parola. Nu comunica parola: verifică tariful în aplicație sau la numărul oficial al operatorului." },
-        { id: "c11", text: "Vă reamintim: soldul este negativ. Puteți alimenta contul din aplicație sau de la terminal.", answer: "safe", explain: "Persoana doar a amintit despre sold și nu cere un cod, o parolă sau accesarea unui link. Dacă apar asemenea cereri, este periculos; verifică soldul în aplicația pe care ai deschis-o singur." },
+        { id: "c11", text: "Vă reamintim: soldul este negativ. Puteți alimenta contul din aplicație sau de la terminal.", answer: "safe", explain: `Persoana doar a amintit despre sold și nu cere un cod, o parolă sau accesarea unui link. ${SAFETY_PHRASES.ro.smsCode} Verifică soldul în aplicația pe care ai deschis-o singur.` },
         { id: "c12", text: "Sistem automat. Cererea de schimbare a numărului a fost acceptată. Dacă nu sunteți dvs. — rămâneți pe fir.", answer: "danger", explain: "Mesajul neașteptat despre schimbarea numărului te sperie și te ține pe fir. Dacă nu ai depus cererea, închide și sună singur la numărul oficial al operatorului." },
-        { id: "c13", text: "Pentru protecție, v-am trimis un cod de sistem. Doar introduceți-l de pe tastatura telefonului în timpul apelului.", answer: "danger", explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." },
-        { id: "c14", text: "Dacă aveți dubii că sunt operator — închideți și sunați-ne personal.", answer: "safe", explain: "Acțiunea sigură este să închei convorbirea și să suni singur la numărul oficial din contract, de pe site-ul sau din aplicația operatorului. Nu folosi numărul din apel sau SMS." },
+        { id: "c13", text: "Pentru protecție, v-am trimis un cod de sistem. Doar introduceți-l de pe tastatura telefonului în timpul apelului.", answer: "danger", explain: SAFETY_PHRASES.ro.smsCode },
+        { id: "c14", text: "Dacă ai dubii că e operatorul — închide și sună tu la numărul oficial al operatorului.", answer: "safe", explain: "Acțiunea sigură este să închei convorbirea și să suni singur la numărul oficial din contract, de pe site-ul sau din aplicația operatorului. Nu folosi numărul din apel sau SMS." },
         { id: "c15", text: "Nu cerem parole. Doar spuneți clar „DA” pentru a confirma prelungirea contractului.", answer: "danger", explain: "Ți se cere să confirmi prelungirea contractului fără să verifici condițiile. Încheie convorbirea și clarifică condițiile la numărul oficial al operatorului." }
       ],
     },
@@ -593,24 +595,24 @@ export const operatorCallContent = {
         { id: "p1_10", type: "sms", sender: "MinTel", text: "Urgent! Ați câștigat un iPhone 16! Accesați:", fakeLink: "mintel-prize.com", realLink: "mintel.md", correctTargets: ["text", "fakeLink"] }
       ],
       phase2: [
-        { id: "p2_1", text: "Operatorul vă cere urgent codul din SMS pentru a anula blocarea.", options: ["Închid apelul", "Dictez doar o jumătate", "Îl dictez"], answer: 0, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." },
+        { id: "p2_1", text: "Operatorul vă cere urgent codul din SMS pentru a anula blocarea.", options: ["Închid apelul", "Dictez doar o jumătate", "Îl dictez"], answer: 0, explain: SAFETY_PHRASES.ro.smsCode },
         { id: "p2_2", text: "Numărul apelantului coincide cu cel de pe site. E de încredere?", options: ["Da", "Nu, numărul poate fi falsificat", "Doar dacă este +373"], answer: 1, explain: "Numărul apelantului poate fi falsificat. Închide și sună tu la numărul oficial, nu la cel din apel sau SMS" },
         { id: "p2_3", text: "Unde accesați pentru a verifica starea contului?", options: ["Caut pe Google și dau click pe prima reclamă", "Pe linkul din SMS", "Deschid singur aplicația oficială"], answer: 2, explain: "Deschide singur aplicația oficială. Linkul din SMS și primul anunț din căutare pot duce la un site fals"
         },
         { id: "p2_4", text: "Cine ar trebui să inițieze apelul pentru rezolvarea sigură a problemelor?", options: ["Abonatul însuși", "Operatorul", "Robotul"], answer: 0, explain: "Pentru a verifica un apel suspect, închide și sună tu la numărul oficial. Nu folosi numărul din apel sau SMS" },
         { id: "p2_5", text: "Dacă sunteți sunat și grăbit să luați o decizie, aceasta este...", options: ["O manipulare a escrocilor", "O eroare de sistem", "O procedură standard"], answer: 0, explain: "Graba te împiedică să verifici informația în liniște. Încheie conversația și verifică singur oferta" },
         { id: "p2_6", text: "Unde este cel mai bine să verificați starea planului tarifar?", options: ["Pe Google", "În SMS", "În aplicație sau la numărul oficial al operatorului"], answer: 2, explain: "Verifică tariful actual în aplicația oficială pe care ai deschis-o singur" },
-        { id: "p2_7", text: "Poate un operator real să vă ceară să dictați un cod SMS?", options: ["Da, pentru verificare", "Niciodată", "Doar la blocare"], answer: 1, explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." },
+        { id: "p2_7", text: "Poate un operator real să vă ceară să dictați un cod SMS?", options: ["Da, pentru verificare", "Niciodată", "Doar la blocare"], answer: 1, explain: SAFETY_PHRASES.ro.smsCode },
         { id: "p2_8", text: "Ce faceți dacă sună un «angajat al serviciilor speciale» și cere ajutor?", options: ["Îi întreb gradul", "Îl ajut", "Închid apelul"], answer: 2, explain: "Gradul și cererea de ajutor secret nu confirmă identitatea. Închide și verifică solicitarea la numărul oficial al instituției" },
         { id: "p2_9", text: "Site-ul oficial este mintel.md. Linkul mintel-support.com este...", options: ["Fals", "De rezervă", "Oficial"], answer: 0, explain: "Un nume de site asemănător nu îl face oficial. Deschide singur site-ul oficial pe care îl cunoști" },
-        { id: "p2_10", text: "Ce îi puteți spune unui necunoscut care v-a sunat?", options: ["Numărul pașaportului", "Nimic — închid și sun eu la numărul oficial", "Codul din SMS"], answer: 1, explain: "Numele tarifului nu oferă acces la cont. Nu comunica datele din buletin sau codul SMS unui apelant necunoscut" }
+        { id: "p2_10", text: "Ce îi puteți spune unui necunoscut care v-a sunat?", options: ["Numărul pașaportului", "Nimic — închid și sun eu la numărul oficial", "Codul din SMS"], answer: 1, explain: `Numele tarifului nu oferă acces la cont. Nu comunica datele din buletin unui apelant necunoscut. ${SAFETY_PHRASES.ro.smsCode}` }
       ],
       phase3: [
         { 
           id: "p3_1", 
           bossText: "Dacă nu-mi spui codul, în 5 minute ți se vor retrage toți banii de pe cont!", 
-          options: ["Bine, dictez: 4-5-2...", "Voi suna eu însumi la suport acum."],
-          answers: [1], explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc."
+          options: ["Bine, dictez: 4-5-2...", "Închide și sună tu la numărul oficial al operatorului."],
+          answers: [1], explain: SAFETY_PHRASES.ro.smsCode
         },
         { 
           id: "p3_2", 
@@ -624,12 +626,12 @@ export const operatorCallContent = {
           options: ["Nu descarc nimic de pe link. La revedere.", "Dați-mi linkul, o instalez."],
           answers: [0], explain: "Aplicația din linkul apelantului poate oferi acces la telefon. Nu o instala; verifică solicitarea printr-un canal oficial"
         },
-        { id: "p3_4", bossText: "Cineva încearcă să vă reînregistreze numărul în alt oraș. Dictați codul de anulare!", options: ["Codul este 4521", "Voi închide și voi suna la suport."], answers: [1], explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc." },
+        { id: "p3_4", bossText: "Cineva încearcă să vă reînregistreze numărul în alt oraș. Dictați codul de anulare!", options: ["Codul este 4521", "Voi închide și voi suna la suport."], answers: [1], explain: SAFETY_PHRASES.ro.smsCode },
         { id: "p3_5", bossText: "Am trimis deja poliția pentru complicitate la fraudă, dacă nu vă confirmați identitatea!", options: ["Oh, ce trebuie să spun?", "Pot să ne înțelegem fără poliție?", "Închid și sun singur la poliție, la 112."], answers: [2], explain: "Amenințarea cu poliția este folosită pentru presiune. Nu transmite date; verifică solicitarea la numărul oficial al instituției" },
-        { id: "p3_6", bossText: "Aveți un serviciu cu plată de 500 de lei pe zi. Pentru dezactivare, e nevoie de un cod.", options: ["Dictați-mi numele complet, îl notez.", "Îl voi dezactiva singur din aplicație.", "Sigur, codul 9912."], answers: [1], explain: "Verifică singur serviciile cu plată în aplicația oficială. Nu trebuie să comunici codul apelantului pentru aceasta" },
+        { id: "p3_6", bossText: "Aveți un serviciu cu plată de 500 de lei pe zi. Pentru dezactivare, e nevoie de un cod.", options: ["Dictați-mi numele complet, îl notez.", "Îl voi dezactiva singur din aplicație.", "Sigur, codul 9912."], answers: [1], explain: `Verifică singur serviciile cu plată în aplicația oficială. ${SAFETY_PHRASES.ro.smsCode}` },
         { id: "p3_7", bossText: "Sunt managerul dvs. personal. Aveți o conexiune slabă, haideți să o actualizăm.", options: ["Totul funcționează perfect, la revedere.", "Da, haideți să actualizăm.", "Ce conexiune? Sunt pe Wi-Fi."], answers: [0], explain: "Promisiunea de a îmbunătăți conexiunea nu confirmă identitatea apelantului. Poți încheia conversația și verifica oferta printr-un canal oficial" },
         { id: "p3_8", bossText: "Ați câștigat la loteria MinTel! Pentru transferul banilor, accesați link-ul meu.", options: ["Aștept link-ul!", "Intru în contul personal și verific acolo.", "Dictați numărul cardului.", "Mulțumesc, voi verifica pe site-ul MinTel."], answers: [1, 3], explain: "Verifică premiul pe site-ul oficial sau în contul pe care l-ai deschis singur. Nu accesa linkul apelantului" },
-        { id: "p3_9", bossText: "Sunt de la bancă. Telefonul vă este spart. Spuneți rapid codul!", options: ["Închid și blochez cardul din aplicație.", "Transferați-mi banii într-un cont sigur.", "Voi suna eu imediat la banca mea.", "Ce coșmar, codul 1234!"], answers: [0, 2], explain: "Închide și sună tu la bancă la numărul oficial, nu la cel din apel sau SMS. Dacă este necesar, blochează cardul în aplicația oficială" },
+        { id: "p3_9", bossText: "Sunt de la bancă. Telefonul vă este spart. Spuneți rapid codul!", options: ["Închid și blochez cardul din aplicație.", "Transferați-mi banii într-un cont sigur.", SAFETY_PHRASES.ro.bankCall, "Ce coșmar, codul 1234!"], answers: [0, 2], explain: `${SAFETY_PHRASES.ro.bankCall} Dacă este necesar, blochează cardul în aplicația oficială` },
         { id: "p3_10", bossText: "Aceasta este ultima încercare. Dacă nu ziceți codul, cartela SIM va arde acum!", options: ["Fac cum spuneți, numai nu mă deconectați!", "Las-o să ardă.", "Numai nu cartela SIM, iată codul!", "Voi suna operatorul real de pe alt telefon."], answers: [1, 3], explain: "Amenințarea de a distruge cartela SIM te împinge să te grăbești. Încheie apelul și sună tu operatorul la numărul oficial, nu la cel din apel sau SMS" }
       ]
     } satisfies OperatorFinalContent,
@@ -715,7 +717,7 @@ export const operatorCallContent = {
           id: 1,
           time: 45,
           steps: [
-            { id: "s2", text: "Nu spuneți codul" },
+            { id: "s2", text: SAFETY_PHRASES.ro.smsCode },
             { id: "s1", text: "Închideți apelul" },
             { id: "s3", text: "Blocați numărul" }
           ]
@@ -759,7 +761,7 @@ export const operatorCallContent = {
           steps: [
             { id: "s1", text: "Încheiați apelul" },
             { id: "s6", text: "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold." },
-            { id: "s5", text: "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial." },
+            { id: "s5", text: `Dacă ai spus codul sau datele cardului: ${SAFETY_PHRASES.ro.bankCall}` },
             { id: "s4", text: "Schimbați parolele" },
             { id: "s7", text: "Anunțați poliția (112)" }
           ]

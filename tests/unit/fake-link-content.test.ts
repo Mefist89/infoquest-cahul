@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { fakeLinkContent } from "@/data/fake-link";
+import { SAFETY_PHRASES } from "@/data/safety-phrases";
 
 const { ru, ro } = fakeLinkContent;
 const correctDialogue = { "parcel-sms": ["check"], "bank-call": ["callback"], "friend-loan": ["verify"], "prize-win": ["ignore"] };
 const correctFinal = { "q-link": ["phishing"], "q-react": ["calm"], "q-link-safe": ["safe"], "q-react-bank": ["hangup"], "q-boss": ["block", "delete"] };
 
 describe("контент fake-link: сохранение ID и правильных ответов", () => {
-  it.each(["ru", "ro"] as const)("%s: совет перезвонить указывает номер на обороте карты", locale => {
+  it.each(["ru", "ro"] as const)("%s: самостоятельный звонок в банк использует утверждённую фразу", locale => {
     const content = fakeLinkContent[locale];
     const strings = (value: unknown): string[] => typeof value === "string"
       ? [value]
       : value && typeof value === "object" ? Object.values(value).flatMap(strings) : [];
     const callbacks = strings(content).filter(text => /перезвон|sun\s+înapoi/i.test(text));
-    expect(callbacks.length).toBeGreaterThan(0);
-    for (const text of callbacks) {
-      expect(text).toContain(locale === "ru" ? "по номеру на обороте карты" : "numărul de pe spatele cardului");
-    }
+    expect(callbacks).toHaveLength(0);
+    const bankCall = content.dialogueReact.scenarios.find(item => item.id === "bank-call")!;
+    expect(bankCall.options.find(option => option.id === "callback")!.text).toBe(SAFETY_PHRASES[locale].bankCall);
     const form = content.findSignals.signals.find(signal => signal.id === "form")!;
     expect(form.explain).not.toMatch(/нужны только логин и пароль|trebuie doar login și parolă/);
     expect(form.explain).toContain("SMS");

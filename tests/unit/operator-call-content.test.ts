@@ -144,8 +144,8 @@ describe("пункт 17: перестановка не меняет смысл �
 
 describe("пункт 3: отдельные обращения к оператору и банку", () => {
   it.each([
-    ["ru", "Попросить оператора запретить платные услуги и переводы с баланса.", "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта."],
-    ["ro", "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold.", "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial."],
+    ["ru", "Попросить оператора запретить платные услуги и переводы с баланса.", "Если называл код или данные карты: Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта."],
+    ["ro", "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold.", "Dacă ai spus codul sau datele cardului: Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial."],
   ] as const)("%s: восстанавливает s6 оператора и сохраняет s5 банка", (locale, operatorText, bankText) => {
     const level = operatorCallContent[locale].ordering.levels[4];
     expect(level.steps).toHaveLength(5);

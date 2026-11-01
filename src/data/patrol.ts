@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 export type PatrolLocale = "ru" | "ro";
 
 export type PatrolNpc = {
@@ -55,7 +57,7 @@ export const PATROL_NPCS: PatrolNpc[] = [
     },
     options: [
       {
-        text: { ru: "Положу трубку и перезвоню в банк по номеру на карте", ro: "Închid și sun înapoi la bancă la numărul de pe card" },
+        text: { ru: SAFETY_PHRASES.ru.bankCall, ro: SAFETY_PHRASES.ro.bankCall },
         correct: true,
       },
       {
@@ -64,12 +66,12 @@ export const PATROL_NPCS: PatrolNpc[] = [
       },
     ],
     success: {
-      ru: "Верно! Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
-      ro: "Corect! Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
+      ru: `Верно! ${SAFETY_PHRASES.ru.smsCode}`,
+      ro: `Corect! ${SAFETY_PHRASES.ro.smsCode}`,
     },
     fail: {
-      ru: "Мимо! Код из SMS — ключ от денег. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
-      ro: "Greșit! Codul din SMS e cheia banilor. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
+      ru: `Мимо! Код из SMS — ключ от денег. ${SAFETY_PHRASES.ru.bankCall}`,
+      ro: `Greșit! Codul din SMS e cheia banilor. ${SAFETY_PHRASES.ro.bankCall}`,
     },
   },
   {

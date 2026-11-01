@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 export type FakeLinkLocale = "ru" | "ro";
 
 export const fakeLinkContent = {
@@ -126,10 +128,10 @@ export const fakeLinkContent = {
             incoming: ["Здравствуйте, это служба безопасности банка. Ваша карта заблокирована. Назовите код из SMS, чтобы разблокировать."],
             options: [
               { id: "code", text: "Продиктовать код — сотрудник же представился", correct: false },
-              { id: "callback", text: "Положить трубку и перезвонить в банк по номеру на обороте карты", correct: true },
+              { id: "callback", text: SAFETY_PHRASES.ru.bankCall, correct: true },
               { id: "data", text: "Назвать номер карты, но не код — это же не код", correct: false },
             ],
-            explain: "Если звонят тебе — не называй ни код из SMS, ни PIN, ни CVV, ни номер карты. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
+            explain: `${SAFETY_PHRASES.ru.smsCode} ${SAFETY_PHRASES.ru.bankCall}`,
           },
           {
             id: "friend-loan",
@@ -222,10 +224,10 @@ export const fakeLinkContent = {
             multi: false,
             options: [
               { id: "pin", text: "Назвать PIN — иначе ведь заблокируют", correct: false },
-              { id: "hangup", text: "Положить трубку и самому позвонить в банк по номеру на обороте карты", correct: true },
+              { id: "hangup", text: SAFETY_PHRASES.ru.bankCall, correct: true },
               { id: "partial", text: "Назвать только номер карты, без PIN", correct: false },
             ],
-            explain: "Если звонят тебе — не называй ни код из SMS, ни PIN, ни CVV, ни номер карты. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
+            explain: `${SAFETY_PHRASES.ru.smsCode} ${SAFETY_PHRASES.ru.bankCall}`,
           },
           {
             id: "q-boss",
@@ -238,7 +240,7 @@ export const fakeLinkContent = {
               { id: "delete", text: "Сделать скриншот, затем удалить сообщение", correct: true },
               { id: "link", text: "Перейти по ссылке «для проверки»", correct: false },
             ],
-            explain: "Коды из SMS никому нельзя отправлять. Атаку отбивают блокировкой, жалобой и удалением.",
+            explain: `${SAFETY_PHRASES.ru.smsCode} Атаку отбивают блокировкой, жалобой и удалением.`,
           },
         ],
       },
@@ -373,10 +375,10 @@ export const fakeLinkContent = {
             incoming: ["Bună ziua, sunt de la securitatea băncii. Cardul dvs. e blocat. Spuneți codul din SMS pentru deblocare."],
             options: [
               { id: "code", text: "Dictez codul — angajatul s-a prezentat", correct: false },
-              { id: "callback", text: "Închid și sun înapoi la bancă la numărul de pe spatele cardului", correct: true },
+              { id: "callback", text: SAFETY_PHRASES.ro.bankCall, correct: true },
               { id: "data", text: "Dau numărul cardului, dar nu codul — doar codul e secret", correct: false },
             ],
-            explain: "Dacă te sună cineva — nu spune nici codul din SMS, nici PIN-ul, nici CVV-ul, nici numărul cardului. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
+            explain: `${SAFETY_PHRASES.ro.smsCode} ${SAFETY_PHRASES.ro.bankCall}`,
           },
           {
             id: "friend-loan",
@@ -470,10 +472,10 @@ export const fakeLinkContent = {
             multi: false,
             options: [
               { id: "pin", text: "Spun PIN-ul — altfel blochează", correct: false },
-              { id: "hangup", text: "Închid și sun eu la bancă, la numărul de pe spatele cardului", correct: true },
+              { id: "hangup", text: SAFETY_PHRASES.ro.bankCall, correct: true },
               { id: "partial", text: "Dau doar numărul cardului, fără PIN", correct: false },
             ],
-            explain: "Dacă te sună cineva — nu spune nici codul din SMS, nici PIN-ul, nici CVV-ul, nici numărul cardului. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
+            explain: `${SAFETY_PHRASES.ro.smsCode} ${SAFETY_PHRASES.ro.bankCall}`,
           },
           {
             id: "q-boss",
@@ -486,7 +488,7 @@ export const fakeLinkContent = {
               { id: "delete", text: "Fac o captură de ecran, apoi șterg mesajul", correct: true },
               { id: "link", text: "Accesez linkul «pentru verificare»", correct: false },
             ],
-            explain: "Codurile din SMS nu se trimit nimănui. Atacul se respinge prin blocare, raportare și ștergere.",
+            explain: `${SAFETY_PHRASES.ro.smsCode} Atacul se respinge prin blocare, raportare și ștergere.`,
           },
         ],
       },

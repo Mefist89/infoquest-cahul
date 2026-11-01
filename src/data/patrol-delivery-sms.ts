@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 import type { PatrolLocale } from "./patrol";
 
 export type SmsSegment = {
@@ -105,8 +107,8 @@ export const DELIVERY_SMS_THEORY: {
         ro: "4. Cererea CVV și a codurilor sub pretextul «rambursării»",
       },
       description: {
-        ru: "Для получения посылки или возврата денег почта и курьеры НИКОГДА не запрашивают 3 цифры CVV с оборота карты или одноразовый SMS-код.",
-        ro: "Pentru primirea unui colet sau rambursare, poșta și curierii NU cer NICIODATĂ codul CVV sau codul unic din SMS.",
+        ru: SAFETY_PHRASES.ru.smsCode,
+        ro: SAFETY_PHRASES.ro.smsCode,
       },
       example: {
         ru: "Пример уловки: «Для возврата 450 леев укажите карту и CVV»",
@@ -560,7 +562,7 @@ export const DELIVERY_SMS_UI: Record<
     summaryChecklist: [
       "Почта не требует срочной оплаты 15–20 леев по ссылкам из SMS.",
       "Всегда проверяй домен: posta-md-livrare.top и .click/.site — это ловушки.",
-      "Для получения посылки или возврата денег никогда не нужны CVV и код из SMS.",
+      SAFETY_PHRASES.ru.smsCode,
       "Проверяй статус заказа только на официальном сайте posta.md или в приложении магазина.",
     ],
     closeLabel: "Закрыть",
@@ -593,7 +595,7 @@ export const DELIVERY_SMS_UI: Record<
     summaryChecklist: [
       "Poșta nu cere plăți urgente de 15–20 lei prin linkuri din SMS.",
       "Verifică mereu domeniul: posta-md-livrare.top și .click/.site sunt capcane.",
-      "Pentru primirea unui colet sau rambursare nu sunt necesare niciodată CVV-ul și codul SMS.",
+      SAFETY_PHRASES.ro.smsCode,
       "Verifică statusul comenzii doar pe site-ul oficial posta.md sau în aplicația magazinului.",
     ],
     closeLabel: "Închide",

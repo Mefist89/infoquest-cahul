@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 import type { PatrolLocale } from "./patrol";
 
 export type ProfileXraySpot = {
@@ -95,7 +97,7 @@ export const HACKED_ACCOUNT_META: Record<
     stage2Blockers: [
       "Барьер 1 · Стоп фишинг-домен (не вводить пароль по ссылкам)",
       "Барьер 2 · Блок QR-привязки чужого устройства",
-      "Барьер 3 · Защита кода входа (никому не диктовать OTP/2FA)",
+      `Барьер 3 · Защита кода входа. ${SAFETY_PHRASES.ru.smsCode}`,
     ],
     stage3Title: "Этап 3/4 · «Диспетчер активных сессий»: Выброси хакера из аккаунта",
     stage3Subtitle:
@@ -141,7 +143,7 @@ export const HACKED_ACCOUNT_META: Record<
     stage2Blockers: [
       "Bariera 1 · Stop domeniu phishing (nu introduce parola prin link)",
       "Bariera 2 · Blocare asociere QR a unui dispozitiv străin",
-      "Bariera 3 · Protecție cod de acces (nu dicta OTP/2FA nimănui)",
+      `Bariera 3 · Protecție cod de acces. ${SAFETY_PHRASES.ro.smsCode}`,
     ],
     stage3Title: "Etapa 3/4 · «Manager sesiuni active»: Scoate hackerul din cont",
     stage3Subtitle:
@@ -320,12 +322,12 @@ export const HACKED_LOGIN_TRAPS: LoginTrapCase[] = [
     },
     correctBlockerIndex: 2,
     successFeedback: {
-      ru: "Точно в цель! 6-значный код входа нельзя называть ни под каким предлогом — ни «курьеру», ни «техподдержке», ни «покупателю».",
-      ro: "Exact la țintă! Codul de autentificare din 6 cifre nu se comunică nimănui — nici «curierului», nici «suportului», nici «cumpărătorului».",
+      ru: `Точно в цель! ${SAFETY_PHRASES.ru.smsCode}`,
+      ro: `Exact la țintă! ${SAFETY_PHRASES.ro.smsCode}`,
     },
     wrongFeedback: {
-      ru: "Неверно! Мошенник выманивает одноразовый код входа в аккаунт — активируй «Барьер 3 · Защита кода входа (OTP/2FA)».",
-      ro: "Incorect! Escrocul încearcă să obțină codul unic de conectare — activează «Bariera 3 · Protecție cod de acces (OTP/2FA)».",
+      ru: `Неверно! ${SAFETY_PHRASES.ru.smsCode} Активируй «Барьер 3 · Защита кода входа (OTP/2FA)».`,
+      ro: `Incorect! ${SAFETY_PHRASES.ro.smsCode} Activează «Bariera 3 · Protecție cod de acces (OTP/2FA)».`,
     },
   },
 ];

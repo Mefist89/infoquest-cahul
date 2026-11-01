@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 import type { PatrolLocale } from "./patrol";
 
 export type ScannerSpot = {
@@ -108,7 +110,7 @@ export const FAKE_CALL_STAGES_META: Record<
     victoryRules: [
       "Имя и номер на экране можно подменить (спуфинг) — никогда не верь срочным просьбам о деньгах на слово.",
       "Мошенники всегда требуют двух вещей: «Быстрее!» (паника) и «Никому не говори!» (изоляция).",
-      "При любом подозрительном звонке положи трубку и сам перезвони человеку по старому известному номеру.",
+      "При любом подозрительном звонке положи трубку и сам позвони человеку по старому известному номеру.",
       "Используй личный контрольный вопрос, ответ на который знает только настоящий друг или член семьи.",
     ],
   },
@@ -153,7 +155,7 @@ export const FAKE_CALL_STAGES_META: Record<
     victoryRules: [
       "Numele și numărul afișat pot fi falsificate (spoofing) — nu crede pe cuvânt cererile urgente de bani.",
       "Escrocii cer mereu două lucruri: «Repede!» (panică) și «Nu spune nimănui!» (izolare).",
-      "La orice apel suspect, închide și sună tu înapoi pe numărul vechi, salvat în agendă.",
+      "La orice apel suspect, închide și sună tu pe numărul vechi, salvat în agendă.",
       "Folosește o întrebare de control personală, la care doar prietenul real știe răspunsul.",
     ],
   },
@@ -458,8 +460,8 @@ export const FAKE_CALL_DUEL_ROUNDS: DuelRound[] = [
         },
         correct: false,
         feedback: {
-          ru: "Опасно! Код из SMS никогда нельзя называть ни «другу», ни «банку», ни «полиции». Разыграй карту сброса и перезвона!",
-          ro: "Periculos! Codul din SMS nu se comunică nimănui. Joacă cartea de închidere și reapelare pe numărul real!",
+          ru: `Опасно! ${SAFETY_PHRASES.ru.smsCode}`,
+          ro: `Periculos! ${SAFETY_PHRASES.ro.smsCode}`,
         },
       },
       {
@@ -474,7 +476,7 @@ export const FAKE_CALL_DUEL_ROUNDS: DuelRound[] = [
         },
         correct: false,
         feedback: {
-          ru: "Не трать время на разговор с мошенником (они могут записывать твой голос). Правильный ход — сбросить вызов и перезвонить другу!",
+          ru: "Не трать время на разговор с мошенником (они могут записывать твой голос). Правильный ход — сбросить вызов и самому позвонить другу по сохранённому номеру!",
           ro: "Nu pierde timpul discutând cu escrocul (îți poate înregistra vocea). Închide și sună-ți prietenul pe numărul real!",
         },
       },

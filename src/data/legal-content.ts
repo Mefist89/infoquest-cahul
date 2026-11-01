@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 export type LegalLocale = "ro" | "ru";
 export type LegalKind = "privacy" | "terms";
 
@@ -77,7 +79,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "Nu folosim datele contului pentru publicitate comportamentală sau profilare.",
             "Nu instalăm cookie-uri proprii de marketing și nu folosim instrumente de analiză a audienței în versiunea actuală.",
             "Nu vindem și nu închiriem date personale.",
-            "Nu cerem și nu recomandăm trimiterea conversațiilor private, parolelor, codurilor SMS, datelor bancare, documentelor de identitate ori a înregistrărilor altor persoane fără acordul lor. Folosește exemple fictive sau anonimizate.",
+            `Nu cerem și nu recomandăm trimiterea conversațiilor private, parolelor, datelor bancare, documentelor de identitate ori a înregistrărilor altor persoane fără acordul lor. ${SAFETY_PHRASES.ro.smsCode} Folosește exemple fictive sau anonimizate.`,
           ],
         },
         {
@@ -182,7 +184,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Site-ul poate folosi servicii de găzduire sau poate afișa legături către resurse externe. Aceste servicii au propriii termeni și politici, iar echipa InfoQuest nu controlează conținutul ori disponibilitatea lor.",
             "Asistentul Chrono este o funcție opțională bazată pe un furnizor AI extern. Textul sau audio-ul este transmis numai după confirmarea utilizatorului. Răspunsul este orientativ, poate conține erori și nu reprezintă o constatare definitivă că o persoană sau o înregistrare este frauduloasă.",
-            "Nu trimite parole, coduri SMS, date bancare, documente sau înregistrări ale altor persoane fără drept și acord.",
+            `Nu trimite parole, date bancare, documente sau înregistrări ale altor persoane fără drept și acord. ${SAFETY_PHRASES.ro.smsCode}`,
           ],
         },
         {
@@ -252,7 +254,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
             "Не используем данные аккаунта для поведенческой рекламы или профилирования.",
             "Не устанавливаем собственные маркетинговые cookie-файлы и не используем системы веб-аналитики в текущей версии.",
             "Не продаём и не сдаём в аренду персональные данные.",
-            "Не просим и не рекомендуем отправлять личную переписку, пароли, SMS-коды, банковские данные, документы или записи других людей без их согласия. Используйте вымышленные или обезличенные примеры.",
+            `Не просим и не рекомендуем отправлять личную переписку, пароли, банковские данные, документы или записи других людей без их согласия. ${SAFETY_PHRASES.ru.smsCode} Используйте вымышленные или обезличенные примеры.`,
           ],
         },
         {
@@ -356,7 +358,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Сайт может использовать услуги хостинга и содержать ссылки на внешние ресурсы. У них есть собственные условия и политики; команда InfoQuest не контролирует их содержание и доступность.",
             "Помощник Chrono — необязательная функция на основе внешнего AI-провайдера. Текст или аудио передаются только после подтверждения пользователя. Ответ носит ориентировочный характер, может содержать ошибки и не является окончательным доказательством того, что человек или запись связаны с мошенничеством.",
-            "Не отправляйте пароли, SMS-коды, банковские данные, документы или записи других людей без законного права и согласия.",
+            `Не отправляйте пароли, банковские данные, документы или записи других людей без законного права и согласия. ${SAFETY_PHRASES.ru.smsCode}`,
           ],
         },
         {

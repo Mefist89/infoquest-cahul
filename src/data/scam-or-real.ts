@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 export type ScamOrRealLocale = "ru" | "ro";
 
 export const scamOrRealContent = {
@@ -95,7 +97,7 @@ export const scamOrRealContent = {
         { id: "shop-address", offer: "Нашёл отзывы о магазине на других сайтах, не только на его странице", context: "Плачу только после того, как осмотрел товар", verdict: "honest", explain: "Адрес и отзывы на самом сайте легко подделать. Проверяй сам: поищи название магазина в интернете со словом «отзывы» или «мошенники», найди его на карте, плати только после осмотра товара." },
         { id: "prize-fee", offer: "«Ты выиграл приз! Оплати доставку 100 леев»", context: "Сообщение с неизвестного номера.", verdict: "scam", explain: "Настоящий приз не требует оплатить «доставку» по ссылке из SMS. Даже если ты участвовал в конкурсе, проверь на официальном сайте или странице организатора." },
         { id: "sale-10", offer: "Скидка 10% в известном магазине, возврат 14 дней", context: "Официальный сайт сети.", verdict: "honest", explain: "Умеренная скидка, известный продавец и возврат — всё чисто." },
-        { id: "sms-code", offer: "Продавец просит код из SMS «для подтверждения»", context: "Переписка о покупке.", verdict: "scam", explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник. Читай, для чего пришёл код: «получить оплату» кодом нельзя — код подтверждает списание." },
+        { id: "sms-code", offer: "Продавец просит код из SMS «для подтверждения»", context: "Переписка о покупке.", verdict: "scam", explain: `${SAFETY_PHRASES.ru.smsCode} Читай, для чего пришёл код: «получить оплату» кодом нельзя — код подтверждает списание.` },
         { id: "bike-meet", offer: "Б/у велосипед: встреча лично, осмотр, оплата на месте", context: "Объявление с реальными фото и адресом.", verdict: "honest", explain: "Встреча в людном месте (например, у торгового центра), не в одиночку (школьнику — только со взрослым), осмотр и оплата только после проверки — так рискуешь гораздо меньше." },
       ],
     },
@@ -141,19 +143,19 @@ export const scamOrRealContent = {
           messages: ["Пришли код из SMS, чтобы я забронировал товар за тобой!"],
           options: [
             { id: "send-code", text: "Отправляю код — это же просто бронь", correct: false },
-            { id: "refuse", text: "Коды никому не отправляю. Точка.", correct: true },
+            { id: "refuse", text: SAFETY_PHRASES.ru.smsCode, correct: true },
           ],
-          correction: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник. Читай, для чего пришёл код: «получить оплату» кодом нельзя — код подтверждает списание.",
+          correction: `${SAFETY_PHRASES.ru.smsCode} Читай, для чего пришёл код: «получить оплату» кодом нельзя — код подтверждает списание.`,
         },
         {
           id: "deal",
           messages: ["Ну что, берёшь или нет?"],
           options: [
-            { id: "prepay-deal", text: "Нет. Ты просил код из SMS — так делают мошенники. Прекращаю переписку и жалуюсь на объявление", correct: true },
+            { id: "prepay-deal", text: `Нет. ${SAFETY_PHRASES.ru.smsCode} Прекращаю переписку и жалуюсь на объявление`, correct: true },
             { id: "safe-deal", text: "Беру, но встретимся лично — так безопасно", correct: false },
             { id: "never", text: "Больше никогда ничего не покупаю онлайн", correct: false },
           ],
-          correction: "Продавец, который просит код из SMS, — мошенник. С ним не встречаются и не торгуются. Отказываемся от этой сделки, а не от всех покупок онлайн.",
+          correction: `${SAFETY_PHRASES.ru.smsCode} С ним не встречаются и не торгуются. Отказываемся от этой сделки, а не от всех покупок онлайн.`,
         },
       ],
     },
@@ -213,9 +215,9 @@ export const scamOrRealContent = {
           multi: false,
           options: [
             { id: "send-code", text: "Отправляю код", correct: false },
-            { id: "refuse", text: "Коды никому не отправляю", correct: true },
+            { id: "refuse", text: SAFETY_PHRASES.ru.smsCode, correct: true },
           ],
-          explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник. Читай, для чего пришёл код: «получить оплату» кодом нельзя — код подтверждает списание.",
+          explain: `${SAFETY_PHRASES.ru.smsCode} Читай, для чего пришёл код: «получить оплату» кодом нельзя — код подтверждает списание.`,
         },
         {
           id: "q-prize",
@@ -340,7 +342,7 @@ export const scamOrRealContent = {
         { id: "shop-address", offer: "Am găsit recenzii despre magazin pe alte site-uri, nu doar pe pagina lui", context: "Plătesc doar după ce am verificat marfa", verdict: "honest", explain: "Adresa și recenziile de pe site se falsifică ușor. Verifică singur: caută numele magazinului pe internet cu cuvintele «recenzii» sau «țeapă», găsește-l pe hartă, plătește doar după ce verifici marfa." },
         { id: "prize-fee", offer: "«Ai câștigat un premiu! Plătește livrarea 100 de lei»", context: "Mesaj de la număr necunoscut.", verdict: "scam", explain: "Un premiu real nu cere să plătești «livrarea» printr-un link din SMS. Chiar dacă ai participat la concurs, verifică pe site-ul sau pagina oficială a organizatorului." },
         { id: "sale-10", offer: "Reducere 10% în magazin cunoscut, retur 14 zile", context: "Site-ul oficial al rețelei.", verdict: "honest", explain: "Reducere moderată, vânzător cunoscut și retur — totul e curat." },
-        { id: "sms-code", offer: "Vânzătorul cere codul din SMS «pentru confirmare»", context: "Discuție despre cumpărătură.", verdict: "scam", explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc. Citește pentru ce e codul: cu un cod nu se „primesc” bani — codul confirmă o plată." },
+        { id: "sms-code", offer: "Vânzătorul cere codul din SMS «pentru confirmare»", context: "Discuție despre cumpărătură.", verdict: "scam", explain: `${SAFETY_PHRASES.ro.smsCode} Citește pentru ce e codul: cu un cod nu se „primesc” bani — codul confirmă o plată.` },
         { id: "bike-meet", offer: "Bicicletă second-hand: întâlnire personală, verificare, plată pe loc", context: "Anunț cu poze reale și adresă.", verdict: "honest", explain: "Întâlnire într-un loc aglomerat (de ex. lângă un centru comercial), nu de unul singur (elevii — doar cu un adult), verificarea mărfii și plata doar după verificare — așa riști mult mai puțin." },
       ],
     },
@@ -386,19 +388,19 @@ export const scamOrRealContent = {
           messages: ["Trimite-mi codul din SMS, ca să-ți rezerv marfa!"],
           options: [
             { id: "send-code", text: "Trimit codul — e doar o rezervare", correct: false },
-            { id: "refuse", text: "Codurile nu le trimit nimănui. Punct.", correct: true },
+            { id: "refuse", text: SAFETY_PHRASES.ro.smsCode, correct: true },
           ],
-          correction: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc. Citește pentru ce e codul: cu un cod nu se „primesc” bani — codul confirmă o plată.",
+          correction: `${SAFETY_PHRASES.ro.smsCode} Citește pentru ce e codul: cu un cod nu se „primesc” bani — codul confirmă o plată.`,
         },
         {
           id: "deal",
           messages: ["Ei, iei sau nu?"],
           options: [
-            { id: "prepay-deal", text: "Nu. Mi-ai cerut codul din SMS — așa fac escrocii. Opresc discuția și raportez anunțul", correct: true },
+            { id: "prepay-deal", text: `Nu. ${SAFETY_PHRASES.ro.smsCode} Opresc discuția și raportez anunțul`, correct: true },
             { id: "safe-deal", text: "Iau, dar ne întâlnim personal — așa e sigur", correct: false },
             { id: "never", text: "Nu mai cumpăr nimic online niciodată", correct: false },
           ],
-          correction: "Vânzătorul care cere codul din SMS este escroc. Nu te întâlnești și nu negociezi cu el. Renunți la această afacere, nu la toate cumpărăturile online.",
+          correction: `${SAFETY_PHRASES.ro.smsCode} Nu te întâlnești și nu negociezi cu el. Renunți la această afacere, nu la toate cumpărăturile online.`,
         },
       ],
     },
@@ -458,9 +460,9 @@ export const scamOrRealContent = {
           multi: false,
           options: [
             { id: "send-code", text: "Trimit codul", correct: false },
-            { id: "refuse", text: "Codurile nu le trimit nimănui", correct: true },
+            { id: "refuse", text: SAFETY_PHRASES.ro.smsCode, correct: true },
           ],
-          explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc. Citește pentru ce e codul: cu un cod nu se „primesc” bani — codul confirmă o plată.",
+          explain: `${SAFETY_PHRASES.ro.smsCode} Citește pentru ce e codul: cu un cod nu se „primesc” bani — codul confirmă o plată.`,
         },
         {
           id: "q-prize",

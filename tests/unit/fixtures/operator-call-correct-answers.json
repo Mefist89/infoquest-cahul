@@ -34,7 +34,7 @@
     },
     "phase3": {
       "p3_1": [
-        "Я сейчас сам перезвоню в поддержку."
+        "Положи трубку и сам позвони по официальному номеру оператора."
       ],
       "p3_2": [
         "Вызывайте меня официальной повесткой. До свидания."
@@ -59,8 +59,8 @@
         "Спасибо, я проверю это на сайте MinTel."
       ],
       "p3_9": [
-        "Сброшу вызов и заблокирую карту через приложение.",
-        "Я сам сейчас позвоню в свой банк."
+        "Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
+        "Сброшу вызов и заблокирую карту через приложение."
       ],
       "p3_10": [
         "Позвоню настоящему оператору с другого телефона.",
@@ -103,7 +103,7 @@
     },
     "phase3": {
       "p3_1": [
-        "Voi suna eu însumi la suport acum."
+        "Închide și sună tu la numărul oficial al operatorului."
       ],
       "p3_2": [
         "Chemați-mă oficial prin citație. La revedere."
@@ -128,8 +128,8 @@
         "Mulțumesc, voi verifica pe site-ul MinTel."
       ],
       "p3_9": [
-        "Voi suna eu imediat la banca mea.",
-        "Închid și blochez cardul din aplicație."
+        "Închid și blochez cardul din aplicație.",
+        "Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial."
       ],
       "p3_10": [
         "Las-o să ardă.",

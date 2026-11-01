@@ -1,3 +1,5 @@
+import { SAFETY_PHRASES } from "./safety-phrases";
+
 export type HackedAccountLocale = "ru" | "ro";
 
 export const hackedAccountContent = {
@@ -61,7 +63,7 @@ export const hackedAccountContent = {
         { title: "Один пароль везде", text: "Если пароль утёк с одного сайта, под угрозой все аккаунты с тем же паролем. Смени его везде, где он повторялся, — и придумай для каждого сайта свой." },
         { title: "Нет второго замка", text: "Без двухэтапной проверки украденного пароля достаточно для входа. Двухэтапная проверка — при входе нужен не только пароль, но и код, который приходит на твой телефон." },
         { title: "Странные сообщения", text: "Друзья получают от твоего имени просьбы о деньгах и подозрительные ссылки." },
-        { title: "Код из SMS — тоже ключ", text: "Через код из SMS угоняют WhatsApp, Telegram и Viber. Никогда никому не пересылай и не диктуй коды — даже „другу“ или „поддержке“." },
+        { title: "Код из SMS — тоже ключ", text: `Через код из SMS угоняют WhatsApp, Telegram и Viber. ${SAFETY_PHRASES.ru.smsCode}` },
       ],
       recovery: "Если пароль уже сменили и войти не получается — нажми „Забыли пароль?“ или „Не удаётся войти?“ в официальном приложении. Не плати тем, кто обещает „вернуть аккаунт“ за деньги, — это тоже мошенники. Предупреди друзей другим способом — позвони им: взломщик управляет аккаунтом.",
       rule: "Увидел чужой вход — смени пароль, выйди на всех чужих устройствах, проверь почту для восстановления, включи двухэтапную проверку и предупреди друзей.",
@@ -134,7 +136,7 @@ export const hackedAccountContent = {
       ],
     },
     recoveryDialogue: {
-      prompt: "Аккаунт взломан! Офицер Раду поможет вернуть доступ шаг за шагом. Запомни: настоящая поддержка не ведёт с тобой переписку о возврате аккаунта и никогда не просит код или пароль. Всё делай сам в настройках официального приложения.",
+      prompt: `Аккаунт взломан! Офицер Раду поможет вернуть доступ шаг за шагом. Запомни: настоящая поддержка не ведёт с тобой переписку о возврате аккаунта. ${SAFETY_PHRASES.ru.smsCode} Всё делай сам в настройках официального приложения.`,
       supportName: "Офицер Раду",
       youName: "Ты",
       successTitle: "Доступ возвращён! Аккаунт снова твой.",
@@ -260,9 +262,9 @@ export const hackedAccountContent = {
           multi: false,
           options: [
             { id: "code", text: "Продиктовать код", correct: false },
-            { id: "hangup", text: "Положить трубку и самому позвонить в банк по номеру на обороте карты", correct: true },
+            { id: "hangup", text: SAFETY_PHRASES.ru.bankCall, correct: true },
           ],
-          explain: "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
+          explain: `${SAFETY_PHRASES.ru.smsCode} ${SAFETY_PHRASES.ru.bankCall}`,
         },
         {
           id: "q-boss",
@@ -341,7 +343,7 @@ export const hackedAccountContent = {
         { title: "O singură parolă peste tot", text: "Dacă parola s-a scurs de pe un site, toate conturile cu aceeași parolă sunt în pericol. Schimb-o peste tot unde ai folosit-o — și pune pentru fiecare site alta." },
         { title: "Lipsește al doilea lacăt", text: "Fără verificare în doi pași, parola furată e de ajuns pentru conectare. Verificarea în doi pași — la intrare îți trebuie nu doar parola, ci și un cod care vine pe telefonul tău." },
         { title: "Mesaje ciudate", text: "Prietenii primesc în numele tău cereri de bani și linkuri suspecte." },
-        { title: "Codul din SMS e tot o cheie", text: "Cu codul din SMS se fură conturile de WhatsApp, Telegram și Viber. Nu trimite și nu dicta nimănui codurile — nici unui „prieten”, nici „suportului”." },
+        { title: "Codul din SMS e tot o cheie", text: `Cu codul din SMS se fură conturile de WhatsApp, Telegram și Viber. ${SAFETY_PHRASES.ro.smsCode}` },
       ],
       recovery: "Dacă parola a fost deja schimbată și nu mai poți intra — apasă „Ai uitat parola?” sau „Nu poți intra?” în aplicația oficială. Nu plăti celor care promit să-ți „recupereze contul” contra bani — și ei sunt escroci. Avertizează-ți prietenii în alt mod — sună-i: contul este controlat de spărgător.",
       rule: "Ai văzut o conectare străină — schimbă parola, ieși de pe toate dispozitivele străine, verifică emailul de recuperare, activează verificarea în doi pași și avertizează-ți prietenii.",
@@ -415,7 +417,7 @@ export const hackedAccountContent = {
       ],
     },
     recoveryDialogue: {
-      prompt: "Contul e spart! Ofițerul Radu te ajută să recuperezi accesul pas cu pas. Reține: suportul adevărat nu poartă cu tine discuții despre recuperarea contului și nu cere niciodată codul sau parola. Fă totul singur, în setările aplicației oficiale.",
+      prompt: `Contul e spart! Ofițerul Radu te ajută să recuperezi accesul pas cu pas. Reține: suportul adevărat nu poartă cu tine discuții despre recuperarea contului. ${SAFETY_PHRASES.ro.smsCode} Fă totul singur, în setările aplicației oficiale.`,
       supportName: "Ofițerul Radu",
       youName: "Tu",
       successTitle: "Acces recuperat! Contul e din nou al tău.",
@@ -541,9 +543,9 @@ export const hackedAccountContent = {
           multi: false,
           options: [
             { id: "code", text: "Spun codul", correct: false },
-            { id: "hangup", text: "Închid și sun eu la bancă, la numărul de pe spatele cardului", correct: true },
+            { id: "hangup", text: SAFETY_PHRASES.ro.bankCall, correct: true },
           ],
-          explain: "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
+          explain: `${SAFETY_PHRASES.ro.smsCode} ${SAFETY_PHRASES.ro.bankCall}`,
         },
         {
           id: "q-boss",
