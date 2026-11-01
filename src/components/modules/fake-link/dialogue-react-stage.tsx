@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRetryQuiz } from "@/features/modules/runner/use-retry-quiz";
+import { retryLabels } from "../shared/retry-labels";
 import { Check, X, MessageSquareText, ShieldAlert } from "lucide-react";
 
 import type { fakeLinkContent } from "@/data/fake-link";
@@ -10,72 +12,52 @@ type DialogueReactContent =
   | (typeof fakeLinkContent)["ru"]["dialogueReact"]
   | (typeof fakeLinkContent)["ro"]["dialogueReact"];
 
-const SCENARIO_COUNT = 4;
 const PASS_COUNT = 3;
 
 export function DialogueReactStage({
+  locale,
   content,
   retryLabel,
   saving,
   onComplete,
 }: {
+  locale: "ru" | "ro";
   content: DialogueReactContent;
   retryLabel: string;
   saving: boolean;
   onComplete: (result: StageResult) => void;
 }) {
-  const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [revealed, setRevealed] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [passed, setPassed] = useState(false);
+  const quiz = useRetryQuiz(content.scenarios.map(entry => entry.id), PASS_COUNT, onComplete, saving);
+  const { index, revealed, finished, passed, correctCount, advance, retry } = quiz;
 
   const scenario = content.scenarios[index];
   const answer = scenario ? answers[scenario.id] : undefined;
   const correctOption = scenario?.options.find((option) => option.correct);
   const isCorrect = answer !== undefined && answer === correctOption?.id;
-  const correctCount = content.scenarios.filter(
-    (entry) => answers[entry.id] === entry.options.find((option) => option.correct)?.id,
-  ).length;
 
   function choose(optionId: string) {
     if (!scenario || revealed || saving) return;
-    setAnswers((previous) => ({ ...previous, [scenario.id]: optionId }));
-    setRevealed(true);
-  }
-
-  function advance() {
-    if (!scenario) return;
-    if (index >= content.scenarios.length - 1) {
-      setFinished(true);
-      if (correctCount >= PASS_COUNT) {
-        setPassed(true);
-        onComplete({ correct: correctCount, total: SCENARIO_COUNT });
-      }
-      return;
+    if (quiz.answer(optionId === correctOption?.id, scenario.explain)) {
+      setAnswers((previous) => ({ ...previous, [scenario.id]: optionId }));
     }
-    setIndex((current) => current + 1);
-    setRevealed(false);
   }
 
-  function retry() {
-    setIndex(0);
-    setAnswers({});
-    setRevealed(false);
-    setFinished(false);
-    setPassed(false);
-  }
+  const counter = (quiz.retrying ? retryLabels[locale].repeat : retryLabels[locale].question)
+    .replace("{current}", String(quiz.roundPosition))
+    .replace("{total}", String(quiz.roundTotal));
 
   return (
     <div>
       <p className="text-base font-semibold leading-relaxed text-foreground/90 sm:text-lg">{content.prompt}</p>
       <p className="mt-2 text-sm font-semibold text-neon">{content.passNote}</p>
+      {quiz.retrying && !finished && <p role="status" className="mt-3 text-base font-bold text-success">{retryLabels[locale].questionsKept}</p>}
 
       <div aria-live="polite" className="mt-6">
         {!finished && scenario ? (
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              {scenario.title} · {index + 1}/{content.scenarios.length}
+              {scenario.title} · {counter}
             </p>
 
             <div className="mt-3 space-y-2 rounded-2xl border border-border bg-background/60 p-4 sm:p-5">

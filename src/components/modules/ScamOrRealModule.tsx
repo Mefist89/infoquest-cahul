@@ -160,7 +160,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
                 {currentStage === 0 && <MentorIntro imageSrc={t.intro.image} locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
-                {currentStage === 5 && <OfferClassifyStage content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
+                {currentStage === 5 && <OfferClassifyStage locale={locale} content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <SellerCheckStage content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
                 {currentStage === 8 && <FinalBattleStage content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}

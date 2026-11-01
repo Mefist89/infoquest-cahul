@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore,
+  advanceRetryRound, retryFailedQuestions,
 } from "@/features/modules/runner/retry-progress";
 
 const answer = (correct: boolean) => ({ correct, explanation: "Почему так" });
@@ -143,5 +144,36 @@ describe("финал: объяснение и визуальные улики", 
     const complete = findRetryDetail(result.progress, result.found, "number", true, 2);
     expect(retryProgressScore(complete.progress)).toEqual({ correct: 1, total: 2 });
     expect(findRetryDetail(complete.progress, complete.found, "number", true, 2).ignored).toBe(true);
+  });
+});
+
+describe("повтор только ошибочных вопросов", () => {
+  it("сохраняет верные ответы, повторяет только две ошибки из шести и не завышает XP", () => {
+    const ids = ["a", "b", "c", "d", "e", "f"];
+    let progress = createRetryProgress(ids);
+    const results: Record<string, boolean> = {};
+    for (const id of ids) {
+      results[id] = id !== "b" && id !== "e";
+      progress = advanceRetryRound(answerRetryQuestion(progress, results[id], "объяснение"));
+    }
+    expect(progress.index).toBe(6);
+    progress = retryFailedQuestions(progress, results);
+    expect(progress.questionIds).toEqual(["b", "e"]);
+    expect(progress.firstAttempts).toEqual(results);
+    results.b = true;
+    progress = advanceRetryRound(answerRetryQuestion(progress, true, "исправлено"));
+    progress = advanceRetryRound(answerRetryQuestion(progress, false, "ещё ошибка"));
+    progress = retryFailedQuestions(progress, results);
+    expect(progress.questionIds).toEqual(["e"]);
+    progress = advanceRetryRound(answerRetryQuestion(progress, true, "исправлено"));
+    expect(retryProgressScore(progress, ids.length)).toEqual({ correct: 4, total: 6 });
+  });
+
+  it("включает в повтор ещё не заданные вопросы, исключая пройденные", () => {
+    const progress = answerRetryQuestion(createRetryProgress(["a", "b", "c"]), false, "почему");
+    const next = retryFailedQuestions(progress, { a: false, b: true });
+    expect(next.questionIds).toEqual(["a", "c"]);
+    expect(next.feedback).toBeNull();
+    expect(advanceRetryRound(next)).toBe(next);
   });
 });

@@ -166,8 +166,8 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 3 && <AudioExampleStage content={t.audioExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
                 {currentStage === 4 && <FindSignalsStage locale={locale} content={t.findSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
-                {currentStage === 5 && <LinkClassifyStage content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
-                {currentStage === 6 && <DialogueReactStage content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(6, result)} />}
+                {currentStage === 5 && <LinkClassifyStage locale={locale} content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
+                {currentStage === 6 && <DialogueReactStage locale={locale} content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <OrderStepsStage content={t.orderSteps} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
                 {currentStage === 8 && <FinalBattleStage content={t.finalBattle} nextLabel={t.finalBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
                 {currentStage !== 3 && currentStage !== 4 && currentStage > 1 && currentStage !== 5 && currentStage !== 6 && currentStage !== 7 && currentStage !== 8 && currentStage < 9 && (

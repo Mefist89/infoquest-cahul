@@ -160,7 +160,7 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
                 {currentStage === 0 && <MentorIntro imageSrc={t.intro.image} locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 4 && <BreachSignsStage content={t.breachSigns} saving={saving} onComplete={(result) => completeStage(4, result)} />}
-                {currentStage === 5 && <PasswordGameStage content={t.passwordGame} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
+                {currentStage === 5 && <PasswordGameStage locale={locale} content={t.passwordGame} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <RecoveryDialogueStage content={t.recoveryDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <RescueOrderStage content={t.rescueOrder} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
                 {currentStage === 8 && <FinalBattleStage content={t.shadowBattle} nextLabel={t.shadowBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}

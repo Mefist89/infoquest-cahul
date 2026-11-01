@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRetryQuiz } from "@/features/modules/runner/use-retry-quiz";
+import { retryLabels } from "../shared/retry-labels";
 import { Check, X, Link2, ShieldAlert } from "lucide-react";
 
 import type { fakeLinkContent } from "@/data/fake-link";
@@ -10,69 +12,51 @@ type LinkClassifyContent =
   | (typeof fakeLinkContent)["ru"]["linkClassify"]
   | (typeof fakeLinkContent)["ro"]["linkClassify"];
 
-const ITEM_COUNT = 6;
 const PASS_COUNT = 5;
 
 export function LinkClassifyStage({
+  locale,
   content,
   retryLabel,
   saving,
   onComplete,
 }: {
+  locale: "ru" | "ro";
   content: LinkClassifyContent;
   retryLabel: string;
   saving: boolean;
   onComplete: (result: StageResult) => void;
 }) {
-  const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, "safe" | "phishing">>({});
-  const [revealed, setRevealed] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const [passed, setPassed] = useState(false);
+  const quiz = useRetryQuiz(content.items.map(entry => entry.id), PASS_COUNT, onComplete, saving);
+  const { index, revealed, finished, passed, correctCount, advance, retry } = quiz;
 
   const item = content.items[index];
   const answer = item ? answers[item.id] : undefined;
   const isCorrect = item && answer === item.verdict;
-  const correctCount = content.items.filter((entry) => answers[entry.id] === entry.verdict).length;
 
   function choose(verdict: "safe" | "phishing") {
     if (!item || revealed || saving) return;
-    setAnswers((previous) => ({ ...previous, [item.id]: verdict }));
-    setRevealed(true);
-  }
-
-  function advance() {
-    if (!item) return;
-    if (index >= content.items.length - 1) {
-      setFinished(true);
-      if (correctCount >= PASS_COUNT) {
-        setPassed(true);
-        onComplete({ correct: correctCount, total: ITEM_COUNT });
-      }
-      return;
+    if (quiz.answer(verdict === item.verdict, item.explain)) {
+      setAnswers((previous) => ({ ...previous, [item.id]: verdict }));
     }
-    setIndex((current) => current + 1);
-    setRevealed(false);
   }
 
-  function retry() {
-    setIndex(0);
-    setAnswers({});
-    setRevealed(false);
-    setFinished(false);
-    setPassed(false);
-  }
+  const counter = (quiz.retrying ? retryLabels[locale].repeat : retryLabels[locale].question)
+    .replace("{current}", String(quiz.roundPosition))
+    .replace("{total}", String(quiz.roundTotal));
 
   return (
     <div>
       <p className="text-base font-semibold leading-relaxed text-foreground/90 sm:text-lg">{content.prompt}</p>
       <p className="mt-2 text-sm font-semibold text-neon">{content.passNote}</p>
+      {quiz.retrying && !finished && <p role="status" className="mt-3 text-base font-bold text-success">{retryLabels[locale].questionsKept}</p>}
 
       <div aria-live="polite" className="mt-6">
         {!finished && item ? (
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              {index + 1}/{content.items.length}
+              {counter}
             </p>
             <div className="mt-3 rounded-2xl border border-border bg-background/60 p-5 sm:p-6">
               <p className="flex items-start gap-2 font-mono text-base font-bold break-all text-foreground sm:text-lg">

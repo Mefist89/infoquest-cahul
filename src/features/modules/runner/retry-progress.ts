@@ -53,3 +53,14 @@ export function findRetryDetail(progress: RetryProgress, found: ReadonlySet<stri
   const next = nextFound.size >= required ? answerRetryQuestion(progress, true, "") : progress;
   return { progress: next, found: nextFound, ignored: false };
 }
+
+/** Finish a quiz round before offering another round of unresolved questions. */
+export function advanceRetryRound(progress: RetryProgress): RetryProgress {
+  if (!progress.feedback) return progress;
+  return { ...progress, index: progress.index + 1, feedback: null };
+}
+
+/** Preserve mastered questions and first-attempt scores, including unseen questions. */
+export function retryFailedQuestions(progress: RetryProgress, results: Readonly<Record<string, boolean>>): RetryProgress {
+  return createRetryProgress(progress.questionIds.filter(id => results[id] !== true), progress.firstAttempts);
+}
