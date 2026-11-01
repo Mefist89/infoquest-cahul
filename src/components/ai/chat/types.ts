@@ -1,7 +1,7 @@
 export type { AiLocale } from "@/data/chrono-content";
 export type AiMode = "analyzer" | "chat";
 export type AnalyzerInputMode = "text" | "audio";
-export type Attachment = { name: string; url: string; file: File };
+export type Attachment = { name: string; url: string; file: File; durationSeconds?: number };
 export type Verdict = "likely_scam" | "suspicious" | "unclear" | "likely_safe";
 export type FraudAnalysis = { verdict: Verdict; risk: number; summary: string; signals: string[]; actions: string[]; reply: string; disclaimer: string };
 export type ChatMessage = { id: string; role: "assistant" | "user"; text: string; attachment?: Attachment; analysis?: FraudAnalysis; transcript?: string };

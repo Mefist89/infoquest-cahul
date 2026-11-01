@@ -28,7 +28,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
   const router = useRouter();
   const t = content;
   const audio = useChronoAudio({ t });
-  const { attachment, listening, recordingSeconds, speechError } = audio;
+  const { attachment, listening, recordingSeconds, speechError, starting, preparingAudio } = audio;
   const [mode, setMode] = useState<AiMode>("analyzer");
   const [analyzerInputMode, setAnalyzerInputMode] = useState<AnalyzerInputMode>("text");
   const [messagesByMode, setMessagesByMode] = useState<Record<AiMode, ChatMessage[]>>({
@@ -76,15 +76,19 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
     async function loadQuota() {
       try {
         const response = await fetch("/api/ai", { headers: { "x-infoquest-locale": locale }, cache: "no-store" });
+        if (!response.ok) {
+          console.warn("Chrono quota request failed", response.status);
+          return;
+        }
         const result = await response.json() as ApiResult;
-        if (active && response.ok) {
+        if (active) {
           setQuota({
             audioRemaining: typeof result.audioRemaining === "number" ? result.audioRemaining : null,
             dailyRemaining: typeof result.dailyRemaining === "number" ? result.dailyRemaining : null,
           });
         }
-      } catch {
-        // The form remains usable; the next successful request refreshes the counters.
+      } catch (error) {
+        console.warn("Chrono quota request failed", error);
       }
     }
     void loadQuota();
@@ -125,7 +129,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
     const currentMode = mode;
     const currentMessages = messagesByMode[currentMode];
     const currentAttachment = currentMode === "analyzer" && analyzerInputMode === "audio" ? attachment : null;
-    if ((!cleanText && !currentAttachment) || thinking) return;
+    if ((!cleanText && !currentAttachment) || thinking || listening || starting || preparingAudio) return;
     if (!dataConsent) {
       setRequestError(t.consentRequired);
       return;
@@ -204,7 +208,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
   }
 
   function selectMode(nextMode: AiMode) {
-    if (nextMode === mode || thinking || listening) return;
+    if (nextMode === mode || thinking || listening || starting || preparingAudio) return;
     window.speechSynthesis?.cancel();
     setMode(nextMode);
     audio.clearError();
@@ -264,8 +268,8 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
           </Link>
           <div className="order-3 mx-auto flex w-full justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2" role="group" aria-label={locale === "ro" ? "Modul Chrono" : "Режим Chrono"}>
             <div className="flex rounded-2xl border border-neon/25 bg-card/80 p-1.5 shadow-[0_0_24px_rgba(0,217,255,0.08)] backdrop-blur">
-              <button type="button" onClick={() => selectMode("analyzer")} disabled={thinking || listening} aria-pressed={mode === "analyzer"} className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed ${mode === "analyzer" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><ShieldCheck className="size-4" aria-hidden="true" />{t.analyzer}</button>
-              <button type="button" onClick={() => selectMode("chat")} disabled={thinking || listening} aria-pressed={mode === "chat"} className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed ${mode === "chat" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><MessageCircle className="size-4" aria-hidden="true" />{t.chat}</button>
+              <button type="button" onClick={() => selectMode("analyzer")} disabled={thinking || listening || starting || preparingAudio} aria-pressed={mode === "analyzer"} className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed ${mode === "analyzer" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><ShieldCheck className="size-4" aria-hidden="true" />{t.analyzer}</button>
+              <button type="button" onClick={() => selectMode("chat")} disabled={thinking || listening || starting || preparingAudio} aria-pressed={mode === "chat"} className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed ${mode === "chat" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><MessageCircle className="size-4" aria-hidden="true" />{t.chat}</button>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-3">
@@ -336,6 +340,9 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
               speechError={audio.speechError}
               listening={listening}
               recordingSeconds={recordingSeconds}
+              starting={starting}
+              preparingAudio={preparingAudio}
+              canStopRecording={audio.canStopRecording}
               toggleMicrophone={handleToggleMicrophone}
               selectFile={audio.selectFile}
               attachment={attachment}

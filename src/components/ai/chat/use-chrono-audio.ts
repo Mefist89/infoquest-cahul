@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import type { ChatContent } from "@/data/chrono-content";
 import type { Attachment } from "./types";
 import { convertToWhisperWav } from "./wav";
+import { isRecordingUsable, MIN_RECORDING_SECONDS } from "./recording-check";
 
 /**
  * Запись голоса, выбор файла и конвертация в WAV для Chrono.
@@ -18,22 +19,32 @@ export function useChronoAudio({ t }: { t: ChatContent }) {
   const [speechError, setSpeechError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
   const recordingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileUrlsRef = useRef<string[]>([]);
-  const discardRecordingRef = useRef(false);
+  const [starting, setStarting] = useState(false);
+  const [preparingAudio, setPreparingAudio] = useState(false);
+  const permissionPendingRef = useRef(false);
+  const busyRef = useRef(false);
+  const mountedRef = useRef(true);
+  const generationRef = useRef(0);
+  const startedAtRef = useRef(0);
 
   useEffect(() => {
     if (!listening) return;
-    const timer = window.setInterval(() => setRecordingSeconds((seconds) => Math.min(60, seconds + 1)), 1000);
+    const timer = window.setInterval(() => setRecordingSeconds(Math.min(60, Math.floor((performance.now() - startedAtRef.current) / 1000))), 100);
     return () => window.clearInterval(timer);
   }, [listening]);
 
-  useEffect(() => () => {
-    if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
-    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-    fileUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      generationRef.current += 1;
+      if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+      mediaStreamRef.current?.getTracks().forEach(track => track.stop());
+      fileUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    };
   }, []);
 
   async function selectFile(event: ChangeEvent<HTMLInputElement>) {
@@ -46,10 +57,12 @@ export function useChronoAudio({ t }: { t: ChatContent }) {
       return;
     }
     let preparedFile = file;
+    let durationSeconds: number | undefined;
     if (/\.weba?m?$/i.test(file.name) || file.type.includes("webm") || file.type === "audio/weba") {
       try {
         const wav = await convertToWhisperWav(file);
-        preparedFile = new File([wav], file.name.replace(/\.web[am]$/i, ".wav"), { type: "audio/wav" });
+        preparedFile = new File([wav.blob], file.name.replace(/\.web[am]$/i, ".wav"), { type: "audio/wav" });
+        durationSeconds = wav.duration;
       } catch {
         setSpeechError(t.fileError);
         event.target.value = "";
@@ -59,82 +72,125 @@ export function useChronoAudio({ t }: { t: ChatContent }) {
     const url = URL.createObjectURL(preparedFile);
     fileUrlsRef.current.push(url);
     setSpeechError(null);
-    setAttachment({ name: preparedFile.name, url, file: preparedFile });
+    setAttachment({ name: preparedFile.name, url, file: preparedFile, durationSeconds });
     event.target.value = "";
   }
 
   async function toggleMicrophone(consented: boolean) {
+    if (permissionPendingRef.current) return;
+    const current = mediaRecorderRef.current;
+    if (current?.state === "recording") {
+      if (performance.now() - startedAtRef.current < MIN_RECORDING_SECONDS * 1000) return;
+      setPreparingAudio(true);
+      setListening(false);
+      current.stop();
+      return;
+    }
+    if (busyRef.current || permissionPendingRef.current) return;
     setSpeechError(null);
-    if (listening) {
-      if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
-      recordingTimeoutRef.current = null;
-      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
-      return;
-    }
-
-    if (!consented) {
-      setSpeechError(t.consentRequired);
-      return;
-    }
-
+    if (!consented) { setSpeechError(t.consentRequired); return; }
     if (!navigator.mediaDevices?.getUserMedia || !("MediaRecorder" in window)) {
       setSpeechError(t.unsupported);
       return;
     }
 
+    busyRef.current = true;
+    permissionPendingRef.current = true;
+    setStarting(true);
+    setAttachment(null);
+    setRecordingSeconds(0);
+    const generation = ++generationRef.current;
+    let stream: MediaStream | null = null;
+    const isCurrent = () => mountedRef.current && generationRef.current === generation;
+    const clearTimer = () => {
+      if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    };
     try {
-      setRecordingSeconds(0);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const preferredType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((type) => MediaRecorder.isTypeSupported(type));
-      const recorder = new MediaRecorder(stream, preferredType ? { mimeType: preferredType } : undefined);
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!isCurrent()) {
+        permissionPendingRef.current = false;
+        stream.getTracks().forEach(track => track.stop());
+        if (mountedRef.current) setStarting(false);
+        return;
+      }
       mediaStreamRef.current = stream;
+      const preferredType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find(type =>
+        typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, preferredType ? { mimeType: preferredType } : undefined);
       mediaRecorderRef.current = recorder;
-      recordedChunksRef.current = [];
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) recordedChunksRef.current.push(event.data);
+      const chunks: Blob[] = [];
+      const release = () => {
+        stream?.getTracks().forEach(track => track.stop());
+        if (mediaStreamRef.current === stream) mediaStreamRef.current = null;
+        if (mediaRecorderRef.current === recorder) mediaRecorderRef.current = null;
       };
+      recorder.ondataavailable = event => { if (event.data.size > 0) chunks.push(event.data); };
       recorder.onstop = async () => {
-        if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
-        recordingTimeoutRef.current = null;
-        stream.getTracks().forEach((track) => track.stop());
-        mediaStreamRef.current = null;
+        release();
+        if (!isCurrent()) return;
+        clearTimer();
         setListening(false);
-        if (discardRecordingRef.current) {
-          discardRecordingRef.current = false;
-          recordedChunksRef.current = [];
-          return;
-        }
-        const mimeType = recorder.mimeType || "audio/webm";
-        const recordedBlob = new Blob(recordedChunksRef.current, { type: mimeType });
-        recordedChunksRef.current = [];
-        if (!recordedBlob.size) {
-          setSpeechError(t.fileError);
-          return;
-        }
+        setPreparingAudio(true);
         try {
-          const wav = await convertToWhisperWav(recordedBlob);
-          if (wav.size > 4 * 1024 * 1024) throw new Error("Recording is too large");
-          const file = new File([wav], `chrono-${Date.now()}.wav`, { type: "audio/wav" });
+          const recordedBlob = new Blob(chunks, { type: recorder.mimeType || chunks[0]?.type || "audio/webm" });
+          if (!recordedBlob.size) throw new Error("Empty recording");
+          const { blob, duration, rms } = await convertToWhisperWav(recordedBlob);
+          if (!isCurrent()) return;
+          if (!isRecordingUsable(duration, rms)) {
+            setSpeechError(t.recordingTooQuiet);
+            return;
+          }
+          if (blob.size > 4 * 1024 * 1024) throw new Error("Recording is too large");
+          const file = new File([blob], `chrono-${Date.now()}.wav`, { type: "audio/wav" });
           const url = URL.createObjectURL(file);
           fileUrlsRef.current.push(url);
-          setAttachment({ name: file.name, url, file });
+          setAttachment({ name: file.name, url, file, durationSeconds: duration });
         } catch {
-          setSpeechError(t.fileError);
+          if (isCurrent()) setSpeechError(t.recordError);
+        } finally {
+          if (isCurrent()) { busyRef.current = false; setPreparingAudio(false); }
         }
       };
       recorder.onerror = () => {
-        stream.getTracks().forEach((track) => track.stop());
-        setListening(false);
-        setSpeechError(t.unsupported);
-      };
-      recorder.start(1000);
-      setListening(true);
-      recordingTimeoutRef.current = setTimeout(() => {
+        release();
+        if (!isCurrent()) return;
+        generationRef.current += 1;
+        clearTimer();
+        busyRef.current = false;
+        permissionPendingRef.current = false;
+        setStarting(false);
         if (recorder.state === "recording") recorder.stop();
-      }, 60_000);
+        setListening(false);
+        setPreparingAudio(false);
+        setSpeechError(t.recordError);
+      };
+      recorder.onstart = () => {
+        if (!isCurrent()) return;
+        startedAtRef.current = performance.now();
+        permissionPendingRef.current = false;
+        setStarting(false);
+        setListening(true);
+        recordingTimeoutRef.current = setTimeout(() => {
+          if (isCurrent() && recorder.state === "recording") {
+            setPreparingAudio(true);
+            setListening(false);
+            recorder.stop();
+          }
+        }, 60_000);
+      };
+      recorder.start();
     } catch {
+      stream?.getTracks().forEach(track => track.stop());
+      permissionPendingRef.current = false;
+      if (mountedRef.current) setStarting(false);
+      if (!isCurrent()) return;
+      mediaStreamRef.current = null;
+      mediaRecorderRef.current = null;
+      busyRef.current = false;
       setListening(false);
-      setSpeechError(t.permission);
+      setPreparingAudio(false);
+      setSpeechError(stream ? t.recordError : t.permission);
     }
   }
 
@@ -148,15 +204,20 @@ export function useChronoAudio({ t }: { t: ChatContent }) {
 
   /** Принудительная остановка записи с отбрасыванием черновика («Новая проверка»). */
   function stopAndDiscard() {
+    generationRef.current += 1;
+    busyRef.current = false;
     if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
     recordingTimeoutRef.current = null;
-    if (mediaRecorderRef.current?.state === "recording") {
-      discardRecordingRef.current = true;
-      mediaRecorderRef.current.stop();
+    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    if (mediaRecorderRef.current) {
+      permissionPendingRef.current = false;
+      setStarting(false);
     }
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaRecorderRef.current = null;
+    mediaStreamRef.current?.getTracks().forEach(track => track.stop());
     mediaStreamRef.current = null;
     setListening(false);
+    setPreparingAudio(false);
     setRecordingSeconds(0);
   }
 
@@ -170,6 +231,9 @@ export function useChronoAudio({ t }: { t: ChatContent }) {
     attachment,
     listening,
     recordingSeconds,
+    starting,
+    preparingAudio,
+    canStopRecording: listening && recordingSeconds >= MIN_RECORDING_SECONDS,
     speechError,
     clearAttachment,
     clearError,

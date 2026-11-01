@@ -31,11 +31,17 @@ export async function convertToWhisperWav(source: Blob) {
     view.setUint16(34, 16, true);
     writeAscii(view, 36, "data");
     view.setUint32(40, samples.length * 2, true);
+    let sumSquares = 0;
     for (let index = 0; index < samples.length; index += 1) {
       const sample = Math.max(-1, Math.min(1, samples[index]));
+      sumSquares += sample * sample;
       view.setInt16(44 + index * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
     }
-    return new Blob([buffer], { type: "audio/wav" });
+    return {
+      blob: new Blob([buffer], { type: "audio/wav" }),
+      duration: samples.length / targetRate,
+      rms: samples.length ? Math.sqrt(sumSquares / samples.length) : 0,
+    };
   } finally {
     await context.close();
   }
