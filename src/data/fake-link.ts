@@ -47,11 +47,12 @@ export const fakeLinkContent = {
     theory: {
       lead: "Сайты-подделки создаются с одной целью: заставить вас ввести свои данные (логин, пароль или данные карты) на странице, которая выглядит как настоящая.",
       cards: [
-        { title: "Незнакомый домен", text: "Мошенники меняют одну-две буквы в адресе: go0gle.com вместо google.com, или instagran.com." },
-        { title: "Отсутствие защитного сертификата", text: "Иногда на поддельных сайтах нет HTTPS (хотя его наличие не всегда гарантирует безопасность)." },
+        { title: "Похожий, но чужой адрес", text: "Мошенники меняют одну-две буквы в адресе: go0gle.com вместо google.com, или instagran.com." },
+        { title: "Замок — не гарантия", text: "Замок и https значат только одно: соединение зашифровано. У большинства поддельных сайтов тоже есть замок. Если адрес начинается с http:// без «s» — не вводи там ничего. Но и замок не доказывает, что сайт настоящий: главное — сам адрес." },
         { title: "Срочный призыв", text: "Сообщения «Ваш аккаунт взломан, войдите немедленно» часто содержат вредоносные ссылки." },
-        { title: "Нестандартный дизайн", text: "Ошибки в верстке, размытые логотипы, неработающие кнопки (кроме кнопки входа)." }
+        { title: "Внешний вид обманчив.", text: "Подделка может выглядеть точь-в-точь как настоящий сайт. Кривой логотип или ошибки — повод уйти, но красивый сайт ещё ничего не доказывает. Проверяй адрес." }
       ],
+      recovery: "Если уже ввёл данные: сразу позвони в банк по номеру на обороте карты и попроси заблокировать карту, смени пароль, расскажи близким. Если украли деньги — звони в полицию: 112.",
       rule: "Всегда проверяйте адрес в строке браузера перед тем, как ввести свои данные. При малейших сомнениях вводите адрес сайта вручную.",
       },
       findSignals: {
@@ -61,11 +62,11 @@ export const fakeLinkContent = {
         foundCount: "Найдено: {found}/6",
         signals: [
           { id: "domain", title: "Подменённый домен", explain: "banca-noroc-online.com вместо banca-noroc.md: лишние слова и .com вместо .md." },
-          { id: "no-https", title: "Нет защищённого соединения", explain: "В адресной строке нет замка: данные уйдут открытым текстом." },
+          { id: "no-https", title: "Нет защищённого соединения", explain: "Адрес начинается с http:// без «s» — соединение не защищено, данные можно перехватить." },
           { id: "urgency", title: "Срочный призыв", explain: "Баннер торопит — «войдите за 10 минут», чтобы ты не успел подумать." },
           { id: "logo", title: "Размытый логотип", explain: "Логотип мутный: скопирован с настоящего сайта в низком качестве." },
-          { id: "form", title: "Форма вымогает лишнее", explain: "Для «входа» просят PIN и CVV карты — банку они никогда не нужны." },
-          { id: "prize", title: "Приз-ловушка", explain: "Кнопка «Забрать приз» ведёт на посторонний адрес." },
+          { id: "form", title: "Форма вымогает лишнее", explain: "Для входа в интернет-банк нужны логин, пароль и иногда код из SMS — но не PIN и не CVV. PIN на сайтах не вводят вообще, CVV — только при оплате покупки на сайте, который ты открыл сам." },
+          { id: "prize", title: "Приз-ловушка", explain: "Банк не раздаёт телефоны на странице входа. Приз — приманка, чтобы ты нажал не думая." },
         ],
       },
       linkClassify: {
@@ -80,12 +81,12 @@ export const fakeLinkContent = {
         failTitle: "Фишинг тебя подловил — разбери ошибки и попробуй ещё.",
         resultCount: "Верно: {score}/6",
         items: [
-          { id: "bank-official", url: "https://banca-noroc.md/login", context: "Адрес введён вручную с официального сайта.", verdict: "safe", explain: "Короткий официальный домен .md и HTTPS — всё чисто." },
+          { id: "bank-official", url: "https://banca-noroc.md/login", context: "Ты сам набрал этот адрес в браузере.", verdict: "safe", explain: "Адрес точно совпадает с официальным banca-noroc.md, и ты набрал его сам. Решает именно адрес, а не замок." },
           { id: "bank-fake", url: "http://banca-noroc-online.com/login", context: "Пришла по SMS с неизвестного номера.", verdict: "phishing", explain: "Нет замка (http), лишние слова в адресе и .com вместо .md." },
-          { id: "posta-official", url: "https://posta.md/colete", context: "Ссылка с официального сайта почты.", verdict: "safe", explain: "Официальный домен .md, обычная страница отслеживания." },
-          { id: "posta-fake", url: "https://posta-md-livrare.top/primeste-coletul", context: "SMS: «посылка задержана, забери сегодня».", verdict: "phishing", explain: "Подозрительная зона .top, дефисы и срочность — классика фишинга." },
-          { id: "search-official", url: "https://google.com", context: "Адрес введён вручную.", verdict: "safe", explain: "Короткий известный домен и HTTPS." },
-          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Письмо: «подтвердите аккаунт в течение суток».", verdict: "phishing", explain: "Нули вместо букв «о» и лишний .com — подмена." },
+          { id: "posta-official", url: "https://posta.md/colete", context: "Ссылка с официального сайта почты.", verdict: "safe", explain: "Это точный адрес почты — posta.md, и ты перешёл на него с официального сайта." },
+          { id: "posta-fake", url: "https://posta-md-livrare.top/primeste-coletul", context: "SMS: «посылка задержана, забери сегодня».", verdict: "phishing", explain: "Настоящий адрес — posta.md. Здесь «posta-md» — лишь часть чужого адреса, к тому же с окончанием .top. Плюс срочность — классика фишинга. Замок здесь есть — но адрес чужой." },
+          { id: "search-official", url: "https://google.com", context: "Адрес введён вручную.", verdict: "safe", explain: "Точный адрес google.com, набран вручную." },
+          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Письмо: «подтвердите аккаунт в течение суток».", verdict: "phishing", explain: "Нули вместо букв «о» и приписка «-securitate» — настоящий адрес просто google.com." },
         ],
       },
       dialogueReact: {
@@ -107,7 +108,7 @@ export const fakeLinkContent = {
               { id: "check", text: "Удалить SMS и проверить трек на официальном сайте posta.md", correct: true },
               { id: "forward", text: "Переслать сообщение друзьям — вдруг их тоже касается", correct: false },
             ],
-            explain: "Настоящая почта не просит оплату по ссылкам из SMS. Трек проверяют только на официальном сайте.",
+            explain: "Не плати по ссылке из SMS, даже если отправитель подписан «POSTA-MD» — имя отправителя легко подделать. Проверь посылку сам на posta.md или в отделении почты.",
           },
           {
             id: "bank-call",
@@ -118,7 +119,7 @@ export const fakeLinkContent = {
               { id: "callback", text: "Положить трубку и перезвонить в банк по номеру на карте", correct: true },
               { id: "data", text: "Назвать номер карты, но не код — это же не код", correct: false },
             ],
-            explain: "Банк никогда не просит коды и данные карты по телефону. Правило: клади трубку и перезванивай сам.",
+            explain: "Если звонят тебе — не называй ни код из SMS, ни PIN, ни CVV, ни номер карты. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
           },
           {
             id: "friend-loan",
@@ -154,7 +155,7 @@ export const fakeLinkContent = {
         resultCount: "На месте: {score}/5",
         steps: [
           { id: "stop", text: "Остановись: не кликай и не вводи данные" },
-          { id: "domain", text: "Прочитай адрес слева направо: домен и зону" },
+          { id: "domain", text: "Прочитай имя сайта — часть адреса между «//» и следующей «/»: совпадает ли оно буква в букву с официальным? …особенно конец имени перед первой «/»: banca-noroc.md.secure.top — это не banca-noroc.md" },
           { id: "lock", text: "Проверь замок и HTTPS в адресной строке" },
           { id: "manual", text: "Зайди вручную через официальный сайт или приложение" },
           { id: "report", text: "Удали сообщение и предупреди близких" },
@@ -189,32 +190,32 @@ export const fakeLinkContent = {
             options: [
               { id: "click", text: "Перейти и подтвердить данные", correct: false },
               { id: "calm", text: "Не спешить: проверить адрес и зайти вручную", correct: true },
-              { id: "share", text: "Переслать друзьям, чтобы их предупредить", correct: false },
+              { id: "share", text: "Переслать сообщение со ссылкой друзьям — пусть сами проверят свои аккаунты", correct: false },
             ],
-            explain: "Паника — оружие мошенника. Остановись и проверь ссылку спокойно.",
+            explain: "Паника — оружие мошенника. Остановись и проверь ссылку спокойно. Предупреждать близких полезно — но своими словами и без ссылки.",
           },
           {
             id: "q-link-safe",
             title: "https://posta.md/colete",
-            context: "Адрес введён вручную с официального сайта.",
+            context: "Ты сам набрал этот адрес в браузере.",
             multi: false,
             options: [
               { id: "safe", text: "Безопасная ссылка", correct: true },
               { id: "phishing", text: "Фишинговая ссылка", correct: false },
             ],
-            explain: "Короткий официальный домен .md и HTTPS — всё чисто.",
+            explain: "Это точный адрес почты — posta.md, и ты набрал его сам.",
           },
           {
             id: "q-react-bank",
             title: "«Это банк. Назовите PIN карты, иначе заблокируем счёт!»",
-            context: "Звонок с неизвестного номера.",
+            context: "Звонок. На экране — номер, похожий на номер банка.",
             multi: false,
             options: [
               { id: "pin", text: "Назвать PIN — иначе ведь заблокируют", correct: false },
               { id: "hangup", text: "Положить трубку и перезвонить в банк самому", correct: true },
               { id: "partial", text: "Назвать только номер карты, без PIN", correct: false },
             ],
-            explain: "Банк никогда не просит PIN и данные карты. Клади трубку, перезванивай сам.",
+            explain: "Если звонят тебе — не называй ни код из SMS, ни PIN, ни CVV, ни номер карты. Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
           },
           {
             id: "q-boss",
@@ -282,11 +283,12 @@ export const fakeLinkContent = {
     theory: {
       lead: "Site-urile false sunt create cu un singur scop: să vă determine să introduceți datele dvs. (login, parolă sau datele cardului) pe o pagină care arată ca una reală.",
       cards: [
-        { title: "Domeniu necunoscut", text: "Escrocii schimbă o literă sau două în adresă: go0gle.com în loc de google.com, sau instagran.com." },
-        { title: "Lipsa certificatului de securitate", text: "Uneori site-urile false nu au HTTPS (deși prezența lui nu garantează întotdeauna securitatea)." },
+        { title: "Adresă asemănătoare, dar străină", text: "Escrocii schimbă o literă sau două în adresă: go0gle.com în loc de google.com, sau instagran.com." },
+        { title: "Lacătul nu e o garanție", text: "Lacătul și https înseamnă doar că legătura e criptată. Majoritatea site-urilor false au și ele lacăt. Dacă adresa începe cu http:// fără «s» — nu introduce nimic acolo. Dar nici lacătul nu dovedește că site-ul e real: important e adresa." },
         { title: "Apel urgent", text: "Mesajele de tipul «Contul dvs. a fost spart, conectați-vă imediat» conțin adesea linkuri malițioase." },
-        { title: "Design neobișnuit", text: "Erori de aspect, logo-uri neclare, butoane nefuncționale (cu excepția butonului de conectare)." }
+        { title: "Aspectul înșală.", text: "Falsul poate arăta exact ca site-ul real. Un logo strâmb sau greșelile sunt motiv să pleci, dar un site frumos nu dovedește nimic. Verifică adresa." }
       ],
+      recovery: "Dacă ai introdus deja datele: sună imediat la bancă la numărul de pe spatele cardului și cere blocarea cardului, schimbă parola, spune-le celor apropiați. Dacă ți s-au furat bani — sună la poliție: 112.",
       rule: "Verificați mereu adresa din bara browserului înainte de a introduce datele. Dacă aveți cea mai mică îndoială, introduceți manual adresa site-ului.",
       },
       findSignals: {
@@ -297,11 +299,11 @@ export const fakeLinkContent = {
         foundCount: "Găsite: {found}/6",
         signals: [
           { id: "domain", title: "Domeniu falsificat", explain: "banca-noroc-online.com în loc de banca-noroc.md: cuvinte în plus și .com în loc de .md." },
-          { id: "no-https", title: "Lipsa conexiunii securizate", explain: "În bara de adrese lipsește lacătul: datele circulă ca text simplu." },
+          { id: "no-https", title: "Lipsa conexiunii securizate", explain: "Adresa începe cu http:// fără «s» — conexiunea nu e protejată, datele pot fi interceptate." },
           { id: "urgency", title: "Apel urgent", explain: "Bannerul te grăbește — «conectează-te în 10 minute», ca să n-ai timp să gândești." },
           { id: "logo", title: "Logo neclar", explain: "Logo-ul e încețoșat: copiat de pe site-ul real la calitate joasă." },
-          { id: "form", title: "Formularul cere date în plus", explain: "Pentru «conectare» se cer PIN-ul și CVV-ul cardului — banca nu le cere niciodată." },
-          { id: "prize", title: "Premiu-capcană", explain: "Butonul «Ridică premiul» duce la o adresă străină." },
+          { id: "form", title: "Formularul cere date în plus", explain: "Pentru intrarea în internet banking îți trebuie login, parolă și uneori un cod din SMS — dar nu PIN-ul și nu CVV-ul. PIN-ul nu se introduce pe site-uri deloc, iar CVV-ul — doar la plata unei cumpărături pe un site pe care l-ai deschis singur." },
+          { id: "prize", title: "Premiu-capcană", explain: "Banca nu împarte telefoane pe pagina de conectare. Premiul e o momeală, ca să apeși fără să te gândești." },
         ],
       },
       linkClassify: {
@@ -316,12 +318,12 @@ export const fakeLinkContent = {
         failTitle: "Phishingul te-a păcălit — analizează greșelile și mai încearcă.",
         resultCount: "Corecte: {score}/6",
         items: [
-          { id: "bank-official", url: "https://banca-noroc.md/login", context: "Adresă introdusă manual de pe site-ul oficial.", verdict: "safe", explain: "Domeniu oficial scurt .md și HTTPS — totul e curat." },
+          { id: "bank-official", url: "https://banca-noroc.md/login", context: "Ai scris singur această adresă în browser.", verdict: "safe", explain: "Adresa coincide exact cu cea oficială banca-noroc.md și ai scris-o singur. Decide adresa, nu lacătul." },
           { id: "bank-fake", url: "http://banca-noroc-online.com/login", context: "Primit prin SMS de la număr necunoscut.", verdict: "phishing", explain: "Lipsește lacătul (http), cuvinte în plus și .com în loc de .md." },
-          { id: "posta-official", url: "https://posta.md/colete", context: "Link de pe site-ul oficial al poștei.", verdict: "safe", explain: "Domeniu oficial .md, pagină obișnuită de urmărire." },
-          { id: "posta-fake", url: "https://posta-md-livrare.top/primeste-coletul", context: "SMS: «coletul e reținut, ridică-l azi».", verdict: "phishing", explain: "Zona suspectă .top, cratime și urgență — phishing clasic." },
-          { id: "search-official", url: "https://google.com", context: "Adresă introdusă manual.", verdict: "safe", explain: "Domeniu scurt cunoscut și HTTPS." },
-          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Email: «confirmă contul în 24 de ore».", verdict: "phishing", explain: "Zerouri în loc de «o» și un .com în plus — falsificare." },
+          { id: "posta-official", url: "https://posta.md/colete", context: "Link de pe site-ul oficial al poștei.", verdict: "safe", explain: "Este adresa exactă a poștei — posta.md, și ai ajuns aici de pe site-ul oficial." },
+          { id: "posta-fake", url: "https://posta-md-livrare.top/primeste-coletul", context: "SMS: «coletul e reținut, ridică-l azi».", verdict: "phishing", explain: "Adresa reală e posta.md. Aici «posta-md» e doar o parte dintr-o adresă străină, și, pe deasupra, cu terminația .top. Plus urgența — phishing clasic. Lacătul există — dar adresa e străină." },
+          { id: "search-official", url: "https://google.com", context: "Adresă introdusă manual.", verdict: "safe", explain: "Adresa exactă google.com, scrisă manual." },
+          { id: "search-fake", url: "https://g00gle-securitate.com/cont", context: "Email: «confirmă contul în 24 de ore».", verdict: "phishing", explain: "Zerouri în loc de «o» și adaosul «-securitate» — adresa reală e simplu google.com." },
         ],
       },
       dialogueReact: {
@@ -343,7 +345,7 @@ export const fakeLinkContent = {
               { id: "check", text: "Șterg SMS-ul și verific trackingul pe site-ul oficial posta.md", correct: true },
               { id: "forward", text: "Trimit mesajul prietenilor — poate îi privește și pe ei", correct: false },
             ],
-            explain: "Poșta reală nu cere plăți prin linkuri din SMS. Trackingul se verifică doar pe site-ul oficial.",
+            explain: "Nu plăti prin linkul din SMS, chiar dacă expeditorul apare ca «POSTA-MD» — numele expeditorului se falsifică ușor. Verifică singur coletul pe posta.md sau la oficiul poștal.",
           },
           {
             id: "bank-call",
@@ -354,7 +356,7 @@ export const fakeLinkContent = {
               { id: "callback", text: "Închid și sun înapoi la bancă la numărul de pe card", correct: true },
               { id: "data", text: "Dau numărul cardului, dar nu codul — doar codul e secret", correct: false },
             ],
-            explain: "Banca nu cere niciodată coduri sau date ale cardului la telefon. Regula: închizi și suni tu înapoi.",
+            explain: "Dacă te sună cineva — nu spune nici codul din SMS, nici PIN-ul, nici CVV-ul, nici numărul cardului. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
           },
           {
             id: "friend-loan",
@@ -391,7 +393,7 @@ export const fakeLinkContent = {
         resultCount: "La loc: {score}/5",
         steps: [
           { id: "stop", text: "Oprește-te: nu da clic și nu introduce date" },
-          { id: "domain", text: "Citește adresa de la stânga la dreapta: domeniul și zona" },
+          { id: "domain", text: "Citește numele site-ului — partea adresei dintre «//» și următoarea «/»: coincide literă cu literă cu cel oficial? …mai ales sfârșitul numelui înainte de primul «/»: banca-noroc.md.secure.top nu e banca-noroc.md" },
           { id: "lock", text: "Verifică lacătul și HTTPS în bara de adrese" },
           { id: "manual", text: "Intră manual prin site-ul oficial sau aplicație" },
           { id: "report", text: "Șterge mesajul și avertizează-i pe cei apropiați" },
@@ -426,32 +428,32 @@ export const fakeLinkContent = {
             options: [
               { id: "click", text: "Accesez și confirm datele", correct: false },
               { id: "calm", text: "Nu mă grăbesc: verific adresa și intru manual", correct: true },
-              { id: "share", text: "Trimit prietenilor, ca să-i avertizez", correct: false },
+              { id: "share", text: "Trimit mesajul cu linkul prietenilor — să-și verifice și ei conturile", correct: false },
             ],
-            explain: "Panica e arma escrocului. Oprește-te și verifică linkul cu calm.",
+            explain: "Panica e arma escrocului. Oprește-te și verifică linkul cu calm. E bine să-i avertizezi pe cei apropiați — dar cu vorbele tale și fără link.",
           },
           {
             id: "q-link-safe",
             title: "https://posta.md/colete",
-            context: "Adresă introdusă manual de pe site-ul oficial.",
+            context: "Ai scris singur această adresă în browser.",
             multi: false,
             options: [
               { id: "safe", text: "Link sigur", correct: true },
               { id: "phishing", text: "Link de phishing", correct: false },
             ],
-            explain: "Domeniu oficial scurt .md și HTTPS — totul e curat.",
+            explain: "Este adresa exactă a poștei — posta.md, și ai scris-o singur.",
           },
           {
             id: "q-react-bank",
             title: "«Sunt de la bancă. Spuneți PIN-ul cardului, altfel blocăm contul!»",
-            context: "Apel de la număr necunoscut.",
+            context: "Apel. Pe ecran — un număr care seamănă cu al băncii.",
             multi: false,
             options: [
               { id: "pin", text: "Spun PIN-ul — altfel blochează", correct: false },
               { id: "hangup", text: "Închid și sun eu înapoi la bancă", correct: true },
               { id: "partial", text: "Dau doar numărul cardului, fără PIN", correct: false },
             ],
-            explain: "Banca nu cere niciodată PIN-ul sau datele cardului. Închizi și suni tu înapoi.",
+            explain: "Dacă te sună cineva — nu spune nici codul din SMS, nici PIN-ul, nici CVV-ul, nici numărul cardului. Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
           },
           {
             id: "q-boss",

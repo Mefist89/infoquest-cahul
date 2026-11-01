@@ -113,7 +113,7 @@ export function FindSignalsStage({
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-background/60 px-3 py-1.5 font-mono text-xs text-muted-foreground sm:text-sm">
             <span className="relative shrink-0">
-              <Lock className="size-3.5 text-danger" aria-hidden="true" />
+              <span className="relative block" aria-hidden="true"><Lock className="size-3.5 text-danger" /><span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-45 bg-danger" /></span>
               <Hotspot zone={`${zoneWord} 2`} found={selected.has("no-https")} revealed={submitted && !selected.has("no-https")} disabled={submitted || saving} onToggle={() => toggle("no-https")} />
             </span>
             <span className="relative truncate">
@@ -149,7 +149,7 @@ export function FindSignalsStage({
               <span className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground">{locale === "ro" ? "Utilizator" : "Логин"}</span>
               <span className="rounded-lg border border-border bg-background/60 px-3 py-2 text-sm text-muted-foreground">••••••••</span>
               <span className="relative rounded-lg border border-danger/50 bg-danger/5 px-3 py-2 text-sm text-muted-foreground sm:col-span-2">
-                {locale === "ro" ? "PIN card + CVV (obligatoriu)" : "PIN карты + CVV (обязательно)"}
+                {locale === "ro" ? "PIN card + codul CVV (3 cifre de pe spatele cardului) (obligatoriu)" : "PIN карты + код CVV (3 цифры на обороте карты) (обязательно)"}
                 <Hotspot zone={`${zoneWord} 5`} found={selected.has("form")} revealed={submitted && !selected.has("form")} disabled={submitted || saving} onToggle={() => toggle("form")} />
               </span>
             </div>
