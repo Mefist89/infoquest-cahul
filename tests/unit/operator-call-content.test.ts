@@ -77,3 +77,28 @@ describe("пункт 18: ответы на угрозы босса", () => {
     expect(question.answers).not.toContain(index);
   });
 });
+
+describe("пункт 16: одинаковая сложность босса RU/RO", () => {
+  it.each(ru.final.phase3.map(question => question.id))("%s: одинаковые варианты и правильные индексы", id => {
+    const original = ru.final.phase3.find(question => question.id === id)!;
+    const translated = ro.final.phase3.find(question => question.id === id)!;
+    expect(translated).toBeDefined();
+    expect(translated.options).toHaveLength(original.options.length);
+    expect(translated.answers).toEqual(original.answers);
+    expect(new Set(original.answers).size).toBe(original.answers.length);
+    original.answers.forEach(index => {
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(index).toBeLessThan(original.options.length);
+    });
+  });
+
+  it("p3_8, p3_9 и p3_10 требуют оба правильных действия", () => {
+    for (const locale of ["ru", "ro"] as const) {
+      for (const id of ["p3_8", "p3_9", "p3_10"]) {
+        const question = operatorCallContent[locale].final.phase3.find(item => item.id === id)!;
+        expect(question.options).toHaveLength(4);
+        expect(question.answers).toHaveLength(2);
+      }
+    }
+  });
+});
