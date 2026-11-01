@@ -21,6 +21,17 @@ describe("scam-or-real: согласованность данных RU и RO", (
     expect(deal.options.find(option => option.correct)!.text).toMatch(/Прекращаю переписку|Opresc discuția/);
   });
 
+  it.each(["ru", "ro"] as const)("%s: финал требует внешние отзывы, осмотр и самостоятельно открытый сайт сети", locale => {
+    const boss = scamOrRealContent[locale].shopBattle.questions.find(question => question.id === "q-boss")!;
+    expect(boss.multi).toBe(true);
+    expect(boss.options.filter(option => option.correct).map(option => option.id)).toEqual(["address", "reviews", "return"]);
+    expect(boss.options.find(option => option.id === "address")!.text).toMatch(/на других сайтах|pe alte site-uri/);
+    expect(boss.options.find(option => option.id === "reviews")!.text).toMatch(/осмотрел товар|verificat marfa/);
+    expect(boss.options.find(option => option.id === "return")!.text).toMatch(/открыл сам|deschis singur/);
+    expect(boss.options.find(option => option.id === "timer")!.correct).toBe(false);
+    expect(boss.options.find(option => option.id === "prepay")!.text).toMatch(/личную карту|card personal/);
+  });
+
   it("классификация сохраняет ID и вердикты в обоих языках", () => {
     const expected = { "phone-half": "scam", "shop-address": "honest", "prize-fee": "scam", "sale-10": "honest", "sms-code": "scam", "bike-meet": "honest" };
     for (const content of [ru, ro]) {
