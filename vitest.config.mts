@@ -5,6 +5,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
+    server: { deps: { inline: ["next-intl"] } },
     environment: "node",
     include: ["tests/unit/**/*.test.ts"],
   },

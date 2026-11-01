@@ -28,6 +28,7 @@ import { isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
 import { ProjectMaterials } from "@/components/ProjectMaterials";
+import { rememberLocale } from "@/lib/locale-cookie";
 import { SiteFooter } from "@/components/SiteFooter";
 import {
   AiAssistantSection,
@@ -282,8 +283,9 @@ export default function HomePage() {
   }, []);
 
   const setLang = (nextLang: Lang) => {
+    rememberLocale(nextLang);
     if (nextLang === lang) return;
-    window.localStorage.setItem("infoquest.lang", nextLang);
+    try { window.localStorage.setItem("infoquest.lang", nextLang); } catch { /* Cookies still preserve the selection. */ }
     router.push(`/${nextLang}`);
   };
 

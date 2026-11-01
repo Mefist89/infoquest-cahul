@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 import {
   Activity,
   ArrowLeft,
@@ -128,7 +129,7 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
           <div className="mt-5 hidden lg:mt-auto lg:block lg:pt-5">
             <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
               <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">
-                {(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}
+                {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
               </nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
@@ -140,7 +141,7 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
             <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
             <div className="flex items-center gap-2 lg:hidden">
               <Link href={`/${locale}/profile`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><UserCog className="size-4" aria-hidden="true" /></Link>
-              <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <Link key={language} href={`/${language}/admin${sectionPath}`} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</Link>)}</nav>
+              <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}</nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
           </header>

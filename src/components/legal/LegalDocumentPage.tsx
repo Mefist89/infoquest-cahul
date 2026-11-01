@@ -1,5 +1,6 @@
 import { ArrowLeft, ExternalLink, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 
 import type { LegalDocument, LegalKind, LegalLocale } from "@/data/legal-content";
 
@@ -21,7 +22,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
 
           <nav className="ml-auto flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((item) => (
-              <Link
+              <LocaleSwitch locale={item}
                 key={item}
                 href={`/${item}/${kind}`}
                 aria-current={locale === item ? "page" : undefined}
@@ -32,7 +33,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
                 }`}
               >
                 {item}
-              </Link>
+              </LocaleSwitch>
             ))}
           </nav>
         </div>
@@ -110,9 +111,9 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
           <span>© 2026 InfoQuest</span>
-          <Link href={`/${alternateLocale}/${kind}`} className="focus-ring rounded font-semibold text-neon hover:text-foreground">
+          <LocaleSwitch locale={alternateLocale} href={`/${alternateLocale}/${kind}`} className="focus-ring rounded font-semibold text-neon hover:text-foreground">
             {alternateLocale.toUpperCase()}
-          </Link>
+          </LocaleSwitch>
         </div>
       </main>
     </div>

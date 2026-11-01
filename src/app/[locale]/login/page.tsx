@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 import { ArrowLeft, Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 
@@ -70,14 +71,14 @@ export default async function LoginPage({
           </Link>
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((language) => (
-              <Link
+              <LocaleSwitch locale={language}
                 key={language}
                 href={`/${language}/login`}
                 aria-current={locale === language ? "page" : undefined}
                 className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-bold uppercase transition ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
                 {language}
-              </Link>
+              </LocaleSwitch>
             ))}
           </nav>
         </header>

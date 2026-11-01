@@ -8,7 +8,7 @@ import {requestIp, hashIp} from './lib/request-ip';
 const handleI18nRouting = createMiddleware(routing);
 
 function requestLocale(request: NextRequest) {
-  return request.nextUrl.pathname.startsWith('/ro') ? 'ro' : 'ru';
+  return request.nextUrl.pathname.startsWith('/ru') ? 'ru' : 'ro';
 }
 
 function copySessionCookies(source: NextResponse, target: NextResponse) {
@@ -35,7 +35,6 @@ export default async function proxy(request: NextRequest) {
   }
 
   const response = handleI18nRouting(request);
-
   copySessionCookies(authResponse, response);
   for (const header of ['cache-control', 'expires', 'pragma']) {
     const value = authResponse.headers.get(header);
