@@ -318,7 +318,8 @@ export const operatorCallContent = {
           situation: "Ты продиктовал код из SMS",
           steps: [
             { id: "s1", text: "Завершить разговор" },
-            { id: "s5", text: "Позвонить в банк (номер на обороте карты) и оператору (официальный номер)" },
+            { id: "s6", text: "Попросить оператора запретить платные услуги и переводы с баланса." },
+            { id: "s5", text: "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта." },
             { id: "s4", text: "Сменить пароли" },
             { id: "s7", text: "Сообщить в полицию (112)" }
           ]
@@ -727,7 +728,8 @@ export const operatorCallContent = {
           situation: "Ai dictat codul din SMS",
           steps: [
             { id: "s1", text: "Încheiați apelul" },
-            { id: "s5", text: "Sunați la bancă (numărul de pe spatele cardului) și la operator (numărul oficial)" },
+            { id: "s6", text: "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold." },
+            { id: "s5", text: "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial." },
             { id: "s4", text: "Schimbați parolele" },
             { id: "s7", text: "Anunțați poliția (112)" }
           ]

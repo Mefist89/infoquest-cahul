@@ -10,8 +10,8 @@ describe("согласованность данных operator-call RU/RO", () =
       id: level.id, steps: level.steps.map(step => step.id),
     }));
     expect(structure(ro.ordering)).toEqual(structure(ru.ordering));
-    expect(ru.ordering.levels[4].steps.map(step => step.id)).toEqual(["s1", "s5", "s4", "s7"]);
-    expect(ro.ordering.levels[4].steps.map(step => step.id)).toEqual(["s1", "s5", "s4", "s7"]);
+    expect(ru.ordering.levels[4].steps.map(step => step.id)).toEqual(["s1", "s6", "s5", "s4", "s7"]);
+    expect(ro.ordering.levels[4].steps.map(step => step.id)).toEqual(["s1", "s6", "s5", "s4", "s7"]);
   });
 
   it.each(ru.final.phase2.map(question => question.id))("согласует число вариантов и правильный ответ блица %s", id => {
@@ -120,7 +120,7 @@ describe("пункты 14 и 21: согласованные последоват
     const levels = operatorCallContent[locale].ordering.levels;
     expect(levels[0].steps.map(step => step.id)).toEqual(["s2", "s1", "s3"]);
     expect(levels[3].steps.map(step => step.id)).toEqual(["s1", "s2", "s3", "s5", "s6"]);
-    expect(levels[4].steps.map(step => step.id)).toEqual(["s1", "s5", "s4", "s7"]);
+    expect(levels[4].steps.map(step => step.id)).toEqual(["s1", "s6", "s5", "s4", "s7"]);
     expect(levels[4].situation).toBeTruthy();
     expect(levels.map(level => level.time)).toEqual([45, 53, 60, 68, 83]);
     levels.forEach(level => expect(new Set(level.steps.map(step => step.id)).size).toBe(level.steps.length));
@@ -140,4 +140,17 @@ describe("пункт 17: перестановка не меняет смысл �
       expect(new Set(content.phase3.filter(question => question.answers.length === 1).map(question => question.answers[0])).size).toBeGreaterThan(1);
     });
   }
+});
+
+describe("пункт 3: отдельные обращения к оператору и банку", () => {
+  it.each([
+    ["ru", "Попросить оператора запретить платные услуги и переводы с баланса.", "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта."],
+    ["ro", "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold.", "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial."],
+  ] as const)("%s: восстанавливает s6 оператора и сохраняет s5 банка", (locale, operatorText, bankText) => {
+    const level = operatorCallContent[locale].ordering.levels[4];
+    expect(level.steps).toHaveLength(5);
+    expect(level.steps.find(step => step.id === "s6")!.text).toBe(operatorText);
+    expect(level.steps.find(step => step.id === "s5")!.text).toBe(bankText);
+    expect(level.time).toBe(83);
+  });
 });
