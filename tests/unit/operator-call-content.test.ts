@@ -61,3 +61,19 @@ describe("пункт 12: понятные улики вместо аватара
     expect(questions.find(item => item.id === "p1_9")!.correctTargets).toEqual(["name", "accountType"]);
   });
 });
+
+describe("пункт 18: ответы на угрозы босса", () => {
+  it.each([
+    ["ru", "Положу трубку и сам позвоню в полицию по 112."],
+    ["ro", "Închid și sun singur la poliție, la 112."],
+  ] as const)("%s: правильный ответ p3_5 завершает разговор", (locale, text) => {
+    const question = operatorCallContent[locale].final.phase3.find(item => item.id === "p3_5")!;
+    expect(question.answers.map(index => question.options[index])).toContain(text);
+  });
+  it("p3_10 не принимает согласие выполнить требования мошенника", () => {
+    const question = ru.final.phase3.find(item => item.id === "p3_10")!;
+    const index = question.options.findIndex(option => option === "Сделаю, как скажете, только не отключайте!");
+    expect(index).toBeGreaterThanOrEqual(0);
+    expect(question.answers).not.toContain(index);
+  });
+});
