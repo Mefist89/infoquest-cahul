@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateRescueOrder } from "@/features/modules/runner/rescue-order";
+import { evaluateRescueOrder } from "@/components/modules/hacked-account/rescue-order-scoring";
 import { hackedAccountContent } from "@/data/hacked-account";
 
 const required = ["password", "sessions", "audit", "lock", "friends"];
@@ -9,15 +9,15 @@ function permutations(items: string[]): string[][] {
 }
 
 describe("порядок спасения аккаунта", () => {
-  it("засчитывает все 24 порядка с паролем первым, остальные 96 отклоняет", () => {
+  it("для всех 120 перестановок считает точные позиции и сохраняет порог 4/5", () => {
     let accepted = 0;
     for (const order of permutations(required)) {
       const result = evaluateRescueOrder(order, required);
-      const passwordFirst = order[0] === "password";
-      expect(result).toEqual({ passed: passwordFirst, correct: passwordFirst ? 5 : 0, total: 5 });
+      const correct = order.reduce((count, id, position) => count + Number(required[position] === id), 0);
+      expect(result).toEqual({ passed: correct >= 4, correct, total: 5 });
       if (result.passed) accepted++;
     }
-    expect(accepted).toBe(24);
+    expect(accepted).toBe(1);
   });
 
   it.each([
@@ -34,6 +34,6 @@ describe("порядок спасения аккаунта", () => {
     const content = hackedAccountContent[locale];
     expect(content.rescueOrder.steps.map(step => step.id)).toEqual(required);
     expect(content.recoveryDialogue.steps.map(step => step.id)).toEqual(["first", ...required.slice(1)]);
-    expect(evaluateRescueOrder(["password", "audit", "sessions", "friends", "lock"], content.rescueOrder.steps.map(step => step.id))).toEqual({ passed: true, correct: 5, total: 5 });
+    expect(evaluateRescueOrder(["password", "audit", "sessions", "friends", "lock"], content.rescueOrder.steps.map(step => step.id))).toEqual({ passed: false, correct: 1, total: 5 });
   });
 });

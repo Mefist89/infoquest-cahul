@@ -5,7 +5,7 @@ import { Check, ListOrdered, X } from "lucide-react";
 
 import type { hackedAccountContent } from "@/data/hacked-account";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
-import { evaluateRescueOrder } from "@/features/modules/runner/rescue-order";
+import { evaluateRescueOrder } from "./rescue-order-scoring";
 
 type RescueOrderContent =
   | (typeof hackedAccountContent)["ru"]["rescueOrder"]
@@ -37,7 +37,6 @@ export function RescueOrderStage({
   const byId = useMemo(() => new Map<string, (typeof content.steps)[number]>(content.steps.map((step) => [step.id, step])), [content]);
 
   const result = evaluateRescueOrder(chosen, correctOrder);
-  const reviewOrder = result.passed ? chosen : correctOrder;
   const complete = chosen.length === STEP_COUNT;
 
   function toggle(id: string) {
@@ -143,8 +142,8 @@ export function RescueOrderStage({
             </p>
             <p className="mt-1 text-sm font-bold text-foreground">{content.resultCount.replace("{score}", String(result.correct))}</p>
             <ol className="mt-4 grid gap-2">
-              {reviewOrder.map((id, position) => {
-                const hit = result.passed;
+              {correctOrder.map((id, position) => {
+                const hit = chosen[position] === id;
                 return (
                   <li key={id} className={`flex items-center gap-3 rounded-xl border p-3 text-sm ${hit ? "border-success/40 bg-success/5" : "border-border bg-background/40"}`}>
                     <span aria-hidden="true" className={`grid size-7 shrink-0 place-items-center rounded-lg font-black ${hit ? "bg-success text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>

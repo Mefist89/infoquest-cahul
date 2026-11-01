@@ -186,13 +186,13 @@ export const hackedAccountContent = {
     },
     rescueOrder: {
       prompt: "Собери правильный порядок спасения взломанного аккаунта: нажимай шаги по очереди.",
-      passNote: "Можно и в другом порядке, главное — сначала пароль.",
+      passNote: "Нужно минимум 4 шага из 5 на своих местах.",
       yourOrder: "Твой порядок",
       available: "Шаги",
       tapToRemove: "Нажми на шаг, чтобы убрать его.",
       successTitle: "Аккаунт спасён! Порядок верный.",
       failTitle: "Порядок перепутан — посмотри верный алгоритм и попробуй ещё.",
-      resultCount: "{score}/5",      steps: [
+      resultCount: "На месте: {score}/5",      steps: [
         { id: "password", text: "Сменить пароль со своего телефона или компьютера, в котором нет вирусов" },
         { id: "sessions", text: "Выйти из аккаунта на всех чужих устройствах" },
         { id: "audit", text: "Проверь почту и телефон для восстановления, удали чужие приложения" },
@@ -457,13 +457,13 @@ export const hackedAccountContent = {
     },
     rescueOrder: {
       prompt: "Construiește ordinea corectă de salvare a unui cont spart: apasă pașii pe rând.",
-      passNote: "Se poate și în altă ordine, important e să începi cu parola.",
+      passNote: "Ai nevoie de cel puțin 4 pași din 5 la locurile lor.",
       yourOrder: "Ordinea ta",
       available: "Pași",
       tapToRemove: "Apasă pe un pas ca să-l scoți.",
       successTitle: "Cont salvat! Ordinea e corectă.",
       failTitle: "Ordinea e încurcată — privește algoritmul corect și mai încearcă.",
-      resultCount: "{score}/5",
+      resultCount: "La loc: {score}/5",
       steps: [
         { id: "password", text: "Schimb parola de pe telefonul sau calculatorul meu, fără viruși" },
         { id: "sessions", text: "Ies din cont pe toate dispozitivele străine" },
