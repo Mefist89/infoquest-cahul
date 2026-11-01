@@ -4,6 +4,11 @@ export type FakeLinkLocale = "ru" | "ro";
 
 export const fakeLinkContent = {
   ru: {
+    guestRules: [
+      "Проверяй точный адрес сайта. Похожее название может вести на другой сайт.",
+      "HTTPS означает шифрование соединения, но не подтверждает честность владельца сайта.",
+      "Для проверки сообщения открой официальный сайт самостоятельно, а не через присланную ссылку.",
+    ],
     result: {
       title: "Модуль пройден!",
       xp: "XP модуля: {xp} из 100",
@@ -250,6 +255,11 @@ export const fakeLinkContent = {
       },
     },
     ro: {
+      guestRules: [
+        "Verifică adresa exactă a site-ului. Un nume asemănător poate duce la alt site.",
+        "HTTPS înseamnă că legătura este criptată, dar nu confirmă că proprietarul site-ului este de încredere.",
+        "Pentru a verifica mesajul, deschide singur site-ul oficial, nu prin linkul primit.",
+      ],
     result: {
       title: "Modul finalizat!",
       xp: "XP modul: {xp} din 100",

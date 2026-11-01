@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale, section } = await params;
   if (!isProfileSection(section) || section === "overview") return {};
   const lang = locale === "ro" ? "ro" : "ru";
-  return { title: `${titles[lang][section]} — InfoQuest Dashboard` };
+  return { title: titles[lang][section] };
 }
 
 export default async function ProfileSectionPage({ params }: { params: Promise<{ locale: string; section: string }> }) {

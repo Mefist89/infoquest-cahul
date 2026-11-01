@@ -10,5 +10,5 @@ export function requireRouteLocale(locale: string): RouteStateLocale {
 
 export function routeStateMetadata(locale: string, title: { ru: string; ro: string }, description: { ru: string; ro: string }): Metadata {
   const lang: RouteStateLocale = locale === "ro" ? "ro" : "ru";
-  return { title: `${title[lang]} — InfoQuest`, description: description[lang] };
+  return { title: title[lang], description: description[lang] };
 }

@@ -18,6 +18,7 @@ export default function Loading() {
   return (
     <div role="status" aria-live="polite">
       <RouteBoundaryCard
+        headingTag="p"
         busy
         icon={<LoaderCircle className="size-10 animate-spin" aria-hidden="true" />}
         eyebrow={text.eyebrow}

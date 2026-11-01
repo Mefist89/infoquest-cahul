@@ -1,5 +1,8 @@
+import { ModuleLanding, ModuleStructuredData } from "@/components/ModuleLanding";
+import { moduleSeo } from "@/data/seo";
+import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { OperatorCallModule } from "@/components/modules/OperatorCallModule";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -17,11 +20,8 @@ function isLocale(locale: string): locale is OperatorLocale {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const isRo = locale === "ro";
-  return {
-    title: `${isRo ? "Apelul fals de la operator" : "Фальшивый звонок оператора"} — InfoQuest`,
-    description: isRo ? "Modul interactiv despre recunoașterea fraudelor telefonice." : "Интерактивный модуль о распознавании телефонного мошенничества.",
-  };
+  const lang = locale === "ru" ? "ru" : "ro";
+  return publicMetadata(moduleSeo["operator-call"][lang], "/modules/operator-call", lang);
 }
 
 export default async function OperatorCallPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -30,7 +30,7 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData.user) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/modules/operator-call`)}`);
+  if (authError || !authData.user) return <ModuleLanding module="operator-call" locale={locale} rules={operatorCallContent[locale].guestRules} />;
 
   const [{ data: stages }, { data: allModuleProgress }, { data: profile }] = await Promise.all([
     supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.operatorCall).order("stage_index"),
@@ -45,6 +45,7 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
 
   return (
     <>
+      <ModuleStructuredData module="operator-call" locale={locale} />
       <OperatorCallModule
         badge={currentModule.badge[locale]}
         nextModule={nextModule}

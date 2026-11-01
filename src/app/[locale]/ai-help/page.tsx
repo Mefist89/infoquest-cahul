@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const lang: AiLocale = locale === "ru" ? "ru" : "ro";
   return {
-    title: lang === "ro" ? "Ajutor online AI — InfoQuest" : "Онлайн-помощник AI — InfoQuest",
+    title: lang === "ro" ? "Ajutor online AI" : "Онлайн-помощник AI",
     description: lang === "ro" ? "Discută cu Chrono despre siguranța digitală." : "Поговорите с Chrono о цифровой безопасности.",
   };
 }

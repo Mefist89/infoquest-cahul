@@ -1,5 +1,8 @@
+import { ModuleLanding, ModuleStructuredData } from "@/components/ModuleLanding";
+import { moduleSeo } from "@/data/seo";
+import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { FakeLinkModule } from "@/components/modules/FakeLinkModule";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -17,11 +20,8 @@ function isLocale(locale: string): locale is FakeLinkLocale {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const isRo = locale === "ro";
-  return {
-    title: `${isRo ? "Capcana linkului fals" : "Ловушка фальшивой ссылки"} — InfoQuest`,
-    description: isRo ? "Modul interactiv despre phishing." : "Интерактивный модуль о фишинге.",
-  };
+  const lang = locale === "ru" ? "ru" : "ro";
+  return publicMetadata(moduleSeo["fake-link"][lang], "/modules/fake-link", lang);
 }
 
 export default async function FakeLinkPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -30,7 +30,7 @@ export default async function FakeLinkPage({ params }: { params: Promise<{ local
 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData.user) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/modules/fake-link`)}`);
+  if (authError || !authData.user) return <ModuleLanding module="fake-link" locale={locale} rules={fakeLinkContent[locale].guestRules} />;
 
   const [{ data: stages }, { data: allModuleProgress }, { data: profile }] = await Promise.all([
     supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.fakeLink).order("stage_index"),
@@ -45,6 +45,7 @@ export default async function FakeLinkPage({ params }: { params: Promise<{ local
 
   return (
     <>
+      <ModuleStructuredData module="fake-link" locale={locale} />
       <FakeLinkModule
         badge={currentModule.badge[locale]}
         nextModule={nextModule}

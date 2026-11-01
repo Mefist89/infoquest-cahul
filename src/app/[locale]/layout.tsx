@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { Orbitron, Rubik } from "next/font/google";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { siteSeo } from "@/data/seo";
 import { SITE_ORIGIN } from "@/lib/site";
 
 const orbitron = Orbitron({
@@ -14,22 +15,24 @@ const rubik = Rubik({
   variable: "--font-rubik",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_ORIGIN),
-  applicationName: "InfoQuest",
-  title: {
-    default: "InfoQuest",
-    template: "%s | InfoQuest",
-  },
-  description: "Bilingual digital safety education for the Cahul community.",
-  openGraph: {
-    type: "website",
-    siteName: "InfoQuest",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const lang = locale === "ru" ? "ru" : "ro";
+  return {
+    metadataBase: new URL(SITE_ORIGIN),
+    applicationName: "InfoQuest",
+    title: { default: "InfoQuest", template: "%s | InfoQuest" },
+    description: siteSeo[lang].description,
+    openGraph: {
+      type: "website",
+      siteName: "InfoQuest",
+      locale: siteSeo[lang].locale,
+      alternateLocale: siteSeo[lang].alternateLocale,
+    },
+    twitter: { card: "summary_large_image" },
+    ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
+  };
+}
 
 export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;

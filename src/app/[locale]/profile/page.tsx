@@ -160,7 +160,7 @@ export function isProfileSection(section: string): section is ProfileSection {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const lang: ProfileLocale = locale === "ro" ? "ro" : "ru";
-  return { title: `${copy[lang].title} — InfoQuest`, description: copy[lang].description };
+  return { title: copy[lang].title, description: copy[lang].description };
 }
 
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ ai?: string | string[] }> }) {

@@ -1,9 +1,10 @@
+import { publicPageSeo } from "@/data/seo";
+import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { LegalDocumentPage } from "@/components/legal/LegalDocumentPage";
 import { legalContent, type LegalLocale } from "@/data/legal-content";
-import { localizedAlternates } from "@/lib/site";
 
 type PageProps = { params: Promise<{ locale: string }> };
 
@@ -14,14 +15,7 @@ function getLocale(locale: string): LegalLocale {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const locale = getLocale((await params).locale);
-  return {
-    title: locale === "ro" ? "Politica de confidențialitate — InfoQuest" : "Политика конфиденциальности — InfoQuest",
-    description:
-      locale === "ro"
-        ? "Cum protejează InfoQuest datele și confidențialitatea utilizatorilor."
-        : "Как InfoQuest защищает данные и конфиденциальность пользователей.",
-    alternates: localizedAlternates("/privacy", locale),
-  };
+  return publicMetadata(publicPageSeo.privacy[locale], "/privacy", locale);
 }
 
 export default async function PrivacyPage({ params }: PageProps) {

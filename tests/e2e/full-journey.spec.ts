@@ -1,4 +1,40 @@
 import { expect, test } from "@playwright/test";
+import { moduleSeo } from "../../src/data/seo";
+
+for (const locale of ["ru", "ro"] as const) {
+  test(`${locale}: гостевые описания модулей доступны без входа и содержат SEO`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const moduleSlug of Object.keys(moduleSeo) as (keyof typeof moduleSeo)[]) {
+      const content = moduleSeo[moduleSlug][locale];
+      const path = `/${locale}/modules/${moduleSlug}`;
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      expect(await response!.text()).toContain(content.description);
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(content.title);
+      await expect(page.locator("article li")).toHaveCount(3);
+      await expect(page).toHaveTitle(`${content.title} | InfoQuest`);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`${path}$`));
+      await expect(page.locator('link[hreflang="x-default"]')).toHaveAttribute("href", new RegExp(`/ro/modules/${moduleSlug}$`));
+      await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", content.title);
+      await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", content.title);
+      await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", new RegExp(`/modules/${moduleSlug}/opengraph-image/`));
+      const imageUrl = new URL((await page.locator('meta[property="og:image"]').getAttribute("content"))!);
+      const preview = await page.request.get(`${imageUrl.pathname}${imageUrl.search}`);
+      expect(preview.status()).toBe(200);
+      expect((await preview.body()).subarray(1, 4).toString()).toBe("PNG");
+      const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
+      expect(JSON.parse(structuredData!)).toMatchObject({ "@type": "Course", name: content.title, isAccessibleForFree: true });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      const start = page.getByRole("link", { name: locale === "ru" ? "Начать — войти" : "Începe — intră în cont", exact: true });
+      await expect(start).toHaveAttribute("href", `/${locale}/login?next=${encodeURIComponent(path)}`);
+      await start.click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/login\\?next=`));
+      await expect(page.getByRole("button", { name: locale === "ru" ? "Продолжить с Google" : "Continuă cu Google" })).toBeVisible();
+    }
+  });
+}
 
 test.describe("публичный путь пользователя", () => {
   test("на телефоне кнопка «Наверх» возвращает к началу главной", async ({ page }) => {

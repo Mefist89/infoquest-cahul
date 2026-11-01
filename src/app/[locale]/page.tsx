@@ -1,27 +1,14 @@
 import type { Metadata } from "next";
 
+import { siteSeo } from "@/data/seo";
 import HomePage from "@/components/HomePage";
+import { jsonLd } from "@/lib/seo";
 import { absoluteUrl, localizedAlternates } from "@/lib/site";
-
-const metadataContent = {
-  ro: {
-    title: "InfoQuest — Scutul comunității digitale",
-    description: "Joc educațional bilingv despre siguranță digitală, fraudă, dezinformare și protecția comunității.",
-    locale: "ro_MD",
-    alternateLocale: "ru_MD",
-  },
-  ru: {
-    title: "InfoQuest — Щит цифрового сообщества",
-    description: "Двуязычная образовательная игра о цифровой безопасности, мошенничестве, дезинформации и защите сообщества.",
-    locale: "ru_MD",
-    alternateLocale: "ro_MD",
-  },
-} as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const lang = locale === "ro" ? "ro" : "ru";
-  const content = metadataContent[lang];
+  const content = siteSeo[lang];
 
   return {
     title: { absolute: content.title },
@@ -44,6 +31,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export default function Page() {
-  return <HomePage />;
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const lang = locale === "ru" ? "ru" : "ro";
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({
+      "@context": "https://schema.org", "@type": "Organization", name: "InfoQuest",
+      url: absoluteUrl(`/${lang}`), description: siteSeo[lang].description, inLanguage: lang,
+    }) }} />
+    <HomePage />
+  </>;
 }

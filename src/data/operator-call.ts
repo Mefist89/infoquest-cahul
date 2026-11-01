@@ -47,6 +47,11 @@ type OperatorFinalContent = {
 
 export const operatorCallContent = {
   ru: {
+    guestRules: [
+      "Код из SMS вводишь только ты сам — на сайте или в приложении, которые открыл сам. Кто просит назвать или переслать код — мошенник.",
+      "Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта.",
+      "Если торопят или пугают блокировкой, остановись и проверь информацию самостоятельно.",
+    ],
     result: {
       title: "Модуль пройден!",
       xp: "XP модуля: {xp} из 100",
@@ -391,6 +396,11 @@ export const operatorCallContent = {
     } satisfies OperatorFinalContent,
   },
   ro: {
+    guestRules: [
+      "Codul din SMS îl introduci doar tu, pe site-ul sau în aplicația pe care le-ai deschis singur. Cine îți cere să-i spui sau să-i trimiți codul este un escroc.",
+      "Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial.",
+      "Dacă te grăbesc sau te sperie cu blocarea contului, oprește-te și verifică singur informația.",
+    ],
     result: {
       title: "Modul finalizat!",
       xp: "XP modul: {xp} din 100",

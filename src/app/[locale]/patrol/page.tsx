@@ -1,3 +1,5 @@
+import { publicPageSeo } from "@/data/seo";
+import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
@@ -12,11 +14,8 @@ function isLocale(locale: string): locale is "ru" | "ro" {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: `${locale === "ro" ? "Patrula orașului digital" : "Патруль цифрового города"} — InfoQuest`,
-    description:
-      locale === "ro" ? "Mini-joc 2D: patrulează orașul și oprește amenințările." : "Мини-игра 2D: патрулируй город и останавливай угрозы.",
-  };
+  const lang = locale === "ru" ? "ru" : "ro";
+  return publicMetadata(publicPageSeo.patrol[lang], "/patrol", lang);
 }
 
 export default async function PatrolPage({ params }: { params: Promise<{ locale: string }> }) {

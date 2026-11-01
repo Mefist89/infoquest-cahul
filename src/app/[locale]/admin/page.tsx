@@ -43,7 +43,7 @@ export function isAdminSection(section: string): section is AdminSection {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const lang: AdminLocale = locale === "ro" ? "ro" : "ru";
-  return { title: `Dashboard — InfoQuest`, description: copy[lang].description };
+  return { title: "Dashboard", description: copy[lang].description };
 }
 
 export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {

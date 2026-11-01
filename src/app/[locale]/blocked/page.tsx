@@ -27,7 +27,7 @@ const copy = {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const lang: BlockedLocale = locale === "ro" ? "ro" : "ru";
-  return { title: `${copy[lang].title} — InfoQuest`, description: copy[lang].description };
+  return { title: copy[lang].title, description: copy[lang].description };
 }
 
 export default async function BlockedPage({ params }: { params: Promise<{ locale: string }> }) {

@@ -1,5 +1,8 @@
+import { ModuleLanding, ModuleStructuredData } from "@/components/ModuleLanding";
+import { moduleSeo } from "@/data/seo";
+import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { ScamOrRealModule } from "@/components/modules/ScamOrRealModule";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -17,11 +20,8 @@ function isLocale(locale: string): locale is ScamOrRealLocale {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const isRo = locale === "ro";
-  return {
-    title: `${isRo ? "Scam sau ofertă reală?" : "Скам или реальное предложение?"} — InfoQuest`,
-    description: isRo ? "Modul interactiv despre escrocherii la cumpărături." : "Интерактивный модуль о мошенничестве при покупках.",
-  };
+  const lang = locale === "ru" ? "ru" : "ro";
+  return publicMetadata(moduleSeo["scam-or-real"][lang], "/modules/scam-or-real", lang);
 }
 
 export default async function ScamOrRealPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -30,7 +30,7 @@ export default async function ScamOrRealPage({ params }: { params: Promise<{ loc
 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData.user) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/modules/scam-or-real`)}`);
+  if (authError || !authData.user) return <ModuleLanding module="scam-or-real" locale={locale} rules={scamOrRealContent[locale].guestRules} />;
 
   const [{ data: stages }, { data: allModuleProgress }, { data: profile }] = await Promise.all([
     supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.scamOrReal).order("stage_index"),
@@ -45,6 +45,7 @@ export default async function ScamOrRealPage({ params }: { params: Promise<{ loc
 
   return (
     <>
+      <ModuleStructuredData module="scam-or-real" locale={locale} />
       <ScamOrRealModule
         badge={currentModule.badge[locale]}
         nextModule={nextModule}

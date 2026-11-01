@@ -1,5 +1,8 @@
+import { ModuleLanding, ModuleStructuredData } from "@/components/ModuleLanding";
+import { moduleSeo } from "@/data/seo";
+import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { HackedAccountModule } from "@/components/modules/HackedAccountModule";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -17,11 +20,8 @@ function isLocale(locale: string): locale is HackedAccountLocale {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const isRo = locale === "ro";
-  return {
-    title: `${isRo ? "Contul compromis" : "Взломанный аккаунт"} — InfoQuest`,
-    description: isRo ? "Modul interactiv despre conturi compromise." : "Интерактивный модуль о взломе аккаунтов.",
-  };
+  const lang = locale === "ru" ? "ru" : "ro";
+  return publicMetadata(moduleSeo["hacked-account"][lang], "/modules/hacked-account", lang);
 }
 
 export default async function HackedAccountPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -30,7 +30,7 @@ export default async function HackedAccountPage({ params }: { params: Promise<{ 
 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData.user) redirect(`/${locale}/login?next=${encodeURIComponent(`/${locale}/modules/hacked-account`)}`);
+  if (authError || !authData.user) return <ModuleLanding module="hacked-account" locale={locale} rules={hackedAccountContent[locale].guestRules} />;
 
   const [{ data: stages }, { data: allModuleProgress }, { data: profile }] = await Promise.all([
     supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.hackedAccount).order("stage_index"),
@@ -45,6 +45,7 @@ export default async function HackedAccountPage({ params }: { params: Promise<{ 
 
   return (
     <>
+      <ModuleStructuredData module="hacked-account" locale={locale} />
       <HackedAccountModule
         badge={currentModule.badge[locale]}
         nextModule={nextModule}

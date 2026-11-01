@@ -1,6 +1,9 @@
 import { ImageResponse } from "next/og";
+import { siteSeo } from "@/data/seo";
 
-export const alt = "InfoQuest digital safety education";
+export function generateImageMetadata({ params }: { params: { locale: string } }) {
+  return [{ id: "default", size, contentType, alt: siteSeo[params.locale === "ru" ? "ru" : "ro"].title }];
+}
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

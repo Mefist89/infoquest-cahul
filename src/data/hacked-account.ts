@@ -4,6 +4,11 @@ export type HackedAccountLocale = "ru" | "ro";
 
 export const hackedAccountContent = {
   ru: {
+    guestRules: [
+      "Восстанавливай доступ через настройки или форму восстановления официального сервиса.",
+      "Проверь пароль, резервную почту и открытые входы на устройствах.",
+      "Предупреди друзей другим способом: взломщик может писать им от твоего имени.",
+    ],
     result: {
       title: "Модуль пройден!",
       xp: "XP модуля: {xp} из 100",
@@ -284,6 +289,11 @@ export const hackedAccountContent = {
     },
   },
   ro: {
+    guestRules: [
+      "Recuperează accesul prin setările sau formularul de recuperare al serviciului oficial.",
+      "Verifică parola, adresa de e-mail de rezervă și conectările deschise pe dispozitive.",
+      "Anunță prietenii prin alt mijloc: atacatorul le poate scrie în numele tău.",
+    ],
     result: {
       title: "Modul finalizat!",
       xp: "XP modul: {xp} din 100",

@@ -4,6 +4,11 @@ export type ScamOrRealLocale = "ru" | "ro";
 
 export const scamOrRealContent = {
   ru: {
+    guestRules: [
+      "Ищи отзывы о продавце на других сайтах, а не только на его странице.",
+      "При покупке у незнакомого частного продавца договорись об оплате после осмотра товара, без предоплаты.",
+      "Для личной встречи выбери людное место и не ходи один; школьнику стоит идти со взрослым.",
+    ],
     result: {
       title: "Модуль пройден!",
       xp: "XP модуля: {xp} из 100",
@@ -248,6 +253,11 @@ export const scamOrRealContent = {
     },
   },
   ro: {
+    guestRules: [
+      "Caută recenzii despre vânzător pe alte site-uri, nu doar pe pagina lui.",
+      "Când cumperi de la o persoană necunoscută, stabilește plata după verificarea mărfii, fără avans.",
+      "Pentru întâlnire, alege un loc public și nu merge singur; un elev ar trebui să meargă cu un adult.",
+    ],
     result: {
       title: "Modul finalizat!",
       xp: "XP modul: {xp} din 100",
