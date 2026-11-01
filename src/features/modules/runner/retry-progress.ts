@@ -83,3 +83,12 @@ export function toggleOrderSlot(slots: OrderSlots, locked: ReadonlySet<number>, 
   if (position < 0) return slots;
   return slots.map((value, index) => index === position ? existing >= 0 ? null : id : value);
 }
+
+/** Called on Continue, never when the answer is first revealed. */
+export function continueRetryBattle(progress: RetryProgress, lives: number, bossHp: number) {
+  if (!progress.feedback) return { progress, outcome: "playing" as const };
+  if (lives <= 0) return { progress, outcome: "gameover" as const };
+  if (bossHp <= 0) return { progress, outcome: "win" as const };
+  const next = advanceRetryRound(progress);
+  return { progress: next, outcome: next.index >= next.questionIds.length ? "fail" as const : "playing" as const };
+}

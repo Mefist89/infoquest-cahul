@@ -3,6 +3,7 @@ import {
   answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore,
   advanceRetryRound, retryFailedQuestions,
   retainCorrectOrder, toggleOrderSlot,
+  continueRetryBattle,
 } from "@/features/modules/runner/retry-progress";
 
 const answer = (correct: boolean) => ({ correct, explanation: "Почему так" });
@@ -207,5 +208,19 @@ describe("повтор неверного окончания порядка ша
     expect(result.locked.size).toBe(length);
     expect(result.slots.slice(length).every(id => id === null)).toBe(true);
     expect(result.slots.slice(0, length)).toEqual(chosen.slice(0, length));
+  });
+});
+
+describe("финал: продолжение после объяснения", () => {
+  it("финал проверяет жизни и победу только при продолжении после объяснения", () => {
+    let progress = createRetryProgress(["last"]);
+    expect(continueRetryBattle(progress, 0, 4).outcome).toBe("playing");
+    progress = answerRetryQuestion(progress, false, "последняя ошибка");
+    expect(progress.feedback?.explanation).toBe("последняя ошибка");
+    expect(continueRetryBattle(progress, 0, 4).outcome).toBe("gameover");
+    expect(continueRetryBattle(progress, 1, 4).outcome).toBe("fail");
+    const won = answerRetryQuestion(createRetryProgress(["last"]), true, "последний верный ответ");
+    expect(won.feedback?.explanation).toBe("последний верный ответ");
+    expect(continueRetryBattle(won, 2, 0).outcome).toBe("win");
   });
 });

@@ -26,7 +26,7 @@ import { BreachSignsStage } from "./hacked-account/breach-signs-stage";
 import { PasswordGameStage } from "./hacked-account/password-game-stage";
 import { RecoveryDialogueStage } from "./hacked-account/recovery-dialogue-stage";
 import { RescueOrderStage } from "./hacked-account/rescue-order-stage";
-import { FinalBattleStage } from "./hacked-account/final-battle-stage";
+import { ShadowBattleStage } from "./shared/shadow-battle-stage";
 import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
@@ -163,7 +163,7 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
                 {currentStage === 5 && <PasswordGameStage locale={locale} content={t.passwordGame} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <RecoveryDialogueStage content={t.recoveryDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <RescueOrderStage locale={locale} content={t.rescueOrder} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
-                {currentStage === 8 && <FinalBattleStage content={t.shadowBattle} nextLabel={t.shadowBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
+                {currentStage === 8 && <ShadowBattleStage locale={locale} content={t.shadowBattle} nextLabel={t.shadowBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
                 {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage !== 7 && currentStage < 9 && currentStage !== 8 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>

@@ -26,7 +26,7 @@ import { DealSignalsStage } from "./scam-or-real/deal-signals-stage";
 import { OfferClassifyStage } from "./scam-or-real/offer-classify-stage";
 import { HaggleDialogueStage } from "./scam-or-real/haggle-dialogue-stage";
 import { SellerCheckStage } from "./scam-or-real/seller-check-stage";
-import { FinalBattleStage } from "./scam-or-real/final-battle-stage";
+import { ShadowBattleStage } from "./shared/shadow-battle-stage";
 import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
@@ -163,7 +163,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
                 {currentStage === 5 && <OfferClassifyStage locale={locale} content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <SellerCheckStage locale={locale} content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
-                {currentStage === 8 && <FinalBattleStage content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
+                {currentStage === 8 && <ShadowBattleStage locale={locale} content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
                 {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && currentStage !== 7 && currentStage !== 8 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
