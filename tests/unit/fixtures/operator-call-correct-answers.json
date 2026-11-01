@@ -1,0 +1,140 @@
+{
+  "ru": {
+    "phase2": {
+      "p2_1": [
+        "Сбросить вызов"
+      ],
+      "p2_2": [
+        "Нет, номер можно подменить"
+      ],
+      "p2_3": [
+        "Самому открыть оф. приложение"
+      ],
+      "p2_4": [
+        "Сам абонент"
+      ],
+      "p2_5": [
+        "Манипуляция мошенников"
+      ],
+      "p2_6": [
+        "В приложении или по официальному номеру оператора"
+      ],
+      "p2_7": [
+        "Никогда"
+      ],
+      "p2_8": [
+        "Положить трубку"
+      ],
+      "p2_9": [
+        "Фальшивая"
+      ],
+      "p2_10": [
+        "Ничего — положу трубку и сам позвоню на официальный номер"
+      ]
+    },
+    "phase3": {
+      "p3_1": [
+        "Я сейчас сам перезвоню в поддержку."
+      ],
+      "p3_2": [
+        "Вызывайте меня официальной повесткой. До свидания."
+      ],
+      "p3_3": [
+        "Ничего скачивать по ссылке не буду. До свидания."
+      ],
+      "p3_4": [
+        "Повешу трубку и позвоню в поддержку."
+      ],
+      "p3_5": [
+        "Положу трубку и сам позвоню в полицию по 112."
+      ],
+      "p3_6": [
+        "Я отключу её сам через приложение."
+      ],
+      "p3_7": [
+        "У меня всё работает, до свидания."
+      ],
+      "p3_8": [
+        "Зайду в личный кабинет и посмотрю там.",
+        "Спасибо, я проверю это на сайте MinTel."
+      ],
+      "p3_9": [
+        "Сброшу вызов и заблокирую карту через приложение.",
+        "Я сам сейчас позвоню в свой банк."
+      ],
+      "p3_10": [
+        "Позвоню настоящему оператору с другого телефона.",
+        "Пусть горит."
+      ]
+    }
+  },
+  "ro": {
+    "phase2": {
+      "p2_1": [
+        "Închid apelul"
+      ],
+      "p2_2": [
+        "Nu, numărul poate fi falsificat"
+      ],
+      "p2_3": [
+        "Deschid singur aplicația oficială"
+      ],
+      "p2_4": [
+        "Abonatul însuși"
+      ],
+      "p2_5": [
+        "O manipulare a escrocilor"
+      ],
+      "p2_6": [
+        "În aplicație sau la numărul oficial al operatorului"
+      ],
+      "p2_7": [
+        "Niciodată"
+      ],
+      "p2_8": [
+        "Închid apelul"
+      ],
+      "p2_9": [
+        "Fals"
+      ],
+      "p2_10": [
+        "Nimic — închid și sun eu la numărul oficial"
+      ]
+    },
+    "phase3": {
+      "p3_1": [
+        "Voi suna eu însumi la suport acum."
+      ],
+      "p3_2": [
+        "Chemați-mă oficial prin citație. La revedere."
+      ],
+      "p3_3": [
+        "Nu descarc nimic de pe link. La revedere."
+      ],
+      "p3_4": [
+        "Voi închide și voi suna la suport."
+      ],
+      "p3_5": [
+        "Închid și sun singur la poliție, la 112."
+      ],
+      "p3_6": [
+        "Îl voi dezactiva singur din aplicație."
+      ],
+      "p3_7": [
+        "Totul funcționează perfect, la revedere."
+      ],
+      "p3_8": [
+        "Intru în contul personal și verific acolo.",
+        "Mulțumesc, voi verifica pe site-ul MinTel."
+      ],
+      "p3_9": [
+        "Voi suna eu imediat la banca mea.",
+        "Închid și blochez cardul din aplicație."
+      ],
+      "p3_10": [
+        "Las-o să ardă.",
+        "Voi suna operatorul real de pe alt telefon."
+      ]
+    }
+  }
+}

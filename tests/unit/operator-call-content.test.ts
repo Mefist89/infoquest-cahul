@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import correctAnswers from "./fixtures/operator-call-correct-answers.json";
 import { operatorCallContent } from "@/data/operator-call";
 
 const { ru, ro } = operatorCallContent;
@@ -28,11 +29,12 @@ describe("пункт 19: безопасная реакция на незнако
   it.each([
     ["ru", "Ничего — положу трубку и сам позвоню на официальный номер"],
     ["ro", "Nimic — închid și sun eu la numărul oficial"],
-  ] as const)("сохраняет правильный индекс и три варианта в %s", (locale, correctText) => {
+  ] as const)("сохраняет правильный ответ и три варианта в %s", (locale, correctText) => {
     const question = operatorCallContent[locale].final.phase2.find(item => item.id === "p2_10")!;
     expect(question.id).toBe("p2_10");
     expect(question.options).toHaveLength(3);
-    expect(question.answer).toBe(1);
+    expect(question.answer).toBeGreaterThanOrEqual(0);
+    expect(question.answer).toBeLessThan(question.options.length);
     expect(question.options[question.answer]).toBe(correctText);
   });
 });
@@ -123,4 +125,19 @@ describe("пункты 14 и 21: согласованные последоват
     expect(levels.map(level => level.time)).toEqual([45, 53, 60, 68, 83]);
     levels.forEach(level => expect(new Set(level.steps.map(step => step.id)).size).toBe(level.steps.length));
   });
+});
+
+describe("пункт 17: перестановка не меняет смысл правильных ответов", () => {
+  for (const locale of ["ru", "ro"] as const) {
+    it(locale + ": сохраняет правильные тексты всех вопросов блица и босса", () => {
+      const content = operatorCallContent[locale].final;
+      const actual = {
+        phase2: Object.fromEntries(content.phase2.map(question => [question.id, [question.options[question.answer]]])),
+        phase3: Object.fromEntries(content.phase3.map(question => [question.id, question.answers.map(index => question.options[index]).sort()])),
+      };
+      expect(actual).toEqual(correctAnswers[locale]);
+      expect(new Set(content.phase2.map(question => question.answer)).size).toBe(3);
+      expect(new Set(content.phase3.filter(question => question.answers.length === 1).map(question => question.answers[0])).size).toBeGreaterThan(1);
+    });
+  }
 });
