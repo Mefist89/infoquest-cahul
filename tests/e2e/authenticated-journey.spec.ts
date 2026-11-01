@@ -9,6 +9,22 @@ test.describe("авторизованный путь Google-пользовате
   });
 
   for (const locale of ["ru", "ro"] as const) {
+    test(`${locale}: меню главной не пересекается с аккаунтом на широких экранах`, async ({ page }) => {
+      for (const width of [1280, 1366, 1920]) {
+        await page.setViewportSize({ width, height: 1080 });
+        await page.goto(`/${locale}`);
+        const nav = page.getByTestId("home-desktop-nav");
+        const account = page.getByTestId("home-account");
+        await expect(nav).toBeVisible();
+        await expect(account).toBeVisible();
+        await page.evaluate(() => document.fonts.ready);
+        const navBox = await nav.boundingBox();
+        const accountBox = await account.boundingBox();
+        expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(accountBox!.x);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      }
+    });
+
     for (const section of ["", "/missions", "/achievements", "/quests"] as const) {
       test(`кабинет /${locale}/profile${section} помещается в 390px`, async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });

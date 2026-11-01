@@ -7,11 +7,9 @@ import {
   Bot,
   ChevronLeft,
   ChevronRight,
-  CircleUserRound,
   Gift,
   Languages,
   Link2Off,
-  LogIn,
   Lock,
   MapPin,
   Pause,
@@ -19,14 +17,13 @@ import {
   Play,
   ScanFace,
   ShieldAlert,
-  ShieldCheck,
   UserLock,
   type LucideIcon,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { SignOutButton } from "@/components/auth/SignOutButton";
+import { HomeHeader } from "@/components/home/HomeHeader";
 import { strings, type Lang } from "@/data/home-data";
 import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MODULE_MAX_XP, TOTAL_MAX_XP, type ModuleDefinition as Mission, type ModuleId } from "@/data/module-catalog";
 import { isUserRole, type UserRole } from "@/lib/roles";
@@ -77,84 +74,6 @@ const emptyProgress: HeaderProgress = {
   role: null,
   modules: {},
 };
-
-function Header({ lang, setLang, progress }: { lang: Lang; setLang: (lang: Lang) => void; progress: HeaderProgress }) {
-  const t = strings[lang];
-
-  return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-      <div className="relative mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-        <a href="#top" className="focus-ring flex min-w-0 items-center gap-2 rounded-lg" aria-label="InfoQuest">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon">
-            <ShieldCheck className="size-5 text-neon" aria-hidden="true" />
-          </span>
-          <span className="hidden min-w-0 leading-tight min-[430px]:block">
-            <span className="block whitespace-nowrap font-display text-[10px] font-bold tracking-wider sm:text-base">
-              <span className="text-white">INFO</span><span className="text-[#00D9FF]">QUEST</span>
-            </span>
-            <span className="hidden text-xs text-neon sm:block">{t.tagline}</span>
-          </span>
-        </a>
-
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 whitespace-nowrap text-xs font-semibold text-muted-foreground xl:flex" aria-label={lang === "ru" ? "Главная навигация" : "Navigare principală"}>
-          <a className="focus-ring rounded-lg transition hover:text-neon" href="#how">{lang === "ru" ? "Как играть" : "Cum se joacă"}</a>
-          <a className="focus-ring rounded-lg transition hover:text-neon" href="#missions">{lang === "ru" ? "Дела" : "Dosare"}</a>
-          <a className="focus-ring rounded-lg transition hover:text-neon" href="#badges">{lang === "ru" ? "Бейджи" : "Insigne"}</a>
-          <a className="focus-ring rounded-lg transition hover:text-neon" href="#materials">{lang === "ru" ? "Материалы" : "Materiale"}</a>
-          <a className="focus-ring rounded-lg transition hover:text-neon" href="#about">{lang === "ru" ? "О проекте" : "Despre proiect"}</a>
-        </nav>
-
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          {progress.loading ? (
-            <span className="size-10 shrink-0 animate-pulse rounded-full border border-border bg-card/70" aria-label={lang === "ru" ? "Загрузка профиля" : "Se încarcă profilul"} />
-          ) : progress.isAuthenticated ? (
-            <>
-              <Link
-                href={`/${lang}/profile`}
-                aria-label={lang === "ru" ? "Профиль" : "Profil"}
-                className="focus-ring inline-flex min-h-10 min-w-10 shrink-0 items-center gap-2 rounded-full border border-neon/35 bg-neon/10 p-1 pr-2 text-neon transition hover:border-neon hover:bg-neon/20 sm:pr-3"
-              >
-                <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background/70">
-                  {progress.avatarUrl ? (
-                    <Image src={progress.avatarUrl} alt="" fill sizes="32px" className="object-cover" />
-                  ) : (
-                    <CircleUserRound className="size-5" aria-hidden="true" />
-                  )}
-                </span>
-                {progress.displayName && <span className="hidden max-w-36 truncate text-sm font-semibold text-foreground md:inline">{progress.displayName}</span>}
-              </Link>
-              <SignOutButton locale={lang} label={lang === "ru" ? "Выйти" : "Ieșire"} />
-            </>
-          ) : (
-            <Link
-              href={`/${lang}/login`}
-              className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-xs font-bold text-neon transition hover:border-neon hover:bg-neon/20 sm:px-4 sm:text-sm"
-            >
-              <LogIn className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">{lang === "ru" ? "Войти" : "Autentificare"}</span>
-            </Link>
-          )}
-
-          <div className="flex rounded-full border border-border bg-card/70 p-1" role="group" aria-label="Language">
-            {(["ro", "ru"] as const).map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setLang(item)}
-                aria-pressed={lang === item}
-                className={`focus-ring min-h-9 rounded-full px-3 text-xs font-bold uppercase transition sm:text-sm ${
-                  lang === item ? "bg-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Mission; lang: Lang; onClick: () => void; dimmed?: boolean }) {
   const Icon = icons[mission.icon];
@@ -385,7 +304,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Header lang={lang} setLang={setLang} progress={headerProgress} />
+      <HomeHeader lang={lang} setLang={setLang} progress={headerProgress} />
       <main id="top" className="circuit-bg overflow-hidden">
         <section className="relative mx-auto grid w-full max-w-6xl items-center gap-8 overflow-hidden px-4 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:py-14">
           <div className="relative z-10 min-w-0 text-center lg:text-left">
@@ -416,6 +335,7 @@ export default function HomePage() {
               </Link>
             )}
             {!headerProgress.isAuthenticated && <p className="max-w-64 text-center text-xs text-muted-foreground">{t.aiGuestHint}</p>}
+            {headerProgress.role === "blocked" && <p className="max-w-64 text-center text-xs text-muted-foreground">{t.aiRestricted}</p>}
             </div>
             </div>
             <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">{lang === "ru" ? "Расследуй цифровые происшествия, находи доказательства и учись защищать себя и друзей в интернете." : "Investighează incidente digitale, găsește dovezi și învață să te protejezi pe tine și pe prieteni pe internet."}</p>

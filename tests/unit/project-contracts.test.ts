@@ -565,7 +565,7 @@ describe("repository completeness and SEO", () => {
     expect(home).toContain("<FaqSection");
     expect(home).toContain("missionFilter");
     expect(home).not.toContain('aria-label="XP"');
-    expect(home).toContain("absolute left-1/2 hidden -translate-x-1/2");
+    expect(home).toContain("<HomeHeader");
     expect(home).toContain('className="home-content-width relative mx-auto mt-12"');
     expect(learningSections).toContain('role="status"');
     expect(learningSections).toContain("content[lang]");
