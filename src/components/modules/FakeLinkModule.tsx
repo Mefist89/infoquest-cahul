@@ -32,6 +32,7 @@ import { LinkClassifyStage } from "./fake-link/link-classify-stage";
 import { DialogueReactStage } from "./fake-link/dialogue-react-stage";
 import { OrderStepsStage } from "./fake-link/order-steps-stage";
 import { FinalBattleStage } from "./fake-link/final-battle-stage";
+import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { NextButtonContext } from "./operator-call/stage-support";
 
@@ -51,7 +52,7 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
 
-export function FakeLinkModule({ content, locale, initialStages, initialModule, isAdmin }: { content: typeof fakeLinkContent[keyof typeof fakeLinkContent]; locale: FakeLinkLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
+export function FakeLinkModule({ content, locale, initialStages, initialModule, isAdmin, badge, nextModule }: { content: typeof fakeLinkContent[keyof typeof fakeLinkContent]; locale: FakeLinkLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean; badge: string; nextModule: NextModule }) {
   const t = content;
   const runner = useModuleRunner({
     moduleId: MODULE_IDS.fakeLink,
@@ -140,6 +141,9 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
 
           
           <section className="min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
+            {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
+              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
+            ) : (<>
             {notice && (
               <div className={`mb-6 rounded-2xl border p-4 text-sm font-medium ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>
                 {notice.text}
@@ -178,6 +182,8 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
                 )}
               </div>
             </NextButtonContext.Provider>
+            {runner.canRetrySave && <SaveRetryButton label={t.result.saveRetry} onRetry={runner.retrySave} disabled={saving} />}
+            </>)}
           </section>
 
         </div>

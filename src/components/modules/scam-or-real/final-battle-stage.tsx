@@ -124,6 +124,7 @@ export function FinalBattleStage({
       <div role="status" className="flex flex-col items-center rounded-3xl border-2 border-neon/40 bg-neon/10 p-8 text-center shadow-[0_0_40px_rgba(0,217,255,0.15)]">
         <Check className="mb-4 size-16 text-neon" aria-hidden="true" />
         <p className="text-xl font-black text-foreground">{content.winTitle}</p>
+        <p className="mt-4 text-base leading-relaxed text-foreground">{question?.explain}</p>
         <p className="mt-2 text-sm font-bold text-muted-foreground">{content.resultCount.replace("{score}", String(correctHits))}</p>
       </div>
     );

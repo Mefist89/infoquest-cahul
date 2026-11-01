@@ -2,6 +2,14 @@ export type HackedAccountLocale = "ru" | "ro";
 
 export const hackedAccountContent = {
   ru: {
+    result: {
+      title: "Модуль пройден!",
+      xp: "XP модуля: {xp} из 100",
+      nextModule: "Следующий модуль: {title}",
+      profile: "В кабинет",
+      allCompleted: "Вы прошли все модули!",
+      saveRetry: "Не удалось сохранить. Повторить",
+    },
     title: "Взломанный аккаунт",
     eyebrow: "Модуль 3 · Аккаунты",
     description: "Научись замечать взлом, придумывать сильные пароли и возвращать доступ к аккаунту.",
@@ -273,6 +281,14 @@ export const hackedAccountContent = {
     },
   },
   ro: {
+    result: {
+      title: "Modul finalizat!",
+      xp: "XP modul: {xp} din 100",
+      nextModule: "Modulul următor: {title}",
+      profile: "La profil",
+      allCompleted: "Ai terminat toate modulele!",
+      saveRetry: "Nu s-a putut salva. Încearcă din nou.",
+    },
     title: "Contul compromis",
     eyebrow: "Modulul 3 · Conturi",
     description: "Învață să observi spargerea, să creezi parole puternice și să recuperezi accesul la cont.",

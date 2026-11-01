@@ -2,6 +2,14 @@ export type FakeLinkLocale = "ru" | "ro";
 
 export const fakeLinkContent = {
   ru: {
+    result: {
+      title: "Модуль пройден!",
+      xp: "XP модуля: {xp} из 100",
+      nextModule: "Следующий модуль: {title}",
+      profile: "В кабинет",
+      allCompleted: "Вы прошли все модули!",
+      saveRetry: "Не удалось сохранить. Повторить",
+    },
     title: "Ловушка фальшивой ссылки",
     eyebrow: "Модуль 2 · Фишинг",
     description: "Научись отличать поддельные сайты от настоящих и безопасно проверять ссылки.",
@@ -239,6 +247,14 @@ export const fakeLinkContent = {
       },
     },
     ro: {
+    result: {
+      title: "Modul finalizat!",
+      xp: "XP modul: {xp} din 100",
+      nextModule: "Modulul următor: {title}",
+      profile: "La profil",
+      allCompleted: "Ai terminat toate modulele!",
+      saveRetry: "Nu s-a putut salva. Încearcă din nou.",
+    },
     title: "Capcana linkului fals",
     eyebrow: "Modulul 2 · Phishing",
     description: "Învață să distingi site-urile false de cele reale și să verifici linkurile în siguranță.",

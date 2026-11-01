@@ -45,6 +45,14 @@ type OperatorFinalContent = {
 
 export const operatorCallContent = {
   ru: {
+    result: {
+      title: "Модуль пройден!",
+      xp: "XP модуля: {xp} из 100",
+      nextModule: "Следующий модуль: {title}",
+      profile: "В кабинет",
+      allCompleted: "Вы прошли все модули!",
+      saveRetry: "Не удалось сохранить. Повторить",
+    },
     title: "Фальшивый звонок оператора",
     eyebrow: "Модуль 1 · Телефонное мошенничество",
     description: "Научись распознавать давление, защищать коды из SMS и безопасно проверять звонящего.",
@@ -380,6 +388,14 @@ export const operatorCallContent = {
     } satisfies OperatorFinalContent,
   },
   ro: {
+    result: {
+      title: "Modul finalizat!",
+      xp: "XP modul: {xp} din 100",
+      nextModule: "Modulul următor: {title}",
+      profile: "La profil",
+      allCompleted: "Ai terminat toate modulele!",
+      saveRetry: "Nu s-a putut salva. Încearcă din nou.",
+    },
     title: "Apelul fals de la operator",
     eyebrow: "Modulul 1 · Fraude telefonice",
     description: "Învață să recunoști presiunea, să protejezi codurile SMS și să verifici apelantul în siguranță.",

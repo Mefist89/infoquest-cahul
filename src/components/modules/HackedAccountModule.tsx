@@ -32,6 +32,7 @@ import { RescueOrderStage } from "./hacked-account/rescue-order-stage";
 import { FinalBattleStage } from "./hacked-account/final-battle-stage";
 import { MODULE_IDS, STAGE_COUNT } from "@/data/module-catalog-meta";
 import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/features/modules/runner/use-module-runner";
+import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { NextButtonContext } from "./operator-call/stage-support";
 
@@ -51,7 +52,7 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, KeyRound, MessageSquare, ListOrdered, ShieldAlert];
 
-export function HackedAccountModule({ content, locale, initialStages, initialModule, isAdmin }: { content: typeof hackedAccountContent[keyof typeof hackedAccountContent]; locale: HackedAccountLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
+export function HackedAccountModule({ content, locale, initialStages, initialModule, isAdmin, badge, nextModule }: { content: typeof hackedAccountContent[keyof typeof hackedAccountContent]; locale: HackedAccountLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean; badge: string; nextModule: NextModule }) {
   const t = content;
   const runner = useModuleRunner({
     moduleId: MODULE_IDS.hackedAccount,
@@ -136,6 +137,9 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
           </aside>
 
           <section className="min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
+            {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
+              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
+            ) : (<>
             {notice && (
               <div className={`mb-6 rounded-2xl border p-4 text-sm font-medium ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>
                 {notice.text}
@@ -173,6 +177,8 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
                 )}
               </div>
             </NextButtonContext.Provider>
+            {runner.canRetrySave && <SaveRetryButton label={t.result.saveRetry} onRetry={runner.retrySave} disabled={saving} />}
+            </>)}
           </section>
         </div>
       </div>

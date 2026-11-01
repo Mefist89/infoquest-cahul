@@ -28,13 +28,14 @@ import { CallSimulatorStage, ClassifyStage } from "./operator-call/call-classify
 import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-stages";
 import { FinalStage } from "./operator-call/final-stage";
 import { IntroStage, TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
+import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { GameSoundToggle, SoundChoiceBanner } from "./operator-call/game-sound-toggle";
 import { NextButtonContext } from "./operator-call/stage-support";
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
 
-export function OperatorCallModule({ content, locale, initialStages, initialModule, isAdmin }: { content: typeof operatorCallContent[keyof typeof operatorCallContent]; locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean }) {
+export function OperatorCallModule({ content, locale, initialStages, initialModule, isAdmin, badge, nextModule }: { content: typeof operatorCallContent[keyof typeof operatorCallContent]; locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean; badge: string; nextModule: NextModule }) {
   const t = content;
   const runner = useModuleRunner({
     moduleId: MODULE_IDS.operatorCall,
@@ -148,6 +149,9 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
           </aside>
 
           <section className="min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
+            {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
+              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
+            ) : (<>
             {currentStage === 0 ? (
               <StageHeading number={0} title={t.intro.title} subtitle={t.intro.subtitle} done={false} />
             ) : (
@@ -174,6 +178,8 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
             </NextButtonContext.Provider>
 
             {notice && <p className={`mt-6 rounded-xl border px-4 py-3 text-sm ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>{notice.text}</p>}
+            {runner.canRetrySave && <SaveRetryButton label={t.result.saveRetry} onRetry={runner.retrySave} disabled={saving} />}
+            </>)}
           </section>
         </div>
       </div>

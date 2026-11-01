@@ -62,6 +62,7 @@ export function useModuleRunner({
   const [moduleXp, setModuleXp] = useState(initialModule?.xp ?? 0);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<RunnerNotice | null>(null);
+  const [failedSave, setFailedSave] = useState<{ stageIndex: number; result?: StageResult | null } | null>(null);
 
   const unlockedThrough = useMemo(
     () => Array.from({ length: stageCount }, (_, index) => index + 1)
@@ -75,26 +76,34 @@ export function useModuleRunner({
     if (saving) return false;
     setSaving(true);
     setNotice(null);
+    setFailedSave(null);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("complete_module_stage", {
-      p_module_id: moduleId,
-      p_stage_index: stageIndex,
-      p_correct: result ? Math.trunc(result.correct) : undefined,
-      p_total: result ? Math.trunc(result.total) : undefined,
-    });
-    setSaving(false);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("complete_module_stage", {
+        p_module_id: moduleId,
+        p_stage_index: stageIndex,
+        p_correct: result ? Math.trunc(result.correct) : undefined,
+        p_total: result ? Math.trunc(result.total) : undefined,
+      });
+      if (error) {
+        setNotice({ kind: "error", text: messages.saveError });
+        setFailedSave({ stageIndex, result });
+        return false;
+      }
 
-    if (error) {
+      const rpcResult = Array.isArray(data) ? data[0] : null;
+      setCompletedStages((previous) => new Set(previous).add(stageIndex));
+      setModuleXp((previous) => Number(rpcResult?.module_xp ?? previous));
+      setNotice({ kind: "success", text: messages.saved });
+      return true;
+    } catch {
       setNotice({ kind: "error", text: messages.saveError });
+      setFailedSave({ stageIndex, result });
       return false;
+    } finally {
+      setSaving(false);
     }
-
-    const rpcResult = Array.isArray(data) ? data[0] : null;
-    setCompletedStages((previous) => new Set(previous).add(stageIndex));
-    setModuleXp((previous) => Number(rpcResult?.module_xp ?? previous));
-    setNotice({ kind: "success", text: messages.saved });
-    return true;
   }
 
   function chooseStage(stage: number) {
@@ -104,12 +113,15 @@ export function useModuleRunner({
     }
     setCurrentStage(stage);
     setNotice(null);
+    setFailedSave(null);
     return true;
   }
 
   return {
     chooseStage,
     completeStage,
+    canRetrySave: failedSave !== null,
+    retrySave: () => failedSave ? completeStage(failedSave.stageIndex, failedSave.result) : Promise.resolve(false),
     completedStages,
     completionPercent,
     currentStage,
