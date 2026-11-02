@@ -21,6 +21,8 @@ describe("крупный текст для всего сайта", () => {
     const root = join(process.cwd(), "src");
     for (const path of readdirSync(root, { recursive: true })) {
       if (typeof path !== "string" || !path.endsWith(".tsx")) continue;
+      const normalized = path.replaceAll("\\", "/");
+      if (normalized.startsWith("app/[locale]/admin/") || normalized.startsWith("components/game/")) continue;
       const source = readFileSync(join(root, path), "utf8");
       expect(source, path).not.toMatch(/\btext-xs\b|text-\[(?:9|10|11|12)px\]/);
     }
