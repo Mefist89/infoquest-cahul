@@ -2,17 +2,29 @@ import { expect, test } from "@playwright/test";
 import { moduleSeo } from "../../src/data/seo";
 
 for (const locale of ["ru", "ro"] as const) {
+  test(`${locale}: A+ применяется до загрузки клиентских скриптов`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.addInitScript(() => localStorage.setItem("infoquest.fontScale", "large"));
+    await page.route("**/_next/static/**/*.js", route => route.abort());
+    await page.goto(`/${locale}/privacy`);
+    await expect(page.locator("html")).toHaveAttribute("data-font-scale", "large");
+    await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+  });
+
   test(`${locale}: A+ сохраняется между публичными страницами и выключается из любой шапки`, async ({ page }) => {
     test.setTimeout(60_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/${locale}/login`);
-    const label = locale === "ru" ? "Крупный текст" : "Text mărit";
+    const label = locale === "ru" ? "Крупный текст" : "Text mare";
     await page.getByRole("button", { name: label, exact: true }).click();
-    for (const path of ["/privacy", "/terms", "/patrol", "/intro", ...Object.keys(moduleSeo).map(slug => `/modules/${slug}`)]) {
-      await page.goto(`/${locale}${path}`);
-      await expect(page.locator("html")).toHaveCSS("font-size", "20px");
-      await expect(page.getByRole("button", { name: label, exact: true })).toHaveAttribute("aria-pressed", "true");
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    for (const width of [390, 1024]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const path of ["", "/privacy", "/terms", "/patrol", "/intro", ...Object.keys(moduleSeo).map(slug => `/modules/${slug}`)]) {
+        await page.goto(`/${locale}${path}`);
+        await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+        if (path !== "") await expect(page.getByRole("button", { name: label, exact: true })).toHaveAttribute("aria-pressed", "true");
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      }
     }
     await page.reload();
     await expect(page.locator("html")).toHaveCSS("font-size", "20px");
@@ -105,7 +117,7 @@ for (const locale of ["ru", "ro"] as const) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/${locale}`);
     const menuLabel = locale === "ru" ? "Меню" : "Meniu";
-    const textLabel = locale === "ru" ? "Крупный текст" : "Text mărit";
+    const textLabel = locale === "ru" ? "Крупный текст" : "Text mare";
     const navigationLabel = locale === "ru" ? "Главная навигация" : "Navigare principală";
     const menu = page.getByRole("button", { name: menuLabel, exact: true });
 

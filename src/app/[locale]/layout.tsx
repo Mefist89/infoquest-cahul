@@ -1,3 +1,4 @@
+import { fontScaleScript } from "@/features/accessibility/large-text-settings";
 import type { Metadata } from "next";
 import "../globals.css";
 import { Orbitron, Rubik } from "next/font/google";
@@ -40,7 +41,8 @@ export default async function RootLayout({ children, params }: { children: React
   const lang = locale === "ro" ? "ro" : "ru";
 
   return (
-    <html lang={lang} data-scroll-behavior="smooth" className={`${orbitron.variable} ${rubik.variable}`}>
+    <html suppressHydrationWarning lang={lang} data-scroll-behavior="smooth" className={`${orbitron.variable} ${rubik.variable}`}>
+      <head><script id="font-scale" dangerouslySetInnerHTML={{ __html: fontScaleScript }} /></head>
       <body>
         <TextSizePreference />
         {children}

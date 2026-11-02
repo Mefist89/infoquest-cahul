@@ -17,6 +17,22 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("крупный текст для всего сайта", () => {
+  it("чистые функции читают и записывают размер и обрабатывают отказ хранилища", async () => {
+    const { readFontScale, writeFontScale, fontScaleScript } = await import("@/features/accessibility/large-text-settings");
+    expect(readFontScale(window.localStorage)).toBe(false);
+    expect(writeFontScale(window.localStorage, true)).toBe(true);
+    expect(readFontScale(window.localStorage)).toBe(true);
+    const root = { setAttribute: vi.fn() };
+    vi.stubGlobal("document", { documentElement: root });
+    vi.stubGlobal("localStorage", window.localStorage);
+    new Function(fontScaleScript)();
+    expect(root.setAttribute).toHaveBeenCalledWith("data-font-scale", "large");
+    window.localStorage.getItem = () => { throw new Error("disabled"); };
+    window.localStorage.setItem = () => { throw new Error("disabled"); };
+    expect(readFontScale(window.localStorage)).toBe(false);
+    expect(writeFontScale(window.localStorage, false)).toBe(false);
+    expect(() => new Function(fontScaleScript)()).not.toThrow();
+  });
   it("подписи интерфейса не используют text-xs или мелкие фиксированные px-размеры", () => {
     const root = join(process.cwd(), "src");
     for (const path of readdirSync(root, { recursive: true })) {
@@ -31,12 +47,12 @@ describe("крупный текст для всего сайта", () => {
     let settings = await import("@/features/accessibility/large-text-settings");
     expect(settings.getLargeTextEnabled()).toBe(false);
     settings.toggleLargeText();
-    expect(storage.get("infoquest.largeText")).toBe("true");
+    expect(storage.get("infoquest.fontScale")).toBe("large");
     vi.resetModules();
     settings = await import("@/features/accessibility/large-text-settings");
     expect(settings.getLargeTextEnabled()).toBe(true);
     settings.toggleLargeText();
-    expect(storage.get("infoquest.largeText")).toBe("false");
+    expect(storage.get("infoquest.fontScale")).toBe("normal");
   });
 
   it("синхронизирует кнопки и изменения в другой вкладке; отписка работает", async () => {
@@ -45,8 +61,8 @@ describe("крупный текст для всего сайта", () => {
     const unsubscribe = settings.subscribeLargeText(listener);
     settings.setLargeTextEnabled(true);
     expect(listener).toHaveBeenCalledTimes(1);
-    storage.set("infoquest.largeText", "false");
-    events.dispatchEvent(Object.assign(new Event("storage"), { key: "infoquest.largeText" }));
+    storage.set("infoquest.fontScale", "normal");
+    events.dispatchEvent(Object.assign(new Event("storage"), { key: "infoquest.fontScale" }));
     expect(settings.getLargeTextEnabled()).toBe(false);
     expect(listener).toHaveBeenCalledTimes(2);
     unsubscribe();

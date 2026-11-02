@@ -28,13 +28,16 @@ test.describe("авторизованный путь Google-пользовате
       test.setTimeout(60_000);
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`/${locale}/profile`);
-      const label = locale === "ru" ? "Крупный текст" : "Text mărit";
+      const label = locale === "ru" ? "Крупный текст" : "Text mare";
       await page.getByRole("button", { name: label, exact: true }).filter({ visible: true }).click();
-      for (const path of ["/profile", "/profile/missions", "/profile/achievements", "/profile/quests", "/modules/operator-call", "/modules/fake-link", "/modules/hacked-account", "/modules/scam-or-real", "/ai-help"]) {
-        await page.goto(`/${locale}${path}`);
-        await expect(page.locator("html")).toHaveCSS("font-size", "20px");
-        await expect(page.getByRole("button", { name: label, exact: true }).filter({ visible: true })).toHaveAttribute("aria-pressed", "true");
-        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      for (const width of [390, 1024]) {
+        await page.setViewportSize({ width, height: 844 });
+        for (const path of ["/profile", "/profile/missions", "/profile/achievements", "/profile/quests", "/modules/operator-call", "/modules/fake-link", "/modules/hacked-account", "/modules/scam-or-real", "/ai-help"]) {
+          await page.goto(`/${locale}${path}`);
+          await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+          await expect(page.getByRole("button", { name: label, exact: true }).filter({ visible: true })).toHaveAttribute("aria-pressed", "true");
+          expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+        }
       }
       await page.getByRole("button", { name: label, exact: true }).filter({ visible: true }).click();
       await expect(page.locator("html")).toHaveCSS("font-size", "16px");
@@ -65,7 +68,7 @@ test.describe("авторизованный путь Google-пользовате
         await expect(page).toHaveURL(path);
         const header = page.locator("header");
         await expect(header.getByRole("button", { name: locale === "ru" ? "Выйти" : "Ieșire", exact: true })).toBeInViewport({ ratio: 1 });
-        await expect(header.getByRole("button", { name: locale === "ru" ? "Крупный текст" : "Text mărit", exact: true })).toBeInViewport({ ratio: 1 });
+        await expect(header.getByRole("button", { name: locale === "ru" ? "Крупный текст" : "Text mare", exact: true })).toBeInViewport({ ratio: 1 });
         await expect(header.getByRole("navigation", { name: "Language" })).toBeInViewport({ ratio: 1 });
         await page.evaluate(() => document.fonts.ready);
         await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

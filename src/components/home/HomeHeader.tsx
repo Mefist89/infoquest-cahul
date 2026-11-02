@@ -27,7 +27,7 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
   const panelId = useId();
   const t = strings[lang];
   const menuLabel = lang === "ru" ? "Меню" : "Meniu";
-  const largeTextLabel = lang === "ru" ? "Крупный текст" : "Text mărit";
+  const largeTextLabel = lang === "ru" ? "Крупный текст" : "Text mare";
   const navigationLabel = lang === "ru" ? "Главная навигация" : "Navigare principală";
   const chronoRestricted = progress.isAuthenticated && !canUseAi(progress.role);
   const chronoHref = progress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`;
