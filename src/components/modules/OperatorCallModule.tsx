@@ -176,7 +176,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
                 {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.check} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
                 {currentStage === 5 && <ClassifyStage locale={locale} content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
                 {currentStage === 6 && <DialogueStage locale={locale} content={t.dialogue} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
-                {currentStage === 7 && <OrderingStage locale={locale} content={t.ordering} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
+                {currentStage === 7 && <OrderingStage locale={locale} content={t.ordering} check={t.continue} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
                 {currentStage === 8 && <FinalStage locale={locale} content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
               </div>
             </NextButtonContext.Provider>

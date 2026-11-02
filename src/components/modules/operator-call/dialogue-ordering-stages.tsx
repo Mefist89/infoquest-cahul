@@ -298,9 +298,6 @@ function OrderingStage({ locale, content, check, retry, saving, feedback, onSubm
           })}
         </div>
       </div>
-      <div className="mt-6 w-full">
-        <ActionButton disabled={true} onClick={() => {}}>{check}</ActionButton>
-      </div>
     </div>
   );
 }
