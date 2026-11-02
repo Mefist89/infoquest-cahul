@@ -92,7 +92,7 @@ function DialogueStage({ locale, content, check, saving, feedback, onSubmit }: {
         <span className="text-base font-black tracking-widest text-neon uppercase">
           {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
         </span>
-        <span className="text-xs font-black text-muted-foreground">
+        <span className="text-sm font-black text-muted-foreground">
           {selectedParts.size} / {level.liesCount}
         </span>
       </div>

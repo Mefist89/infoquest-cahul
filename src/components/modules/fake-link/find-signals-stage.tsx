@@ -47,7 +47,7 @@ export function FindSignalsStage({
             <span className="size-2.5 rounded-full bg-gold/70" />
             <span className="size-2.5 rounded-full bg-success/70" />
           </span>
-          <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-background/60 px-3 py-1.5 font-mono text-xs text-muted-foreground sm:text-sm">
+          <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-background/60 px-3 py-1.5 font-mono text-sm text-muted-foreground sm:text-sm">
             <span className="relative inline-flex size-11 shrink-0 items-center justify-center">
               <span className="relative block" aria-hidden="true"><Lock className="size-5 text-danger" /><span className="absolute left-0 top-1/2 h-0.5 w-full -rotate-45 bg-danger" /></span>
               <Hotspot zone={`${zoneWord} 2`} found={selected.has("no-https")} disabled={submitted || saving} onToggle={() => toggle("no-https")} />

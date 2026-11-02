@@ -72,8 +72,8 @@ export function MentorIntro({ content, locale, imageSrc, onFinish }: {
         </div>
         <div className="relative z-10 min-w-0 self-center pb-8 sm:pb-0">
           <div className="rounded-3xl rounded-bl-md border border-neon/35 bg-card/95 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] sm:p-7">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-neon">{content.name}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{content.role}</p>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-neon">{content.name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{content.role}</p>
             <p className="sr-only">{fullText}</p>
             <TypewriterText key={lineIndex} text={fullText} fullyShown={fullyShown} onComplete={revealLine} />
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3">

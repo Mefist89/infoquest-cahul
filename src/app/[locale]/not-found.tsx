@@ -30,6 +30,7 @@ export default function NotFoundPage() {
 
   return (
     <RouteBoundaryCard
+      locale={locale}
       icon={<MapPinned className="size-10" aria-hidden="true" />}
       eyebrow={text.eyebrow}
       title={text.title}

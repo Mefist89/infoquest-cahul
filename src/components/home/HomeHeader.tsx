@@ -40,18 +40,6 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
   ];
 
   useEffect(() => {
-    if (!largeText) return;
-    const style = document.documentElement.style;
-    const previous = style.getPropertyValue("font-size");
-    const priority = style.getPropertyPriority("font-size");
-    style.setProperty("font-size", "125%");
-    return () => {
-      if (previous) style.setProperty("font-size", previous, priority);
-      else style.removeProperty("font-size");
-    };
-  }, [largeText]);
-
-  useEffect(() => {
     if (!open) {
       const button = menuButtonRef.current;
       const restoreFocus = wasOpen.current && button?.getClientRects().length;
@@ -91,12 +79,12 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
         <a href="#top" onClick={() => setOpen(false)} className="focus-ring flex shrink-0 items-center gap-2 rounded-lg" aria-label="InfoQuest">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon"><ShieldCheck className="size-5 text-neon" aria-hidden="true" /></span>
           <span className="hidden leading-tight min-[430px]:block">
-            <span className="block whitespace-nowrap font-display text-[10px] font-bold tracking-wider sm:text-base"><span className="text-white">INFO</span><span className="text-[#00D9FF]">QUEST</span></span>
-            <span className="hidden text-xs text-neon lg:block">{t.tagline}</span>
+            <span className="block whitespace-nowrap font-display text-sm font-bold tracking-wider sm:text-base"><span className="text-white">INFO</span><span className="text-[#00D9FF]">QUEST</span></span>
+            <span className="hidden text-sm text-neon lg:block">{t.tagline}</span>
           </span>
         </a>
 
-        <nav data-testid="home-desktop-nav" className="hidden min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-semibold text-muted-foreground xl:flex" aria-label={navigationLabel}>
+        <nav data-testid="home-desktop-nav" className="hidden min-w-0 flex-1 flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-muted-foreground xl:flex" aria-label={navigationLabel}>
           {links.map(([href, label]) => <a key={href} className="focus-ring whitespace-nowrap rounded-lg transition hover:text-neon" href={href}>{label}</a>)}
         </nav>
 
@@ -112,7 +100,7 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
               <div className="hidden md:block"><SignOutButton locale={lang} label={lang === "ru" ? "Выйти" : "Ieșire"} /></div>
             </>
           ) : (
-            <Link href={`/${lang}/login`} aria-label={lang === "ru" ? "Войти" : "Autentificare"} className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-xs font-bold text-neon transition hover:border-neon hover:bg-neon/20 sm:px-4 sm:text-sm"><LogIn className="size-4" aria-hidden="true" /><span className="hidden md:inline">{lang === "ru" ? "Войти" : "Autentificare"}</span></Link>
+            <Link href={`/${lang}/login`} aria-label={lang === "ru" ? "Войти" : "Autentificare"} className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20 sm:px-4 sm:text-sm"><LogIn className="size-4" aria-hidden="true" /><span className="hidden md:inline">{lang === "ru" ? "Войти" : "Autentificare"}</span></Link>
           )}
 
           <button type="button" onClick={toggleLargeText} aria-pressed={largeText} aria-label={largeTextLabel} title={largeTextLabel} className="focus-ring hidden size-11 shrink-0 place-items-center rounded-full border border-border bg-card/70 text-sm font-black text-neon transition hover:border-neon xl:grid">A+</button>

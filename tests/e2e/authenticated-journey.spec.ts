@@ -24,6 +24,22 @@ test.describe("авторизованный путь Google-пользовате
   });
 
   for (const locale of ["ru", "ro"] as const) {
+    test(`${locale}: A+ работает в кабинете, модулях и Chrono на телефоне`, async ({ page }) => {
+      test.setTimeout(60_000);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`/${locale}/profile`);
+      const label = locale === "ru" ? "Крупный текст" : "Text mărit";
+      await page.getByRole("button", { name: label, exact: true }).filter({ visible: true }).click();
+      for (const path of ["/profile", "/profile/missions", "/profile/achievements", "/profile/quests", "/modules/operator-call", "/modules/fake-link", "/modules/hacked-account", "/modules/scam-or-real", "/ai-help"]) {
+        await page.goto(`/${locale}${path}`);
+        await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+        await expect(page.getByRole("button", { name: label, exact: true }).filter({ visible: true })).toHaveAttribute("aria-pressed", "true");
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+      }
+      await page.getByRole("button", { name: label, exact: true }).filter({ visible: true }).click();
+      await expect(page.locator("html")).toHaveCSS("font-size", "16px");
+    });
+
     test(`${locale}: меню главной не пересекается с аккаунтом на широких экранах`, async ({ page }) => {
       for (const width of [1280, 1366, 1920]) {
         await page.setViewportSize({ width, height: 1080 });
@@ -48,7 +64,8 @@ test.describe("авторизованный путь Google-пользовате
 
         await expect(page).toHaveURL(path);
         const header = page.locator("header");
-        await expect(header.getByRole("button")).toBeInViewport({ ratio: 1 });
+        await expect(header.getByRole("button", { name: locale === "ru" ? "Выйти" : "Ieșire", exact: true })).toBeInViewport({ ratio: 1 });
+        await expect(header.getByRole("button", { name: locale === "ru" ? "Крупный текст" : "Text mărit", exact: true })).toBeInViewport({ ratio: 1 });
         await expect(header.getByRole("navigation", { name: "Language" })).toBeInViewport({ ratio: 1 });
         await page.evaluate(() => document.fonts.ready);
         await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

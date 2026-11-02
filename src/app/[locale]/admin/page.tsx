@@ -1,3 +1,4 @@
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -101,18 +102,18 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
           <div className="flex items-center gap-3 lg:block">
             <Link href={`/${locale}`} className="focus-ring flex min-w-0 items-center gap-3 rounded-xl">
               <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-6" aria-hidden="true" /></span>
-              <span className="min-w-0"><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="block truncate text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Control center</span></span>
+              <span className="min-w-0"><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="block truncate text-sm uppercase tracking-[0.15em] text-muted-foreground">Control center</span></span>
             </Link>
 
             <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:mt-7 lg:rounded-2xl lg:border lg:border-border/70 lg:bg-card/45 lg:p-3">
               <div className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-neon/35 bg-background font-bold text-neon">
                 {avatarIsSafe ? <Image src={adminAvatar} alt="" fill sizes="44px" className="object-cover" /> : adminName.slice(0, 2).toUpperCase()}
               </div>
-              <div className="hidden min-w-0 lg:block"><p className="truncate text-sm font-bold">{adminName}</p><p className="truncate text-[11px] text-neon">{t.admin}</p></div>
+              <div className="hidden min-w-0 lg:block"><p className="truncate text-sm font-bold">{adminName}</p><p className="truncate text-sm text-neon">{t.admin}</p></div>
             </div>
           </div>
 
-          <p className="mt-7 hidden px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
+          <p className="mt-7 hidden px-3 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
           <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible" aria-label={t.navigation}>
             <DashboardNavLink href={`/${locale}/admin`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
             <DashboardNavLink href={`/${locale}/admin/learning`} icon={GraduationCap} label={t.learning} active={section === "learning"} />
@@ -128,8 +129,9 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
 
           <div className="mt-5 hidden lg:mt-auto lg:block lg:pt-5">
             <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
+              <TextSizeButton locale={locale} />
               <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">
-                {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
+                {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-sm font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
               </nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
@@ -138,16 +140,17 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
 
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
-            <div className="flex items-center gap-2 lg:hidden">
+            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
+            <div className="flex flex-wrap items-center gap-2 lg:hidden">
               <Link href={`/${locale}/profile`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><UserCog className="size-4" aria-hidden="true" /></Link>
-              <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} className={`focus-ring rounded-lg px-2.5 py-2 text-xs font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}</nav>
+              <TextSizeButton locale={locale} />
+              <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} className={`focus-ring rounded-lg px-2.5 py-2 text-sm font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}</nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
           </header>
 
           {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8">
-            <p className="inline-flex items-center gap-2 rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-neon"><Sparkles className="size-3.5" aria-hidden="true" />{t.title}</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-sm font-bold uppercase tracking-[0.16em] text-neon"><Sparkles className="size-3.5" aria-hidden="true" />{t.title}</p>
             <h1 className="mt-4 max-w-4xl text-3xl font-black sm:text-4xl xl:text-5xl">{t.greeting}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
 
@@ -195,7 +198,7 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
           {section === "learning" && <section id="learning" className="scroll-mt-6 py-10">
             <SectionHeading title={t.structure} description={t.structureHint} icon={GraduationCap} />
             <ol className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {MODULE_STAGES.map((stage) => <li key={stage.kind} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/55 p-4"><span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-display text-xs font-black ${stage.index === STAGE_COUNT ? "border-gold/60 bg-gold/10 text-gold" : "border-neon/40 bg-neon/10 text-neon"}`}>{stage.index}</span><div><p className="text-sm font-semibold">{stage.title[locale]}</p><p className="mt-1 text-xs text-muted-foreground">+{stage.xp} XP</p></div></li>)}
+              {MODULE_STAGES.map((stage) => <li key={stage.kind} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/55 p-4"><span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-display text-sm font-black ${stage.index === STAGE_COUNT ? "border-gold/60 bg-gold/10 text-gold" : "border-neon/40 bg-neon/10 text-neon"}`}>{stage.index}</span><div><p className="text-sm font-semibold">{stage.title[locale]}</p><p className="mt-1 text-sm text-muted-foreground">+{stage.xp} XP</p></div></li>)}
             </ol>
           </section>}
 
@@ -223,7 +226,7 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
           {section === "security" && <section id="security" className="scroll-mt-6 py-10">
             <SectionHeading title={t.security} description={t.listHint} icon={LockKeyhole} />
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {USER_ROLES.map((role) => <div key={role} className="rounded-2xl border border-border/70 bg-card/55 p-4"><div className={`size-2.5 rounded-full ${roleColors[role]}`} /><p className="mt-4 text-xs text-muted-foreground">{ROLE_LABELS[role][locale]}</p><p className="mt-1 font-display text-2xl font-black">{roleCounts[role]}</p></div>)}
+              {USER_ROLES.map((role) => <div key={role} className="rounded-2xl border border-border/70 bg-card/55 p-4"><div className={`size-2.5 rounded-full ${roleColors[role]}`} /><p className="mt-4 text-sm text-muted-foreground">{ROLE_LABELS[role][locale]}</p><p className="mt-1 font-display text-2xl font-black">{roleCounts[role]}</p></div>)}
             </div>
           </section>}
         </div>

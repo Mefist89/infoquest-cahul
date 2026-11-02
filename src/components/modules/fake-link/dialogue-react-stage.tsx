@@ -56,7 +56,7 @@ export function DialogueReactStage({
       <div aria-live="polite" className="mt-6">
         {!finished && scenario ? (
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">
               {scenario.title} · {counter}
             </p>
 

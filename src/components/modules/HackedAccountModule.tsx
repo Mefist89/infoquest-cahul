@@ -1,4 +1,5 @@
 "use client";
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import React from "react";
 
 import Link from "next/link";
@@ -42,7 +43,7 @@ function HeaderStat({ label, value, icon: Icon }: { label: string; value: string
         <Icon className="size-5 sm:size-6" />
       </div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</p>
+        <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground sm:text-sm">{label}</p>
         <p className="mt-0.5 text-lg font-black text-foreground sm:text-xl">{value}</p>
       </div>
     </div>
@@ -80,11 +81,12 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
           </Link>
           <Link href={`/${locale}/profile`} className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-muted-foreground transition hover:border-neon/60 hover:text-foreground">{t.profile}</Link>
           {isAdmin && (
-            <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-xs font-bold text-neon transition hover:border-neon hover:bg-neon/20">
+            <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">
               <ShieldCheck className="size-4" aria-hidden="true" />
               <span className="hidden sm:inline">{locale === "ro" ? "Administrare" : "Админ"}</span>
             </Link>
           )}
+          <TextSizeButton locale={locale} />
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/modules/hacked-account`} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
           </nav>
@@ -94,7 +96,7 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
           <div className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-neon/10 blur-3xl" aria-hidden="true" />
           <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-neon">{t.eyebrow}</p>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-neon">{t.eyebrow}</p>
               <h1 className="mt-3 text-3xl font-black sm:text-5xl">{t.title}</h1>
               <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
             </div>
@@ -108,12 +110,12 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
           </div>
         </section>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
-          <aside className="rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
-            <p className="px-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
+          <aside className="min-w-0 rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
+            <p className="px-2 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
             <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
               <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
-              <span className="min-w-0"><span className="block text-xs text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
+              <span className="min-w-0"><span className="block text-sm text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
             </button>
             <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {t.stages.slice(1).map((stage, index) => {
@@ -127,7 +129,7 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
                   <li key={stage.title}>
                     <button type="button" onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
                       <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
-                      <span className="min-w-0"><span className="block text-xs text-muted-foreground">{dbStage}/8 {stage.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
+                      <span className="min-w-0"><span className="block text-sm text-muted-foreground">{dbStage}/8 {stage.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
                     </button>
                   </li>
                 );
@@ -135,7 +137,7 @@ export function HackedAccountModule({ content, locale, initialStages, initialMod
             </ol>
           </aside>
 
-          <section className="min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
+          <section className="min-w-0 min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
             {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
               <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
             ) : (<>
@@ -198,5 +200,5 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
 }
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
-  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
 }

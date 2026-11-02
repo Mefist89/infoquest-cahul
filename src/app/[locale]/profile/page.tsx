@@ -1,3 +1,4 @@
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -219,7 +220,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
         <aside className="min-w-0 border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
           <Link href={`/${locale}`} className="focus-ring flex items-center gap-3 rounded-xl">
             <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-6" aria-hidden="true" /></span>
-            <span><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Detective center</span></span>
+            <span><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="text-sm uppercase tracking-[0.15em] text-muted-foreground">Detective center</span></span>
           </Link>
 
           <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/45 p-3">
@@ -228,14 +229,14 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{displayName}</p>
-              <p className="mt-1.5 inline-flex max-w-full flex-wrap gap-x-1 rounded-full border border-neon/30 bg-neon/10 px-2.5 py-1 text-xs leading-relaxed">
+              <p className="mt-1.5 inline-flex max-w-full flex-wrap gap-x-1 rounded-full border border-neon/30 bg-neon/10 px-2.5 py-1 text-sm leading-relaxed">
                 <span className="text-muted-foreground">{t.role}:</span>
                 <span className="min-w-0 break-words font-bold text-neon">{ROLE_LABELS[userRole][locale]}</span>
               </p>
             </div>
           </div>
 
-          <p className="mt-7 hidden px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
+          <p className="mt-7 hidden px-3 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
           <nav className="mt-4 grid grid-cols-2 gap-2 pb-1 lg:grid-cols-1" aria-label={t.navigation}>
             <DashboardNavLink href={`/${locale}/profile`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
             <DashboardNavLink href={`/${locale}/profile/missions`} icon={GraduationCap} label={t.missions} active={section === "missions"} />
@@ -259,7 +260,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
 
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-xs text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
+            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
             <div className="flex max-w-full flex-wrap items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
           </header>
 
@@ -280,10 +281,10 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
 
             <div className="mt-5 grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
               <DashboardPanel title={t.shield} hint={t.progressText} icon={ShieldCheck}>
-                <div className="flex items-center gap-5"><ProgressDonut percent={completionPercent} /><div><p className="text-xs uppercase tracking-wider text-muted-foreground">{t.xp}</p><p className="mt-1 font-display text-2xl font-black text-gold">{totalXp}</p><p className="mt-3 text-xs text-muted-foreground">{t.stages}: {completedStageCount}/{TOTAL_STAGE_COUNT}</p></div></div>
+                <div className="flex items-center gap-5"><ProgressDonut percent={completionPercent} /><div><p className="text-sm uppercase tracking-wider text-muted-foreground">{t.xp}</p><p className="mt-1 font-display text-2xl font-black text-gold">{totalXp}</p><p className="mt-3 text-sm text-muted-foreground">{t.stages}: {completedStageCount}/{TOTAL_STAGE_COUNT}</p></div></div>
               </DashboardPanel>
               <DashboardPanel title={t.currentMission} hint={t.currentMissionHint} icon={CurrentModuleIcon}>
-                <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center"><div><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl border border-gold/50 font-display text-xs font-black text-gold">01</span><h2 className="font-black">{currentModule.title[locale]}</h2></div><div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground"><span>{t.stages}: {currentStages}/{STAGE_COUNT}</span><span>{currentProgress.xp}/{MODULE_MAX_XP} XP</span><span>{t.score}: {currentProgress.attempts ? `${currentProgress.score}%` : t.noScore}</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-label={currentModule.title[locale]} aria-valuenow={currentStages} aria-valuemin={0} aria-valuemax={STAGE_COUNT}><div className="h-full rounded-full bg-neon" style={{ width: `${(currentStages / STAGE_COUNT) * 100}%` }} /></div></div><Link href={`/${locale}${currentModule.route}`} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-4 text-sm font-bold text-neon">{t.open}<ChevronRight className="size-4" aria-hidden="true" /></Link></div>
+                <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center"><div><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl border border-gold/50 font-display text-sm font-black text-gold">01</span><h2 className="font-black">{currentModule.title[locale]}</h2></div><div className="mt-4 flex flex-wrap gap-3 text-sm text-muted-foreground"><span>{t.stages}: {currentStages}/{STAGE_COUNT}</span><span>{currentProgress.xp}/{MODULE_MAX_XP} XP</span><span>{t.score}: {currentProgress.attempts ? `${currentProgress.score}%` : t.noScore}</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-label={currentModule.title[locale]} aria-valuenow={currentStages} aria-valuemin={0} aria-valuemax={STAGE_COUNT}><div className="h-full rounded-full bg-neon" style={{ width: `${(currentStages / STAGE_COUNT) * 100}%` }} /></div></div><Link href={`/${locale}${currentModule.route}`} className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-4 text-sm font-bold text-neon">{t.open}<ChevronRight className="size-4" aria-hidden="true" /></Link></div>
               </DashboardPanel>
             </div>
           </section>}
@@ -298,7 +299,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
                 const moduleXp = Math.max(0, Math.min(MODULE_MAX_XP, item.xp));
                 const Icon = moduleIcons[module.icon];
                 const statusStyles = item.status === "completed" ? "border-success/45 bg-success/10 text-success" : item.status === "in_progress" ? "border-gold/45 bg-gold/10 text-gold" : "border-border bg-secondary/55 text-muted-foreground";
-                return <article key={module.moduleId} className={`group rounded-2xl border bg-card/55 p-5 transition ${locked ? "border-border/60" : "border-neon/30 hover:-translate-y-0.5 hover:border-neon/60"}`}><div className="flex items-start gap-4"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-background/60"><Icon className="size-6" style={{ color: module.color }} aria-hidden="true" /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><h3 className="font-bold">{module.title[locale]}</h3><span className="font-display text-xs text-gold">0{module.id}</span></div><div className="mt-2 flex flex-wrap gap-2 text-xs"><span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-semibold ${statusStyles}`}>{item.status === "completed" ? <Check className="size-3" aria-hidden="true" /> : <Clock3 className="size-3" aria-hidden="true" />}{t.statuses[item.status]}</span><span className="py-1 text-muted-foreground">{completedStages}/{STAGE_COUNT} · {moduleXp}/{MODULE_MAX_XP} XP</span></div></div></div><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full rounded-full ${locked ? "bg-muted-foreground/35" : "bg-neon"}`} style={{ width: `${(moduleXp / MODULE_MAX_XP) * 100}%` }} /></div><div className="mt-4 flex justify-end">{locked || !module.route ? <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-secondary/45 px-3 text-xs font-bold text-muted-foreground"><Lock className="size-3.5" aria-hidden="true" />{t.locked}</span> : <Link href={`/${locale}${module.route}`} className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-xs font-bold text-neon">{t.open}<ChevronRight className="size-3.5" aria-hidden="true" /></Link>}</div></article>;
+                return <article key={module.moduleId} className={`group rounded-2xl border bg-card/55 p-5 transition ${locked ? "border-border/60" : "border-neon/30 hover:-translate-y-0.5 hover:border-neon/60"}`}><div className="flex items-start gap-4"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-background/60"><Icon className="size-6" style={{ color: module.color }} aria-hidden="true" /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><h3 className="font-bold">{module.title[locale]}</h3><span className="font-display text-sm text-gold">0{module.id}</span></div><div className="mt-2 flex flex-wrap gap-2 text-sm"><span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-semibold ${statusStyles}`}>{item.status === "completed" ? <Check className="size-3" aria-hidden="true" /> : <Clock3 className="size-3" aria-hidden="true" />}{t.statuses[item.status]}</span><span className="py-1 text-muted-foreground">{completedStages}/{STAGE_COUNT} · {moduleXp}/{MODULE_MAX_XP} XP</span></div></div></div><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full rounded-full ${locked ? "bg-muted-foreground/35" : "bg-neon"}`} style={{ width: `${(moduleXp / MODULE_MAX_XP) * 100}%` }} /></div><div className="mt-4 flex justify-end">{locked || !module.route ? <span className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-secondary/45 px-3 text-sm font-bold text-muted-foreground"><Lock className="size-3.5" aria-hidden="true" />{t.locked}</span> : <Link href={`/${locale}${module.route}`} className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon">{t.open}<ChevronRight className="size-3.5" aria-hidden="true" /></Link>}</div></article>;
               })}
             </div>
           </section>}
@@ -308,7 +309,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {MODULE_CATALOG.map((module) => {
                 const earned = byModule.get(module.moduleId)?.status === "completed";
-                return <article key={module.moduleId} className={`rounded-2xl border p-4 ${earned ? "border-gold/45 bg-gold/10" : "border-border/65 bg-card/45"}`}><div className="flex items-start gap-3"><span className={`grid size-11 shrink-0 place-items-center rounded-xl ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}><Medal className="size-5" aria-hidden="true" /></span><div><h3 className={`text-sm font-bold ${earned ? "text-foreground" : "text-muted-foreground"}`}>{module.badge[locale]}</h3><p className={`mt-2 text-[10px] font-bold uppercase tracking-wider ${earned ? "text-gold" : "text-muted-foreground"}`}>{earned ? t.earned : t.notEarned}</p></div></div></article>;
+                return <article key={module.moduleId} className={`rounded-2xl border p-4 ${earned ? "border-gold/45 bg-gold/10" : "border-border/65 bg-card/45"}`}><div className="flex items-start gap-3"><span className={`grid size-11 shrink-0 place-items-center rounded-xl ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}><Medal className="size-5" aria-hidden="true" /></span><div><h3 className={`text-sm font-bold ${earned ? "text-foreground" : "text-muted-foreground"}`}>{module.badge[locale]}</h3><p className={`mt-2 text-sm font-bold uppercase tracking-wider ${earned ? "text-gold" : "text-muted-foreground"}`}>{earned ? t.earned : t.notEarned}</p></div></div></article>;
               })}
             </div>
           </section>}
@@ -317,7 +318,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             <SectionHeading title={t.questsTitle} description={t.questsHint} icon={Compass} />
             <div className="mt-5 rounded-3xl border border-dashed border-neon/35 bg-card/45 p-8 text-center sm:p-12">
               <span className="mx-auto grid size-20 place-items-center rounded-3xl border border-neon/30 bg-neon/10 text-neon shadow-[0_0_28px_rgba(0,217,255,0.12)]"><Compass className="size-10" aria-hidden="true" /></span>
-              <span className="mt-6 inline-flex rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-gold">{t.questsSoon}</span>
+              <span className="mt-6 inline-flex rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-sm font-black uppercase tracking-wider text-gold">{t.questsSoon}</span>
               <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.questsEmpty}</p>
             </div>
           </section>}
@@ -328,7 +329,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
 }
 
 function LanguageNav({ locale, sectionPath }: { locale: ProfileLocale; sectionPath: string }) {
-  return <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/profile${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2.5 py-2 text-base font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}</nav>;
+  return <div className="flex items-center gap-2"><TextSizeButton locale={locale} /><nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/profile${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2.5 py-2 text-base font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}</nav></div>;
 }
 
 function DashboardNavLink({ href, icon: Icon, label, active = false }: { href: string; icon: LucideIcon; label: string; active?: boolean }) {
@@ -336,11 +337,11 @@ function DashboardNavLink({ href, icon: Icon, label, active = false }: { href: s
 }
 
 function StatCard({ icon: Icon, label, value, color }: { icon: LucideIcon; label: string; value: string; color: string }) {
-  return <article className="rounded-2xl border border-border/70 bg-card/55 p-5 transition hover:-translate-y-0.5 hover:border-neon/30"><span className={`grid size-11 place-items-center rounded-xl bg-background/55 ${color}`}><Icon className="size-5" aria-hidden="true" /></span><p className="mt-5 text-xs uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-display text-2xl font-black">{value}</p></article>;
+  return <article className="rounded-2xl border border-border/70 bg-card/55 p-5 transition hover:-translate-y-0.5 hover:border-neon/30"><span className={`grid size-11 place-items-center rounded-xl bg-background/55 ${color}`}><Icon className="size-5" aria-hidden="true" /></span><p className="mt-5 text-sm uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-display text-2xl font-black">{value}</p></article>;
 }
 
 function DashboardPanel({ title, hint, icon: Icon, children }: { title: string; hint: string; icon: LucideIcon; children: React.ReactNode }) {
-  return <article className="rounded-2xl border border-border/70 bg-card/55 p-5 sm:p-6"><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-neon/10 text-neon"><Icon className="size-5" aria-hidden="true" /></span><div><h2 className="text-lg font-black">{title}</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{hint}</p></div></div><div className="mt-6">{children}</div></article>;
+  return <article className="rounded-2xl border border-border/70 bg-card/55 p-5 sm:p-6"><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-neon/10 text-neon"><Icon className="size-5" aria-hidden="true" /></span><div><h2 className="text-lg font-black">{title}</h2><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{hint}</p></div></div><div className="mt-6">{children}</div></article>;
 }
 
 function SectionHeading({ title, description, icon: Icon }: { title: string; description: string; icon: LucideIcon }) {

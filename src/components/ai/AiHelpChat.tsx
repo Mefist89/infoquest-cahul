@@ -1,5 +1,6 @@
 "use client";
 
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import Image from "next/image";
 import Link from "next/link";
 import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
@@ -274,9 +275,10 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
             </div>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden items-center gap-2 rounded-full border border-success/35 bg-success/10 px-3 py-2 text-xs font-bold text-success sm:inline-flex">
+            <span className="hidden items-center gap-2 rounded-full border border-success/35 bg-success/10 px-3 py-2 text-sm font-bold text-success sm:inline-flex">
               <span className="size-2 animate-pulse rounded-full bg-success" />{t.status}
             </span>
+            <TextSizeButton locale={locale} />
             <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
               {(["ro", "ru"] as const).map((language) => (
                 <LocaleSwitch locale={language} key={language} href={`/${language}/ai-help`} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-black uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>
@@ -292,7 +294,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
             <div className="relative mt-2 w-full rounded-2xl border border-neon/25 bg-background/65 p-4 backdrop-blur">
               <div className="flex items-center justify-center gap-2"><Bot className="size-5 text-neon" aria-hidden="true" /><h1 className="text-xl font-black">Chrono</h1></div>
               <p className="mt-2 text-sm text-muted-foreground">{t.subtitle}</p>
-              <div className="mt-4 rounded-xl border border-gold/25 bg-gold/5 px-3 py-2 text-xs text-gold"><strong>{mode === "analyzer" ? t.analyzer : t.chat}</strong><span className="mt-1 block text-muted-foreground">{mode === "analyzer" ? t.analyzerHint : t.chatHint}</span></div>
+              <div className="mt-4 rounded-xl border border-gold/25 bg-gold/5 px-3 py-2 text-sm text-gold"><strong>{mode === "analyzer" ? t.analyzer : t.chat}</strong><span className="mt-1 block text-muted-foreground">{mode === "analyzer" ? t.analyzerHint : t.chatHint}</span></div>
             </div>
           </aside>
 
@@ -300,8 +302,8 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
             <div className="flex flex-wrap items-center gap-3 border-b border-border/70 px-4 py-3 sm:px-6 sm:py-4">
               <Image key={`compact-${robotImage}`} src={robotImage} alt="Chrono" width={96} height={96} priority className="size-12 rounded-2xl object-contain drop-shadow-[0_0_14px_rgba(0,217,255,0.35)] lg:hidden" />
               <span className="hidden size-11 place-items-center rounded-2xl bg-success/15 text-success lg:grid"><Sparkles className="size-5" aria-hidden="true" /></span>
-              <div className="min-w-0 flex-1"><h2 className="truncate font-black">{mode === "analyzer" ? `${t.title} · ${t.analyzer}` : `${t.title} · ${t.chat}`}</h2><p className="text-xs text-muted-foreground">{t.status}</p><p className="mt-1 truncate text-[11px] font-semibold text-neon">{t.quota}: {quota.dailyRemaining ?? "—"} {t.textRequests} · {quota.audioRemaining ?? "—"} {t.audioRequests}</p></div>
-              <button type="button" onClick={startNewCheck} className="focus-ring order-3 inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-xs font-black text-neon transition hover:bg-neon/20 sm:order-none sm:w-auto" title={t.newCheck} aria-label={t.newCheck}><RotateCcw className="size-4" aria-hidden="true" /><span>{t.newCheck}</span></button>
+              <div className="min-w-0 flex-1"><h2 className="truncate font-black">{mode === "analyzer" ? `${t.title} · ${t.analyzer}` : `${t.title} · ${t.chat}`}</h2><p className="text-sm text-muted-foreground">{t.status}</p><p className="mt-1 truncate text-sm font-semibold text-neon">{t.quota}: {quota.dailyRemaining ?? "—"} {t.textRequests} · {quota.audioRemaining ?? "—"} {t.audioRequests}</p></div>
+              <button type="button" onClick={startNewCheck} className="focus-ring order-3 inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-sm font-black text-neon transition hover:bg-neon/20 sm:order-none sm:w-auto" title={t.newCheck} aria-label={t.newCheck}><RotateCcw className="size-4" aria-hidden="true" /><span>{t.newCheck}</span></button>
               <button type="button" onClick={toggleVoice} aria-pressed={voiceEnabled} aria-label={voiceEnabled ? t.listenOn : t.listenOff} title={voiceEnabled ? t.listenOn : t.listenOff} className={`focus-ring grid size-11 place-items-center rounded-xl border transition ${voiceEnabled ? "border-success/50 bg-success/15 text-success" : "border-border bg-background/40 text-muted-foreground hover:text-neon"}`}>
                 {voiceEnabled ? <Volume2 className="size-5" aria-hidden="true" /> : <VolumeX className="size-5" aria-hidden="true" />}
               </button>

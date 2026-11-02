@@ -67,13 +67,13 @@ export function DealSignalsStage({
             </div>
             <div className="flex flex-col gap-2">
               <div className="min-h-11 min-w-11 relative rounded-xl border border-gold/50 bg-gold/10 p-3 text-center">
-                <p className="text-xs text-muted-foreground line-through">12000 {locale === "ro" ? "lei" : "леев"}</p>
+                <p className="text-sm text-muted-foreground line-through">12000 {locale === "ro" ? "lei" : "леев"}</p>
                 <p className="text-2xl font-black text-gold">5999 {locale === "ro" ? "lei" : "леев"}</p>
                 <Hotspot zone={`${zoneWord} 1`} found={selected.has("price")} disabled={submitted || saving} onToggle={() => toggle("price")} />
               </div>
               <div className="min-h-11 min-w-11 relative rounded-xl border border-border bg-card/60 p-3">
                 <p className="text-sm font-bold text-foreground">MagazinSuper_2026</p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {locale === "ro" ? "Pe site de 6 zile · 0 recenzii" : "На сайте 6 дней · 0 отзывов"}
                 </p>
                 <Hotspot zone={`${zoneWord} 3`} found={selected.has("seller")} disabled={submitted || saving} onToggle={() => toggle("seller")} />

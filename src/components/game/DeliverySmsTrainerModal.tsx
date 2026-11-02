@@ -248,10 +248,10 @@ export function DeliverySmsTrainerModal({
                 <Smartphone className="size-5" aria-hidden="true" />
               </span>
               <div>
-                <p className="text-xs font-black uppercase tracking-wider text-neon">
+                <p className="text-sm font-black uppercase tracking-wider text-neon">
                   {DELIVERY_SMS_THEORY.categoryBadge[locale]}
                 </p>
-                <p className="text-xs font-bold text-gold">
+                <p className="text-sm font-bold text-gold">
                   {locale === "ro"
                     ? "Maria · Oficiul Poștal · Investigație interactivă"
                     : "Мария · Район Почты · Интерактивное расследование"}
@@ -260,7 +260,7 @@ export function DeliverySmsTrainerModal({
             </div>
 
             {/* Сводка оставшихся задач */}
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+            <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
               <span className="rounded-lg border border-neon/35 bg-neon/10 px-2.5 py-1 text-neon">
                 {locale === "ro"
                   ? `SMS analizate: ${solvedSmsCount} / ${totalCases}`
@@ -293,13 +293,13 @@ export function DeliverySmsTrainerModal({
 
           {/* Прогресс-бар расследования и этапы */}
           <div className="mt-2.5">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-300">
+            <div className="flex items-center justify-between text-sm font-bold text-slate-300">
               <span>
                 {locale === "ro"
                   ? `Progresul investigației (${completedTasks} din ${totalTasks} pași)`
                   : `Ход расследования (${completedTasks} из ${totalTasks} шагов)`}
               </span>
-              <span className="font-mono text-xs font-black text-neon">{progressPercent}%</span>
+              <span className="font-mono text-sm font-black text-neon">{progressPercent}%</span>
             </div>
             <div
               className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-slate-800 p-0.5"
@@ -320,7 +320,7 @@ export function DeliverySmsTrainerModal({
               {checkpoints.map((cp) => (
                 <div
                   key={cp.id}
-                  className={`flex items-center justify-between rounded-lg border px-2.5 py-1 text-[11px] font-bold transition ${
+                  className={`flex items-center justify-between rounded-lg border px-2.5 py-1 text-sm font-bold transition ${
                     cp.active
                       ? "border-neon bg-neon/15 text-white shadow-[0_0_12px_rgba(0,217,255,0.2)]"
                       : cp.done
@@ -330,7 +330,7 @@ export function DeliverySmsTrainerModal({
                 >
                   <span className="truncate">{cp.label}</span>
                   <span
-                    className={`ml-1 shrink-0 rounded px-1.5 py-0.2 font-mono text-[10px] font-black ${
+                    className={`ml-1 shrink-0 rounded px-1.5 py-0.2 font-mono text-sm font-black ${
                       cp.done
                         ? "bg-success/20 text-success"
                         : cp.active
@@ -354,7 +354,7 @@ export function DeliverySmsTrainerModal({
                 <h2 className="text-xl font-black text-white sm:text-2xl">
                   {DELIVERY_SMS_THEORY.title[locale]}
                 </h2>
-                <p className="mt-1 text-xs leading-relaxed text-slate-300 sm:text-sm">
+                <p className="mt-1 text-sm leading-relaxed text-slate-300 sm:text-sm">
                   {DELIVERY_SMS_THEORY.subtitle[locale]}
                 </p>
               </div>
@@ -370,11 +370,11 @@ export function DeliverySmsTrainerModal({
                         <BookOpen className="size-4 shrink-0" aria-hidden="true" />
                         {rule.title[locale]}
                       </h3>
-                      <p className="mt-2 text-xs leading-relaxed text-slate-200 sm:text-sm">
+                      <p className="mt-2 text-sm leading-relaxed text-slate-200 sm:text-sm">
                         {rule.description[locale]}
                       </p>
                     </div>
-                    <p className="mt-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-xs font-semibold text-amber-200">
+                    <p className="mt-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-sm font-semibold text-amber-200">
                       {rule.example[locale]}
                     </p>
                   </article>
@@ -382,7 +382,7 @@ export function DeliverySmsTrainerModal({
               </div>
 
               <div className="flex flex-col items-stretch justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 sm:flex-row sm:items-center">
-                <p className="text-xs font-bold leading-relaxed text-amber-100 sm:text-sm">
+                <p className="text-sm font-bold leading-relaxed text-amber-100 sm:text-sm">
                   {DELIVERY_SMS_THEORY.goldenRule[locale]}
                 </p>
                 <button
@@ -403,14 +403,14 @@ export function DeliverySmsTrainerModal({
                 <div>
                   {/* Верхняя строка карточки SMS + 3 заряда внимания ⚡ */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
-                    <span className="rounded-full border border-gold/45 bg-gold/15 px-3 py-0.5 text-xs font-black text-gold">
+                    <span className="rounded-full border border-gold/45 bg-gold/15 px-3 py-0.5 text-sm font-black text-gold">
                       {currentCase.badge[locale]}
                     </span>
 
                     <div className="flex items-center gap-2">
                       {focusNotice && (
                         <span
-                          className={`rounded-lg border px-2 py-0.5 text-[11px] font-black ${
+                          className={`rounded-lg border px-2 py-0.5 text-sm font-black ${
                             focusNotice.positive
                               ? "border-success/50 bg-success/20 text-success"
                               : "border-danger/60 bg-danger/20 text-amber-200"
@@ -421,7 +421,7 @@ export function DeliverySmsTrainerModal({
                       )}
 
                       <div
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-neon/35 bg-[#0f1d36] px-2.5 py-1 text-xs font-black"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-neon/35 bg-[#0f1d36] px-2.5 py-1 text-sm font-black"
                         aria-label={`${ui.focusLabel}: ${focusCharges}/${MAX_FOCUS_CHARGES}`}
                       >
                         <span className="text-slate-300">{ui.focusLabel}:</span>
@@ -456,7 +456,7 @@ export function DeliverySmsTrainerModal({
                         style={{ width: `${allFlagsFound ? 100 : focusPercent}%` }}
                       />
                     </div>
-                    <span className="shrink-0 text-xs font-bold text-slate-300">
+                    <span className="shrink-0 text-sm font-bold text-slate-300">
                       {ui.flagsCounter}:{" "}
                       <strong className={allFlagsFound ? "text-success" : "text-amber-300"}>
                         {foundFlagIds.length}/{totalFlagsInCase}
@@ -464,22 +464,22 @@ export function DeliverySmsTrainerModal({
                     </span>
                   </div>
 
-                  <p className="mt-2 text-xs leading-relaxed text-slate-300">
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
                     {currentCase.context[locale]}
                   </p>
 
                   {/* Экран входящего SMS (5 фраз: 3 улики + 2 нейтральные) */}
                   <div className="mt-2 rounded-2xl border border-slate-700 bg-[#0f1d36] p-3 shadow-inner">
-                    <div className="flex items-center justify-between border-b border-slate-700/80 pb-1.5 text-xs">
+                    <div className="flex items-center justify-between border-b border-slate-700/80 pb-1.5 text-sm">
                       <div>
-                        <span className="block text-[10px] uppercase tracking-wider text-slate-400">
+                        <span className="block text-sm uppercase tracking-wider text-slate-400">
                           {ui.incomingSmsLabel}
                         </span>
                         <span className="font-mono text-sm font-black text-white">
                           {currentCase.sender}
                         </span>
                       </div>
-                      <span className="rounded-md bg-slate-800 px-2.5 py-0.5 font-mono text-xs text-slate-300">
+                      <span className="rounded-md bg-slate-800 px-2.5 py-0.5 font-mono text-sm text-slate-300">
                         {currentCase.time}
                       </span>
                     </div>
@@ -497,7 +497,7 @@ export function DeliverySmsTrainerModal({
                             disabled={isOutOfFocus}
                             onClick={() => handleSegmentClick(segment)}
                             aria-pressed={isFound}
-                            className={`focus-ring block w-full rounded-xl border px-3 py-1.5 text-left text-xs leading-snug transition sm:text-sm ${
+                            className={`focus-ring block w-full rounded-xl border px-3 py-1.5 text-left text-sm leading-snug transition sm:text-sm ${
                               isOutOfFocus
                                 ? "cursor-not-allowed border-slate-800 bg-slate-900/50 text-slate-500"
                                 : isFound
@@ -510,12 +510,12 @@ export function DeliverySmsTrainerModal({
                             <span className="flex items-center justify-between gap-2">
                               <span>{segment.text[locale]}</span>
                               {isFound && (
-                                <span className="shrink-0 rounded-md bg-danger px-2 py-0.5 text-[10px] font-black uppercase text-white">
+                                <span className="shrink-0 rounded-md bg-danger px-2 py-0.5 text-sm font-black uppercase text-white">
                                   {locale === "ro" ? "Semnal ✓" : "Улика ✓"}
                                 </span>
                               )}
                               {isNeutralChecked && (
-                                <span className="shrink-0 rounded-md bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                                <span className="shrink-0 rounded-md bg-slate-700 px-2 py-0.5 text-sm font-bold text-slate-300">
                                   {locale === "ro" ? "Neutru" : "Нейтрально"}
                                 </span>
                               )}
@@ -531,7 +531,7 @@ export function DeliverySmsTrainerModal({
                 <div className="mt-2">
                   {activeSegment ? (
                     <div
-                      className={`rounded-xl border px-3.5 py-2 text-xs leading-relaxed ${
+                      className={`rounded-xl border px-3.5 py-2 text-sm leading-relaxed ${
                         activeSegment.isFlag
                           ? "border-danger/50 bg-danger/15 text-amber-100"
                           : "border-amber-500/50 bg-amber-500/10 text-amber-100"
@@ -554,7 +554,7 @@ export function DeliverySmsTrainerModal({
                       <p className="mt-0.5">{activeSegment.explanation[locale]}</p>
                     </div>
                   ) : (
-                    <p className="rounded-xl border border-dashed border-neon/35 bg-neon/5 px-3.5 py-2 text-xs text-neon">
+                    <p className="rounded-xl border border-dashed border-neon/35 bg-neon/5 px-3.5 py-2 text-sm text-neon">
                       {ui.clickHint}
                     </p>
                   )}
@@ -571,7 +571,7 @@ export function DeliverySmsTrainerModal({
                     <h3 className="mt-3 text-lg font-black text-danger sm:text-xl">
                       {ui.outOfFocusTitle}
                     </h3>
-                    <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-200 sm:text-sm">
+                    <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-200 sm:text-sm">
                       {ui.outOfFocusDesc}
                     </p>
                     <button
@@ -594,7 +594,7 @@ export function DeliverySmsTrainerModal({
                           ? `Pasul A: Găsește cele ${totalFlagsInCase} semnale de alarmă în SMS`
                           : `Этап А: Найди все ${totalFlagsInCase} красных флага в тексте SMS слева`}
                       </h3>
-                      <p className="mt-1 text-xs leading-relaxed text-slate-300">
+                      <p className="mt-1 text-sm leading-relaxed text-slate-300">
                         {locale === "ro"
                           ? "Citește fără grabă fiecare frază. În mesaj sunt 3 capcane reale și 2 fraze neutre (fiecare greșeală scade 1 ⚡)."
                           : "Читай без спешки каждую фразу. В сообщении 3 реальные уловки и 2 нейтральные фразы (промах отнимает 1 заряд ⚡)."}
@@ -609,7 +609,7 @@ export function DeliverySmsTrainerModal({
                           return (
                             <div
                               key={flag.id}
-                              className={`flex items-start gap-2.5 rounded-xl border p-2.5 text-xs transition sm:text-sm ${
+                              className={`flex items-start gap-2.5 rounded-xl border p-2.5 text-sm transition sm:text-sm ${
                                 found
                                   ? "border-success/45 bg-success/10 text-emerald-100"
                                   : "border-slate-700 bg-slate-900/55 text-slate-400"
@@ -628,7 +628,7 @@ export function DeliverySmsTrainerModal({
                                       : `Улика №${idx + 1} (нажми на подозрительную фразу в SMS)`}
                                 </p>
                                 {found && (
-                                  <p className="mt-0.5 text-xs text-slate-200">{flag.explanation[locale]}</p>
+                                  <p className="mt-0.5 text-sm text-slate-200">{flag.explanation[locale]}</p>
                                 )}
                               </div>
                             </div>
@@ -636,7 +636,7 @@ export function DeliverySmsTrainerModal({
                         })}
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-xs text-slate-300">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-300">
                       <span>
                         {locale === "ro"
                           ? `Indicii rămase în acest SMS: ${totalFlagsInCase - foundFlagIds.length}`
@@ -646,7 +646,7 @@ export function DeliverySmsTrainerModal({
                         type="button"
                         disabled={focusCharges <= 1}
                         onClick={handleUseHint}
-                        className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold transition hover:bg-gold/25 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-gold/45 bg-gold/15 px-2.5 py-1 text-sm font-bold text-gold transition hover:bg-gold/25 disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         <Lightbulb className="size-3.5" aria-hidden="true" />
                         <span>{ui.hintBtn}</span>
@@ -656,7 +656,7 @@ export function DeliverySmsTrainerModal({
                 ) : (
                   <div className="flex h-full flex-col justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2 rounded-xl border border-success/40 bg-success/10 px-3 py-2 text-xs font-bold text-success sm:text-sm">
+                      <div className="flex items-center gap-2 rounded-xl border border-success/40 bg-success/10 px-3 py-2 text-sm font-bold text-success sm:text-sm">
                         <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
                         <span>{ui.allFlagsFound}</span>
                       </div>
@@ -677,7 +677,7 @@ export function DeliverySmsTrainerModal({
                               type="button"
                               onClick={() => setSelectedOptionId(option.id)}
                               aria-pressed={isChosen}
-                              className={`focus-ring block w-full rounded-xl border px-3.5 py-2.5 text-left text-xs font-bold leading-relaxed transition sm:text-sm ${
+                              className={`focus-ring block w-full rounded-xl border px-3.5 py-2.5 text-left text-sm font-bold leading-relaxed transition sm:text-sm ${
                                 chosenCorrect
                                   ? "border-success bg-success/20 text-white"
                                   : chosenWrong
@@ -695,7 +695,7 @@ export function DeliverySmsTrainerModal({
                     {selectedOption && (
                       <div className="space-y-2.5">
                         <div
-                          className={`rounded-xl border p-3 text-xs leading-relaxed sm:text-sm ${
+                          className={`rounded-xl border p-3 text-sm leading-relaxed sm:text-sm ${
                             selectedOption.correct
                               ? "border-success/50 bg-success/15 text-emerald-100"
                               : "border-danger/50 bg-danger/15 text-amber-100"
@@ -743,7 +743,7 @@ export function DeliverySmsTrainerModal({
                 </span>
                 <h2 className="mt-3 text-2xl font-black text-success">{ui.summaryTitle}</h2>
                 <p className="mt-1 text-sm leading-relaxed text-slate-200">{ui.summarySubtitle}</p>
-                <p className="mt-2.5 inline-block rounded-full border border-neon/40 bg-neon/10 px-4 py-1 text-xs font-black text-neon sm:text-sm">
+                <p className="mt-2.5 inline-block rounded-full border border-neon/40 bg-neon/10 px-4 py-1 text-sm font-black text-neon sm:text-sm">
                   {ui.summaryScoreLabel}
                 </p>
               </div>
@@ -756,7 +756,7 @@ export function DeliverySmsTrainerModal({
                   {ui.summaryChecklist.map((item) => (
                     <li
                       key={item}
-                      className="flex items-start gap-2 rounded-xl border border-slate-700/80 bg-[#0a1528]/80 p-3 text-xs leading-relaxed text-slate-100 sm:text-sm"
+                      className="flex items-start gap-2 rounded-xl border border-slate-700/80 bg-[#0a1528]/80 p-3 text-sm leading-relaxed text-slate-100 sm:text-sm"
                     >
                       <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
                       <span>{item}</span>

@@ -1,3 +1,4 @@
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
 import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
@@ -19,6 +20,7 @@ export function ModuleLanding({ module, locale, rules }: { module: SeoModule; lo
       <div className="relative mx-auto max-w-4xl">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-4 text-base font-semibold text-neon"><ArrowLeft className="size-5" aria-hidden="true" />{labels.back}</Link>
+          <TextSizeButton locale={locale} />
           <nav aria-label="Language" className="flex rounded-full border border-border bg-card/70 p-1">
             {(["ro", "ru"] as const).map(language => <LocaleSwitch key={language} locale={language} href={`/${language}${path}`} aria-current={language === locale ? "page" : undefined} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-base font-bold uppercase ${language === locale ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
           </nav>

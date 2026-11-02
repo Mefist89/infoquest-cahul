@@ -71,7 +71,7 @@ export function Composer({
   if (!dataConsent) {
     return (
       <div className="max-h-[60dvh] shrink-0 overflow-y-auto border-t border-border/70 bg-background/95 p-3 sm:p-5">
-        <div className="rounded-xl border border-gold/30 bg-gold/5 p-3 text-xs leading-relaxed text-muted-foreground">
+        <div className="rounded-xl border border-gold/30 bg-gold/5 p-3 text-sm leading-relaxed text-muted-foreground">
           <p>{t.privacySummary}</p>
           <details className="mt-1">
             <summary className="focus-ring inline-flex cursor-pointer rounded font-bold text-neon hover:underline">
@@ -102,14 +102,14 @@ export function Composer({
                   <button type="button" onClick={() => setAnalyzerInputMode("audio")} disabled={listening || thinking || busy} aria-pressed={analyzerInputMode === "audio"} className={`focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-sm font-black transition ${analyzerInputMode === "audio" ? "bg-neon text-primary-foreground shadow-[0_0_18px_rgba(0,217,255,0.25)]" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}><AudioLines className="size-4" aria-hidden="true" />{t.audioMode}</button>
                 </div>
               )}
-              {speechError && <p role="alert" className="mb-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-xs text-danger">{speechError}</p>}
-              {requestError && <p className="mb-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-xs text-danger">{requestError}</p>}
-              {listening && <p className="mb-3 flex items-center gap-2 text-xs font-bold text-success"><span className="size-2 animate-pulse rounded-full bg-success" />{t.listening}</p>}
+              {speechError && <p role="alert" className="mb-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{speechError}</p>}
+              {requestError && <p className="mb-3 rounded-xl border border-danger/35 bg-danger/10 px-3 py-2 text-sm text-danger">{requestError}</p>}
+              {listening && <p className="mb-3 flex items-center gap-2 text-sm font-bold text-success"><span className="size-2 animate-pulse rounded-full bg-success" />{t.listening}</p>}
               {mode === "analyzer" && analyzerInputMode === "audio" && attachment && (
                 <div className="mb-3 rounded-xl border border-neon/25 bg-card/70 p-3">
                   <div className="flex items-center gap-3">
                     <span className="grid size-12 place-items-center rounded-lg bg-success/10 text-success"><FileAudio className="size-6" /></span>
-                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{attachment.name}</p><p className="text-xs text-muted-foreground">{(attachment.durationSeconds === undefined ? t.audioSize : t.audioDetails.replace("{seconds}", String(Math.round(attachment.durationSeconds)))).replace("{size}", String(Math.ceil(attachment.file.size / 1024)))}</p></div>
+                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{attachment.name}</p><p className="text-sm text-muted-foreground">{(attachment.durationSeconds === undefined ? t.audioSize : t.audioDetails.replace("{seconds}", String(Math.round(attachment.durationSeconds)))).replace("{size}", String(Math.ceil(attachment.file.size / 1024)))}</p></div>
                     <button type="button" onClick={clearAttachment} aria-label={`${t.removeAttachment}: ${attachment.name}`} className="focus-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
                   </div>
                   <audio src={attachment.url} controls className="mt-3 w-full" />
@@ -119,11 +119,11 @@ export function Composer({
                 <div className="rounded-2xl border border-border bg-card/85 p-4">
                   <div className="flex flex-wrap items-center gap-4">
                     <span className={`grid size-12 place-items-center rounded-full border ${listening ? "border-danger bg-danger/15 text-danger" : "border-success/40 bg-success/10 text-success"}`}><Mic className={`size-6 ${listening ? "animate-pulse" : ""}`} aria-hidden="true" /></span>
-                    <div className="min-w-32 flex-1"><p className="text-xs text-muted-foreground">{t.recordingTime}</p><p className="font-display text-2xl font-black text-foreground tabular-nums">{formatRecordingTime(recordingSeconds)}</p></div>
+                    <div className="min-w-32 flex-1"><p className="text-sm text-muted-foreground">{t.recordingTime}</p><p className="font-display text-2xl font-black text-foreground tabular-nums">{formatRecordingTime(recordingSeconds)}</p></div>
                     <button type="button" onClick={toggleMicrophone} disabled={!dataConsent || thinking || busy || (listening && !canStopRecording)} aria-pressed={listening} aria-busy={busy} aria-label={starting ? t.microphonePending : preparingAudio ? t.preparingAudio : listening ? t.stopRecording : t.startRecording} className={`focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40 ${listening ? "bg-danger text-white" : "bg-success text-slate-950"}`}>{listening ? <Square className="size-4 fill-current" aria-hidden="true" /> : <Mic className="size-5" aria-hidden="true" />}{starting ? t.microphonePending : preparingAudio ? t.preparingAudio : listening ? t.stopRecording : t.startRecording}</button>
                     <label className={`focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-neon/35 px-4 text-sm font-bold text-neon ${dataConsent ? "cursor-pointer hover:bg-neon/10" : "cursor-not-allowed opacity-40"}`}><Paperclip className="size-4" aria-hidden="true" />{t.audio}<input type="file" accept="audio/*,.mp3,.m4a,.wav,.webm,.weba,.ogg,.aac,.flac" onChange={selectFile} disabled={!dataConsent || listening || busy || thinking} className="sr-only" /></label>
                   </div>
-                  <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{t.audioFormats}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.audioFormats}</p>
                   <button type="submit" disabled={!dataConsent || thinking || listening || busy || !attachment} aria-label={t.sendAudio} className="focus-ring mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-neon px-5 text-sm font-black text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"><Send className="size-5" aria-hidden="true" />{t.send}</button>
                 </div>
               ) : (

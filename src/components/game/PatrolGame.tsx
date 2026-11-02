@@ -168,7 +168,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
     <div>
       <div className="mb-3 flex items-center gap-3 rounded-2xl border border-danger/40 bg-danger/5 px-4 py-3">
         <Skull className="size-5 shrink-0 animate-pulse text-danger" aria-hidden="true" />
-        <p className="text-xs font-black uppercase tracking-widest text-danger">
+        <p className="text-sm font-black uppercase tracking-widest text-danger">
           {locale === "ro" ? "Umbra" : "Тень"}
         </p>
         <div
@@ -181,7 +181,7 @@ export function PatrolGame({ locale }: { locale: PatrolLocale }) {
         >
           <div className="h-full rounded-full bg-danger transition-[width] duration-500" style={{ width: `${shadow}%` }} />
         </div>
-        <p className="text-xs font-bold text-muted-foreground">
+        <p className="text-sm font-bold text-muted-foreground">
           {resolvedIds.length}/{PATROL_NPCS.length}
         </p>
       </div>

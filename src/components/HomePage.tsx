@@ -108,7 +108,7 @@ function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Miss
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-semibold leading-snug text-foreground">{mission.title[lang]}</span>
-        <span className={`mt-1 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide ${locked ? "rounded-full bg-secondary px-2 py-0.5 text-foreground/75" : "text-neon"}`}>
+        <span className={`mt-1 inline-flex items-center gap-1 text-sm font-semibold uppercase tracking-wide ${locked ? "rounded-full bg-secondary px-2 py-0.5 text-foreground/75" : "text-neon"}`}>
           {locked && <Lock className="size-3" aria-hidden="true" />}
           {locked ? t.soon : `${t.playable} · ${t.openMission}`}
         </span>
@@ -141,7 +141,7 @@ function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgre
           }}
         />
       </div>
-      <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
+      <p className="mt-2 text-sm uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
       <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={TOTAL_MAX_XP} aria-label={strings[lang].shieldProgress}>
         {missions.map((module) => {
           const moduleXp = progress.modules[module.moduleId]?.xp ?? 0;
@@ -185,7 +185,7 @@ function CaseSlider({ lang }: { lang: Lang }) {
       <div className="overflow-hidden rounded-3xl border border-neon/30 bg-card/75 shadow-[0_20px_70px_rgba(0,0,0,0.25)] backdrop-blur">
         <div className="flex items-center gap-3 border-b border-border/70 px-5 py-4 sm:px-6">
           <span className="grid size-10 place-items-center rounded-xl border border-neon/35 bg-neon/10 text-neon"><ShieldAlert className="size-5" aria-hidden="true" /></span>
-          <div><h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2><p className="text-xs text-muted-foreground">{lang === "ro" ? `${MODULE_COUNT} dosare ale rețelei Umbra` : `${MODULE_COUNT} дел сети Тени`}</p></div>
+          <div><h2 className="text-lg font-bold text-neon">{t.storyTitle}</h2><p className="text-sm text-muted-foreground">{lang === "ro" ? `${MODULE_COUNT} dosare ale rețelei Umbra` : `${MODULE_COUNT} дел сети Тени`}</p></div>
         </div>
 
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
@@ -195,7 +195,7 @@ function CaseSlider({ lang }: { lang: Lang }) {
             <span className="font-display text-sm font-black text-gold">{String(active + 1).padStart(2, "0")} / {String(MODULE_COUNT).padStart(2, "0")}</span>
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-gold">{lang === "ro" ? `Dosarul ${active + 1}` : `Дело ${active + 1}`}</p>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-gold">{lang === "ro" ? `Dosarul ${active + 1}` : `Дело ${active + 1}`}</p>
             <h3 className="mt-2 text-xl font-black text-foreground sm:text-2xl">{mission.title[lang]}</h3>
             <p className="mt-4 text-sm leading-relaxed text-foreground">{slide.description[lang]}</p>
             <p className="mt-3 rounded-xl border border-neon/20 bg-neon/5 px-4 py-3 text-sm leading-relaxed text-muted-foreground"><strong className="text-neon">{lang === "ro" ? "Obiectiv: " : "Цель: "}</strong>{slide.objective[lang]}</p>
@@ -296,8 +296,8 @@ export default function HomePage() {
         <section className="relative mx-auto grid w-full max-w-6xl items-center gap-8 overflow-hidden px-4 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:py-14">
           <div className="relative z-10 min-w-0 text-center lg:text-left">
             <h1 className="font-display text-4xl font-black uppercase tracking-tight min-[360px]:text-5xl sm:text-6xl"><span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span></h1>
-            <p className="mx-auto mt-2 max-w-full text-balance font-display text-xs uppercase tracking-[0.12em] text-neon min-[360px]:text-sm sm:text-lg sm:tracking-[0.25em] lg:mx-0">{t.tagline}</p>
-            <p className="mx-auto mt-4 block w-fit max-w-full text-balance rounded-3xl border border-gold/50 px-4 py-2 text-xs font-semibold text-gold sm:rounded-full sm:px-5 sm:text-sm lg:mx-0">{t.motto}</p>
+            <p className="mx-auto mt-2 max-w-full text-balance font-display text-sm uppercase tracking-[0.12em] text-neon min-[360px]:text-sm sm:text-lg sm:tracking-[0.25em] lg:mx-0">{t.tagline}</p>
+            <p className="mx-auto mt-4 block w-fit max-w-full text-balance rounded-3xl border border-gold/50 px-4 py-2 text-sm font-semibold text-gold sm:rounded-full sm:px-5 sm:text-sm lg:mx-0">{t.motto}</p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
             <Link
               href={headerProgress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`}
@@ -321,8 +321,8 @@ export default function HomePage() {
                 {t.aiHelp}
               </Link>
             )}
-            {!headerProgress.isAuthenticated && <p className="max-w-64 text-center text-xs text-muted-foreground">{t.aiGuestHint}</p>}
-            {headerProgress.role === "blocked" && <p className="max-w-64 text-center text-xs text-muted-foreground">{t.aiRestricted}</p>}
+            {!headerProgress.isAuthenticated && <p className="max-w-64 text-center text-sm text-muted-foreground">{t.aiGuestHint}</p>}
+            {headerProgress.role === "blocked" && <p className="max-w-64 text-center text-sm text-muted-foreground">{t.aiRestricted}</p>}
             </div>
             </div>
             <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">{lang === "ru" ? "Расследуй цифровые происшествия, находи доказательства и учись защищать себя и друзей в интернете." : "Investighează incidente digitale, găsește dovezi și învață să te protejezi pe tine și pe prieteni pe internet."}</p>

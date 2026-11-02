@@ -2,6 +2,26 @@ import { expect, test } from "@playwright/test";
 import { moduleSeo } from "../../src/data/seo";
 
 for (const locale of ["ru", "ro"] as const) {
+  test(`${locale}: A+ сохраняется между публичными страницами и выключается из любой шапки`, async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/${locale}/login`);
+    const label = locale === "ru" ? "Крупный текст" : "Text mărit";
+    await page.getByRole("button", { name: label, exact: true }).click();
+    for (const path of ["/privacy", "/terms", "/patrol", "/intro", ...Object.keys(moduleSeo).map(slug => `/modules/${slug}`)]) {
+      await page.goto(`/${locale}${path}`);
+      await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+      await expect(page.getByRole("button", { name: label, exact: true })).toHaveAttribute("aria-pressed", "true");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    }
+    await page.reload();
+    await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+    await page.getByRole("button", { name: label, exact: true }).click();
+    await expect(page.locator("html")).toHaveCSS("font-size", "16px");
+    await page.goto(`/${locale}/privacy`);
+    await expect(page.locator("html")).toHaveCSS("font-size", "16px");
+  });
+
   test(`${locale}: гостевые описания модулей доступны без входа и содержат SEO`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const moduleSlug of Object.keys(moduleSeo) as (keyof typeof moduleSeo)[]) {
@@ -133,6 +153,10 @@ for (const locale of ["ru", "ro"] as const) {
     await expect(page.locator("html")).toHaveCSS("font-size", "20px");
     await page.locator(`a[href="/${locale}/privacy"]`).first().click();
     await expect(page).toHaveURL(new RegExp(`/${locale}/privacy$`));
+    await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+    await page.reload();
+    await expect(page.locator("html")).toHaveCSS("font-size", "20px");
+    await page.getByRole("button", { name: textLabel, exact: true }).click();
     await expect(page.locator("html")).toHaveCSS("font-size", "16px");
   });
 

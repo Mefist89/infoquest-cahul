@@ -102,7 +102,7 @@ function CallSimulatorStage({ locale, content, check, saving, feedback, onSubmit
 
           {status === "playing" && !explaining && phrase && (
             <div className="w-full max-w-lg animate-in fade-in zoom-in-95">
-              <div className="mb-6 text-xs font-black text-neon uppercase tracking-widest">
+              <div className="mb-6 text-sm font-black text-neon uppercase tracking-widest">
                 {content.levelText} {currentLevelIndex + 1} / {content.levels.length}
               </div>
               <div className="flex flex-col items-center gap-5">

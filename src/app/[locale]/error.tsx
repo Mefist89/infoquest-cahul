@@ -30,6 +30,7 @@ export default function ErrorPage({ retry }: { error: Error & { digest?: string 
 
   return (
     <RouteBoundaryCard
+      locale={locale}
       icon={<TriangleAlert className="size-10" aria-hidden="true" />}
       eyebrow={text.eyebrow}
       title={text.title}

@@ -10,7 +10,7 @@ export function SiteFooter({ lang, beforeLegal }: { lang: FooterLocale; beforeLe
       <div className="mx-auto max-w-6xl px-4 py-14">
         {beforeLegal}
 
-        <div className="mt-16 border-t border-neon/10 pt-8 text-center text-xs text-muted-foreground">
+        <div className="mt-16 border-t border-neon/10 pt-8 text-center text-sm text-muted-foreground">
           <p className="mx-auto mb-5 max-w-3xl text-sm leading-relaxed text-muted-foreground">{lang === "ru" ? "Двуязычная образовательная игра для школьников, учителей, семей и всего сообщества. Учись распознавать мошенничество, дезинформацию, дипфейки и цифровые угрозы." : "Joc educațional bilingv pentru elevi, profesori, familii și întreaga comunitate. Învață să recunoști fraudele, dezinformarea, deepfake-urile și amenințările digitale."}</p>
           <div className="mb-4 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6">
             <span className="font-semibold text-foreground/80">{t.footerHackathon}</span>

@@ -55,7 +55,7 @@ export function PasswordGameStage({
       <div aria-live="polite" className="mt-6">
         {!finished && item ? (
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">
               {counter}
             </p>
             <div className="mt-3 rounded-2xl border border-border bg-background/60 p-5 text-center sm:p-6">

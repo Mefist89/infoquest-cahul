@@ -1,3 +1,4 @@
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import type { Metadata } from "next";
 import { Ban, ShieldAlert } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -41,10 +42,11 @@ export default async function BlockedPage({ params }: { params: Promise<{ locale
   return (
     <main className="circuit-bg grid min-h-screen place-items-center px-4 py-10">
       <section className="w-full max-w-xl rounded-3xl border border-danger/50 bg-card/85 p-7 text-center shadow-[0_25px_90px_rgba(239,68,68,0.16)] backdrop-blur-xl sm:p-10">
+        <div className="mb-3 flex justify-end"><TextSizeButton locale={locale} /></div>
         <div className="mx-auto grid size-20 place-items-center rounded-3xl border border-danger/50 bg-danger/10 text-danger">
           <Ban className="size-10" aria-hidden="true" />
         </div>
-        <p className="mt-7 inline-flex items-center gap-2 rounded-full border border-danger/35 bg-danger/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-danger">
+        <p className="mt-7 inline-flex items-center gap-2 rounded-full border border-danger/35 bg-danger/10 px-3 py-1 text-sm font-black uppercase tracking-[0.16em] text-danger">
           <ShieldAlert className="size-4" aria-hidden="true" /> InfoQuest
         </p>
         <h1 className="mt-4 text-3xl font-black sm:text-4xl">{t.title}</h1>

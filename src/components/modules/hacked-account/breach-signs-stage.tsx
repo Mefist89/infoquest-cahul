@@ -68,11 +68,11 @@ export function BreachSignsStage({
         {!finished && level ? (
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-3 py-1 text-xs font-black uppercase tracking-widest ${levelIndex === 0 ? "bg-success/15 text-success" : levelIndex === 1 ? "bg-gold/15 text-gold" : "bg-danger/15 text-danger"}`}>
+              <span className={`rounded-full px-3 py-1 text-sm font-black uppercase tracking-widest ${levelIndex === 0 ? "bg-success/15 text-success" : levelIndex === 1 ? "bg-gold/15 text-gold" : "bg-danger/15 text-danger"}`}>
                 {level.difficulty}
               </span>
               <p className="text-sm font-bold text-foreground">{level.title}</p>
-              <p className="ml-auto text-xs font-bold text-muted-foreground">
+              <p className="ml-auto text-sm font-bold text-muted-foreground">
                 {levelIndex + 1}/{content.levels.length} · {levelFound}/{levelSignals.length}
               </p>
             </div>

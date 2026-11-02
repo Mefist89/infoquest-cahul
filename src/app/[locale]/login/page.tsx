@@ -1,3 +1,4 @@
+import { TextSizeButton } from "@/components/layout/TextSizeButton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
@@ -69,6 +70,7 @@ export default async function LoginPage({
             <ArrowLeft className="size-4" aria-hidden="true" />
             {t.back as string}
           </Link>
+          <TextSizeButton locale={locale} />
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((language) => (
               <LocaleSwitch locale={language}
@@ -90,7 +92,7 @@ export default async function LoginPage({
               <div className="grid size-14 place-items-center rounded-2xl border border-neon/50 bg-background/70 glow-neon">
                 <ShieldCheck className="size-7 text-neon" aria-hidden="true" />
               </div>
-              <p className="mt-8 text-xs font-bold uppercase tracking-[0.22em] text-neon">{t.eyebrow as string}</p>
+              <p className="mt-8 text-sm font-bold uppercase tracking-[0.22em] text-neon">{t.eyebrow as string}</p>
               <h1 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">{t.title as string}</h1>
               <p className="mt-4 max-w-lg text-base leading-relaxed text-muted-foreground">{t.description as string}</p>
               <ul className="mt-8 space-y-4">
@@ -116,7 +118,7 @@ export default async function LoginPage({
               <div className="mt-7">
                 <GoogleSignInButton locale={locale} initialError={query.error === "oauth"} nextPath={nextPath} />
               </div>
-              <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-6 text-center text-sm leading-relaxed text-muted-foreground">
                 {t.agreement as string}{" "}
                 <Link href={`/${locale}/privacy`} className="text-neon hover:underline">{t.privacy as string}</Link>
                 {" · "}

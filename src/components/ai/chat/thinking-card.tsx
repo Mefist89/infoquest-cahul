@@ -28,6 +28,6 @@ export function AudioProcessingCard({ t, audioAnalysisStep }: { t: ChatContent; 
 
 export function ThinkingBubble({ t, mode }: { t: ChatContent; mode: AiMode }) {
   return (
-    <div className="flex justify-start"><div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-border bg-background/55 px-4 py-4" role="status" aria-live="polite"><span className="flex gap-1" aria-hidden="true"><span className="size-2 animate-bounce rounded-full bg-neon" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:120ms]" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:240ms]" /></span><span className="text-xs text-muted-foreground">{mode === "analyzer" ? t.thinking : t.chatThinking}</span></div></div>
+    <div className="flex justify-start"><div className="flex items-center gap-2 rounded-2xl rounded-bl-md border border-border bg-background/55 px-4 py-4" role="status" aria-live="polite"><span className="flex gap-1" aria-hidden="true"><span className="size-2 animate-bounce rounded-full bg-neon" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:120ms]" /><span className="size-2 animate-bounce rounded-full bg-neon [animation-delay:240ms]" /></span><span className="text-sm text-muted-foreground">{mode === "analyzer" ? t.thinking : t.chatThinking}</span></div></div>
   );
 }

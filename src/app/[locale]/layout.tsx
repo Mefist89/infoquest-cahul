@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { Orbitron, Rubik } from "next/font/google";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { TextSizePreference } from "@/components/layout/TextSizePreference";
 import { siteSeo } from "@/data/seo";
 import { SITE_ORIGIN } from "@/lib/site";
 
@@ -41,6 +42,7 @@ export default async function RootLayout({ children, params }: { children: React
   return (
     <html lang={lang} data-scroll-behavior="smooth" className={`${orbitron.variable} ${rubik.variable}`}>
       <body>
+        <TextSizePreference />
         {children}
         <ScrollToTop locale={lang} />
       </body>

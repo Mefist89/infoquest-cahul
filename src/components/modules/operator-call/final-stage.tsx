@@ -208,7 +208,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
 
   const renderHP = (hp: number, max: number, colorClass: string, label: string) => (
     <div className="min-w-0" role="progressbar" aria-valuenow={hp} aria-valuemin={0} aria-valuemax={max} aria-label={`${label}: ${hp}/${max}`}>
-      <span className="mb-1 block text-xs font-bold text-foreground">{hp}/{max}</span>
+      <span className="mb-1 block text-sm font-bold text-foreground">{hp}/{max}</span>
       <div className="grid w-full grid-flow-col auto-cols-fr gap-1" aria-hidden="true">
         {Array.from({ length: max }).map((_, i) => (
           <span key={i} className={`h-3 min-w-0 rounded-full border-2 transition-all duration-300 ${i < hp ? colorClass + ' border-transparent' : 'bg-transparent border-foreground/20'}`} />
@@ -224,12 +224,12 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       <div className="mb-8 grid w-full gap-4 rounded-2xl border border-border bg-slate-900/50 p-4 sm:grid-cols-2">
         <div className="min-w-0">
-          <p className="text-xs font-black tracking-widest text-muted-foreground uppercase mb-1">HP</p>
+          <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">HP</p>
           {renderHP(playerHp, MAX_PLAYER_HP, "bg-success shadow-[0_0_10px_rgba(34,197,94,0.5)]", "HP")}
         </div>
         {currentPhase === 2 && (
           <div className="min-w-0 sm:text-right">
-            <p className="text-xs font-black tracking-widest text-muted-foreground uppercase mb-1">Boss HP</p>
+            <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">Boss HP</p>
             {renderHP(bossHp, MAX_BOSS_HP, "bg-danger shadow-[0_0_10px_rgba(239,68,68,0.5)]", "Boss HP")}
           </div>
         )}
@@ -239,13 +239,13 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
         <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
           <p className="font-bold text-center text-lg text-neon mb-6">{content.phase1Intro}</p>
           <div className="w-full max-w-sm bg-slate-100 dark:bg-slate-900 border-4 border-slate-300 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl relative">
-            <div className="bg-slate-200 dark:bg-slate-950 px-6 py-2 flex justify-between items-center text-[10px] text-slate-700 dark:text-slate-200 font-bold border-b border-slate-300 dark:border-slate-800">
+            <div className="bg-slate-200 dark:bg-slate-950 px-6 py-2 flex justify-between items-center text-sm text-slate-700 dark:text-slate-200 font-bold border-b border-slate-300 dark:border-slate-800">
               <span>09:41</span>
               <div className="flex gap-1"><span className="w-4 h-2 bg-slate-400 rounded-sm"></span></div>
             </div>
 
             <div className="bg-slate-800/10 py-1 text-center border-b border-slate-200 dark:border-slate-800">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{content.clues}: {foundDetails.size} / {content.phase1[currentLevel].correctTargets.length || 1}</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{content.clues}: {foundDetails.size} / {content.phase1[currentLevel].correctTargets.length || 1}</span>
             </div>
 
             <div className="p-4 flex flex-col gap-4 min-h-[300px]">

@@ -63,7 +63,7 @@ export function HaggleDialogueStage({
       <div aria-live="polite" className="mt-6">
         {!finished && step ? (
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">
               {stepIndex + 1}/{content.steps.length}
             </p>
             <div className="mt-3 space-y-2 rounded-2xl border border-border bg-background/60 p-4 sm:p-5">
@@ -78,7 +78,7 @@ export function HaggleDialogueStage({
                       {bubble.from === "you" ? <User className="size-4" /> : <Store className="size-4" />}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                         {bubble.from === "you" ? content.youName : content.sellerName}
                       </p>
                       <p className={`mt-0.5 rounded-2xl px-4 py-2.5 text-sm leading-relaxed sm:text-base ${bubble.from === "you" ? "rounded-tr-md bg-neon/15 text-foreground" : "rounded-tl-md border border-border bg-card/80 text-foreground"}`}>
