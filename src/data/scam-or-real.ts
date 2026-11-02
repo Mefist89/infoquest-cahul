@@ -74,10 +74,15 @@ export const scamOrRealContent = {
     },
     dealSignals: {
       lead: "Перед тобой объявление о продаже телефона. Осмотри страницу и нажми на всё подозрительное.",
-      passNote: "Найди минимум 4 сигнала из 6, затем нажми «Проверить».",
+      passNote: "Найди все 6 сигналов. Можно ошибиться на ловушках не больше 2 раз. Затем нажми «Проверить».",
       successTitle: "Обман распознан! Деньги целы.",
-      failTitle: "Пока мало сигналов — посмотри подсказки и попробуй ещё.",
-      foundCount: "Найдено: {found}/6",      signals: [
+      failTitle: "Найдены не все сигналы или было больше 2 нажатий на ловушки. Прочитай объяснения и попробуй ещё.",
+      foundCount: "Найдено: {found}/6",      normalDetails: [
+        {"id": "normal-color", "title": "Цвет: чёрный", "explain": "Цвет — обычная характеристика товара. Он ничего не говорит о честности продавца."},
+        {"id": "normal-package", "title": "Комплектация: телефон и кабель", "explain": "Перечень комплектации помогает понять предложение, но не доказывает честность продавца."},
+        {"id": "normal-category", "title": "Категория: телефоны", "explain": "Категория помогает найти объявление. Она встречается и в честных, и в мошеннических предложениях."},
+      ],
+      signals: [
         { id: "price", title: "Цена-ловушка", explain: "Телефон за полцены у неизвестного продавца — повод насторожиться. Сравни цену в известных магазинах: если везде дороже в два раза, скорее всего, это ловушка." },
         { id: "prepay", title: "Предоплата на личную карту", explain: "100% вперёд незнакомцу: после оплаты продавец исчезнет." },
         { id: "seller", title: "Продавец-призрак", explain: "На сайте 6 дней, ноль отзывов — проверить нечего." },
@@ -323,10 +328,15 @@ export const scamOrRealContent = {
     },
     dealSignals: {
       lead: "În fața ta e un anunț de vânzare a unui telefon. Examinează pagina și apasă pe tot ce e suspect.",
-      passNote: "Găsește cel puțin 4 semnale din 6, apoi apasă «Verifică».",
+      passNote: "Găsește toate cele 6 semnale. Poți apăsa pe capcane de cel mult 2 ori. Apoi apasă «Verifică».",
       successTitle: "Înșelătorie recunoscut! Banii sunt teferi.",
-      failTitle: "Deocamdată prea puține semnale — citește explicațiile și mai încearcă.",
+      failTitle: "Nu ai găsit toate semnalele sau ai apăsat pe capcane de peste 2 ori. Citește explicațiile și încearcă din nou.",
       foundCount: "Găsite: {found}/6",
+      normalDetails: [
+        {"id": "normal-color", "title": "Culoare: negru", "explain": "Culoarea este o caracteristică obișnuită a produsului. Nu spune nimic despre onestitatea vânzătorului."},
+        {"id": "normal-package", "title": "Pachet: telefon și cablu", "explain": "Lista obiectelor incluse ajută la înțelegerea ofertei, dar nu dovedește onestitatea vânzătorului."},
+        {"id": "normal-category", "title": "Categorie: telefoane", "explain": "Categoria ajută la găsirea anunțului. Apare atât în oferte oneste, cât și în oferte frauduloase."},
+      ],
       signals: [
         { id: "price", title: "Preț-capcană", explain: "Telefon la jumătate de preț de la un vânzător necunoscut — motiv de alertă. Compară prețul în magazinele cunoscute: dacă peste tot e de două ori mai scump, probabil e o capcană." },
         { id: "prepay", title: "Avans pe card personal", explain: "100% în avans unui străin: după plată vânzătorul dispare." },

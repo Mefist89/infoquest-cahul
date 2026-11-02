@@ -73,10 +73,15 @@ export const fakeLinkContent = {
       rule: "Всегда проверяйте адрес в строке браузера перед тем, как ввести свои данные. При малейших сомнениях вводите адрес сайта вручную.",
       },
       findSignals: {
-        lead: "Перед тобой копия сайта банка. Осмотри страницу и нажми на всё, что кажется подозрительным.",        passNote: "Найди минимум 4 сигнала из 6, затем нажми «Проверить».",
+        lead: "Перед тобой копия сайта банка. Осмотри страницу и нажми на всё, что кажется подозрительным.",        passNote: "Найди все 6 сигналов. Можно ошибиться на ловушках не больше 2 раз. Затем нажми «Проверить».",
         successTitle: "Тени не пройти! Сигналы найдены.",
-        failTitle: "Пока мало сигналов — посмотри подсказки и попробуй ещё.",
+        failTitle: "Найдены не все сигналы или было больше 2 нажатий на ловушки. Прочитай объяснения и попробуй ещё.",
         foundCount: "Найдено: {found}/6",
+        normalDetails: [
+          {"id": "normal-login", "title": "Войти", "explain": "Кнопка входа бывает и на настоящих сайтах, и на поддельных. Сама по себе она не признак обмана."},
+          {"id": "normal-language", "title": "Язык: RO / RU", "explain": "Выбор языка — обычная функция сайта. Он не подтверждает и не опровергает его подлинность."},
+          {"id": "normal-copyright", "title": "© Banca Noroc", "explain": "Такая подпись встречается на обычных сайтах, но её легко скопировать. Проверяй адрес сайта."},
+        ],
         signals: [
           { id: "domain", title: "Подменённый домен", explain: "banca-noroc-online.com вместо banca-noroc.md: лишние слова и .com вместо .md." },
           { id: "no-https", title: "Нет защищённого соединения", explain: "Адрес начинается с http:// без «s» — соединение не защищено, данные можно перехватить." },
@@ -325,10 +330,15 @@ export const fakeLinkContent = {
       },
       findSignals: {
         lead: "În fața ta este o copie a site-ului băncii. Examinează pagina și apasă pe tot ce ți se pare suspect.",
-        passNote: "Găsește cel puțin 4 semnale din 6, apoi apasă «Verifică».",
+        passNote: "Găsește toate cele 6 semnale. Poți apăsa pe capcane de cel mult 2 ori. Apoi apasă «Verifică».",
         successTitle: "Umbra nu trece! Semnale găsite.",
-        failTitle: "Deocamdată prea puține semnale — citește explicațiile și mai încearcă.",
+        failTitle: "Nu ai găsit toate semnalele sau ai apăsat pe capcane de peste 2 ori. Citește explicațiile și încearcă din nou.",
         foundCount: "Găsite: {found}/6",
+        normalDetails: [
+          {"id": "normal-login", "title": "Intră în cont", "explain": "Butonul de autentificare apare atât pe site-uri reale, cât și pe site-uri false. Singur, nu este un semn de înșelătorie."},
+          {"id": "normal-language", "title": "Limba: RO / RU", "explain": "Alegerea limbii este o funcție obișnuită a unui site. Nu confirmă și nici nu infirmă autenticitatea lui."},
+          {"id": "normal-copyright", "title": "© Banca Noroc", "explain": "O astfel de mențiune apare pe site-uri obișnuite, dar poate fi copiată ușor. Verifică adresa site-ului."},
+        ],
         signals: [
           { id: "domain", title: "Domeniu falsificat", explain: "banca-noroc-online.com în loc de banca-noroc.md: cuvinte în plus și .com în loc de .md." },
           { id: "no-https", title: "Lipsa conexiunii securizate", explain: "Adresa începe cu http:// fără «s» — conexiunea nu e protejată, datele pot fi interceptate." },
