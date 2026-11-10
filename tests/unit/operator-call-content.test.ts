@@ -144,13 +144,35 @@ describe("пункт 17: перестановка не меняет смысл �
 
 describe("пункт 3: отдельные обращения к оператору и банку", () => {
   it.each([
-    ["ru", "Попросить оператора запретить платные услуги и переводы с баланса.", "Если называл код или данные карты: Положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта."],
-    ["ro", "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold.", "Dacă ai spus codul sau datele cardului: Închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial."],
+    ["ru", "Попросить оператора запретить платные услуги и переводы с баланса.", "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта."],
+    ["ro", "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold.", "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial."],
   ] as const)("%s: восстанавливает s6 оператора и сохраняет s5 банка", (locale, operatorText, bankText) => {
     const level = operatorCallContent[locale].ordering.levels[4];
     expect(level.steps).toHaveLength(5);
     expect(level.steps.find(step => step.id === "s6")!.text).toBe(operatorText);
     expect(level.steps.find(step => step.id === "s5")!.text).toBe(bankText);
     expect(level.time).toBe(83);
+  });
+});
+
+describe("пункт 13: мессенджеры и галочка профиля в теории и финале", () => {
+  it.each([
+    [
+      "ru",
+      "Написал первым в WhatsApp и просит подтвердить данные",
+      "Галочка у профиля не гарантирует, что это оператор. Если в мессенджере просят код, данные или перейти по ссылке — это мошенник.",
+    ],
+    [
+      "ro",
+      "V-a scris primul pe WhatsApp și cere confirmarea datelor",
+      "Bifa de lângă profil nu garantează că e operatorul. Dacă pe mesagerie ți se cere un cod, date sau să deschizi un link — e un escroc.",
+    ],
+  ] as const)("%s: использует утверждённые формулировки accountType и theory.notes", (locale, accountTypeText, noteText) => {
+    const content = operatorCallContent[locale];
+    expect(content.theory.notes).toContain(noteText);
+    for (const id of ["p1_3", "p1_6"]) {
+      const item = content.final.phase1.find(scenario => scenario.id === id)!;
+      expect("accountType" in item && item.accountType).toBe(accountTypeText);
+    }
   });
 });

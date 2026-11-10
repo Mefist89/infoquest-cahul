@@ -114,7 +114,7 @@ export const operatorCallContent = {
       ],
       notes: [
         "Сомневаешься, что звонила полиция? Положи трубку и позвони 112.",
-        `Галочка у профиля не гарантирует, что это оператор. ${SAFETY_PHRASES.ru.smsCode} Если в мессенджере просят данные или перейти по ссылке — это мошенник.`,
+        "Галочка у профиля не гарантирует, что это оператор. Если в мессенджере просят код, данные или перейти по ссылке — это мошенник.",
         "В Молдове это Orange, Moldcell, Unite. Номер поддержки — в договоре, на сайте или в приложении оператора. Номер банка — на обороте карты. О мошенничестве сообщай в полицию: 112.",
       ],
       rule: "Главное правило: положи трубку, ничего не сообщай и проверь информацию через официальный канал.",
@@ -341,7 +341,7 @@ export const operatorCallContent = {
           steps: [
             { id: "s1", text: "Завершить разговор" },
             { id: "s6", text: "Попросить оператора запретить платные услуги и переводы с баланса." },
-            { id: "s5", text: `Если называл код или данные карты: ${SAFETY_PHRASES.ru.bankCall}` },
+            { id: "s5", text: "Если называл код или данные карты — положи трубку и сам позвони в банк по номеру на обороте карты или с официального сайта." },
             { id: "s4", text: "Сменить пароли" },
             { id: "s7", text: "Сообщить в полицию (112)" }
           ]
@@ -463,7 +463,7 @@ export const operatorCallContent = {
       ],
       notes: [
         "Ai dubii că a sunat poliția? Închide și sună la 112.",
-        `Bifa de lângă profil nu garantează că e operatorul. ${SAFETY_PHRASES.ro.smsCode} Dacă pe mesagerie ți se cer date sau să deschizi un link — e un escroc.`,
+        "Bifa de lângă profil nu garantează că e operatorul. Dacă pe mesagerie ți se cere un cod, date sau să deschizi un link — e un escroc.",
         "În Moldova aceștia sunt Orange, Moldcell, Unite. Numărul de suport e în contract, pe site sau în aplicația operatorului. Numărul băncii e pe spatele cardului. Frauda se raportează la poliție: 112.",
       ],
       rule: "Regula principală: închide, nu comunica nimic și verifică informația printr-un canal oficial.",
@@ -771,7 +771,7 @@ export const operatorCallContent = {
           steps: [
             { id: "s1", text: "Încheiați apelul" },
             { id: "s6", text: "Cereți operatorului să blocheze serviciile cu plată și transferurile din sold." },
-            { id: "s5", text: `Dacă ai spus codul sau datele cardului: ${SAFETY_PHRASES.ro.bankCall}` },
+            { id: "s5", text: "Dacă ai spus codul sau datele cardului — închide și sună tu la bancă, la numărul de pe spatele cardului sau de pe site-ul oficial." },
             { id: "s4", text: "Schimbați parolele" },
             { id: "s7", text: "Anunțați poliția (112)" }
           ]
