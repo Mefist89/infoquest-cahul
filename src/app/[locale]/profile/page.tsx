@@ -65,7 +65,8 @@ const moduleIcons: Record<ModuleIcon, LucideIcon> = {
 
 const copy = {
   ru: {
-    title: "Dashboard детектива",
+    title: "Кабинет детектива",
+    center: "Центр детектива",
     description: "Очки, достижения и прогресс по цифровым расследованиям.",
     back: "На главную",
     signOut: "Выйти",
@@ -107,7 +108,8 @@ const copy = {
     statuses: { not_started: "Не начато", in_progress: "В процессе", completed: "Пройдено" },
   },
   ro: {
-    title: "Dashboard-ul detectivului",
+    title: "Cabinetul detectivului",
+    center: "Centrul detectivului",
     description: "Puncte, realizări și progresul investigațiilor digitale.",
     back: "Pagina principală",
     signOut: "Ieșire",
@@ -200,13 +202,13 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   const totalXp = relevantProgress.reduce((sum, item) => sum + Math.max(0, Math.min(MODULE_MAX_XP, item.xp)), 0);
   const bestScore = relevantProgress.reduce((best, item) => Math.max(best, item.score), 0);
   const completionPercent = Math.min(100, Math.round((totalXp / TOTAL_MAX_XP) * 100));
+  const t = copy[locale];
   const metadata = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string };
-  const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || "Detective";
+  const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || t.detective;
   const avatarUrl = profile?.avatar_url || metadata.avatar_url;
   const safeAvatar = typeof avatarUrl === "string" && avatarUrl.startsWith("https://lh3.googleusercontent.com/") ? avatarUrl : null;
   const userRole: UserRole = isUserRole(profile?.role) ? profile.role : "user";
   const initials = displayName.trim().slice(0, 2).toUpperCase();
-  const t = copy[locale];
   const currentModule = MODULE_CATALOG[0];
   const currentProgress = byModule.get(currentModule.moduleId) ?? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 };
   const currentStages = completedStagesByModule.get(currentModule.moduleId) ?? 0;
@@ -220,7 +222,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
         <aside className="min-w-0 border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
           <Link href={`/${locale}`} className="focus-ring flex items-center gap-3 rounded-xl">
             <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-6" aria-hidden="true" /></span>
-            <span><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="text-sm uppercase tracking-[0.15em] text-muted-foreground">Detective center</span></span>
+            <span><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="text-sm uppercase tracking-[0.15em] text-muted-foreground">{t.center}</span></span>
           </Link>
 
           <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/45 p-3">
@@ -260,7 +262,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
 
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
+            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">{t.title}</p><p className="font-bold">{sectionLabel}</p></div></div>
             <div className="flex max-w-full flex-wrap items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
           </header>
 

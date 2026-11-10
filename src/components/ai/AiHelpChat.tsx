@@ -169,7 +169,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
         body,
         signal: requestController.signal,
       });
-      const result = await response.json() as ApiResult;
+      const result = (await response.json().catch(() => ({}))) as ApiResult;
       if (response.status === 401) {
         setThinking(false);
         setProcessingAudio(false);
@@ -180,7 +180,14 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
         audioRemaining: typeof result.audioRemaining === "number" ? result.audioRemaining : current.audioRemaining,
         dailyRemaining: typeof result.dailyRemaining === "number" ? result.dailyRemaining : current.dailyRemaining,
       }));
-      if (!response.ok || (currentMode === "analyzer" ? !result.analysis : !result.reply)) throw new Error(result.error || t.networkError);
+      if (!response.ok || (currentMode === "analyzer" ? !result.analysis : !result.reply)) {
+        const message = typeof result.error === "string" && result.error.trim() ? result.error : t.networkError;
+        setRequestError(message);
+        setMessagesByMode((current) => ({ ...current, [currentMode]: [...current[currentMode], { id: crypto.randomUUID(), role: "assistant", text: message }] }));
+        setThinking(false);
+        setProcessingAudio(false);
+        return;
+      }
       const reply = currentMode === "analyzer" ? result.analysis!.reply : result.reply!;
       if (currentMode === "analyzer" && result.analysis) {
         setAnalysisAnnouncement(`${t.analysisReady}. ${t.risk}: ${result.analysis.risk}%. ${t.verdicts[result.analysis.verdict]}. ${result.analysis.summary}`);
@@ -194,9 +201,8 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
       if (voiceEnabled) speak(reply);
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
-      const message = error instanceof Error ? error.message : t.networkError;
-      setRequestError(message);
-      setMessagesByMode((current) => ({ ...current, [currentMode]: [...current[currentMode], { id: crypto.randomUUID(), role: "assistant", text: message }] }));
+      setRequestError(t.networkError);
+      setMessagesByMode((current) => ({ ...current, [currentMode]: [...current[currentMode], { id: crypto.randomUUID(), role: "assistant", text: t.networkError }] }));
       setThinking(false);
       setProcessingAudio(false);
     } finally {

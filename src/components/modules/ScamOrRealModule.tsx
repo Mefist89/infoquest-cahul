@@ -115,7 +115,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
             <p className="px-2 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
             <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
               <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
-              <span className="min-w-0"><span className="block text-sm text-muted-foreground">Intro</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
+              <span className="min-w-0"><span className="block text-sm text-muted-foreground">{t.intro.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
             </button>
             <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {t.stages.slice(1).map((stage, index) => {
@@ -199,5 +199,5 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
 }
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
-  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? "Intro" : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+  return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? title : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
 }

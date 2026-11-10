@@ -218,19 +218,21 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   );
 
   const currentVisual = content.phase1[currentLevel] as VisualScenario;
+  const playerHpLabel = locale === "ro" ? "Vieți" : "Жизни";
+  const bossHpLabel = locale === "ro" ? "Viețile Umbrei" : "Жизни Тени";
 
   return (
     <div className={`flex flex-col items-center w-full max-w-2xl mx-auto pb-10 transition-transform ${shake ? 'animate-shake' : ''}`}>
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
       <div className="mb-8 grid w-full gap-4 rounded-2xl border border-border bg-slate-900/50 p-4 sm:grid-cols-2">
         <div className="min-w-0">
-          <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">HP</p>
-          {renderHP(playerHp, MAX_PLAYER_HP, "bg-success shadow-[0_0_10px_rgba(34,197,94,0.5)]", "HP")}
+          <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">{playerHpLabel}</p>
+          {renderHP(playerHp, MAX_PLAYER_HP, "bg-success shadow-[0_0_10px_rgba(34,197,94,0.5)]", playerHpLabel)}
         </div>
         {currentPhase === 2 && (
           <div className="min-w-0 sm:text-right">
-            <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">Boss HP</p>
-            {renderHP(bossHp, MAX_BOSS_HP, "bg-danger shadow-[0_0_10px_rgba(239,68,68,0.5)]", "Boss HP")}
+            <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">{bossHpLabel}</p>
+            {renderHP(bossHp, MAX_BOSS_HP, "bg-danger shadow-[0_0_10px_rgba(239,68,68,0.5)]", bossHpLabel)}
           </div>
         )}
       </div>

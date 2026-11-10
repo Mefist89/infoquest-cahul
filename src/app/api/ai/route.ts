@@ -49,7 +49,7 @@ function parseChatHistory(value: FormDataEntryValue | null): AiChatMessage[] {
 function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService" | "blocked") {
   const messages = {
     ro: {
-      key: "Serviciul AI nu este configurat încă. Adaugă AI_API_KEY în variabilele de mediu.",
+      key: "Chrono este indisponibil temporar. Încearcă din nou peste puțin timp.",
       input: "Scrie o întrebare sau atașează un fișier audio.",
       audio: "Fișierul audio trebuie să aibă maximum 4 MB și un format acceptat.",
       requestSize: "Solicitarea este prea mare. Fișierul audio poate avea maximum 4 MB.",
@@ -71,7 +71,7 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSiz
       blocked: "Accesul la InfoQuest pentru acest cont este restricționat.",
     },
     ru: {
-      key: "AI-сервис пока не настроен. Добавьте AI_API_KEY в переменные окружения.",
+      key: "Chrono временно недоступен. Попробуйте ещё раз немного позже.",
       input: "Напишите вопрос или прикрепите аудиофайл.",
       audio: "Аудиофайл должен быть не больше 4 МБ и иметь поддерживаемый формат.",
       requestSize: "Запрос слишком большой. Размер аудиофайла не должен превышать 4 МБ.",

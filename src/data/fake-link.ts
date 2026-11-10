@@ -30,7 +30,7 @@ export const fakeLinkContent = {
     next: "Следующий этап",
     retry: "Попробовать ещё раз",
     check: "Проверить ответ",
-    saved: "Прогресс сохранён в Supabase",
+    saved: "Прогресс сохранён",
     saveError: "Не удалось сохранить прогресс. Проверь соединение и повтори.",
     intro: {
       title: "Вступление",
@@ -286,7 +286,7 @@ export const fakeLinkContent = {
     next: "Etapa următoare",
     retry: "Încearcă din nou",
     check: "Verifică răspunsul",
-    saved: "Progres salvat în Supabase",
+    saved: "Progres salvat",
     saveError: "Nu s-a putut salva progresul. Verifică conexiunea și încearcă din nou.",
     intro: {
       title: "Introducere",

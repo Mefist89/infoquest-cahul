@@ -578,4 +578,43 @@ describe("repository completeness and SEO", () => {
     expect(footer).not.toContain("QRCodeSVG");
     expect(footer).not.toContain('id="materials"');
   });
+
+  it("hides internal jargon, raw browser errors and unlocalized English labels from user UI", () => {
+    const moduleDataFiles = [
+      "src/data/operator-call.ts",
+      "src/data/fake-link.ts",
+      "src/data/hacked-account.ts",
+      "src/data/scam-or-real.ts",
+    ].map((file) => readFileSync(join(process.cwd(), file), "utf8")).join("\n");
+    expect(moduleDataFiles).not.toContain("в Supabase");
+    expect(moduleDataFiles).not.toContain("în Supabase");
+    expect(moduleDataFiles).not.toContain("(HP)");
+
+    const aiRoute = readFileSync(join(process.cwd(), "src/app/api/ai/route.ts"), "utf8");
+    expect(aiRoute).not.toContain("AI_API_KEY");
+    expect(aiRoute).not.toContain("UTC");
+
+    const aiChat = readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8");
+    expect(aiChat).toContain("response.json().catch");
+    expect(aiChat).not.toContain("error instanceof Error ? error.message");
+
+    const profilePage = readFileSync(join(process.cwd(), "src/app/[locale]/profile/page.tsx"), "utf8");
+    expect(profilePage).not.toContain("Detective center");
+    expect(profilePage).not.toContain("Dashboard детектива");
+    expect(profilePage).not.toContain("Dashboard-ul detectivului");
+    expect(profilePage).not.toContain("InfoQuest Dashboard");
+
+    const moduleComponents = [
+      "src/components/modules/OperatorCallModule.tsx",
+      "src/components/modules/FakeLinkModule.tsx",
+      "src/components/modules/HackedAccountModule.tsx",
+      "src/components/modules/ScamOrRealModule.tsx",
+      "src/components/modules/operator-call/final-stage.tsx",
+      "src/components/modules/operator-call/intro-media-stages.tsx",
+    ].map((file) => readFileSync(join(process.cwd(), file), "utf8")).join("\n");
+    expect(moduleComponents).not.toContain(">Intro<");
+    expect(moduleComponents).not.toContain('"Intro"');
+    expect(moduleComponents).not.toContain("Boss HP");
+    expect(moduleComponents).not.toContain("HTML5 video");
+  });
 });

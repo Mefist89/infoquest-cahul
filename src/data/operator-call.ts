@@ -73,7 +73,7 @@ export const operatorCallContent = {
     next: "Следующий этап",
     retry: "Попробовать ещё раз",
     check: "Проверить ответ",
-    saved: "Прогресс сохранён в Supabase",
+    saved: "Прогресс сохранён",
     saveError: "Не удалось сохранить прогресс. Проверь соединение и повтори.",
     intro: {
       title: "Вступление",
@@ -349,7 +349,7 @@ export const operatorCallContent = {
       ]
     },
     final: {
-      intro: "Финальная схватка. У тебя 3 жизни (HP) на все фазы. Ошибка = минус 1 жизнь.",
+      intro: "Финальная схватка. У тебя 3 жизни на все фазы. Ошибка = минус 1 жизнь.",
       gameOver: "Жизни закончились. Начни эту фазу заново — пройденные фазы сохранены.",
       win: "Победа! Тень повержена, а твой номер в безопасности.",
       clues: "Улики",
@@ -422,7 +422,7 @@ export const operatorCallContent = {
     next: "Etapa următoare",
     retry: "Încearcă din nou",
     check: "Verifică răspunsul",
-    saved: "Progres salvat în Supabase",
+    saved: "Progres salvat",
     saveError: "Progresul nu a putut fi salvat. Verifică conexiunea și repetă.",
     intro: {
       title: "Introducere",
@@ -565,7 +565,7 @@ export const operatorCallContent = {
       ],
     },
     final: {
-      intro: "Confruntarea finală. Ai 3 vieți (HP) pentru toate fazele. O greșeală = minus 1 viață.",
+      intro: "Confruntarea finală. Ai 3 vieți pentru toate fazele. O greșeală = minus 1 viață.",
       gameOver: "Ai rămas fără vieți. Reia această fază — fazele trecute rămân salvate.",
       win: "Victorie! Umbra a fost învinsă, iar numărul tău este în siguranță.",
       clues: "Indicii",
