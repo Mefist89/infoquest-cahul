@@ -95,7 +95,7 @@ export const MODULE_CATALOG = [
     icon: "scan-face",
     side: "right",
     category: { ro: "Deepfake-uri", ru: "Дипфейки" },
-    title: { ro: "Deepfake Detective", ru: "Детектив дипфейков" },
+    title: { ro: "Detectivul deepfake", ru: "Детектив дипфейков" },
     shortTitle: { ro: "Detectiv deepfake", ru: "Детектив дипфейков" },
     teaser: { ro: "Un video manipulat circulă în oraș.", ru: "По городу разошлось поддельное видео." },
     badge: { ro: "Insigna «Ochi digital»", ru: "Бейдж «Цифровой глаз»" },

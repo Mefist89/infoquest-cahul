@@ -67,6 +67,8 @@ const copy = {
   ru: {
     title: "Кабинет детектива",
     center: "Центр детектива",
+    headerTitle: "Кабинет InfoQuest",
+    fallbackName: "Детектив",
     description: "Очки, достижения и прогресс по цифровым расследованиям.",
     back: "На главную",
     signOut: "Выйти",
@@ -110,6 +112,8 @@ const copy = {
   ro: {
     title: "Cabinetul detectivului",
     center: "Centrul detectivului",
+    headerTitle: "Cabinet InfoQuest",
+    fallbackName: "Detectiv",
     description: "Puncte, realizări și progresul investigațiilor digitale.",
     back: "Pagina principală",
     signOut: "Ieșire",
@@ -204,7 +208,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   const completionPercent = Math.min(100, Math.round((totalXp / TOTAL_MAX_XP) * 100));
   const t = copy[locale];
   const metadata = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string };
-  const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || t.detective;
+  const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || t.fallbackName;
   const avatarUrl = profile?.avatar_url || metadata.avatar_url;
   const safeAvatar = typeof avatarUrl === "string" && avatarUrl.startsWith("https://lh3.googleusercontent.com/") ? avatarUrl : null;
   const userRole: UserRole = isUserRole(profile?.role) ? profile.role : "user";
@@ -262,7 +266,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
 
         <div className="min-w-0 p-4 sm:p-6 xl:p-8">
           <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">{t.title}</p><p className="font-bold">{sectionLabel}</p></div></div>
+            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">{t.headerTitle}</p><p className="font-bold">{sectionLabel}</p></div></div>
             <div className="flex max-w-full flex-wrap items-center gap-2 lg:hidden"><Link href={`/${locale}`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><ArrowLeft className="size-4" aria-hidden="true" /></Link><LanguageNav locale={locale} sectionPath={sectionPath} /><SignOutButton locale={locale} label={t.signOut} /></div>
           </header>
 

@@ -117,7 +117,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
               <p className="px-2 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
               <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
                 <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
-                <span className="min-w-0"><span className="block text-sm text-muted-foreground">{t.intro.subtitle}</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
+                <span className="min-w-0"><span className="block text-sm text-muted-foreground">{t.intro.title}</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
               </button>
               
               <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">

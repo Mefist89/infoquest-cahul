@@ -49,7 +49,7 @@ function parseChatHistory(value: FormDataEntryValue | null): AiChatMessage[] {
 function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService" | "blocked") {
   const messages = {
     ro: {
-      key: "Chrono este indisponibil temporar. Încearcă din nou peste puțin timp.",
+      key: "Serviciul este temporar indisponibil. Încearcă mai târziu.",
       input: "Scrie o întrebare sau atașează un fișier audio.",
       audio: "Fișierul audio trebuie să aibă maximum 4 MB și un format acceptat.",
       requestSize: "Solicitarea este prea mare. Fișierul audio poate avea maximum 4 MB.",
@@ -71,7 +71,7 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSiz
       blocked: "Accesul la InfoQuest pentru acest cont este restricționat.",
     },
     ru: {
-      key: "Chrono временно недоступен. Попробуйте ещё раз немного позже.",
+      key: "Сервис временно недоступен. Попробуйте позже.",
       input: "Напишите вопрос или прикрепите аудиофайл.",
       audio: "Аудиофайл должен быть не больше 4 МБ и иметь поддерживаемый формат.",
       requestSize: "Запрос слишком большой. Размер аудиофайла не должен превышать 4 МБ.",
@@ -193,7 +193,10 @@ export async function POST(request: Request) {
   }
 
   const provider = createAiProvider();
-  if (!provider) return jsonResponse({ error: errorText(locale, "key"), code: "not_configured" }, 503);
+  if (!provider) {
+    console.error("Chrono AI provider is not configured");
+    return jsonResponse({ error: errorText(locale, "key"), code: "not_configured" }, 503);
+  }
 
   const mode = form.get("mode") === "chat" ? "chat" : "analyzer";
   const messageValue = form.get("message");

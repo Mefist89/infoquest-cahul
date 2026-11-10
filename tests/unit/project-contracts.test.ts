@@ -593,9 +593,12 @@ describe("repository completeness and SEO", () => {
     const aiRoute = readFileSync(join(process.cwd(), "src/app/api/ai/route.ts"), "utf8");
     expect(aiRoute).not.toContain("AI_API_KEY");
     expect(aiRoute).not.toContain("UTC");
+    expect(aiRoute).toContain('key: "Serviciul este temporar indisponibil. Încearcă mai târziu."');
+    expect(aiRoute).toContain('key: "Сервис временно недоступен. Попробуйте позже."');
+    expect(aiRoute).toContain('console.error("Chrono AI provider is not configured")');
 
     const aiChat = readFileSync(join(process.cwd(), "src/components/ai/AiHelpChat.tsx"), "utf8");
-    expect(aiChat).toContain("response.json().catch");
+    expect(aiChat).toContain('response.headers.get("content-type")?.includes("application/json")');
     expect(aiChat).not.toContain("error instanceof Error ? error.message");
 
     const profilePage = readFileSync(join(process.cwd(), "src/app/[locale]/profile/page.tsx"), "utf8");
@@ -603,6 +606,15 @@ describe("repository completeness and SEO", () => {
     expect(profilePage).not.toContain("Dashboard детектива");
     expect(profilePage).not.toContain("Dashboard-ul detectivului");
     expect(profilePage).not.toContain("InfoQuest Dashboard");
+    expect(profilePage).toContain('headerTitle: "Кабинет InfoQuest"');
+    expect(profilePage).toContain('headerTitle: "Cabinet InfoQuest"');
+    expect(profilePage).toContain('fallbackName: "Детектив"');
+    expect(profilePage).toContain('fallbackName: "Detectiv"');
+
+    const profileSectionPage = readFileSync(join(process.cwd(), "src/app/[locale]/profile/[section]/page.tsx"), "utf8");
+    expect(profileSectionPage).not.toContain("InfoQuest Dashboard");
+    expect(profileSectionPage).toContain("Cabinet InfoQuest");
+    expect(profileSectionPage).toContain("Кабинет InfoQuest");
 
     const moduleComponents = [
       "src/components/modules/OperatorCallModule.tsx",
@@ -616,5 +628,7 @@ describe("repository completeness and SEO", () => {
     expect(moduleComponents).not.toContain('"Intro"');
     expect(moduleComponents).not.toContain("Boss HP");
     expect(moduleComponents).not.toContain("HTML5 video");
+    expect(moduleComponents).toContain('"Forța ta" : "Твои силы"');
+    expect(moduleComponents).toContain('"Forța escrocului" : "Силы мошенника"');
   });
 });

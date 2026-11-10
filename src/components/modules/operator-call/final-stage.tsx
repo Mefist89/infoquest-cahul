@@ -218,8 +218,8 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   );
 
   const currentVisual = content.phase1[currentLevel] as VisualScenario;
-  const playerHpLabel = locale === "ro" ? "Vieți" : "Жизни";
-  const bossHpLabel = locale === "ro" ? "Viețile Umbrei" : "Жизни Тени";
+  const playerHpLabel = locale === "ro" ? "Forța ta" : "Твои силы";
+  const bossHpLabel = locale === "ro" ? "Forța escrocului" : "Силы мошенника";
 
   return (
     <div className={`flex flex-col items-center w-full max-w-2xl mx-auto pb-10 transition-transform ${shake ? 'animate-shake' : ''}`}>

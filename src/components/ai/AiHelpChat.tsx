@@ -78,11 +78,11 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
     async function loadQuota() {
       try {
         const response = await fetch("/api/ai", { headers: { "x-infoquest-locale": locale }, cache: "no-store" });
-        if (!response.ok) {
+        if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) {
           console.warn("Chrono quota request failed", response.status);
           return;
         }
-        const result = await response.json() as ApiResult;
+        const result = (await response.json()) as ApiResult;
         if (active) {
           setQuota({
             audioRemaining: typeof result.audioRemaining === "number" ? result.audioRemaining : null,
@@ -169,19 +169,22 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
         body,
         signal: requestController.signal,
       });
-      const result = (await response.json().catch(() => ({}))) as ApiResult;
       if (response.status === 401) {
         setThinking(false);
         setProcessingAudio(false);
         router.push(`/${locale}/login?next=${encodeURIComponent(`/${locale}/ai-help`)}`);
         return;
       }
-      setQuota((current) => ({
-        audioRemaining: typeof result.audioRemaining === "number" ? result.audioRemaining : current.audioRemaining,
-        dailyRemaining: typeof result.dailyRemaining === "number" ? result.dailyRemaining : current.dailyRemaining,
-      }));
-      if (!response.ok || (currentMode === "analyzer" ? !result.analysis : !result.reply)) {
-        const message = typeof result.error === "string" && result.error.trim() ? result.error : t.networkError;
+      const isJson = response.headers.get("content-type")?.includes("application/json") ?? false;
+      const result = isJson ? ((await response.json().catch(() => null)) as ApiResult | null) : null;
+      if (result) {
+        setQuota((current) => ({
+          audioRemaining: typeof result.audioRemaining === "number" ? result.audioRemaining : current.audioRemaining,
+          dailyRemaining: typeof result.dailyRemaining === "number" ? result.dailyRemaining : current.dailyRemaining,
+        }));
+      }
+      if (!response.ok || !result || (currentMode === "analyzer" ? !result.analysis : !result.reply)) {
+        const message = typeof result?.error === "string" && result.error.trim() ? result.error : t.networkError;
         setRequestError(message);
         setMessagesByMode((current) => ({ ...current, [currentMode]: [...current[currentMode], { id: crypto.randomUUID(), role: "assistant", text: message }] }));
         setThinking(false);

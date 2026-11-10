@@ -396,8 +396,8 @@ export const HACKED_SESSIONS: ActiveSessionItem[] = [
   {
     id: "sess-hacker-bot",
     deviceTitle: {
-      ru: "Авто-скрипт рассылки · Headless Bot API v2.4",
-      ro: "Script auto-mesaje · Headless Bot API v2.4",
+      ru: "Авто-скрипт рассылки · Бот v2.4",
+      ro: "Script auto-mesaje · Bot v2.4",
     },
     locationMeta: {
       ru: "Вход: 14 минут назад · Массовая рассылка (48 чатов/мин)",
