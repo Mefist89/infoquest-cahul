@@ -24,7 +24,7 @@ export class PatrolScene extends Phaser.Scene {
   private nearNpcId: string | null = null;
 
   private fullscreenBtn?: Phaser.GameObjects.Rectangle;
-  private fullscreenIcon?: Phaser.GameObjects.Text;
+  private fullscreenIcon?: Phaser.GameObjects.Graphics;
   private settingsBtn?: Phaser.GameObjects.Rectangle;
   private settingsIcon?: Phaser.GameObjects.Text;
   private settingsPanel!: Phaser.GameObjects.Container;
@@ -137,9 +137,23 @@ export class PatrolScene extends Phaser.Scene {
     });
 
     // Управление
-    this.cursors = this.input.keyboard?.createCursorKeys();
-    this.wasd = this.input.keyboard?.addKeys("W,A,S,D") as Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
-    this.talkKey = this.input.keyboard?.addKey("E") as Phaser.Input.Keyboard.Key;
+    this.input.keyboard?.disableGlobalCapture();
+    this.cursors = this.input.keyboard?.addKeys(
+      {
+        up: Phaser.Input.Keyboard.KeyCodes.UP,
+        down: Phaser.Input.Keyboard.KeyCodes.DOWN,
+        left: Phaser.Input.Keyboard.KeyCodes.LEFT,
+        right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+        space: Phaser.Input.Keyboard.KeyCodes.SPACE,
+        shift: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+      },
+      false,
+    ) as Phaser.Types.Input.Keyboard.CursorKeys;
+    this.wasd = this.input.keyboard?.addKeys("W,A,S,D", false) as Record<
+      "W" | "A" | "S" | "D",
+      Phaser.Input.Keyboard.Key
+    >;
+    this.talkKey = this.input.keyboard?.addKey("E", false) as Phaser.Input.Keyboard.Key;
 
     const meta = PATROL_SCENE_META[this.locale];
     const promptLabel = this.isTouchDevice() ? meta.touchTalkPrompt : meta.keyTalkPrompt;
@@ -204,18 +218,11 @@ export class PatrolScene extends Phaser.Scene {
       .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x060d1f, 0.85));
 
     this.fullscreenIcon = this.add
-      .text(
-        this.scale.width - 85,
-        30,
-        "⛶",
-        gameText("20px", {
-          color: "#00d9ff",
-          fontStyle: "bold",
-        }),
-      )
-      .setOrigin(0.5)
+      .graphics()
+      .setPosition(this.scale.width - 85, 30)
       .setDepth(3001)
       .setScrollFactor(0);
+    this.drawFullscreenCorners(this.fullscreenIcon);
 
     // Кнопка настроек
     this.settingsBtn = this.add
@@ -255,12 +262,39 @@ export class PatrolScene extends Phaser.Scene {
       }, 60);
     };
     document.addEventListener("fullscreenchange", this.onDomFullscreenChange);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    const cleanupListeners = () => {
       this.scale.off("resize", this.handleResize, this);
       if (this.onDomFullscreenChange) {
         document.removeEventListener("fullscreenchange", this.onDomFullscreenChange);
       }
-    });
+    };
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupListeners);
+    this.events.once(Phaser.Scenes.Events.DESTROY, cleanupListeners);
+  }
+
+  private drawFullscreenCorners(g: Phaser.GameObjects.Graphics): void {
+    const r = 8;
+    const arm = 5;
+    g.clear();
+    g.lineStyle(2, 0x00d9ff, 1);
+    // Top-left corner
+    g.beginPath();
+    g.moveTo(-r, -r + arm);
+    g.lineTo(-r, -r);
+    g.lineTo(-r + arm, -r);
+    // Top-right corner
+    g.moveTo(r - arm, -r);
+    g.lineTo(r, -r);
+    g.lineTo(r, -r + arm);
+    // Bottom-left corner
+    g.moveTo(-r, r - arm);
+    g.lineTo(-r, r);
+    g.lineTo(-r + arm, r);
+    // Bottom-right corner
+    g.moveTo(r - arm, r);
+    g.lineTo(r, r);
+    g.lineTo(r, r - arm);
+    g.strokePath();
   }
 
   private syncFullscreenSize(): void {
@@ -344,9 +378,9 @@ export class PatrolScene extends Phaser.Scene {
 
     const bg = this.add.graphics();
     bg.fillStyle(0x0a1528, 0.96);
-    bg.fillRoundedRect(0, 0, 220, 175, 16);
+    bg.fillRoundedRect(0, 0, 220, 135, 16);
     bg.lineStyle(2, 0x00d9ff, 0.85);
-    bg.strokeRoundedRect(0, 0, 220, 175, 16);
+    bg.strokeRoundedRect(0, 0, 220, 135, 16);
     this.settingsPanel.add(bg);
 
     const meta = PATROL_SCENE_META[this.locale];
@@ -363,13 +397,10 @@ export class PatrolScene extends Phaser.Scene {
       .setOrigin(0.5, 0);
     this.settingsPanel.add(title);
 
-    this.createSettingItem(110, 62, "🔊", meta.soundLabel, !this.sound.mute, () => {
-      this.sound.mute = !this.sound.mute;
-    });
-    this.createSettingItem(110, 108, "⛶", meta.fullscreenLabel, this.scale.isFullscreen, () =>
+    this.createSettingItem(110, 64, "⛶", meta.fullscreenLabel, this.scale.isFullscreen, () =>
       this.toggleFullscreen(),
     );
-    this.createSettingItem(110, 150, "✕", meta.closeLabel, false, () => this.toggleSettings());
+    this.createSettingItem(110, 108, "✕", meta.closeLabel, false, () => this.toggleSettings());
   }
 
   private createSettingItem(x: number, y: number, icon: string, label: string, isOn = false, onClick?: () => void): void {

@@ -51,6 +51,7 @@ export class FakeCallScene extends Phaser.Scene {
   private stage4ShuffledRoundIndex = -1;
   private shadowHp = 100;
   private mistakesCount = 0;
+  private isTransitioning = false;
 
   constructor() {
     super("fake-call");
@@ -73,6 +74,7 @@ export class FakeCallScene extends Phaser.Scene {
     this.stage4ShuffledRoundIndex = -1;
     this.shadowHp = 100;
     this.mistakesCount = 0;
+    this.isTransitioning = false;
   }
 
   create() {
@@ -122,18 +124,21 @@ export class FakeCallScene extends Phaser.Scene {
   }
 
   private getCompletedTasksCount(): { completed: number; total: number } {
-    // Всего 11 шагов: 3 (сканер) + 3 (волны) + 3 (узлы коммутатора) + 2 (дуэль) = 11
-    const total = 11;
+    const totalFlags = FAKE_CALL_SCANNER_SPOTS.filter((s) => s.isFlag).length;
+    const totalWaves = FAKE_CALL_WAVES.length;
+    const totalNodes = FAKE_CALL_SWITCH_NODES.length;
+    const totalDuel = FAKE_CALL_DUEL_ROUNDS.length;
+    const total = totalFlags + totalWaves + totalNodes + totalDuel;
     if (this.stage === 5) return { completed: total, total };
 
-    const s1 = this.scannedFlagIds.size; // 0..3
+    const s1 = this.scannedFlagIds.size;
     const s2 =
       this.stage > 2
-        ? 3
+        ? totalWaves
         : this.stage === 2
           ? this.waveIndex + (this.waveSolved ? 1 : 0)
           : 0;
-    const s3 = this.stage > 3 ? 3 : this.stage === 3 ? this.switchedNodeIds.size : 0;
+    const s3 = this.stage > 3 ? totalNodes : this.stage === 3 ? this.switchedNodeIds.size : 0;
     const s4 =
       this.stage === 4
         ? this.duelRoundIndex + (this.shadowHp <= 0 ? 1 : 0)
@@ -267,6 +272,7 @@ export class FakeCallScene extends Phaser.Scene {
   }
 
   private renderCurrentStage() {
+    this.isTransitioning = false;
     this.stageRoot?.destroy(true);
     this.scannerReticle = undefined;
     this.waveGraphics = undefined;
@@ -431,10 +437,13 @@ export class FakeCallScene extends Phaser.Scene {
     reportBg.strokeRoundedRect(reportX, phoneY, reportW, phoneH, 18);
     root.add(reportBg);
 
+    const flagsOnly = FAKE_CALL_SCANNER_SPOTS.filter((s) => s.isFlag);
+    const totalFlags = flagsOnly.length;
+
     const activeFindingTitle = this.add.text(
       reportX + 18,
       phoneY + 18,
-      `${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`,
+      `${meta.stage1ScanHint}${this.scannedFlagIds.size}/${totalFlags})`,
       gameText("15px", {
         fontStyle: "bold",
         color: "#ffd166",
@@ -453,11 +462,10 @@ export class FakeCallScene extends Phaser.Scene {
     );
     root.add([activeFindingTitle, activeFindingDesc]);
 
-    // Карточки 3 улик в правой панели
-    const flagsOnly = FAKE_CALL_SCANNER_SPOTS.filter((s) => s.isFlag);
+    // Карточки улик в правой панели
     const updateRightChecklist = () => {
       // Перерисовываем статус и кнопку перехода
-      const allFound = this.scannedFlagIds.size >= 3;
+      const allFound = this.scannedFlagIds.size >= totalFlags;
       nextBtnContainer.setVisible(allFound);
     };
 
@@ -529,7 +537,7 @@ export class FakeCallScene extends Phaser.Scene {
       this.renderCurrentStage();
     });
     nextBtnContainer.add([nextBtnRect, nextBtnText]);
-    nextBtnContainer.setVisible(this.scannedFlagIds.size >= 3);
+    nextBtnContainer.setVisible(this.scannedFlagIds.size >= totalFlags);
     root.add(nextBtnContainer);
 
     rebuildChecklist();
@@ -1222,7 +1230,9 @@ export class FakeCallScene extends Phaser.Scene {
       cHit.on("pointerover", () => drawCard(true));
       cHit.on("pointerout", () => drawCard(false));
       cHit.on("pointerdown", () => {
+        if (this.isTransitioning) return;
         if (card.correct) {
+          this.isTransitioning = true;
           this.shadowHp = Math.max(0, this.shadowHp - 50);
           this.cameras.main.flash(180, 0, 217, 255);
           if (this.duelRoundIndex + 1 < FAKE_CALL_DUEL_ROUNDS.length) {

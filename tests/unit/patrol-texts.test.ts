@@ -8,6 +8,12 @@ import * as patrolHackedAccountData from "@/data/patrol-hacked-account";
 import { MODULE_CATALOG } from "@/data/module-catalog";
 import { PATROL_SAFETY_RULES } from "@/data/safety-phrases";
 import { getUniquePatrolModules, isUnsupportedPatrolDevice } from "@/components/game/PatrolGameLoader";
+import {
+  loadPatrolProgress,
+  PATROL_SAVE_ENABLED,
+  resetPatrolProgress,
+  savePatrolNpcCompletion,
+} from "@/features/patrol/progress";
 
 type LocaleBuckets = {
   ru: { path: string; value: string }[];
@@ -136,5 +142,19 @@ describe("тексты 2D-игры «Патруль» (RU / RO)", () => {
       "/modules/operator-call",
       "/modules/hacked-account",
     ]);
+  });
+
+  it("сохранение прогресса патруля отключено (PATROL_SAVE_ENABLED = false) и старт идёт с Тени 40 и 0 из 4", async () => {
+    expect(PATROL_SAVE_ENABLED).toBe(false);
+    await expect(loadPatrolProgress()).resolves.toEqual({
+      data: { shadow: 40, resolvedIds: [] },
+      error: false,
+    });
+    await expect(savePatrolNpcCompletion("post-maria", true)).resolves.toEqual({
+      error: false,
+    });
+    await expect(resetPatrolProgress()).resolves.toEqual({
+      error: false,
+    });
   });
 });

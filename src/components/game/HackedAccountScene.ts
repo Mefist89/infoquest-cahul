@@ -56,6 +56,7 @@ export class HackedAccountScene extends Phaser.Scene {
   private stage4ShuffledLayerIndex = -1;
   private shadowHp = 100;
   private mistakesCount = 0;
+  private isTransitioning = false;
 
   constructor() {
     super("hacked-account");
@@ -78,6 +79,7 @@ export class HackedAccountScene extends Phaser.Scene {
     this.stage4ShuffledLayerIndex = -1;
     this.shadowHp = 100;
     this.mistakesCount = 0;
+    this.isTransitioning = false;
   }
 
   create() {
@@ -127,18 +129,26 @@ export class HackedAccountScene extends Phaser.Scene {
   }
 
   private getCompletedTasksCount(): { completed: number; total: number } {
-    // Всего 12 шагов: 3 (рентген профиля) + 3 (ловушки входа) + 3 (активные сессии) + 3 (рубежи защиты) = 12
-    const total = 12;
+    const totalFlags = HACKED_PROFILE_SPOTS.filter((s) => s.isFlag).length;
+    const totalTraps = HACKED_LOGIN_TRAPS.length;
+    const totalHackerSessions = HACKED_SESSIONS.filter((s) => s.isHacker).length;
+    const totalLayers = HACKED_SHIELD_LAYERS.length;
+    const total = totalFlags + totalTraps + totalHackerSessions + totalLayers;
     if (this.stage === 5) return { completed: total, total };
 
-    const s1 = this.scannedFlagIds.size; // 0..3
+    const s1 = this.scannedFlagIds.size;
     const s2 =
       this.stage > 2
-        ? 3
+        ? totalTraps
         : this.stage === 2
           ? this.trapIndex + (this.trapSolved ? 1 : 0)
           : 0;
-    const s3 = this.stage > 3 ? 3 : this.stage === 3 ? this.killedSessionIds.size : 0;
+    const s3 =
+      this.stage > 3
+        ? totalHackerSessions
+        : this.stage === 3
+          ? this.killedSessionIds.size
+          : 0;
     const s4 = this.stage === 4 ? this.layerRoundIndex : 0;
 
     return {
@@ -339,6 +349,7 @@ export class HackedAccountScene extends Phaser.Scene {
   }
 
   private renderCurrentStage() {
+    this.isTransitioning = false;
     this.stageRoot?.destroy(true);
     this.stageRoot = this.add.container(0, 0);
     this.xrayReticle = undefined;
@@ -497,10 +508,13 @@ export class HackedAccountScene extends Phaser.Scene {
     const rightBox = this.add.graphics();
     this.stageRoot.add(rightBox);
 
+    const flagSpots = HACKED_PROFILE_SPOTS.filter((s) => s.isFlag);
+    const totalFlags = flagSpots.length;
+
     const scanCounterText = this.add.text(
       rightX + 18,
       panelY + 10,
-      `${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`,
+      `${meta.stage1ScanHint}${this.scannedFlagIds.size}/${totalFlags})`,
       gameText("12.5px", {
         fontStyle: "bold",
         color: "#00d9ff",
@@ -565,7 +579,6 @@ export class HackedAccountScene extends Phaser.Scene {
       flagsListContainer.setPosition(findingBoxX, listStartY);
       flagsListContainer.removeAll(true);
 
-      const flagSpots = HACKED_PROFILE_SPOTS.filter((s) => s.isFlag);
       let rowTop = 0;
 
       flagSpots.forEach((flag, idx) => {
@@ -598,7 +611,7 @@ export class HackedAccountScene extends Phaser.Scene {
         rowTop += rowH + 5;
       });
 
-      if (this.scannedFlagIds.size >= 3) {
+      if (this.scannedFlagIds.size >= totalFlags) {
         const nextTxt = this.add
           .text(
             findingBoxW / 2,
@@ -729,7 +742,7 @@ export class HackedAccountScene extends Phaser.Scene {
           findingTitleText.setText(spot.findingTitle[this.locale]).setColor("#fda4af");
           findingDescText.setText(spot.findingDesc[this.locale]);
 
-          scanCounterText.setText(`${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`);
+          scanCounterText.setText(`${meta.stage1ScanHint}${this.scannedFlagIds.size}/${totalFlags})`);
           relayoutRightPanel(leftPanelH);
           this.renderHeader();
         } else {
@@ -1023,17 +1036,19 @@ export class HackedAccountScene extends Phaser.Scene {
     const gapY = 10;
     const cardW = Math.floor((width - 72 - gapX) / 2);
 
+    const totalHackerSessions = HACKED_SESSIONS.filter((s) => s.isHacker).length;
+
     const statusBg = this.add.graphics();
     const statusToast = this.add
       .text(
         width / 2,
         0,
-        this.killedSessionIds.size >= 3
+        this.killedSessionIds.size >= totalHackerSessions
           ? meta.stage3AllKilledNotice
-          : meta.stage3KilledCounter(this.killedSessionIds.size, 3),
+          : meta.stage3KilledCounter(this.killedSessionIds.size, totalHackerSessions),
         gameText("12.5px", {
           fontStyle: "bold",
-          color: this.killedSessionIds.size >= 3 ? "#34d399" : "#38bdf8",
+          color: this.killedSessionIds.size >= totalHackerSessions ? "#34d399" : "#38bdf8",
           align: "center",
           wordWrap: { width: width - 160 },
         }),
@@ -1197,13 +1212,13 @@ export class HackedAccountScene extends Phaser.Scene {
 
     statusTopY = rowY - gapY + 6;
     const statusBottomY = updateStatusBanner(
-      this.killedSessionIds.size >= 3
+      this.killedSessionIds.size >= totalHackerSessions
         ? meta.stage3AllKilledNotice
-        : meta.stage3KilledCounter(this.killedSessionIds.size, 3),
-      this.killedSessionIds.size >= 3 ? "#34d399" : "#38bdf8",
+        : meta.stage3KilledCounter(this.killedSessionIds.size, totalHackerSessions),
+      this.killedSessionIds.size >= totalHackerSessions ? "#34d399" : "#38bdf8",
     );
 
-    if (this.killedSessionIds.size >= 3) {
+    if (this.killedSessionIds.size >= totalHackerSessions) {
       const nextTxt = this.add
         .text(
           width / 2,
@@ -1241,7 +1256,8 @@ export class HackedAccountScene extends Phaser.Scene {
     this.sessionPulseGraphics.clear();
 
     const { width } = this.scale;
-    const allClean = this.killedSessionIds.size >= 3;
+    const totalHackerSessions = HACKED_SESSIONS.filter((s) => s.isHacker).length;
+    const allClean = this.killedSessionIds.size >= totalHackerSessions;
     const color = allClean ? 0x10b981 : 0xf43f5e;
     const amp = allClean ? 3 : 8;
 
@@ -1430,7 +1446,9 @@ export class HackedAccountScene extends Phaser.Scene {
       cardRect.on("pointerout", () => cardRect.setFillStyle(0x0d1f3a, 0.96));
 
       cardRect.on("pointerdown", () => {
+        if (this.isTransitioning) return;
         if (card.correct) {
+          this.isTransitioning = true;
           cardRect.setFillStyle(0x064e3b, 1);
           cardRect.setStrokeStyle(2.5, 0x10b981);
           duelFeedback.setText(card.feedback[this.locale]).setColor("#6ee7b7");

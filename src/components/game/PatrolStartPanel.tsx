@@ -78,6 +78,9 @@ export function PatrolStartPanel({ locale, onStart }: { locale: PatrolLocale; on
         <p className="max-w-xl text-sm font-medium text-muted-foreground">
           {t.shadowExplain}
         </p>
+        <p className="max-w-xl text-xs text-muted-foreground/85">
+          {t.noSaveNotice}
+        </p>
       </div>
     </div>
   );

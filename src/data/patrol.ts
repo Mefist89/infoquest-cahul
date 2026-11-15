@@ -177,6 +177,7 @@ export const PATROL_SCENE_META: Record<
     askChronoBtn: string;
     desktopOnlyNotice: string;
     pageControlsHint: string;
+    noSaveNotice: string;
   }
 > = {
   ru: {
@@ -210,6 +211,8 @@ export const PATROL_SCENE_META: Record<
       "Игра пока работает только на компьютере с клавиатурой. На телефоне пройди Дела — там те же истории:",
     pageControlsHint:
       "Ходи по районам на WASD или стрелках, подходи к жителям и жми E для разговора.",
+    noSaveNotice:
+      "Прогресс не сохраняется — пройди игру за один раз, это около 15 минут.",
   },
   ro: {
     touchTalkPrompt: "Atinge ca să vorbești",
@@ -242,6 +245,8 @@ export const PATROL_SCENE_META: Record<
       "Deocamdată jocul merge doar pe calculator cu tastatură. Pe telefon parcurge Dosarele — aceleași povești:",
     pageControlsHint:
       "Mergi prin cartiere cu WASD sau săgeți, apropie-te de locuitori și apasă E pentru dialog.",
+    noSaveNotice:
+      "Progresul nu se salvează — parcurge jocul dintr-o dată, durează cam 15 minute.",
   },
 };
 

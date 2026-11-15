@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { MODULE_CATALOG } from "@/data/module-catalog";
 import { PATROL_NPCS, PATROL_SCENE_META, type PatrolLocale } from "@/data/patrol";
+import { PATROL_SAVE_ENABLED } from "@/features/patrol/progress";
 import { PatrolLoadingFrame, PatrolStartPanel } from "./PatrolStartPanel";
 
 const PatrolGame = dynamic(() => import("./PatrolGame").then((module) => module.PatrolGame), {
@@ -103,7 +104,7 @@ export function PatrolGameLoader({
   if (!started) {
     return (
       <div>
-        {!isAuthenticated && (
+        {PATROL_SAVE_ENABLED && !isAuthenticated && (
           <div className="mb-3 rounded-2xl border border-neon/35 bg-neon/10 px-4 py-3 text-sm">
             <Link
               href={`/${locale}/login?next=/${locale}/patrol`}

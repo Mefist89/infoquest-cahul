@@ -5,10 +5,16 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, RotateCw, Skull } from "lucide-react";
 
-import { createClient } from "@/lib/supabase/client";
 import { MODULE_CATALOG } from "@/data/module-catalog";
 import { PATROL_NPCS, PATROL_SCENE_META, type PatrolModuleRoute, type PatrolNpcId } from "@/data/patrol";
 import { PATROL_SAFETY_RULES } from "@/data/safety-phrases";
+import {
+  loadPatrolProgress,
+  PATROL_SAVE_ENABLED,
+  PATROL_SHADOW_START,
+  resetPatrolProgress,
+  savePatrolNpcCompletion,
+} from "@/features/patrol/progress";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
 import { DialogueScene } from "./DialogueScene";
@@ -18,7 +24,7 @@ import { DeliverySmsTrainerModal } from "./DeliverySmsTrainerModal";
 import { PatrolLoadingFrame, usePatrolSpritePrefetch } from "./PatrolStartPanel";
 import { getRubikFontFamily } from "./text-style";
 
-const SHADOW_START = 40;
+const SHADOW_START = PATROL_SHADOW_START;
 const SHADOW_HIT = 15;
 const SHADOW_MISS = 20;
 const SHADOW_DEFEAT = 100;
@@ -30,6 +36,7 @@ export function PatrolGame({
   locale: PatrolLocale;
   isAuthenticated?: boolean;
 }) {
+  const shouldLoadProgress = isAuthenticated && PATROL_SAVE_ENABLED;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -39,9 +46,9 @@ export function PatrolGame({
   const [lastMistakeNpcId, setLastMistakeNpcId] = useState<PatrolNpcId | null>(null);
   const [shadow, setShadow] = useState(SHADOW_START);
   const [phase, setPhase] = useState<"playing" | "won" | "lost" | "loading">(
-    isAuthenticated ? "loading" : "playing",
+    shouldLoadProgress ? "loading" : "playing",
   );
-  const [loading, setLoading] = useState(isAuthenticated);
+  const [loading, setLoading] = useState(shouldLoadProgress);
   const [smsTrainerOpen, setSmsTrainerOpen] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [isPortraitTouch, setIsPortraitTouch] = useState(false);
@@ -115,16 +122,11 @@ export function PatrolGame({
       }
       setSaveError(false);
 
-      if (!isAuthenticated) return;
+      if (!isAuthenticated || !PATROL_SAVE_ENABLED) return;
 
-      (async () => {
-        const supabase = createClient();
-        const { error } = await supabase.rpc("complete_patrol_npc", {
-          p_npc_id: npcId,
-          p_correct: correct,
-        });
+      void (async () => {
+        const { error } = await savePatrolNpcCompletion(npcId, correct);
         if (error) {
-          console.error("Failed to save patrol progress:", error);
           setSaveError(true);
         }
       })();
@@ -195,36 +197,31 @@ export function PatrolGame({
 
   // Load patrol progress from Supabase
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!shouldLoadProgress) return;
 
     let mounted = true;
     async function loadProgress() {
-      const supabase = createClient();
-      const { data, error } = await supabase.rpc("get_patrol_progress");
+      const { data, error } = await loadPatrolProgress();
       if (!mounted) return;
       if (error) {
-        console.error("Failed to load patrol progress:", error);
         setShadow(SHADOW_START);
         setResolvedIds([]);
         setPhase("playing");
         setLoading(false);
         return;
       }
-      const result = data?.[0];
-      if (result) {
-        setShadow(result.shadow_pct);
-        setResolvedIds(result.completed_npc_ids ?? []);
-        if (result.shadow_pct <= 0) setPhase("won");
-        else if (result.shadow_pct >= 100) setPhase("lost");
-        else setPhase("playing");
-      }
+      setShadow(data.shadow);
+      setResolvedIds(data.resolvedIds);
+      if (data.shadow <= 0) setPhase("won");
+      else if (data.shadow >= 100) setPhase("lost");
+      else setPhase("playing");
       setLoading(false);
     }
-    loadProgress();
+    void loadProgress();
     return () => {
       mounted = false;
     };
-  }, [isAuthenticated]);
+  }, [shouldLoadProgress]);
 
   function retry() {
     setSmsTrainerOpen(false);
@@ -237,13 +234,11 @@ export function PatrolGame({
     setShadow(SHADOW_START);
     setPhase("playing");
 
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !PATROL_SAVE_ENABLED) return;
 
-    (async () => {
-      const supabase = createClient();
-      const { error } = await supabase.rpc("reset_patrol_progress");
+    void (async () => {
+      const { error } = await resetPatrolProgress();
       if (error) {
-        console.error("Failed to reset patrol progress:", error);
         setSaveError(true);
       }
     })();
@@ -278,7 +273,7 @@ export function PatrolGame({
 
   return (
     <div>
-      {!isAuthenticated && (
+      {PATROL_SAVE_ENABLED && !isAuthenticated && (
         <div className="mb-3 rounded-2xl border border-neon/35 bg-neon/10 px-4 py-3 text-sm">
           <Link
             href={`/${locale}/login?next=/${locale}/patrol`}
