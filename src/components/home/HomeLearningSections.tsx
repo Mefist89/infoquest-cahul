@@ -81,6 +81,9 @@ const content = {
     aiText: "Не знаешь, безопасна ли ссылка или сообщение? Спроси цифрового помощника.",
     aiButton: "Задать вопрос",
     aiWarning: "Не отправляй помощнику пароли, номера банковских карт и другие личные данные.",
+    patrolBonusTitle: "Бонус: игра «Патруль цифрового города»",
+    patrolBonusBadge: "Бета · для компьютера",
+    patrolBonusText: "Пройди город и помоги 4 жителям не попасться мошенникам. Около 15 минут.",
     faqTitle: "Частые вопросы",
     faq: [
       ["Что такое InfoQuest?", "Это двуязычная образовательная игра о цифровой безопасности, мошенничестве и проверке информации."],
@@ -137,6 +140,9 @@ const content = {
     aiText: "Nu știi dacă un link sau mesaj este sigur? Întreabă asistentul digital.",
     aiButton: "Pune o întrebare",
     aiWarning: "Nu trimite parole, numere de card bancar sau alte date personale.",
+    patrolBonusTitle: "Bonus: jocul «Patrula orașului digital»",
+    patrolBonusBadge: "Beta · pentru calculator",
+    patrolBonusText: "Străbate orașul și ajută 4 locuitori să nu cadă în capcana escrocilor. Cam 15 minute.",
     faqTitle: "Întrebări frecvente",
     faq: [
       ["Ce este InfoQuest?", "Este un joc educațional bilingv despre siguranță digitală, fraude și verificarea informației."],
@@ -191,6 +197,41 @@ export function AudienceSection({ lang }: { lang: Lang }) {
 export function AiAssistantSection({ lang, href, restricted, isGuest }: { lang: Lang; href: string; restricted: boolean; isGuest: boolean }) {
   const t = content[lang];
   return <section className="home-section overflow-hidden rounded-3xl border border-success/40 bg-[linear-gradient(100deg,rgba(5,28,57,0.94),rgba(10,55,60,0.78))] px-5 py-6 sm:px-8"><div className="grid items-center gap-5 sm:grid-cols-[8rem_1fr_auto]"><Image src="/characters/chrono/02_happy.png" alt="Chrono" width={180} height={180} className="mx-auto h-32 w-auto object-contain" /><div><h2 className="text-2xl font-black text-neon">{t.aiTitle}</h2><p className="mt-2 text-sm text-foreground">{t.aiText}</p></div><div className="flex flex-col items-center gap-2">{restricted ? <span className="inline-flex min-h-12 cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-border bg-secondary px-5 text-sm font-bold text-muted-foreground"><Lock className="size-4" aria-hidden="true" />{t.aiButton}</span> : <Link href={href} className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-success px-6 text-sm font-black text-slate-950"><Bot className="size-5" aria-hidden="true" />{t.aiButton}</Link>}{isGuest && <p className="max-w-64 text-center text-sm text-muted-foreground">{strings[lang].aiGuestHint}</p>}</div></div><p className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-end"><Lock className="size-3.5 text-gold" aria-hidden="true" />{t.aiWarning}</p></section>;
+}
+
+export function PatrolBonusCard({ lang }: { lang: Lang }) {
+  const t = content[lang];
+  return (
+    <div className="mt-8">
+      <Link
+        href={`/${lang}/patrol`}
+        className="focus-ring group flex flex-col items-center gap-4 rounded-3xl border-2 border-neon/45 bg-card/85 p-5 text-left shadow-[0_0_24px_rgba(0,217,255,0.18)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-neon hover:bg-card sm:flex-row sm:p-6"
+      >
+        <Image
+          src="/patrol-shield.png"
+          alt=""
+          width={88}
+          height={88}
+          className="size-20 shrink-0 rounded-2xl border border-neon/30 bg-background/60 object-contain p-1.5"
+        />
+        <div className="min-w-0 flex-1 text-center sm:text-left">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+            <h3 className="text-lg font-black text-foreground">{t.patrolBonusTitle}</h3>
+            <span className="rounded-full border border-gold/50 bg-gold/15 px-3 py-0.5 text-sm font-bold uppercase tracking-wide text-gold">
+              {t.patrolBonusBadge}
+            </span>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.patrolBonusText}</p>
+        </div>
+        <span
+          className="grid size-10 shrink-0 place-items-center rounded-full border border-neon/40 bg-neon/10 text-neon transition group-hover:translate-x-1 group-hover:border-neon group-hover:bg-neon/20"
+          aria-hidden="true"
+        >
+          <ArrowRight className="size-5" />
+        </span>
+      </Link>
+    </div>
+  );
 }
 
 export function FaqSection({ lang }: { lang: Lang }) {

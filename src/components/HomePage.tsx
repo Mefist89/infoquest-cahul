@@ -36,6 +36,7 @@ import {
   FaqSection,
   HowItWorks,
   MiniChallenge,
+  PatrolBonusCard,
   ProgressAndBadges,
   SkillsSection,
 } from "@/components/home/HomeLearningSections";
@@ -374,6 +375,8 @@ export default function HomePage() {
               ))}
             </div>
           </div>
+
+          <PatrolBonusCard lang={lang} />
         </section>
 
         <MiniChallenge lang={lang} />
