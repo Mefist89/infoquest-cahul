@@ -51,117 +51,168 @@ export const HACKED_ACCOUNT_META: Record<
     remainingLabel: string;
     allDoneLabel: string;
     closeLabel: string;
+    introActionBtn: string;
     nextStageBtn: string;
     finishBtn: string;
     stageNames: [string, string, string, string];
     stage1Title: string;
     stage1Subtitle: string;
     stage1ScanHint: string;
+    stage1HeaderBadge: string;
+    stage1SelectHint: string;
+    stage1BehaviorHint: string;
+    stage1HiddenClueLabel: string;
+    stage1ClueTag: string;
+    stage1CheckTag: string;
+    stage1NormTag: string;
     stage2Title: string;
     stage2Subtitle: string;
     stage2Blockers: [string, string, string];
+    stage2TrapBadge: (current: number) => string;
+    stage2FeedbackDefault: string;
+    stage2NextTrapBtn: string;
     stage3Title: string;
     stage3Subtitle: string;
     stage3KillBtn: string;
     stage3KilledBadge: string;
     stage3OwnerBadge: string;
+    stage3AllKilledNotice: string;
+    stage3KilledCounter: (done: number, total: number) => string;
     stage4Title: string;
     stage4Subtitle: string;
+    stage4HpLabel: (hp: number) => string;
+    stage4StepHint: (step: number) => string;
+    stage4ActivateBtn: string;
     victoryTitle: string;
+    victoryRetryNotice: string;
     victorySubtitle: string;
     victoryRules: string[];
   }
 > = {
   ru: {
     categoryBadge: "КАТЕГОРИЯ · ВЗЛОМАННЫЙ АККАУНТ И ЗАЩИТА ПРОФИЛЯ",
-    npcBadge: "Продавец · Район Магазина · 4 этапа спасения аккаунта (Phaser 3)",
+    npcBadge: "Продавец · Район Магазина · 4 этапа спасения аккаунта",
     progressLabel: "Прогресс спасения",
     remainingLabel: "Осталось шагов",
     allDoneLabel: "Аккаунт полностью защищён!",
-    closeLabel: "Закрыть [Esc]",
+    closeLabel: "Закрыть",
+    introActionBtn: "Разобраться",
     nextStageBtn: "Перейти к следующему этапу →",
     finishBtn: "Вернуть аккаунт Продавцу и выйти в город ✓",
     stageNames: [
-      "1. Рентген профиля",
-      "2. Ловушка входа",
+      "1. Проверка профиля",
+      "2. Поддельная страница входа",
       "3. Активные сессии",
       "4. 3 рубежа защиты",
     ],
-    stage1Title: "Этап 1/4 · «Рентген профиля»: Распознай взломанный аккаунт продавца",
+    stage1Title: "Этап 1/4 · «Проверка профиля»: Распознай взломанный аккаунт продавца",
     stage1Subtitle:
-      "Проверенный магазин в Кагуле вдруг требует срочную предоплату за телефон. Просвети рентгеном карточку профиля и найди 3 улики взлома:",
-    stage1ScanHint: "Нажми рентген-прицелом на подозрительные элементы профиля слева (найдено улик: ",
-    stage2Title: "Этап 2/4 · «Ловушка фейкового входа и QR-кода»: Как угнали доступ?",
+      "Проверенный магазин в Кагуле вдруг требует срочную предоплату за телефон. Проверь карточку профиля и найди 3 улики взлома:",
+    stage1ScanHint: "Нажми на подозрительные элементы профиля слева (найдено улик: ",
+    stage1HeaderBadge: "🔍 ПРОФИЛЬ ПРОДАВЦА · ПРОВЕРКА ПРОФИЛЯ",
+    stage1SelectHint: "Нажми на любой блок профиля слева для проверки...",
+    stage1BehaviorHint: "Проверь, что изменилось в поведении продавца: цена, способ оплаты, способ связи.",
+    stage1HiddenClueLabel: "Скрытая улика взлома (проверь профиль)",
+    stage1ClueTag: "⚠️ УЛИКА",
+    stage1CheckTag: "ПРОВЕРИТЬ",
+    stage1NormTag: "✓ НОРМА",
+    stage2Title: "Этап 2/4 · «Поддельная страница входа и QR-код»: Как угнали доступ?",
     stage2Subtitle:
-      "Разбери 3 уловки, которыми мошенник выманил доступ у продавца. Выбирай правильный кибер-барьер внизу для каждой ловушки:",
+      "Разбери 3 уловки, которыми мошенник выманил доступ у продавца. Выбирай правильную защиту внизу для каждой ловушки:",
     stage2Blockers: [
-      "Барьер 1 · Стоп фишинг-домен (не вводить пароль по ссылкам)",
-      "Барьер 2 · Блок QR-привязки чужого устройства",
-      `Барьер 3 · Защита кода входа. ${SAFETY_PHRASES.ru.smsCode}`,
+      "Защита 1 · Не вводить пароль по ссылке",
+      "Защита 2 · Не сканировать чужой QR-код",
+      "Защита 3 · Никому не называть код входа",
     ],
+    stage2TrapBadge: (current: number) => `ЛОВУШКА ${current} ИЗ 3 · СООБЩЕНИЕ В ЧАТЕ ПРОДАВЦА`,
+    stage2FeedbackDefault: "Выбери подходящую защиту ниже, чтобы обезвредить уловку:",
+    stage2NextTrapBtn: "Следующая ловушка входа →",
     stage3Title: "Этап 3/4 · «Диспетчер активных сессий»: Выброси хакера из аккаунта",
     stage3Subtitle:
       "Хакер прямо сейчас сидит внутри аккаунта и рассылает реквизиты! Отключи 3 чужие сессии и не трогай настоящее устройство владельца:",
     stage3KillBtn: "Завершить чужую сессию ⚡",
     stage3KilledBadge: "Отключено ✓",
     stage3OwnerBadge: "Устройство владельца 🛡️",
-    stage4Title: "Этап 4/4 · «Щит восстановления»: 3 рубежа защиты (Пароль + 2FA + Оповещение)",
+    stage3AllKilledNotice: "Все 3 чужие сессии отключены! Хакер выброшен из аккаунта!",
+    stage3KilledCounter: (done: number, total: number) => `Отключено чужих сессий: ${done} из ${total}`,
+    stage4Title: "Этап 4/4 · «Щит восстановления»: 3 рубежа защиты (Пароль + Двухфакторная защита + Оповещение)",
     stage4Subtitle:
       "Тень пытается вернуться в профиль! Установи по очереди 3 рубежа защиты (100% → 0% власти Тени), чтобы окончательно защитить аккаунт и покупателей:",
+    stage4HpLabel: (hp: number) => `Доступ Тени к аккаунту · Жизни: ${hp}%`,
+    stage4StepHint: (step: number) => `Рубеж ${step}/3 · Выбери правильную меру защиты аккаунта:`,
+    stage4ActivateBtn: "УСТАНОВИТЬ РУБЕЖ ⚡",
     victoryTitle: "Взломанный аккаунт спасён! Продавец и покупатели под защитой!",
+    victoryRetryNotice: "Ты справился, но с ошибками. Пройди ещё раз",
     victorySubtitle:
-      "Ты прошёл все 4 этапа расследования на Phaser 3: выявил признаки взлома профиля, разобрал схему QR/OAuth-угона, выбросил хакера из активных сессий и установил 3 рубежа защиты.",
+      "Ты прошёл все 4 этапа расследования: выявил признаки взлома профиля, разобрал схему кражи аккаунта через QR-код и поддельную страницу, выбросил хакера из активных сессий и установил 3 рубежа защиты.",
     victoryRules: [
       "Даже старый профиль с отличными отзывами может быть взломан: требование срочной предоплаты на чужую карту — главный сигнал тревоги.",
-      "Никогда не вводи логин/пароль по ссылкам из чата («получить оплату за доставку») и не сканируй QR-коды для «привязки устройства».",
-      "При подозрении на взлом первым делом открой «Настройки → Устройства (Активные сессии)» и заверши все неизвестные сеансы.",
-      "Сразу после очистки сессий смени пароль на уникальный, включи двухфакторную аутентификацию (2FA) и предупреди клиентов/друзей о взломе.",
+      "Никогда не вводи логин/пароль по ссылкам из чата («получить оплату за доставку») и никогда не сканируй QR-код «для привязки устройства», который тебе прислал кто-то другой, — так ты впустишь его в свой аккаунт.",
+      "Смени пароль и заверши все чужие сеансы — оба шага сразу, один за другим. Проверь почту и телефон для восстановления, включи двухфакторную защиту (2FA). Если войти уже не получается — восстанавливай доступ только через официальную поддержку соцсети.",
+      "Обязательно предупреди клиентов и друзей о взломе и восстанови настоящие реквизиты.",
     ],
   },
   ro: {
     categoryBadge: "CATEGORIE · CONT SPART ȘI PROTECȚIA PROFILULUI",
-    npcBadge: "Vânzătorul · Cartierul Magazinului · 4 etape de salvare (Phaser 3)",
+    npcBadge: "Vânzătorul · Cartierul Magazinului · 4 etape de salvare",
     progressLabel: "Progresul salvării",
     remainingLabel: "Pași rămași",
     allDoneLabel: "Contul este complet securizat!",
-    closeLabel: "Închide [Esc]",
+    closeLabel: "Închide",
+    introActionBtn: "Să verificăm",
     nextStageBtn: "Treci la etapa următoare →",
     finishBtn: "Redă contul Vânzătorului și revino în oraș ✓",
     stageNames: [
-      "1. Raze X profil",
-      "2. Capcana login",
+      "1. Verificarea profilului",
+      "2. Pagina falsă de intrare",
       "3. Sesiuni active",
       "4. 3 scuturi",
     ],
-    stage1Title: "Etapa 1/4 · «Raze X pe profil»: Recunoaște contul spart al vânzătorului",
+    stage1Title: "Etapa 1/4 · «Verificarea profilului»: Recunoaște contul spart al vânzătorului",
     stage1Subtitle:
-      "Un magazin verificat din Cahul cere brusc avans urgent pentru un telefon. Scanează profilul și găsește 3 indicii că a fost spart:",
-    stage1ScanHint: "Apasă cu scanerul pe zonele suspecte ale profilului din stânga (indicii găsite: ",
-    stage2Title: "Etapa 2/4 · «Capcana de login fals și cod QR»: Cum a fost furat accesul?",
+      "Un magazin verificat din Cahul cere brusc avans urgent pentru un telefon. Verifică profilul și găsește 3 indicii că a fost spart:",
+    stage1ScanHint: "Apasă pe zonele suspecte ale profilului din stânga (indicii găsite: ",
+    stage1HeaderBadge: "🔍 PROFIL VÂNZĂTOR · VERIFICAREA PROFILULUI",
+    stage1SelectHint: "Selectează un element din profilul din stânga pentru verificare...",
+    stage1BehaviorHint: "Verifică ce s-a schimbat în comportamentul vânzătorului: prețul, modul de plată, modul de contact.",
+    stage1HiddenClueLabel: "Indiciu ascuns (verifică profilul)",
+    stage1ClueTag: "⚠️ INDICIU",
+    stage1CheckTag: "VERIFICĂ",
+    stage1NormTag: "✓ ÎN REGULĂ",
+    stage2Title: "Etapa 2/4 · «Pagina falsă de intrare și codul QR»: Cum a fost furat accesul?",
     stage2Subtitle:
-      "Analizează cele 3 trucuri prin care escrocul a furat contul. Alege bariera cibernetică corectă de jos pentru fiecare capcană:",
+      "Analizează cele 3 trucuri prin care escrocul a furat contul. Alege măsura de protecție corectă de jos pentru fiecare capcană:",
     stage2Blockers: [
-      "Bariera 1 · Stop domeniu phishing (nu introduce parola prin link)",
-      "Bariera 2 · Blocare asociere QR a unui dispozitiv străin",
-      `Bariera 3 · Protecție cod de acces. ${SAFETY_PHRASES.ro.smsCode}`,
+      "Măsura 1 · Nu scrie parola pe link fals",
+      "Măsura 2 · Nu scana un cod QR străin",
+      "Măsura 3 · Nu spune nimănui codul SMS",
     ],
+    stage2TrapBadge: (current: number) => `CAPCANA ${current} DIN 3 · MESAJ ÎN CHATUL VÂNZĂTORULUI`,
+    stage2FeedbackDefault: "Alege măsura de protecție potrivită mai jos:",
+    stage2NextTrapBtn: "Următoarea pagină falsă de intrare →",
     stage3Title: "Etapa 3/4 · «Manager sesiuni active»: Scoate hackerul din cont",
     stage3Subtitle:
       "Hackerul este chiar acum în cont și trimite mesaje! Închide cele 3 sesiuni străine fără a deconecta dispozitivul real al proprietarului:",
     stage3KillBtn: "Închide sesiunea străină ⚡",
     stage3KilledBadge: "Deconectat ✓",
     stage3OwnerBadge: "Dispozitiv proprietar 🛡️",
+    stage3AllKilledNotice: "Toate cele 3 sesiuni străine au fost închise! Hackerul a fost scos din cont!",
+    stage3KilledCounter: (done: number, total: number) => `Sesiuni străine închise: ${done} din ${total}`,
     stage4Title: "Etapa 4/4 · «Scutul de recuperare»: 3 linii de apărare (Parolă + 2FA + Alertă)",
     stage4Subtitle:
       "Umbra încearcă să revină în profil! Instalează pe rând cele 3 linii de apărare (100% → 0% puterea Umbrei) pentru a securiza contul:",
+    stage4HpLabel: (hp: number) => `Accesul Umbrei la cont · Vieți: ${hp}%`,
+    stage4StepHint: (step: number) => `Pasul ${step}/3 · Alege măsura de securitate corectă:`,
+    stage4ActivateBtn: "ACTIVEAZĂ SCUTUL ⚡",
     victoryTitle: "Contul spart a fost salvat! Vânzătorul și clienții sunt în siguranță!",
+    victoryRetryNotice: "Ai reușit, dar cu greșeli. Mai încearcă",
     victorySubtitle:
-      "Ai parcurs toate cele 4 etape Phaser 3: ai depistat semnele contului compromis, ai blocat capcanele QR/OAuth, ai eliminat sesiunile hackerului și ai activat cele 3 linii de apărare.",
+      "Ai parcurs toate cele 4 etape: ai depistat semnele contului compromis, ai blocat capcanele furtului contului prin cod QR și pagină falsă, ai eliminat sesiunile hackerului și ai activat cele 3 linii de apărare.",
     victoryRules: [
       "Chiar și un profil vechi cu recenzii excelente poate fi spart: cererea unui avans urgent pe un card străin este semnalul principal de alarmă.",
-      "Nu introduce niciodată parola pe linkuri din chat («încasează plata») și nu scana coduri QR pentru «asocierea dispozitivului».",
-      "La orice suspiciune de spargere, intră imediat în «Setări → Dispozitive (Sesiuni active)» și închide toate sesiunile necunoscute.",
-      "După curățarea sesiunilor, schimbă parola cu una unică, activează autentificarea în 2 pași (2FA) și anunță clienții/prietenii.",
+      "Nu introduce niciodată parola pe linkuri din chat («încasează plata») și nu scana niciodată un cod QR «de asociere a dispozitivului» primit de la altcineva — așa îi dai acces la contul tău.",
+      "Schimbă parola și închide toate sesiunile străine — ambii pași imediat, unul după altul. Verifică emailul și telefonul de recuperare, activează autentificarea în 2 pași (2FA). Dacă nu mai poți intra — recuperează contul doar prin suportul oficial al rețelei.",
+      "Anunță clienții și prietenii despre spargere și restabilește datele reale de plată.",
     ],
   },
 };
@@ -170,8 +221,8 @@ export const HACKED_PROFILE_SPOTS: ProfileXraySpot[] = [
   {
     id: "spot-old-reviews",
     label: {
-      ru: "Магазин «TehnoCahul» ✓ · 4.9 ★ (240 отзывов с 2021 г.)",
-      ro: "Magazin «TehnoCahul» ✓ · 4.9 ★ (240 recenzii din 2021)",
+      ru: "«TehnoCahul» ✓ · 4.9 ★ (240 отзывов)",
+      ro: "«TehnoCahul» ✓ · 4.9 ★ (240 recenzii)",
     },
     sublabel: {
       ru: "Репутация профиля за прошлые годы",
@@ -190,8 +241,8 @@ export const HACKED_PROFILE_SPOTS: ProfileXraySpot[] = [
   {
     id: "spot-urgency-prepay",
     label: {
-      ru: "Пост (12 мин назад): «Смартфон за 50% цены! Срочно аванс 1500 леев!»",
-      ro: "Postare (acum 12 min): «Telefon la 50% preț! Urgent avans 1500 lei!»",
+      ru: "Пост: «Смартфон −50%! Аванс 1500 леев»",
+      ro: "Postare: «Telefon −50%! Avans 1500 lei»",
     },
     sublabel: {
       ru: "Условие: «Самовывоза сегодня нет — переводи сейчас, иначе заберут»",
@@ -210,8 +261,8 @@ export const HACKED_PROFILE_SPOTS: ProfileXraySpot[] = [
   {
     id: "spot-card-change",
     label: {
-      ru: "Реквизиты: Карта 4111 **** 8892 (изменено 18 мин назад)",
-      ro: "Detalii plată: Card 4111 **** 8892 (modificat acum 18 min)",
+      ru: "Оплата в посте: на карту 4111 **** 8892",
+      ro: "Plata în postare: card 4111 **** 8892",
     },
     sublabel: {
       ru: "Получатель: физлицо из другого региона (не счёт магазина)",
@@ -219,23 +270,23 @@ export const HACKED_PROFILE_SPOTS: ProfileXraySpot[] = [
     },
     isFlag: true,
     findingTitle: {
-      ru: "Улика 2/3: Тихая подмена реквизитов оплаты 18 минут назад!",
-      ro: "Indiciul 2/3: Înlocuirea tacită a cardului de plată acum 18 minute!",
+      ru: "Улика 2/3: Деньги просят перевести на карту частного лица, а не на счёт магазина.",
+      ro: "Indiciul 2/3: Banii se cer pe cardul unei persoane fizice, nu în contul magazinului.",
     },
     findingDesc: {
-      ru: "Рентген истории профиля показал: сразу после взлома хакер заменил расчётный счёт магазина на подставную карту («дропа»), чтобы мгновенно вывести предоплату.",
-      ro: "Razele X asupra istoricului arată: imediat după spargere, hackerul a înlocuit contul magazinului cu un card străin pentru a fura avansul.",
+      ru: "Улика 2/3: Деньги просят перевести на карту частного лица, а не на счёт магазина. Раньше магазин принимал оплату в кассе или при получении — внезапная смена способа оплаты — сигнал тревоги.",
+      ro: "Indiciul 2/3: Banii se cer pe cardul unei persoane fizice, nu în contul magazinului. Înainte magazinul primea plata la casă sau la livrare — schimbarea bruscă a modului de plată este un semnal de alarmă.",
     },
   },
   {
     id: "spot-external-chat",
     label: {
-      ru: "Кнопка связи: «Писать только в сторонний чат @tehnocahul_1»",
-      ro: "Buton contact: «Scrieți doar pe chatul extern @tehnocahul_1»",
+      ru: "Связь: «Писать только в @tehnocahul_1»",
+      ro: "Contact: «Scrieți doar pe @tehnocahul_1»",
     },
     sublabel: {
-      ru: "Комментарии к посту отключены автором 15 минут назад",
-      ro: "Comentariile la postare au fost dezactivate acum 15 minute",
+      ru: "Комментарии к посту закрыты",
+      ro: "Comentariile la postare sunt închise",
     },
     isFlag: true,
     findingTitle: {
@@ -250,8 +301,8 @@ export const HACKED_PROFILE_SPOTS: ProfileXraySpot[] = [
   {
     id: "spot-address-info",
     label: {
-      ru: "Старый адрес в шапке: г. Кагул, ул. Штефан чел Маре",
-      ro: "Adresa veche în antet: or. Cahul, str. Ștefan cel Mare",
+      ru: "Адрес: г. Кагул, ул. Штефан чел Маре",
+      ro: "Adresa: or. Cahul, str. Ștefan cel Mare",
     },
     sublabel: {
       ru: "Не менялся с момента создания страницы",
@@ -277,17 +328,17 @@ export const HACKED_LOGIN_TRAPS: LoginTrapCase[] = [
       ro: "Capcana A: «Am plătit deja telefonul prin Livrare-Curier! Accesați cahul-pay-order.top și introduceți loginul și parola contului dvs. pentru a încasa 3000 lei»",
     },
     trapMechanism: {
-      ru: "Вектор атаки: Поддельная страница входа (OAuth / Phishing форма)",
-      ro: "Vector de atac: Pagină falsă de autentificare (formular Phishing)",
+      ru: "Как обманывают: Поддельная страница входа",
+      ro: "Cum te păcălesc: Pagina falsă de intrare",
     },
     correctBlockerIndex: 0,
     successFeedback: {
-      ru: "Перехвачено! Для получения перевода никогда не нужно вводить пароль от аккаунта на стороннем сайте — это фишинговая ловушка.",
-      ro: "Interceptat! Pentru a primi bani nu trebuie niciodată să introduci parola contului pe un site extern — este phishing.",
+      ru: "Перехвачено! Для получения перевода никогда не нужно вводить пароль от аккаунта на стороннем сайте — это поддельная страница входа.",
+      ro: "Interceptat! Pentru a primi bani nu trebuie niciodată să introduci parola contului pe un site extern — este o pagină falsă de intrare.",
     },
     wrongFeedback: {
-      ru: "Не тот барьер! Здесь мошенник подсунул фальшивый сайт для кражи логина и пароля — используй «Барьер 1 · Стоп фишинг-домен».",
-      ro: "Barieră greșită! Aici escrocul folosește un site fals pentru a fura parola — alege «Bariera 1 · Stop domeniu phishing».",
+      ru: "Не та защита! Здесь мошенник подсунул поддельную страницу входа для кражи логина и пароля. Подумай: какая защита остановит именно эту уловку?",
+      ro: "Măsură greșită! Aici escrocul folosește o pagină falsă de intrare pentru a fura parola. Gândește-te: ce protecție oprește exact această capcană?",
     },
   },
   {
@@ -297,17 +348,17 @@ export const HACKED_LOGIN_TRAPS: LoginTrapCase[] = [
       ro: "Capcana B: «Sistemul de plată cere verificarea vânzătorului: deschideți Setări → Dispozitive → Asociază dispozitiv și scanați acest cod QR!»",
     },
     trapMechanism: {
-      ru: "Вектор атаки: Угон активной сессии через QR-код привязки браузера",
-      ro: "Vector de atac: Deturnarea sesiunii prin cod QR de asociere Web",
+      ru: "Как обманывают: Вход с чужого компьютера по QR-коду",
+      ro: "Cum te păcălesc: Conectarea unui calculator străin prin cod QR",
     },
     correctBlockerIndex: 1,
     successFeedback: {
       ru: "Блестяще! QR-код в разделе «Устройства» нужен только для входа в твой аккаунт с компьютера. Сканировать чужой QR — значит впустить хакера во все чаты!",
-      ro: "Excelent! Codul QR din «Dispozitive» servește doar la conectarea contului tău pe PC. Scanarea unui QR străin îi oferă hackerului acces complet!",
+      ro: "Excelent! Codul QR din «Dispozitive» servește doar la conectarea contului tău pe calculator. Scanarea unui QR străin îi oferă hackerului acces complet!",
     },
     wrongFeedback: {
-      ru: "Ошибка! Здесь атака идёт через сканирование QR-кода привязки сессии — выбери «Барьер 2 · Блок QR-привязки чужого устройства».",
-      ro: "Greșit! Atacatorul încearcă să asocieze propriul browser prin QR — alege «Bariera 2 · Blocare asociere QR».",
+      ru: "Ошибка! Здесь обман идёт через сканирование чужого QR-кода. Подумай: какая защита остановит именно эту уловку?",
+      ro: "Greșit! Aici escrocul încearcă să conecteze un calculator străin prin cod QR. Gândește-te: ce protecție oprește exact această capcană?",
     },
   },
   {
@@ -317,8 +368,8 @@ export const HACKED_LOGIN_TRAPS: LoginTrapCase[] = [
       ro: "Capcana C: A venit codul de sistem 739-104 («Cod de conectare de pe dispozitiv nou»). Escrocul scrie: «Spuneți cele 6 cifre — e codul facturii de curierat!»",
     },
     trapMechanism: {
-      ru: "Вектор атаки: Перехват одноразового кода входа (OTP / 2FA)",
-      ro: "Vector de atac: Furtul codului unic de autentificare (OTP / 2FA)",
+      ru: "Как обманывают: Выманивание кода из SMS",
+      ro: "Cum te păcălesc: Cererea codului din SMS",
     },
     correctBlockerIndex: 2,
     successFeedback: {
@@ -326,8 +377,8 @@ export const HACKED_LOGIN_TRAPS: LoginTrapCase[] = [
       ro: `Exact la țintă! ${SAFETY_PHRASES.ro.smsCode}`,
     },
     wrongFeedback: {
-      ru: `Неверно! ${SAFETY_PHRASES.ru.smsCode} Активируй «Барьер 3 · Защита кода входа (OTP/2FA)».`,
-      ro: `Incorect! ${SAFETY_PHRASES.ro.smsCode} Activează «Bariera 3 · Protecție cod de acces (OTP/2FA)».`,
+      ru: `Неверно! ${SAFETY_PHRASES.ru.smsCode} Подумай: какая защита остановит именно эту уловку?`,
+      ro: `Incorect! ${SAFETY_PHRASES.ro.smsCode} Gândește-te: ce protecție oprește exact această capcană?`,
     },
   },
 ];
@@ -336,8 +387,8 @@ export const HACKED_SESSIONS: ActiveSessionItem[] = [
   {
     id: "sess-owner-phone",
     deviceTitle: {
-      ru: "Смартфон владельца · Android 14 (Официальное приложение)",
-      ro: "Telefonul proprietarului · Android 14 (Aplicația oficială)",
+      ru: "Смартфон владельца (официальное приложение)",
+      ro: "Telefonul proprietarului (aplicația oficială)",
     },
     locationMeta: {
       ru: "Молдова, г. Кагул · Текущее устройство (в сети с 2023 г.)",
@@ -356,12 +407,12 @@ export const HACKED_SESSIONS: ActiveSessionItem[] = [
   {
     id: "sess-hacker-linux",
     deviceTitle: {
-      ru: "Неизвестный ПК · Linux Chrome 122 (Анонимный прокси)",
-      ro: "PC necunoscut · Linux Chrome 122 (Proxy anonim)",
+      ru: "Незнакомый компьютер в другой стране",
+      ro: "Calculator necunoscut în altă țară",
     },
     locationMeta: {
-      ru: "Вход: 19 минут назад · IP скрыт (Tor / VPN узел)",
-      ro: "Conectat: acum 19 minute · IP ascuns (nod Tor / VPN)",
+      ru: "Вход: 19 минут назад · Неизвестное место",
+      ro: "Conectat: acum 19 minute · Locație necunoscută",
     },
     liveActivity: {
       ru: "⚠️ АКТИВНОСТЬ: Опубликовал пост о распродаже за 50% и закрыл комментарии",
@@ -369,19 +420,19 @@ export const HACKED_SESSIONS: ActiveSessionItem[] = [
     },
     isHacker: true,
     explanation: {
-      ru: "Сессия взломщика принудительно завершена! Хакер больше не может редактировать посты с анонимного браузера.",
-      ro: "Sesiunea atacatorului a fost închisă forțat! Hackerul nu mai poate modifica postările din browserul anonim.",
+      ru: "Сессия взломщика принудительно завершена! Хакер больше не может редактировать посты с чужого компьютера.",
+      ro: "Sesiunea atacatorului a fost închisă forțat! Hackerul nu mai poate modifica postările de pe calculatorul străin.",
     },
   },
   {
     id: "sess-hacker-qr",
     deviceTitle: {
-      ru: "Web-сессия (QR-мост) · Desktop Web Client",
-      ro: "Sesiune Web (Punte QR) · Desktop Web Client",
+      ru: "Чужой компьютер (вход по QR-коду)",
+      ro: "Calculator străin (conectat prin cod QR)",
     },
     locationMeta: {
-      ru: "Вход: 18 минут назад · Привязано через фишинговый QR-код",
-      ro: "Conectat: acum 18 minute · Asociat prin cod QR de phishing",
+      ru: "Вход: 18 минут назад · Подключено по поддельному QR-коду",
+      ro: "Conectat: acum 18 minute · Asociat prin cod QR fals",
     },
     liveActivity: {
       ru: "⚠️ АКТИВНОСТЬ: Подменил номер банковской карты в профиле на 4111 **** 8892",
@@ -389,15 +440,15 @@ export const HACKED_SESSIONS: ActiveSessionItem[] = [
     },
     isHacker: true,
     explanation: {
-      ru: "QR-мост разорван! Злоумышленник потерял доступ к настройкам реквизитов и личным сообщениям магазина.",
-      ro: "Puntea QR a fost întreruptă! Infractorul a pierdut accesul la setările de plată și mesajele magazinului.",
+      ru: "Чужой компьютер отключён! Злоумышленник потерял доступ к настройкам реквизитов и личным сообщениям магазина.",
+      ro: "Calculatorul străin a fost deconectat! Infractorul a pierdut accesul la setările de plată și mesajele magazinului.",
     },
   },
   {
     id: "sess-hacker-bot",
     deviceTitle: {
-      ru: "Авто-скрипт рассылки · Бот v2.4",
-      ro: "Script auto-mesaje · Bot v2.4",
+      ru: "Программа для рассылки",
+      ro: "Program de trimitere automată",
     },
     locationMeta: {
       ru: "Вход: 14 минут назад · Массовая рассылка (48 чатов/мин)",
@@ -409,8 +460,8 @@ export const HACKED_SESSIONS: ActiveSessionItem[] = [
     },
     isHacker: true,
     explanation: {
-      ru: "Вредоносный бот-токен отозван! Автоматическая рассылка фейковых счетов покупателям полностью остановлена.",
-      ro: "Tokenul botului malițios a fost revocat! Trimiterea automată de mesaje false către clienți a fost oprită.",
+      ru: "Программа для рассылки отключена! Автоматическая рассылка фейковых счетов покупателям полностью остановлена.",
+      ro: "Programul de trimitere automată a fost oprit! Trimiterea automată de mesaje false către clienți a fost oprită.",
     },
   },
 ];
@@ -434,13 +485,13 @@ export const HACKED_SHIELD_LAYERS: DefenseLayerRound[] = [
           ro: "Frază-parolă unică (16+ caractere)",
         },
         desc: {
-          ru: "Задать новый сложный пароль (например, Cahul$Tehno#Scut2026!), который не используется больше нигде.",
-          ro: "Setează o parolă complexă nouă (ex. Cahul$Tehno#Scut2026!) care nu mai este folosită pe niciun alt site.",
+          ru: "Задать новую длинную парольную фразу из 4–5 случайных слов, не связанных с магазином, городом или датами (например, «nor-lingura-tramvai-cactus» — латиницей и без диакритики, чтобы её можно было набрать на любой клавиатуре), и нигде больше её не использовать. Не копируй пример — придумай свою. Если сайт требует цифру или заглавную букву — добавь их.",
+          ro: "Setează o frază-parolă nouă, lungă, din 4–5 cuvinte la întâmplare, fără legătură cu magazinul, orașul sau date (de ex. «nor-lingura-tramvai-cactus» — cu litere latine, fără diacritice, ca să poată fi scrisă pe orice tastatură), folosită doar aici. Nu copia exemplul — inventează-ți propria frază. Dacă site-ul cere o cifră sau o literă mare — adaug-o.",
         },
         correct: true,
         feedback: {
-          ru: "Рубеж 1 установлен! Старый украденный пароль больше не работает, а новый невозможно подобрать по словарю.",
-          ro: "Linia 1 instalată! Parola veche furată a devenit inutilă, iar noua parolă nu poate fi ghicită.",
+          ru: "Старый украденный пароль больше не работает, а длинную фразу из случайных слов очень трудно подобрать.",
+          ro: "Parola veche furată nu mai funcționează, iar o frază lungă din cuvinte întâmplătoare este foarte greu de ghicit.",
         },
       },
       {
@@ -480,19 +531,19 @@ export const HACKED_SHIELD_LAYERS: DefenseLayerRound[] = [
   {
     id: "layer-2fa",
     layerBadge: {
-      ru: "Рубеж 2/3 · Двухфакторная аутентификация (2FA)",
+      ru: "Рубеж 2/3 · Двухфакторная защита входа",
       ro: "Linia 2/3 · Autentificare în doi pași (2FA)",
     },
     shadowThreat: {
-      ru: "Тень: «Даже с новым паролем я попробую снова подсунуть фишинговую форму входа!»",
-      ro: "Umbra: «Chiar și cu parolă nouă, voi încerca din nou o pagină falsă de login!»",
+      ru: "Тень: «Даже с новым паролем я попробую снова подсунуть поддельную страницу входа!»",
+      ro: "Umbra: «Chiar și cu parolă nouă, voi încerca din nou o pagină falsă de intrare!»",
     },
     cards: [
       {
         id: "2fa-enable",
         title: {
-          ru: "Включить 2FA (Приложение-аутентификатор + облачный пароль)",
-          ro: "Activează 2FA (Aplicație Authenticator + parolă cloud)",
+          ru: "Включить двухфакторную защиту (код из приложения или SMS при каждом новом входе)",
+          ro: "Activează 2FA (cod din aplicație sau SMS la fiecare conectare nouă)",
         },
         desc: {
           ru: "Потребовать второй фактор при входе с любого нового устройства и проверить привязанную почту восстановления.",
@@ -500,15 +551,15 @@ export const HACKED_SHIELD_LAYERS: DefenseLayerRound[] = [
         },
         correct: true,
         feedback: {
-          ru: "Рубеж 2 установлен! Двухфакторная защита (2FA) блокирует 99% автоматических взломов аккаунтов.",
-          ro: "Linia 2 instalată! Autentificarea în 2 pași (2FA) blochează 99% dintre atacurile automate asupra conturilor.",
+          ru: "Рубеж 2 установлен! Теперь одного пароля мало — нужен ещё код. Но помни: код 2FA никогда никому не сообщай и не вводи по ссылкам из чата — иначе защита не сработает.",
+          ro: "Linia 2 instalată! Acum parola singură nu ajunge — e nevoie și de cod. Dar ține minte: codul 2FA nu-l spui nimănui și nu-l introduci pe linkuri din chat — altfel protecția nu funcționează.",
         },
       },
       {
         id: "2fa-none",
         title: {
           ru: "Отключить защиту входа, чтобы входить быстрее",
-          ro: "Dezactivează verificarea la login pentru acces rapid",
+          ro: "Dezactivează verificarea la intrare pentru acces rapid",
         },
         desc: {
           ru: "Лишние коды только мешают быстро отвечать покупателям.",
@@ -516,7 +567,7 @@ export const HACKED_SHIELD_LAYERS: DefenseLayerRound[] = [
         },
         correct: false,
         feedback: {
-          ru: "Ошибка! Без 2FA любой перехваченный пароль сразу открывает злоумышленнику весь аккаунт.",
+          ru: "Ошибка! Без двухфакторной защиты любой перехваченный пароль сразу открывает злоумышленнику весь аккаунт.",
           ro: "Greșeală! Fără 2FA, orice parolă interceptată îi oferă atacatorului acces instantaneu la cont.",
         },
       },
@@ -532,7 +583,7 @@ export const HACKED_SHIELD_LAYERS: DefenseLayerRound[] = [
         },
         correct: false,
         feedback: {
-          ru: "Ни в коем случае! Резервные коды 2FA хранят только в защищённом месте офлайн или в менеджере паролей.",
+          ru: "Ни в коем случае! Резервные коды двухфакторной защиты хранят только в защищённом месте офлайн или в менеджере паролей.",
           ro: "Sub nicio formă! Codurile de rezervă 2FA se păstrează doar offline sau într-un manager de parole securizat.",
         },
       },
@@ -561,8 +612,8 @@ export const HACKED_SHIELD_LAYERS: DefenseLayerRound[] = [
         },
         correct: true,
         feedback: {
-          ru: "Рубеж 3 установлен! Тень полностью повержена (0% HP), а все покупатели вовремя предупреждены и защищены!",
-          ro: "Linia 3 instalată! Umbra este complet învinsă (0% HP), iar toți clienții au fost avertizați la timp!",
+          ru: "Рубеж 3 установлен! Тень полностью повержена (Жизни: 0%), а все покупатели вовремя предупреждены и защищены!",
+          ro: "Linia 3 instalată! Umbra este complet învinsă (Vieți: 0%), iar toți clienții au fost avertizați la timp!",
         },
       },
       {

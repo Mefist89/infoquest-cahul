@@ -77,8 +77,8 @@ export const DELIVERY_SMS_THEORY: {
         ro: "2. Capcana «taxei mici» (15–30 lei)",
       },
       description: {
-        ru: "Сумма специально маленькая, чтобы человек не задумываясь ввёл данные банковской карты и код из SMS на поддельной странице.",
-        ro: "Suma este intenționat mică, pentru ca victima să introducă fără ezitare datele cardului și codul SMS pe pagina falsă.",
+        ru: "Сумма специально маленькая, чтобы человек не задумываясь ввёл данные банковской карты и код из SMS на поддельной странице. Таможенные сборы за посылки из-за границы бывают на самом деле. Но проверяй их сам: набери адрес posta.md вручную, введи трек-номер или спроси в отделении почты. Не плати по ссылке из SMS.",
+        ro: "Suma este intenționat mică, pentru ca victima să introducă fără ezitare datele cardului și codul SMS pe pagina falsă. Taxele vamale pentru coletele din străinătate există cu adevărat. Dar verifică-le singur: scrie manual adresa posta.md, introdu numărul de urmărire sau întreabă la oficiul poștal. Nu plăti prin linkul din SMS.",
       },
       example: {
         ru: "Пример уловки: «Оплатите пошлину 20 леев для выдачи»",
@@ -92,8 +92,8 @@ export const DELIVERY_SMS_THEORY: {
         ro: "3. Domeniu fals în locul site-ului oficial",
       },
       description: {
-        ru: "Вместо настоящего домена posta.md в SMS подставляют похожие адреса с дефисами и дешёвыми зонами (.top, .click, .site, .info).",
-        ro: "În locul domeniului real posta.md, în SMS apar adrese similare cu cratime și extensii suspecte (.top, .click, .site, .info).",
+        ru: "Вместо настоящего домена posta.md в SMS подставляют похожие адреса с дефисами и дешёвыми зонами (.top, .click, .site, .info). Имя отправителя («Posta-Info», «maib») можно подделать — такое SMS может даже оказаться в одной переписке с настоящими. Верить можно только сайту, адрес которого ты набрал сам.",
+        ro: "În locul domeniului real posta.md, în SMS apar adrese similare cu cratime și extensii suspecte (.top, .click, .site, .info). Numele expeditorului («Posta-Info», «maib») poate fi falsificat — SMS-ul poate apărea chiar în aceeași conversație cu cele reale. Ai încredere doar în site-ul a cărui adresă ai scris-o singur.",
       },
       example: {
         ru: "Пример уловки: posta-md-livrare.top вместо posta.md",
@@ -132,8 +132,8 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
     sender: "Posta-Info",
     time: "10:14",
     context: {
-      ru: "Мария ждёт посылку с книгами. Первое SMS пришло от имени «Posta-Info». Найди в тексте 3 красных флага мошенников:",
-      ro: "Maria așteaptă un colet cu cărți. Primul SMS a venit de la «Posta-Info». Găsește în text cele 3 semnale de alarmă:",
+      ru: "Мария ждёт посылку с книгами. Первое SMS пришло от имени «Posta-Info». Имя отправителя («Posta-Info», «maib») можно подделать — такое SMS может даже оказаться в одной переписке с настоящими. Верить можно только сайту, адрес которого ты набрал сам. Найди в тексте 3 красных флага мошенников:",
+      ro: "Maria așteaptă un colet cu cărți. Primul SMS a venit de la «Posta-Info». Numele expeditorului («Posta-Info», «maib») poate fi falsificat — SMS-ul poate apărea chiar în aceeași conversație cu cele reale. Ai încredere doar în site-ul a cărui adresă ai scris-o singur. Găsește în text cele 3 semnale de alarmă:",
     },
     segments: [
       {
@@ -188,8 +188,8 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
           ro: "Indiciul 2: Plata unei taxe mici prin link SMS",
         },
         explanation: {
-          ru: "Мелкая сумма (20 леев) — наживка, чтобы жертва ввела реквизиты карты на фишинговой форме.",
-          ro: "Suma mică (20 lei) este o momeală pentru ca victima să introducă datele cardului pe formularul fals.",
+          ru: "Мелкая сумма (20 леев) — наживка, чтобы жертва ввела реквизиты карты на поддельной странице.",
+          ro: "Suma mică (20 lei) este o momeală pentru ca victima să introducă datele cardului pe pagina falsă.",
         },
       },
       {
@@ -258,7 +258,7 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
       ru: "SMS 2 из 3 · «Ошибка в адресе курьера»",
       ro: "SMS 2 din 3 · «Eroare în adresa curierului»",
     },
-    sender: "+373 68 914 203",
+    sender: "+373 68 *** 203",
     time: "12:38",
     context: {
       ru: "Через два часа Марии пришло второе SMS — уже с обычного мобильного номера. Найди 3 красных флага:",
@@ -268,8 +268,8 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
       {
         id: "s2-sender",
         text: {
-          ru: "[Отправитель: личный номер +373 68 914 203] Курьерская служба доставки:",
-          ro: "[Expeditor: număr personal +373 68 914 203] Serviciul de curierat:",
+          ru: "[Отправитель: личный номер +373 68 *** 203] Курьерская служба доставки:",
+          ro: "[Expeditor: număr personal +373 68 *** 203] Serviciul de curierat:",
         },
         isFlag: true,
         flagTitle: {
@@ -277,8 +277,8 @@ export const DELIVERY_SMS_CASES: DeliverySmsCase[] = [
           ro: "Indiciul 1: SMS de la «curierat» de pe un număr mobil personal",
         },
         explanation: {
-          ru: "Крупные почтовые и курьерские службы используют официальные сервисные каналы, а не случайные личные SIM-карты для сбора оплат.",
-          ro: "Serviciile oficiale de poștă și curierat nu trimit linkuri de plată de pe cartele SIM personale.",
+          ru: "Курьер может написать с личного номера, но ссылку на оплату с личного номера не присылает ни одна служба доставки.",
+          ro: "Curierul poate scrie de pe un număr personal, dar niciun serviciu de livrare nu trimite linkuri de plată de pe un număr personal.",
         },
       },
       {
@@ -541,6 +541,25 @@ export const DELIVERY_SMS_UI: Record<
     outOfFocusDesc: string;
     retryFocusBtn: string;
     hintBtn: string;
+    checkpointLabels: [string, string, string, string, string];
+    checkpointRulesSub: string;
+    checkpointShieldSub: string;
+    npcBadge: string;
+    smsSolvedCounter: (solved: number, total: number) => string;
+    cluesFoundCounter: (found: number, total: number) => string;
+    allTasksDone: string;
+    remainingTasksCounter: (n: number) => string;
+    progressStepsLabel: (done: number, total: number) => string;
+    progressAriaLabel: string;
+    introActionBtn: string;
+    segmentFlagBadge: string;
+    segmentNeutralBadge: string;
+    neutralPhraseTitle: string;
+    stepAHeading: (total: number) => string;
+    stepADesc: string;
+    unfoundClueLabel: (n: number) => string;
+    remainingCluesLabel: (n: number) => string;
+    summaryRetryNotice: string;
   }
 > = {
   ru: {
@@ -560,7 +579,7 @@ export const DELIVERY_SMS_UI: Record<
     summaryScoreLabel: "Разобрано SMS-ловушек: 3 из 3 · Найдено улик: 9 из 9",
     summaryChecklistTitle: "Памятка по категории «SMS о доставке»:",
     summaryChecklist: [
-      "Почта не требует срочной оплаты 15–20 леев по ссылкам из SMS.",
+      "Таможенные сборы за посылки из-за границы бывают на самом деле. Но проверяй их сам: набери адрес posta.md вручную, введи трек-номер или спроси в отделении почты. Не плати по ссылке из SMS.",
       "Всегда проверяй домен: posta-md-livrare.top и .click/.site — это ловушки.",
       SAFETY_PHRASES.ru.smsCode,
       "Проверяй статус заказа только на официальном сайте posta.md или в приложении магазина.",
@@ -575,6 +594,32 @@ export const DELIVERY_SMS_UI: Record<
     outOfFocusDesc: "Нажимать наугад опасно: мошенники рассчитывают на невнимательность. Восстанови заряды внимания и отметь только реальные уловки.",
     retryFocusBtn: "Восстановить 3 ⚡ и разобрать SMS заново ↻",
     hintBtn: "Подсказка детектива (−1 ⚡)",
+    checkpointLabels: [
+      "1. Памятка",
+      "2. SMS №1 (Пошлина)",
+      "3. SMS №2 (Курьер)",
+      "4. SMS №3 (Возврат)",
+      "5. Итог",
+    ],
+    checkpointRulesSub: "4 правила",
+    checkpointShieldSub: "Щит",
+    npcBadge: "Мария · Район Почты · Интерактивное расследование",
+    smsSolvedCounter: (solved: number, total: number) => `Разобрано SMS: ${solved} / ${total}`,
+    cluesFoundCounter: (found: number, total: number) => `Улики: ${found} / ${total}`,
+    allTasksDone: "Все задачи выполнены!",
+    remainingTasksCounter: (n: number) => `Осталось задач: ${n}`,
+    progressStepsLabel: (done: number, total: number) => `Ход расследования (${done} из ${total} шагов)`,
+    progressAriaLabel: "Прогресс расследования",
+    introActionBtn: "Разобраться",
+    segmentFlagBadge: "Улика ✓",
+    segmentNeutralBadge: "Нейтрально",
+    neutralPhraseTitle: "Нейтральная фраза (−1 ⚡)",
+    stepAHeading: (total: number) => `Этап А: Найди все ${total} красных флага в тексте SMS слева`,
+    stepADesc:
+      "Читай без спешки каждую фразу. В сообщении 3 реальные уловки и 2 нейтральные фразы (промах отнимает 1 заряд ⚡).",
+    unfoundClueLabel: (n: number) => `Улика №${n} (нажми на подозрительную фразу в SMS)`,
+    remainingCluesLabel: (n: number) => `Осталось найти улик в этом SMS: ${n}`,
+    summaryRetryNotice: "Ты справился, но с ошибками. Пройди ещё раз",
   },
   ro: {
     stepTheory: "Pasul 1 · Ghid",
@@ -593,7 +638,7 @@ export const DELIVERY_SMS_UI: Record<
     summaryScoreLabel: "Capcane SMS analizate: 3 din 3 · Indicii găsite: 9 din 9",
     summaryChecklistTitle: "Reguli pentru categoria «SMS-uri de livrare»:",
     summaryChecklist: [
-      "Poșta nu cere plăți urgente de 15–20 lei prin linkuri din SMS.",
+      "Taxele vamale pentru coletele din străinătate există cu adevărat. Dar verifică-le singur: scrie manual adresa posta.md, introdu numărul de urmărire sau întreabă la oficiul poștal. Nu plăti prin linkul din SMS.",
       "Verifică mereu domeniul: posta-md-livrare.top și .click/.site sunt capcane.",
       SAFETY_PHRASES.ro.smsCode,
       "Verifică statusul comenzii doar pe site-ul oficial posta.md sau în aplicația magazinului.",
@@ -608,5 +653,31 @@ export const DELIVERY_SMS_UI: Record<
     outOfFocusDesc: "Apăsarea la întâmplare este periculoasă: escrocii mizează pe neatenție. Refă energia de atenție și marchează doar capcanele reale.",
     retryFocusBtn: "Refă 3 ⚡ și analizează SMS-ul din nou ↻",
     hintBtn: "Indiciu detectiv (−1 ⚡)",
+    checkpointLabels: [
+      "1. Ghid",
+      "2. SMS #1 (Vamă)",
+      "3. SMS #2 (Curier)",
+      "4. SMS #3 (Retur)",
+      "5. Finalizare",
+    ],
+    checkpointRulesSub: "4 reguli",
+    checkpointShieldSub: "Scut",
+    npcBadge: "Maria · Oficiul Poștal · Investigație interactivă",
+    smsSolvedCounter: (solved: number, total: number) => `SMS analizate: ${solved} / ${total}`,
+    cluesFoundCounter: (found: number, total: number) => `Indicii: ${found} / ${total}`,
+    allTasksDone: "Toate sarcinile finalizate!",
+    remainingTasksCounter: (n: number) => `Sarcini rămase: ${n}`,
+    progressStepsLabel: (done: number, total: number) => `Progresul investigației (${done} din ${total} pași)`,
+    progressAriaLabel: "Progresul investigației",
+    introActionBtn: "Să verificăm",
+    segmentFlagBadge: "Semnal ✓",
+    segmentNeutralBadge: "Neutru",
+    neutralPhraseTitle: "Frază neutră (−1 ⚡)",
+    stepAHeading: (total: number) => `Pasul A: Găsește cele ${total} semnale de alarmă în SMS`,
+    stepADesc:
+      "Citește fără grabă fiecare frază. În mesaj sunt 3 capcane reale și 2 fraze neutre (fiecare greșeală scade 1 ⚡).",
+    unfoundClueLabel: (n: number) => `Indiciul #${n} (apasă pe fraza suspectă în SMS)`,
+    remainingCluesLabel: (n: number) => `Indicii rămase în acest SMS: ${n}`,
+    summaryRetryNotice: "Ai reușit, dar cu greșeli. Mai încearcă",
   },
 };

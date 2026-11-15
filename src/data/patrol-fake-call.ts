@@ -49,45 +49,66 @@ export const FAKE_CALL_STAGES_META: Record<
     remainingLabel: string;
     allDoneLabel: string;
     closeLabel: string;
+    introActionBtn: string;
     nextStageBtn: string;
     finishBtn: string;
     stageNames: [string, string, string, string];
     stage1Title: string;
     stage1Subtitle: string;
     stage1ScanHint: string;
+    stage1IncomingBadge: string;
+    stage1UnscannedClue: (n: number) => string;
+    stage1FeedbackDefault: string;
+    stage1ClueBadge: string;
+    stage1ScanBadge: string;
+    stage1NeutralBadge: string;
     stage2Title: string;
     stage2Subtitle: string;
     stage2Shields: [string, string, string];
+    stage2WaveCounter: (current: number, total: number) => string;
+    stage2FeedbackDefault: string;
+    stage2NextWaveBtn: string;
     stage3Title: string;
     stage3Subtitle: string;
     stage3SwitchBtn: string;
     stage3SwitchedBadge: string;
     stage4Title: string;
     stage4Subtitle: string;
+    stage4HpLabel: (hp: number) => string;
+    stage4SelectCardHint: string;
+    stage4PlayCardBtn: string;
     victoryTitle: string;
+    victoryRetryNotice: string;
     victorySubtitle: string;
     victoryRules: string[];
   }
 > = {
   ru: {
     categoryBadge: "КАТЕГОРИЯ · ЛОЖНЫЕ ВЫЗОВЫ И ПОДМЕНА НОМЕРА",
-    npcBadge: "Друг · Школьный район · 4 этапа расследования (Phaser 3)",
+    npcBadge: "Максим · Школьный район · 4 этапа расследования",
     progressLabel: "Прогресс расследования",
     remainingLabel: "Осталось шагов",
     allDoneLabel: "Расследование завершено!",
-    closeLabel: "Закрыть [Esc]",
+    closeLabel: "Закрыть",
+    introActionBtn: "Разобраться",
     nextStageBtn: "Перейти к следующему этапу →",
-    finishBtn: "Защитить Друга и вернуться в город ✓",
+    finishBtn: "Защитить Максима и вернуться в город ✓",
     stageNames: [
       "1. Сканер вызова",
       "2. Перехват волн",
       "3. Коммутатор",
       "4. Дуэль с Тенью",
     ],
-    stage1Title: "Этап 1/4 · Сканер подмены номера (Caller ID Инспектор)",
+    stage1Title: "Этап 1/4 · Проверка входящего звонка",
     stage1Subtitle:
-      "Наведи прицел сканера мышкой и нажми на зоны входящего звонка, чтобы просветить 3 скрытые улики подделки:",
+      "Важно: в реальной жизни такого сканера нет. Подменённый номер выглядит на экране точно как настоящий — даже с именем из твоих контактов. Единственная надёжная проверка — положить трубку и самому позвонить другу по сохранённому номеру.",
     stage1ScanHint: "Кликни сканером по подозрительным зонам экрана телефона слева (найдено улик: ",
+    stage1IncomingBadge: "ВХОДЯЩИЙ ВЫЗОВ · ПРОВЕРКА",
+    stage1UnscannedClue: (n: number) => `○ Улика №${n} (ещё не проверена)`,
+    stage1FeedbackDefault: "Проверь зоны смартфона слева",
+    stage1ClueBadge: "УЛИКА ✓",
+    stage1ScanBadge: "🔍 ПРОВЕРИТЬ",
+    stage1NeutralBadge: "НЕЙТРАЛЬНО",
     stage2Title: "Этап 2/4 · Перехват радиоволн: Сбей манипуляцию в разговоре",
     stage2Subtitle:
       "Мошенник давит голосом! Выбирай правильный частотный щит внизу, чтобы разрушить все 3 звуковые волны обмана:",
@@ -96,6 +117,10 @@ export const FAKE_CALL_STAGES_META: Record<
       "Щит 2 · Против секретности и изоляции",
       "Щит 3 · Блок перевода денег и кодов",
     ],
+    stage2WaveCounter: (current: number, total: number) =>
+      `Звуковая волна ${current} из ${total} · Манипуляция мошенника`,
+    stage2FeedbackDefault: "Выбери ниже правильный защитный щит, чтобы погасить волну:",
+    stage2NextWaveBtn: "Перейти к следующей звуковой волне →",
     stage3Title: "Этап 3/4 · Коммутатор безопасности: Двухканальная проверка",
     stage3Subtitle:
       "Переключи все 3 узла телефонной цепи в безопасный режим, чтобы заблокировать фальшивый вызов и проверить друга по настоящему каналу:",
@@ -103,36 +128,47 @@ export const FAKE_CALL_STAGES_META: Record<
     stage3SwitchedBadge: "Защищено ✓",
     stage4Title: "Этап 4/4 · Дуэль с телефонным мошенником: Контрольный вопрос",
     stage4Subtitle:
-      "Тень-имитатор пытается дожать! Разыграй 2 верные карты подряд, чтобы обнулить маскировку мошенника (100 HP → 0 HP):",
-    victoryTitle: "Ложный вызов разоблачён! Друг в безопасности!",
+      "Тень-имитатор пытается дожать! Разыграй 2 верные карты подряд, чтобы обнулить маскировку мошенника (Жизни: 100 → 0):",
+    stage4HpLabel: (hp: number) => `Маскировка Тени · Жизни: ${hp}`,
+    stage4SelectCardHint: "Выбери карту контр-приёма ниже:",
+    stage4PlayCardBtn: "⚡ Разыграть карту",
+    victoryTitle: "Ложный вызов разоблачён! Максим в безопасности!",
+    victoryRetryNotice: "Ты справился, но с ошибками. Пройди ещё раз",
     victorySubtitle:
-      "Ты прошёл все 4 этапа тренажёра на движке Phaser 3: проверил Caller ID, отбил голосовые манипуляции, настроил двухканальную проверку и победил Тень контрольным вопросом.",
+      "Ты прошёл все 4 этапа тренажёра: разобрал уловки звонка, отбил голосовые манипуляции, настроил двухканальную проверку и победил Тень контрольным вопросом.",
     victoryRules: [
-      "Имя и номер на экране можно подменить (спуфинг) — никогда не верь срочным просьбам о деньгах на слово.",
-      "Мошенники всегда требуют двух вещей: «Быстрее!» (паника) и «Никому не говори!» (изоляция).",
+      "Имя и номер звонящего на экране можно подменить (подмена номера) — никогда не верь срочным просьбам о деньгах на слово.",
+      "Мошенники часто давят двумя приёмами: «Быстрее!» (паника) и «Никому не говори!» (изоляция). Но даже спокойная просьба о деньгах или коде требует проверки.",
       "При любом подозрительном звонке положи трубку и сам позвони человеку по старому известному номеру.",
-      "Используй личный контрольный вопрос, ответ на который знает только настоящий друг или член семьи.",
+      "Используй личный контрольный вопрос, ответ на который знает только настоящий друг или член семьи и ответ на который нельзя найти в соцсетях.",
     ],
   },
   ro: {
-    categoryBadge: "CATEGORIE · APELURI FALSE ȘI SPOOFING",
-    npcBadge: "Prietenul · Cartierul Școlii · 4 etape de investigație (Phaser 3)",
+    categoryBadge: "CATEGORIE · APELURI FALSE ȘI FALSIFICAREA NUMĂRULUI",
+    npcBadge: "Maxim · Cartierul Școlii · 4 etape de investigație",
     progressLabel: "Progresul investigației",
     remainingLabel: "Pași rămași",
     allDoneLabel: "Investigație finalizată!",
-    closeLabel: "Închide [Esc]",
+    closeLabel: "Închide",
+    introActionBtn: "Să verificăm",
     nextStageBtn: "Treci la etapa următoare →",
-    finishBtn: "Protejează Prietenul și revino în oraș ✓",
+    finishBtn: "Protejează-l pe Maxim și revino în oraș ✓",
     stageNames: [
       "1. Scaner apel",
       "2. Scut unde",
       "3. Comutator",
       "4. Duel cu Umbra",
     ],
-    stage1Title: "Etapa 1/4 · Scaner Caller ID (Inspectorul apelului)",
+    stage1Title: "Etapa 1/4 · Verificarea apelului primit",
     stage1Subtitle:
-      "Mișcă scanerul cu mouse-ul și apasă pe zonele apelului primit pentru a descoperi cele 3 indicii ascunse:",
+      "Atenție: în viața reală un astfel de scaner nu există. Numărul falsificat arată pe ecran exact ca cel real — chiar și cu numele din agenda ta. Singura verificare sigură este să închizi și să-l suni tu pe prieten la numărul salvat.",
     stage1ScanHint: "Apasă cu scanerul pe zonele suspecte ale telefonului din stânga (indicii găsite: ",
+    stage1IncomingBadge: "APEL DE INTRARE · VERIFICARE",
+    stage1UnscannedClue: (n: number) => `○ Indiciul #${n} (neverificat)`,
+    stage1FeedbackDefault: "Verifică zonele telefonului din stânga",
+    stage1ClueBadge: "INDICIU ✓",
+    stage1ScanBadge: "🔍 VERIFICĂ",
+    stage1NeutralBadge: "NEUTRU",
     stage2Title: "Etapa 2/4 · Interceptarea undelor: Oprește manipularea",
     stage2Subtitle:
       "Escrocul pune presiune! Alege scutul corect de jos pentru a distruge toate cele 3 unde sonore de manipulare:",
@@ -141,6 +177,10 @@ export const FAKE_CALL_STAGES_META: Record<
       "Scut 2 · Contra secretomaniei și izolării",
       "Scut 3 · Blocare bani și coduri SMS",
     ],
+    stage2WaveCounter: (current: number, total: number) =>
+      `Unda sonoră ${current} din ${total} · Manipularea apelantului`,
+    stage2FeedbackDefault: "Alege mai jos scutul potrivit pentru a opri unda:",
+    stage2NextWaveBtn: "Următoarea undă sonoră →",
     stage3Title: "Etapa 3/4 · Comutatorul de siguranță: Verificare prin 2 canale",
     stage3Subtitle:
       "Comută toate cele 3 noduri ale rețelei în modul sigur pentru a bloca apelul fals și a verifica prietenul pe canalul real:",
@@ -148,15 +188,19 @@ export const FAKE_CALL_STAGES_META: Record<
     stage3SwitchedBadge: "Protejat ✓",
     stage4Title: "Etapa 4/4 · Duel cu escrocul telefonic: Întrebarea de control",
     stage4Subtitle:
-      "Umbra încearcă să te păcălească! Joacă 2 cărți corecte la rând pentru a distruge masca escrocului (100 HP → 0 HP):",
-    victoryTitle: "Apelul fals a fost demascat! Prietenul este în siguranță!",
+      "Umbra încearcă să te păcălească! Joacă 2 cărți corecte la rând pentru a distruge masca escrocului (Vieți: 100 → 0):",
+    stage4HpLabel: (hp: number) => `Masca Umbrei · Vieți: ${hp}`,
+    stage4SelectCardHint: "Alege o carte de contraatac mai jos:",
+    stage4PlayCardBtn: "⚡ Joacă cartea",
+    victoryTitle: "Apelul fals a fost demascat! Maxim este în siguranță!",
+    victoryRetryNotice: "Ai reușit, dar cu greșeli. Mai încearcă",
     victorySubtitle:
-      "Ai parcurs toate cele 4 etape Phaser 3: ai scanat Caller ID, ai blocat manipulările vocale, ai activat verificarea dublă și ai învins Umbra cu întrebarea de control.",
+      "Ai parcurs toate cele 4 etape: ai verificat apelul, ai blocat manipulările vocale, ai activat verificarea dublă și ai învins Umbra cu întrebarea de control.",
     victoryRules: [
-      "Numele și numărul afișat pot fi falsificate (spoofing) — nu crede pe cuvânt cererile urgente de bani.",
-      "Escrocii cer mereu două lucruri: «Repede!» (panică) și «Nu spune nimănui!» (izolare).",
+      "Numele și numărul apelantului pot fi falsificate (falsificarea numărului) — nu crede pe cuvânt cererile urgente de bani.",
+      "Escrocii folosesc des două trucuri: «Repede!» (panică) și «Nu spune nimănui!» (izolare). Dar și o cerere calmă de bani sau coduri trebuie verificată.",
       "La orice apel suspect, închide și sună tu pe numărul vechi, salvat în agendă.",
-      "Folosește o întrebare de control personală, la care doar prietenul real știe răspunsul.",
+      "Folosește o întrebare de control personală, la care doar prietenul real știe răspunsul, al cărei răspuns nu poate fi găsit pe rețelele sociale.",
     ],
   },
 };
@@ -185,21 +229,21 @@ export const FAKE_CALL_SCANNER_SPOTS: ScannerSpot[] = [
   {
     id: "spot-number",
     label: {
-      ru: "Линия: +373 (???) → Шлюз SIP",
-      ro: "Linie: +373 (???) → Gateway SIP",
+      ru: "Номер не из твоих контактов, звонок в мессенджере",
+      ro: "Numărul nu e în agenda ta, apel prin messenger",
     },
     sublabel: {
-      ru: "Маршрут входящего номера",
-      ro: "Ruta numărului apelant",
+      ru: "Неизвестное устройство",
+      ro: "Dispozitiv necunoscut",
     },
     isFlag: true,
     findingTitle: {
-      ru: "Улика 2: Подмена номера (Spoofing)",
-      ro: "Indiciul 2: Falsificarea numărului (Spoofing)",
+      ru: "Номер не из твоих контактов, звонок в мессенджере",
+      ro: "Numărul nu e în agenda ta, apel prin messenger",
     },
     findingDesc: {
-      ru: "Под подписью «Друг» скрывается одноразовый интернет-шлюз +44 7911 ***. Настоящая SIM-карта друга не звонила!",
-      ro: "Sub numele «Prieten» se ascunde un gateway online +44 7911 ***. Cartela SIM reală a prietenului nu a apelat!",
+      ru: "Друг звонит с нового номера и сразу просит деньги — повод проверить",
+      ro: "Prietenul sună de pe un număr nou și cere imediat bani — motiv de verificare",
     },
   },
   {
@@ -209,24 +253,24 @@ export const FAKE_CALL_SCANNER_SPOTS: ScannerSpot[] = [
       ro: "Flux audio: «Apelant în panică»",
     },
     sublabel: {
-      ru: "Спектр голоса и фоновых помех",
-      ro: "Spectrul vocii și zgomotul de fond",
+      ru: "Фоновый шум и паника в голосе",
+      ro: "Zgomot de fond și panică în voce",
     },
     isFlag: true,
     findingTitle: {
-      ru: "Улика 3: Искусственные помехи и чужой тембр",
-      ro: "Indiciul 3: Zgomot artificial și timbru străin",
+      ru: "Улика 3: Шум и паника мешают узнать голос",
+      ro: "Indiciul 3: Zgomotul și panica împiedică recunoașterea vocii",
     },
     findingDesc: {
-      ru: "Мошенники специально добавляют шум улицы или сирены, чтобы ты не заметил подделку голоса.",
-      ro: "Escrocii adaugă intenționat zgomot de fond pentru a masca faptul că vocea nu este a prietenului tău.",
+      ru: "Шум и паника мешают узнать голос, а голос можно подделать",
+      ro: "Zgomotul și panica împiedică recunoașterea vocii, iar vocea poate fi falsificată",
     },
   },
   {
     id: "spot-clock",
     label: {
-      ru: "Индикатор связи: 00:18 · LTE",
-      ro: "Indicator rețea: 00:18 · LTE",
+      ru: "Индикатор связи: 00:18",
+      ro: "Indicator rețea: 00:18",
     },
     sublabel: {
       ru: "Системные часы смартфона",
@@ -261,8 +305,8 @@ export const FAKE_CALL_WAVES: WaveAttack[] = [
       ro: "Unda de panică a fost oprită! Când cineva te grăbește cu «ai 3 minute», încearcă să-ți blocheze gândirea critică.",
     },
     wrongFeedback: {
-      ru: "Не тот щит! Здесь мошенник давит именно на срочность и панику («3 минуты до полиции»). Выбери Щит 1!",
-      ro: "Scut greșit! Aici escrocul folosește urgența și panica («3 minute»). Alege Scutul 1!",
+      ru: "Не тот щит! Здесь мошенник давит именно на срочность и панику («3 минуты до полиции»). Подумай: какая защита остановит именно эту уловку?",
+      ro: "Scut greșit! Aici escrocul folosește urgența și panica («3 minute»). Gândește-te: ce protecție oprește exact această capcană?",
     },
   },
   {
@@ -281,8 +325,8 @@ export const FAKE_CALL_WAVES: WaveAttack[] = [
       ro: "Unda de izolare a fost distrusă! Escrocii interzic apelarea părinților fiindcă o singură verificare demască minciuna.",
     },
     wrongFeedback: {
-      ru: "Посмотри на смысл фразы: мошенник запрещает рассказывать взрослым и изолирует тебя. Выбери Щит 2!",
-      ro: "Privește sensul frazei: escrocul încearcă să te izoleze și îți cere secretomanie. Alege Scutul 2!",
+      ru: "Посмотри на смысл фразы: мошенник запрещает рассказывать взрослым и изолирует тебя. Подумай: какая защита остановит именно эту уловку?",
+      ro: "Privește sensul frazei: escrocul încearcă să te izoleze și îți cere secretomanie. Gândește-te: ce protecție oprește exact această capcană?",
     },
   },
   {
@@ -292,8 +336,8 @@ export const FAKE_CALL_WAVES: WaveAttack[] = [
       ro: "«Transferă 500 de lei pe acest card străin chiar acum și dictează-mi codul de confirmare!»",
     },
     manipulationType: {
-      ru: "Тип атаки: Выманивание перевода на подставное лицо (дропа)",
-      ro: "Tipul atacului: Cererea de bani pe un card străin și codul SMS",
+      ru: "Тип атаки: Выманивание перевода на карту постороннего человека",
+      ro: "Tipul atacului: Cererea de bani pe cardul unei persoane străine",
     },
     correctShieldIndex: 2,
     successFeedback: {
@@ -301,8 +345,8 @@ export const FAKE_CALL_WAVES: WaveAttack[] = [
       ro: "Toate cele 3 unde au fost oprite! Cererea de bani pe un card străin și codul SMS reprezintă scopul final al apelului fals.",
     },
     wrongFeedback: {
-      ru: "Здесь мошенник напрямую требует перевод денег и код из SMS. Активируй Щит 3!",
-      ro: "Aici escrocul cere direct bani și codul din SMS. Activează Scutul 3!",
+      ru: "Здесь мошенник напрямую требует перевод денег и код из SMS. Подумай: какая защита остановит именно эту уловку?",
+      ro: "Aici escrocul cere direct bani și codul din SMS. Gândește-te: ce protecție oprește exact această capcană?",
     },
   },
 ];
@@ -349,8 +393,8 @@ export const FAKE_CALL_SWITCH_NODES: SwitchNode[] = [
   {
     id: "node-adults",
     title: {
-      ru: "Узел 3 · Подтверждение через второго свидетеля",
-      ro: "Nodul 3 · Confirmare printr-un al doilea canal",
+      ru: "Узел 3 · Рассказать взрослым, которым доверяешь",
+      ro: "Nodul 3 · Spune unui adult de încredere",
     },
     unsafeState: {
       ru: "Режим: Держать ситуацию в секрете, как просил звонящий",
@@ -361,8 +405,8 @@ export const FAKE_CALL_SWITCH_NODES: SwitchNode[] = [
       ro: "Mod: Anunță părinții sau dirigintele ✓",
     },
     explanation: {
-      ru: "Обсуждение со взрослыми или общими друзьями за 1 минуту разрушает любую легенду про «аварию» или «полицию».",
-      ro: "Discuția cu părinții sau profesorii distruge în 1 minut orice poveste falsă despre «accident» sau «poliție».",
+      ru: "Обсуждение с теми, кому доверяешь (родители, учитель или общие друзья), за 1 минуту разрушает любую легенду про «аварию» или «полицию».",
+      ro: "Discuția cu părinții, profesorii sau prietenii comuni distruge în 1 minut orice poveste falsă despre «accident» sau «poliție».",
     },
   },
 ];
@@ -382,13 +426,13 @@ export const FAKE_CALL_DUEL_ROUNDS: DuelRound[] = [
           ro: "Carte: Întrebare de control",
         },
         desc: {
-          ru: "«Раз это ты — скажи, на каком уроке мы сидели вчера за одной партой и как зовут твоего пса?»",
-          ro: "«Dacă ești tu — spune la ce lecție am stat ieri în aceeași bancă și cum îl cheamă pe câinele tău?»",
+          ru: "«Раз это ты — скажи, какое у нас с тобой секретное слово, о котором мы договорились заранее?»",
+          ro: "«Dacă ești tu — spune care e cuvântul nostru secret, stabilit dinainte?»",
         },
         correct: true,
         feedback: {
-          ru: "КРИТИЧЕСКИЙ УДАР (−50 HP)! Мошенник не знает личных деталей из вашей жизни и начинает путаться!",
-          ro: "LOVITURĂ CRITICĂ (−50 HP)! Escrocul nu cunoaște detaliile voastre personale și începe să se încurce!",
+          ru: "КРИТИЧЕСКИЙ УДАР (−50 жизней)! Мошенник не знает личных деталей из вашей жизни и начинает путаться!",
+          ro: "LOVITURĂ CRITICĂ (−50 vieți)! Escrocul nu cunoaște detaliile voastre personale și începe să se încurce!",
         },
       },
       {
@@ -444,8 +488,8 @@ export const FAKE_CALL_DUEL_ROUNDS: DuelRound[] = [
         },
         correct: true,
         feedback: {
-          ru: "ПОБЕДА (−50 HP → 0 HP)! Настоящий Максим спокойно сидит дома, а маскировка телефонного мошенника полностью уничтожена!",
-          ro: "VICTORIE (−50 HP → 0 HP)! Adevăratul Maxim este acasă în siguranță, iar masca escrocului a fost complet distrusă!",
+          ru: "ПОБЕДА (Жизни: 0)! Настоящий Максим спокойно сидит дома, а маскировка телефонного мошенника полностью уничтожена!",
+          ro: "VICTORIE (Vieți: 0)! Adevăratul Maxim este acasă în siguranță, iar masca escrocului a fost complet distrusă!",
         },
       },
       {

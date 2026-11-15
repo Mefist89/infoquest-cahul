@@ -2,7 +2,8 @@ import Phaser from "phaser";
 import { RoadNetwork, RoadGraph, RoadNode } from "./RoadNetwork";
 import { CityMapGenerator, DEFAULT_CITY_CONFIG, CityMapConfig } from "./RoadMapGenerator";
 
-import { PATROL_NPCS } from "@/data/patrol";
+import { PATROL_DISTRICTS, PATROL_NPCS, PATROL_SCENE_META, type PatrolDistrict } from "@/data/patrol";
+import { gameText } from "./text-style";
 
 export type PatrolLocale = "ru" | "ro";
 
@@ -34,9 +35,31 @@ export class PatrolScene extends Phaser.Scene {
   private cityConfig: CityMapConfig;
   private obstacles?: Phaser.Physics.Arcade.StaticGroup;
   private onDomFullscreenChange?: () => void;
+  private moveTarget: { x: number; y: number } | null = null;
+  private lastProgressPos: { x: number; y: number } = { x: 0, y: 0 };
+  private stuckTimer = 0;
+  private orientationPaused = false;
 
   getNearNpcId(): string | null {
     return this.nearNpcId;
+  }
+
+  setOrientationPaused(paused: boolean): void {
+    this.orientationPaused = paused;
+    if (paused) {
+      this.moveTarget = null;
+      this.player?.setVelocity(0, 0);
+      this.player?.anims.stop();
+      this.player?.setFrame("idle");
+    }
+  }
+
+  private isTouchDevice(): boolean {
+    const coarse =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(pointer: coarse)").matches;
+    return Boolean(coarse || this.sys?.game?.device?.input?.touch);
   }
 
   constructor(
@@ -118,26 +141,54 @@ export class PatrolScene extends Phaser.Scene {
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D") as Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
     this.talkKey = this.input.keyboard?.addKey("E") as Phaser.Input.Keyboard.Key;
 
+    const meta = PATROL_SCENE_META[this.locale];
+    const promptLabel = this.isTouchDevice() ? meta.touchTalkPrompt : meta.keyTalkPrompt;
+
     this.promptText = this.add
-      .text(0, 0, this.locale === "ro" ? "[E] Vorbește" : "[E] Поговорить", {
-        fontSize: "16px",
-        fontStyle: "900",
-        color: "#00d9ff",
-        backgroundColor: "#060d1fee",
-        padding: { x: 8, y: 4 },
-      })
+      .text(
+        0,
+        0,
+        promptLabel,
+        gameText("16px", {
+          fontStyle: "900",
+          color: "#00d9ff",
+          backgroundColor: "#060d1fee",
+          padding: { x: 8, y: 4 },
+        }),
+      )
       .setOrigin(0.5)
       .setDepth(3000)
-      .setVisible(false);
+      .setVisible(false)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        if (this.nearNpcId) {
+          this.startConversation(this.nearNpcId);
+        }
+      });
+
+    this.input.on(
+      "pointerdown",
+      (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+        if (this.orientationPaused || this.isSettingsOpen) return;
+        if (currentlyOver.length > 0) return;
+        this.moveTarget = { x: pointer.worldX, y: pointer.worldY };
+        this.lastProgressPos = { x: this.player.x, y: this.player.y };
+        this.stuckTimer = 0;
+      },
+    );
 
     this.hudText = this.add
-      .text(12, 12, "", {
-        fontSize: "16px",
-        fontStyle: "bold",
-        color: "#00d9ff",
-        backgroundColor: "#060d1fcc",
-        padding: { x: 10, y: 6 },
-      })
+      .text(
+        12,
+        12,
+        "",
+        gameText("16px", {
+          fontStyle: "bold",
+          color: "#00d9ff",
+          backgroundColor: "#060d1fcc",
+          padding: { x: 10, y: 6 },
+        }),
+      )
       .setScrollFactor(0)
       .setDepth(3000);
 
@@ -153,11 +204,15 @@ export class PatrolScene extends Phaser.Scene {
       .on("pointerout", () => this.fullscreenBtn!.setFillStyle(0x060d1f, 0.85));
 
     this.fullscreenIcon = this.add
-      .text(this.scale.width - 85, 30, "⛶", {
-        fontSize: "20px",
-        color: "#00d9ff",
-        fontStyle: "bold",
-      })
+      .text(
+        this.scale.width - 85,
+        30,
+        "⛶",
+        gameText("20px", {
+          color: "#00d9ff",
+          fontStyle: "bold",
+        }),
+      )
       .setOrigin(0.5)
       .setDepth(3001)
       .setScrollFactor(0);
@@ -174,11 +229,15 @@ export class PatrolScene extends Phaser.Scene {
       .on("pointerout", () => this.settingsBtn!.setFillStyle(0x060d1f, 0.85));
 
     this.settingsIcon = this.add
-      .text(this.scale.width - 34, 30, "⚙", {
-        fontSize: "20px",
-        color: "#00d9ff",
-        fontStyle: "bold",
-      })
+      .text(
+        this.scale.width - 34,
+        30,
+        "⚙",
+        gameText("20px", {
+          color: "#00d9ff",
+          fontStyle: "bold",
+        }),
+      )
       .setOrigin(0.5)
       .setDepth(3001)
       .setScrollFactor(0);
@@ -290,22 +349,27 @@ export class PatrolScene extends Phaser.Scene {
     bg.strokeRoundedRect(0, 0, 220, 175, 16);
     this.settingsPanel.add(bg);
 
+    const meta = PATROL_SCENE_META[this.locale];
     const title = this.add
-      .text(110, 14, this.locale === "ro" ? "Setări" : "Настройки", {
-        fontSize: "16px",
-        fontStyle: "bold",
-        color: "#00d9ff",
-      })
+      .text(
+        110,
+        14,
+        meta.settingsTitle,
+        gameText("16px", {
+          fontStyle: "bold",
+          color: "#00d9ff",
+        }),
+      )
       .setOrigin(0.5, 0);
     this.settingsPanel.add(title);
 
-    this.createSettingItem(110, 62, "🔊", this.locale === "ro" ? "Sunet" : "Звук", !this.sound.mute, () => {
+    this.createSettingItem(110, 62, "🔊", meta.soundLabel, !this.sound.mute, () => {
       this.sound.mute = !this.sound.mute;
     });
-    this.createSettingItem(110, 108, "⛶", this.locale === "ro" ? "Fullscreen" : "На весь экран", this.scale.isFullscreen, () =>
+    this.createSettingItem(110, 108, "⛶", meta.fullscreenLabel, this.scale.isFullscreen, () =>
       this.toggleFullscreen(),
     );
-    this.createSettingItem(110, 150, "✕", this.locale === "ro" ? "Închide" : "Закрыть", false, () => this.toggleSettings());
+    this.createSettingItem(110, 150, "✕", meta.closeLabel, false, () => this.toggleSettings());
   }
 
   private createSettingItem(x: number, y: number, icon: string, label: string, isOn = false, onClick?: () => void): void {
@@ -315,8 +379,10 @@ export class PatrolScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x00d9ff, 0.35)
       .setInteractive({ useHandCursor: true });
 
-    const iconText = this.add.text(-76, 0, icon, { fontSize: "16px", color: "#00d9ff" }).setOrigin(0.5);
-    const labelText = this.add.text(-8, 0, label, { fontSize: "13px", fontStyle: "bold", color: "#ffffff" }).setOrigin(0.5);
+    const iconText = this.add.text(-76, 0, icon, gameText("16px", { color: "#00d9ff" })).setOrigin(0.5);
+    const labelText = this.add
+      .text(-8, 0, label, gameText("13px", { fontStyle: "bold", color: "#ffffff" }))
+      .setOrigin(0.5);
     const dot = this.add.circle(74, 0, 7, isOn ? 0x34d399 : 0x475569);
 
     bg.on("pointerover", () => bg.setFillStyle(0x00d9ff, 0.25));
@@ -357,33 +423,123 @@ export class PatrolScene extends Phaser.Scene {
       sprite.setImmovable(true);
       sprite.setDepth(pos.y);
 
-      this.add
-        .text(pos.x, pos.y - 54, npc.name[this.locale], {
-          fontSize: "14px",
-          fontStyle: "bold",
-          color: "#ffd166",
-          backgroundColor: "#060d1fe6",
-          padding: { x: 7, y: 3 },
-        })
+      const nameText = this.add
+        .text(
+          pos.x,
+          pos.y - 54,
+          npc.name[this.locale],
+          gameText("14px", {
+            fontStyle: "bold",
+            color: "#ffd166",
+            backgroundColor: "#060d1fe6",
+            padding: { x: 7, y: 3 },
+          }),
+        )
         .setOrigin(0.5)
         .setDepth(pos.y + 10);
 
-      const checkText = this.add
-        .text(pos.x + 36, pos.y - 54, "✓", { fontSize: "18px", fontStyle: "900", color: "#34d399" })
-        .setOrigin(0.5)
-        .setDepth(pos.y + 11)
-        .setVisible(false);
+      const handleNpcTap = () => {
+        const record = this.npcs.find((n) => n.id === npc.id);
+        if (!record || record.resolved || this.orientationPaused || this.isSettingsOpen) return;
+        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, record.sprite.x, record.sprite.y);
+        if (this.nearNpcId === npc.id || distance < TALK_DISTANCE) {
+          this.startConversation(npc.id);
+        } else {
+          this.moveTarget = { x: record.sprite.x, y: record.sprite.y };
+          this.lastProgressPos = { x: this.player.x, y: this.player.y };
+          this.stuckTimer = 0;
+        }
+      };
 
-      return { id: npc.id, sprite, checkText, resolved: false };
+      sprite.setInteractive({ useHandCursor: true }).on("pointerdown", handleNpcTap);
+      nameText.setInteractive({ useHandCursor: true }).on("pointerdown", handleNpcTap);
+
+      return { id: npc.id, sprite, nameText, resolved: false };
     });
   }
 
-  /** Помечает NPC как разобранного: галочка + лёгкий оттенок. */
+  private startConversation(activeNpcId: string): void {
+    const record = this.npcs.find((npc) => npc.id === activeNpcId);
+    if (!record || record.resolved || !this.player) return;
+
+    this.moveTarget = null;
+    this.promptText?.setVisible(false);
+    this.player.setVelocity(0, 0);
+    this.player.anims.stop();
+    this.player.setFrame("idle");
+
+    if (activeNpcId === "post-maria" && this.onOpenDeliverySmsTrainer) {
+      this.scene.pause();
+      this.onOpenDeliverySmsTrainer(activeNpcId);
+      return;
+    }
+
+    let completed = false;
+    const finishDialogue = (correct: boolean) => {
+      if (completed) return;
+      completed = true;
+      this.scene.resume();
+      this.nearNpcId = activeNpcId;
+      if (correct) {
+        this.markResolved(activeNpcId);
+      } else {
+        this.cameras.main.shake(200, 0.01);
+      }
+      this.onDialogueComplete?.(correct, activeNpcId);
+      this.events?.emit("dialogue-complete", correct, activeNpcId);
+      this.nearNpcId = null;
+      this.promptText?.setVisible(false);
+    };
+
+    if (activeNpcId === "school-friend") {
+      this.scene.launch("fake-call", {
+        locale: this.locale,
+        onComplete: finishDialogue,
+        onClose: () => {
+          this.scene.resume();
+          this.nearNpcId = null;
+          this.promptText?.setVisible(false);
+        },
+      });
+      this.scene.bringToTop("fake-call");
+      this.scene.pause();
+      return;
+    }
+
+    if (activeNpcId === "shop-seller") {
+      this.scene.launch("hacked-account", {
+        locale: this.locale,
+        onComplete: finishDialogue,
+        onClose: () => {
+          this.scene.resume();
+          this.nearNpcId = null;
+          this.promptText?.setVisible(false);
+        },
+      });
+      this.scene.bringToTop("hacked-account");
+      this.scene.pause();
+      return;
+    }
+
+    this.scene.launch("dialogue", {
+      npcId: activeNpcId,
+      locale: this.locale,
+      onComplete: finishDialogue,
+    });
+    this.scene.bringToTop("dialogue");
+    this.scene.pause();
+  }
+
+  /** Помечает NPC как разобранного: галочка в подписи + лёгкий оттенок. */
   markResolved(npcId: string) {
     const record = this.npcs.find((npc) => npc.id === npcId);
     if (!record) return;
+    const original = PATROL_NPCS.find((n) => n.id === npcId);
     record.resolved = true;
-    record.checkText.setVisible(true);
+    if (original) {
+      record.nameText.setText(`✓ ${original.name[this.locale]}`);
+    }
+    record.nameText.setColor("#34d399");
     record.sprite.setTint(0xb8f5d0);
   }
 
@@ -391,20 +547,28 @@ export class PatrolScene extends Phaser.Scene {
   resetPatrol() {
     for (const record of this.npcs) {
       record.resolved = false;
-      record.checkText.setVisible(false);
       const original = PATROL_NPCS.find((n) => n.id === record.id);
+      if (original) {
+        record.nameText.setText(original.name[this.locale]);
+      }
+      record.nameText.setColor("#ffd166");
       if (original?.tint !== undefined) {
         record.sprite.setTint(original.tint);
       } else {
         record.sprite.clearTint();
       }
     }
+    this.moveTarget = null;
     this.nearNpcId = null;
     this.promptText?.setVisible(false);
   }
 
   update(_time: number, delta: number) {
     if (!this.player || !this.cursors || !this.wasd) return;
+    if (this.orientationPaused) {
+      this.player.setVelocity(0, 0);
+      return;
+    }
 
     this.roadNetwork.update(delta, this.player.x, this.player.y);
 
@@ -415,9 +579,31 @@ export class PatrolScene extends Phaser.Scene {
 
     let vx = (Number(right) - Number(left)) * PLAYER_SPEED;
     let vy = (Number(down) - Number(up)) * PLAYER_SPEED;
-    if (vx !== 0 && vy !== 0) {
-      vx *= Math.SQRT1_2;
-      vy *= Math.SQRT1_2;
+    if (vx !== 0 || vy !== 0) {
+      this.moveTarget = null;
+      if (vx !== 0 && vy !== 0) {
+        vx *= Math.SQRT1_2;
+        vy *= Math.SQRT1_2;
+      }
+    } else if (this.moveTarget) {
+      const dx = this.moveTarget.x - this.player.x;
+      const dy = this.moveTarget.y - this.player.y;
+      const distance = Math.hypot(dx, dy);
+      const moved = Math.hypot(this.player.x - this.lastProgressPos.x, this.player.y - this.lastProgressPos.y);
+      if (moved > 2) {
+        this.lastProgressPos = { x: this.player.x, y: this.player.y };
+        this.stuckTimer = 0;
+      } else {
+        this.stuckTimer += delta;
+      }
+      if (distance <= 14 || this.stuckTimer > 180) {
+        this.moveTarget = null;
+        vx = 0;
+        vy = 0;
+      } else {
+        vx = (dx / distance) * PLAYER_SPEED;
+        vy = (dy / distance) * PLAYER_SPEED;
+      }
     }
     this.player.setVelocity(vx, vy);
     this.player.setDepth(this.player.y);
@@ -445,116 +631,47 @@ export class PatrolScene extends Phaser.Scene {
 
     const near = this.npcs.find((npc) => npc.id === this.nearNpcId);
     if (near && this.promptText) {
-      this.promptText.setPosition(near.sprite.x, near.sprite.y - 84).setVisible(true);
+      this.promptText
+        .setPosition(near.sprite.x, near.nameText.y - near.nameText.height - 6)
+        .setVisible(true);
       if (this.talkKey && Phaser.Input.Keyboard.JustDown(this.talkKey)) {
-        const activeNpcId = near.id;
-        this.promptText.setVisible(false);
-        this.player.setVelocity(0, 0);
-        this.player.anims.stop();
-        this.player.setFrame("idle");
-
-        if (activeNpcId === "post-maria" && this.onOpenDeliverySmsTrainer) {
-          this.scene.pause();
-          this.onOpenDeliverySmsTrainer(activeNpcId);
-          return;
-        }
-
-        let completed = false;
-        const finishDialogue = (correct: boolean) => {
-          if (completed) return;
-          completed = true;
-          this.scene.resume();
-          this.nearNpcId = activeNpcId;
-          if (correct) {
-            this.markResolved(activeNpcId);
-          } else {
-            this.cameras.main.shake(200, 0.01);
-          }
-          this.onDialogueComplete?.(correct, activeNpcId);
-          this.events?.emit("dialogue-complete", correct, activeNpcId);
-          this.nearNpcId = null;
-          this.promptText?.setVisible(false);
-        };
-
-        if (activeNpcId === "school-friend") {
-          this.scene.launch("fake-call", {
-            locale: this.locale,
-            onComplete: finishDialogue,
-            onClose: () => {
-              this.scene.resume();
-              this.nearNpcId = null;
-              this.promptText?.setVisible(false);
-            },
-          });
-          this.scene.bringToTop("fake-call");
-          this.scene.pause();
-          return;
-        }
-
-        if (activeNpcId === "shop-seller") {
-          this.scene.launch("hacked-account", {
-            locale: this.locale,
-            onComplete: finishDialogue,
-            onClose: () => {
-              this.scene.resume();
-              this.nearNpcId = null;
-              this.promptText?.setVisible(false);
-            },
-          });
-          this.scene.bringToTop("hacked-account");
-          this.scene.pause();
-          return;
-        }
-
-        this.scene.launch("dialogue", {
-          npcId: activeNpcId,
-          locale: this.locale,
-          onComplete: finishDialogue,
-        });
-        this.scene.bringToTop("dialogue");
-        this.scene.pause();
+        this.startConversation(near.id);
+        return;
       }
     } else {
       this.promptText?.setVisible(false);
     }
 
     const zone = this.getCurrentZone();
-    const hint = this.locale === "ro" ? "WASD / săgeți — mișcare, E — dialog" : "WASD / стрелки — движение, E — разговор";
-    this.hudText?.setText(zone ? `${zone.name[this.locale]} · ${hint}` : hint);
+    this.hudText?.setText(zone ? zone.name[this.locale] : "");
   }
 
-  private getCurrentZone(): District | undefined {
-    return DISTRICTS.find(
+  private getCurrentZone(): PatrolDistrict | undefined {
+    if (!this.player) return PATROL_DISTRICTS[0];
+    const inside = PATROL_DISTRICTS.find(
       (district) =>
-        this.player !== undefined &&
         this.player.x >= district.x &&
         this.player.x <= district.x + district.width &&
         this.player.y >= district.y &&
         this.player.y <= district.y + district.height,
     );
+    if (inside) return inside;
+    return PATROL_DISTRICTS.reduce((best, district) => {
+      const cx = district.x + district.width / 2;
+      const cy = district.y + district.height / 2;
+      const bestCx = best.x + best.width / 2;
+      const bestCy = best.y + best.height / 2;
+      return Math.hypot(this.player.x - cx, this.player.y - cy) <
+        Math.hypot(this.player.x - bestCx, this.player.y - bestCy)
+        ? district
+        : best;
+    }, PATROL_DISTRICTS[0]);
   }
 }
 
 type NpcRecord = {
   id: string;
   sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-  checkText: Phaser.GameObjects.Text;
+  nameText: Phaser.GameObjects.Text;
   resolved: boolean;
 };
-
-type District = {
-  id: string;
-  name: { ru: string; ro: string };
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: number;
-};
-
-const DISTRICTS: District[] = [
-  { id: "school", name: { ru: "Район: Школа", ro: "Cartier: Școala" }, x: 80, y: 100, width: 640, height: 450, color: 0x1d4ed8 },
-  { id: "bank", name: { ru: "Район: Банк", ro: "Cartier: Banca" }, x: 880, y: 100, width: 640, height: 450, color: 0x047857 },
-  { id: "post", name: { ru: "Район: Почта", ro: "Cartier: Poșta" }, x: 80, y: 660, width: 640, height: 480, color: 0xb45309 },
-  { id: "shop", name: { ru: "Район: Магазин", ro: "Cartier: Magazinul" }, x: 880, y: 660, width: 640, height: 480, color: 0xbe185d },
-];

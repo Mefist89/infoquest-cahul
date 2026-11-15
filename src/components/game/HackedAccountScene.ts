@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-import type { PatrolLocale } from "@/data/patrol";
+import { PATROL_NPCS, type PatrolLocale } from "@/data/patrol";
 import {
   HACKED_ACCOUNT_META,
   HACKED_LOGIN_TRAPS,
@@ -8,6 +8,8 @@ import {
   HACKED_SESSIONS,
   HACKED_SHIELD_LAYERS,
 } from "@/data/patrol-hacked-account";
+import { shuffle } from "./shuffle";
+import { gameText } from "./text-style";
 
 export interface HackedAccountSceneData {
   locale: PatrolLocale;
@@ -15,16 +17,17 @@ export interface HackedAccountSceneData {
   onClose?: () => void;
 }
 
-type StageId = 1 | 2 | 3 | 4 | 5;
+type StageId = 0 | 1 | 2 | 3 | 4 | 5;
 
 export class HackedAccountScene extends Phaser.Scene {
   private locale: PatrolLocale = "ru";
   private onComplete?: (correct: boolean) => void;
   private onClose?: () => void;
 
-  private stage: StageId = 1;
+  private stage: StageId = 0;
   private stageRoot?: Phaser.GameObjects.Container;
   private headerRoot?: Phaser.GameObjects.Container;
+  private headerBottom = 112;
 
   // Stage 1: Profile X-Ray state
   private scannedFlagIds: Set<string> = new Set();
@@ -35,15 +38,24 @@ export class HackedAccountScene extends Phaser.Scene {
   private trapSolved = false;
   private tunnelGraphics?: Phaser.GameObjects.Graphics;
   private tunnelPhase = 0;
+  private tunnelY = 300;
+  private stage2ShuffledBlockers: { id: string; label: string; isCorrect: boolean }[] = [];
+  private stage2ShuffledTrapIndex = -1;
 
   // Stage 3: Active Sessions Manager state
   private killedSessionIds: Set<string> = new Set();
   private sessionPulseGraphics?: Phaser.GameObjects.Graphics;
   private sessionPulsePhase = 0;
+  private sessionWaveY = 500;
+  private sessionWaveGapLeft = 240;
+  private sessionWaveGapRight = 720;
 
   // Stage 4: 3 Defense Layers vs Shadow state
   private layerRoundIndex = 0;
+  private stage4ShuffledCards: (typeof HACKED_SHIELD_LAYERS)[0]["cards"] = [];
+  private stage4ShuffledLayerIndex = -1;
   private shadowHp = 100;
+  private mistakesCount = 0;
 
   constructor() {
     super("hacked-account");
@@ -54,13 +66,18 @@ export class HackedAccountScene extends Phaser.Scene {
     this.onComplete = data.onComplete;
     this.onClose = data.onClose;
 
-    this.stage = 1;
+    this.stage = 0;
     this.scannedFlagIds = new Set();
     this.trapIndex = 0;
     this.trapSolved = false;
+    this.stage2ShuffledBlockers = [];
+    this.stage2ShuffledTrapIndex = -1;
     this.killedSessionIds = new Set();
     this.layerRoundIndex = 0;
+    this.stage4ShuffledCards = [];
+    this.stage4ShuffledLayerIndex = -1;
     this.shadowHp = 100;
+    this.mistakesCount = 0;
   }
 
   create() {
@@ -140,52 +157,68 @@ export class HackedAccountScene extends Phaser.Scene {
     const pct = Math.round((completed / total) * 100);
     const remaining = Math.max(0, total - completed);
 
-    // Верхняя шапка
+    const headerX = 24;
+    const headerY = 18;
+    const headerW = width - 48;
+
     const headerBg = this.add.graphics();
-    headerBg.fillStyle(0x0f1f3a, 0.95);
-    headerBg.fillRoundedRect(24, 20, width - 48, 92, 14);
-    headerBg.lineStyle(1.5, 0x1e3a5f, 0.9);
-    headerBg.strokeRoundedRect(24, 20, width - 48, 92, 14);
     this.headerRoot.add(headerBg);
 
-    const badge = this.add.text(40, 30, meta.categoryBadge, {
-      fontFamily: '"JetBrains Mono", monospace',
-      fontSize: "11px",
-      fontStyle: "bold",
-      color: "#00d9ff",
-    });
-    const subBadge = this.add.text(40, 47, meta.npcBadge, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "13px",
-      fontStyle: "bold",
-      color: "#f0f6fc",
-    });
-    this.headerRoot.add([badge, subBadge]);
+    // Кнопка закрытия (считаем ширину и высоту по тексту)
+    const closeBtnTxt = this.add
+      .text(
+        0,
+        0,
+        meta.closeLabel,
+        gameText("12px", {
+          fontStyle: "bold",
+          color: "#cbd5e1",
+        }),
+      )
+      .setOrigin(0.5);
+    const closeBtnW = Math.max(108, closeBtnTxt.width + 28);
+    const closeBtnH = Math.max(28, closeBtnTxt.height + 10);
+    const closeBtnX = headerX + headerW - 14 - closeBtnW / 2;
+    const closeBtnY = headerY + 12 + closeBtnH / 2;
+    closeBtnTxt.setPosition(closeBtnX, closeBtnY);
 
-    // Кнопка закрытия
     const closeBtnBg = this.add
-      .rectangle(width - 96, 42, 118, 30, 0x182b49, 0.95)
+      .rectangle(closeBtnX, closeBtnY, closeBtnW, closeBtnH, 0x182b49, 0.95)
       .setStrokeStyle(1.5, 0x334155)
       .setInteractive({ useHandCursor: true });
-    const closeBtnTxt = this.add
-      .text(width - 96, 42, meta.closeLabel, {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "12px",
-        fontStyle: "bold",
-        color: "#cbd5e1",
-      })
-      .setOrigin(0.5);
 
     closeBtnBg.on("pointerover", () => closeBtnBg.setFillStyle(0x243b61, 1));
     closeBtnBg.on("pointerout", () => closeBtnBg.setFillStyle(0x182b49, 0.95));
     closeBtnBg.on("pointerdown", () => this.closeScene());
-    this.headerRoot.add([closeBtnBg, closeBtnTxt]);
+
+    const maxBadgeW = closeBtnX - closeBtnW / 2 - 52;
+    const badge = this.add.text(
+      40,
+      headerY + 8,
+      meta.categoryBadge,
+      gameText("11px", {
+        fontStyle: "bold",
+        color: "#00d9ff",
+        wordWrap: { width: maxBadgeW },
+      }),
+    );
+    const subBadge = this.add.text(
+      40,
+      badge.y + badge.height + 2,
+      meta.npcBadge,
+      gameText("13px", {
+        fontStyle: "bold",
+        color: "#f0f6fc",
+        wordWrap: { width: maxBadgeW },
+      }),
+    );
+    this.headerRoot.add([badge, subBadge, closeBtnBg, closeBtnTxt]);
 
     // Прогресс-бар (4 этапа)
     const barX = 40;
-    const barY = 74;
-    const barW = 360;
-    const barH = 10;
+    const barY = subBadge.y + subBadge.height + 7;
+    const barW = Math.floor((headerW - 32) * 0.38);
+    const barH = 9;
 
     const barTrack = this.add.graphics();
     barTrack.fillStyle(0x060d1f, 1);
@@ -203,49 +236,106 @@ export class HackedAccountScene extends Phaser.Scene {
 
     const progressText = this.add.text(
       barX,
-      barY + 14,
+      barY + barH + 3,
       `${meta.progressLabel}: ${pct}% · ${
         remaining === 0 ? meta.allDoneLabel : `${meta.remainingLabel}: ${remaining}`
       }`,
-      {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "11px",
+      gameText("11px", {
         fontStyle: "bold",
         color: pct === 100 ? "#34d399" : "#94a3b8",
-      },
+        wordWrap: { width: barW },
+      }),
     );
     this.headerRoot.add(progressText);
 
     // 4 плашки этапов справа от прогресс-бара
-    const pillStartX = 420;
-    const pillW = 122;
-    const pillGap = 8;
+    const pillStartX = barX + barW + 16;
+    const pillsTotalW = headerX + headerW - 14 - pillStartX;
+    const pillGap = 6;
+    const pillW = Math.floor((pillsTotalW - pillGap * 3) / 4);
 
-    meta.stageNames.forEach((stageName, idx) => {
+    const pillLabels = meta.stageNames.map((stageName, idx) => {
       const stageNum = (idx + 1) as StageId;
       const isDone = this.stage > stageNum || this.stage === 5;
       const isCurrent = this.stage === stageNum;
-      const px = pillStartX + idx * (pillW + pillGap);
-      const py = 82;
+      const textColor = isDone ? "#6ee7b7" : isCurrent ? "#7dd3fc" : "#64748b";
+
+      return this.add
+        .text(
+          0,
+          0,
+          isDone ? `✓ ${stageName}` : stageName,
+          gameText("10.5px", {
+            fontStyle: "bold",
+            color: textColor,
+            align: "center",
+            wordWrap: { width: pillW - 10 },
+          }),
+        )
+        .setOrigin(0.5);
+    });
+
+    const maxPillTextH = Math.max(...pillLabels.map((lbl) => lbl.height));
+    const pillH = Math.max(24, maxPillTextH + 8);
+    const pillCenterY = barY + Math.max(barH + 4, pillH / 2 - 2);
+
+    pillLabels.forEach((label, idx) => {
+      const stageNum = (idx + 1) as StageId;
+      const isDone = this.stage > stageNum || this.stage === 5;
+      const isCurrent = this.stage === stageNum;
+      const px = pillStartX + idx * (pillW + pillGap) + pillW / 2;
 
       const fill = isDone ? 0x064e3b : isCurrent ? 0x0c365a : 0x091326;
       const stroke = isDone ? 0x10b981 : isCurrent ? 0x00d9ff : 0x1e293b;
-      const textColor = isDone ? "#6ee7b7" : isCurrent ? "#7dd3fc" : "#64748b";
 
       const pill = this.add
-        .rectangle(px + pillW / 2, py, pillW, 26, fill, 0.95)
+        .rectangle(px, pillCenterY, pillW, pillH, fill, 0.95)
         .setStrokeStyle(1.5, stroke);
-      const label = this.add
-        .text(px + pillW / 2, py, isDone ? `✓ ${stageName}` : stageName, {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "11px",
-          fontStyle: "bold",
-          color: textColor,
-        })
-        .setOrigin(0.5);
+      label.setPosition(px, pillCenterY);
 
       this.headerRoot?.add([pill, label]);
     });
+
+    const contentBottom = Math.max(
+      progressText.y + progressText.height,
+      pillCenterY + pillH / 2,
+    );
+    const headerH = contentBottom - headerY + 8;
+    this.headerBottom = headerY + headerH;
+
+    headerBg.fillStyle(0x0f1f3a, 0.95);
+    headerBg.fillRoundedRect(headerX, headerY, headerW, headerH, 14);
+    headerBg.lineStyle(1.5, 0x1e3a5f, 0.9);
+    headerBg.strokeRoundedRect(headerX, headerY, headerW, headerH, 14);
+  }
+
+  private renderStageHeading(titleStr: string, subtitleStr: string): number {
+    if (!this.stageRoot) return this.headerBottom + 60;
+    const { width } = this.scale;
+    const topY = this.headerBottom + 6;
+
+    const title = this.add.text(
+      36,
+      topY,
+      titleStr,
+      gameText("16.5px", {
+        fontStyle: "900",
+        color: "#ffffff",
+        wordWrap: { width: width - 72 },
+      }),
+    );
+    const subtitle = this.add.text(
+      36,
+      title.y + title.height + 2,
+      subtitleStr,
+      gameText("12px", {
+        color: "#94a3b8",
+        wordWrap: { width: width - 72 },
+      }),
+    );
+    this.stageRoot.add([title, subtitle]);
+
+    return subtitle.y + subtitle.height + 7;
   }
 
   private renderCurrentStage() {
@@ -257,7 +347,9 @@ export class HackedAccountScene extends Phaser.Scene {
 
     this.renderHeader();
 
-    if (this.stage === 1) {
+    if (this.stage === 0) {
+      this.renderStage0Intro();
+    } else if (this.stage === 1) {
       this.renderStage1ProfileXray();
     } else if (this.stage === 2) {
       this.renderStage2LoginTraps();
@@ -270,176 +362,264 @@ export class HackedAccountScene extends Phaser.Scene {
     }
   }
 
+  private renderStage0Intro() {
+    if (!this.stageRoot) return;
+    const { width, height } = this.scale;
+    const meta = HACKED_ACCOUNT_META[this.locale];
+    const npc = PATROL_NPCS.find((item) => item.id === "shop-seller");
+    const npcName = npc?.name[this.locale] ?? "";
+    const situation = npc?.situation[this.locale] ?? "";
+
+    const cardW = width - 160;
+    const cardX = 80;
+
+    const cardBg = this.add.graphics();
+    this.stageRoot.add(cardBg);
+
+    const sprite = this.add.image(width / 2, 0, "npc-male", "idle").setScale(0.5);
+    if (npc?.tint !== undefined) sprite.setTint(npc.tint);
+
+    const nameTxt = this.add
+      .text(
+        width / 2,
+        0,
+        npcName,
+        gameText("20px", {
+          fontStyle: "bold",
+          color: "#ffd166",
+          wordWrap: { width: cardW - 96 },
+          align: "center",
+        }),
+      )
+      .setOrigin(0.5, 0);
+
+    const situationTxt = this.add
+      .text(
+        width / 2,
+        0,
+        situation,
+        gameText("17px", {
+          fontStyle: "bold",
+          color: "#f8fafc",
+          wordWrap: { width: cardW - 96 },
+          align: "center",
+          lineSpacing: 6,
+        }),
+      )
+      .setOrigin(0.5, 0);
+
+    const btnTxt = this.add
+      .text(
+        width / 2,
+        0,
+        meta.introActionBtn,
+        gameText("16px", {
+          fontStyle: "900",
+          color: "#040916",
+        }),
+      )
+      .setOrigin(0.5);
+
+    const btnW = Math.max(240, btnTxt.width + 48);
+    const btnH = Math.max(48, btnTxt.height + 20);
+
+    const innerH = 88 + nameTxt.height + 14 + situationTxt.height + 24 + btnH + 28;
+    const cardH = Math.max(300, innerH);
+    const cardY = Math.max(
+      this.headerBottom + 12,
+      this.headerBottom + (height - this.headerBottom - cardH) / 2,
+    );
+
+    cardBg.fillStyle(0x0c1930, 0.96);
+    cardBg.fillRoundedRect(cardX, cardY, cardW, cardH, 22);
+    cardBg.lineStyle(2, 0x00d9ff, 0.7);
+    cardBg.strokeRoundedRect(cardX, cardY, cardW, cardH, 22);
+
+    sprite.setPosition(width / 2, cardY + 54);
+    nameTxt.setY(cardY + 96);
+    situationTxt.setY(nameTxt.y + nameTxt.height + 14);
+
+    const btnX = width / 2;
+    const btnY = situationTxt.y + situationTxt.height + 24 + btnH / 2;
+    btnTxt.setPosition(btnX, btnY);
+
+    const btnBg = this.add
+      .rectangle(btnX, btnY, btnW, btnH, 0x00d9ff, 1)
+      .setStrokeStyle(2, 0x7dd3fc)
+      .setInteractive({ useHandCursor: true });
+
+    btnBg.on("pointerover", () => btnBg.setFillStyle(0x38bdf8, 1));
+    btnBg.on("pointerout", () => btnBg.setFillStyle(0x00d9ff, 1));
+    btnBg.on("pointerdown", () => {
+      this.stage = 1;
+      this.renderCurrentStage();
+    });
+
+    this.stageRoot.add([sprite, nameTxt, situationTxt, btnBg, btnTxt]);
+  }
+
   // ============================================================================
   // ЭТАП 1: РЕНТГЕН ПРОФИЛЯ ПРОДАВЦА (ПОИСК 3 УЛИК ВЗЛОМА)
   // ============================================================================
   private renderStage1ProfileXray() {
     if (!this.stageRoot) return;
+    const { width, height } = this.scale;
     const meta = HACKED_ACCOUNT_META[this.locale];
 
-    const title = this.add.text(36, 122, meta.stage1Title, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "17px",
-      fontStyle: "900",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(36, 146, meta.stage1Subtitle, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "12.5px",
-      color: "#94a3b8",
-      wordWrap: { width: 880 },
-    });
-    this.stageRoot.add([title, subtitle]);
+    const panelY = this.renderStageHeading(meta.stage1Title, meta.stage1Subtitle);
+    const colGap = 20;
+    const cardX = 36;
+    const cardW = Math.floor((width - 72 - colGap) / 2);
+    const rightX = cardX + cardW + colGap;
+    const rightW = width - 36 - rightX;
+    const minPanelH = height - panelY - 18;
 
     // Левая панель: Карточка профиля продавца в соцсети/маркетплейсе
-    const cardX = 36;
-    const cardY = 180;
-    const cardW = 435;
-    const cardH = 396;
-
     const cardFrame = this.add.graphics();
-    cardFrame.fillStyle(0x071022, 1);
-    cardFrame.fillRoundedRect(cardX, cardY, cardW, cardH, 20);
-    cardFrame.lineStyle(2.5, 0x38bdf8, 0.75);
-    cardFrame.strokeRoundedRect(cardX, cardY, cardW, cardH, 20);
     this.stageRoot.add(cardFrame);
 
     const profileHeader = this.add
       .text(
         cardX + cardW / 2,
-        cardY + 18,
-        this.locale === "ro"
-          ? "🔍 PROFIL VÂNZĂTOR · MOD RAZE X ACTIV"
-          : "🔍 ПРОФИЛЬ ПРОДАВЦА · РЕЖИМ РЕНТГЕНА АКТИВЕН",
-        {
-          fontFamily: '"JetBrains Mono", monospace',
-          fontSize: "11px",
+        panelY + 10,
+        meta.stage1HeaderBadge,
+        gameText("11px", {
           fontStyle: "bold",
           color: "#38bdf8",
-        },
+          align: "center",
+          wordWrap: { width: cardW - 32 },
+        }),
       )
-      .setOrigin(0.5);
+      .setOrigin(0.5, 0);
     this.stageRoot.add(profileHeader);
 
     // Правая панель: Отчёт рентген-сканера и список найденных улик
-    const rightX = 492;
-    const rightY = 180;
-    const rightW = 432;
-    const rightH = 396;
-
     const rightBox = this.add.graphics();
-    rightBox.fillStyle(0x0c1930, 0.95);
-    rightBox.fillRoundedRect(rightX, rightY, rightW, rightH, 18);
-    rightBox.lineStyle(1.5, 0x1e3a5f, 0.9);
-    rightBox.strokeRoundedRect(rightX, rightY, rightW, rightH, 18);
     this.stageRoot.add(rightBox);
 
     const scanCounterText = this.add.text(
-      rightX + 20,
-      rightY + 18,
+      rightX + 18,
+      panelY + 10,
       `${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`,
-      {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "13px",
+      gameText("12.5px", {
         fontStyle: "bold",
         color: "#00d9ff",
-        wordWrap: { width: rightW - 40 },
-      },
+        wordWrap: { width: rightW - 36 },
+      }),
     );
 
     const findingBoxBg = this.add.graphics();
-    findingBoxBg.fillStyle(0x071124, 0.95);
-    findingBoxBg.fillRoundedRect(rightX + 18, rightY + 56, rightW - 36, 130, 12);
-    findingBoxBg.lineStyle(1.5, 0x334155, 0.9);
-    findingBoxBg.strokeRoundedRect(rightX + 18, rightY + 56, rightW - 36, 130, 12);
+    const findingBoxX = rightX + 16;
+    const findingBoxW = rightW - 32;
+    let findingBoxY = scanCounterText.y + scanCounterText.height + 6;
 
     const findingTitleText = this.add.text(
-      rightX + 32,
-      rightY + 70,
-      this.locale === "ro"
-        ? "Selectează un element din profilul din stânga..."
-        : "Нажми на любой блок профиля слева для рентген-проверки...",
-      {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "14px",
+      findingBoxX + 12,
+      findingBoxY + 8,
+      meta.stage1SelectHint,
+      gameText("13px", {
         fontStyle: "bold",
         color: "#f8fafc",
-        wordWrap: { width: rightW - 64 },
-      },
+        wordWrap: { width: findingBoxW - 24 },
+      }),
     );
 
     const findingDescText = this.add.text(
-      rightX + 32,
-      rightY + 98,
-      this.locale === "ro"
-        ? "Razele X îți arată când au fost modificate datele cardului, postările și linkurile de contact."
-        : "Рентген покажет скрытую историю изменений профиля: когда менялись карта, комментарии и ссылки.",
-      {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "12.5px",
+      findingBoxX + 12,
+      findingTitleText.y + findingTitleText.height + 4,
+      meta.stage1BehaviorHint,
+      gameText("11.5px", {
         color: "#cbd5e1",
-        lineSpacing: 3,
-        wordWrap: { width: rightW - 64 },
-      },
+        lineSpacing: 2,
+        wordWrap: { width: findingBoxW - 24 },
+      }),
     );
     this.stageRoot.add([scanCounterText, findingBoxBg, findingTitleText, findingDescText]);
 
     // Список 3 улик
-    const flagsListContainer = this.add.container(rightX + 18, rightY + 198);
+    const flagsListContainer = this.add.container(findingBoxX, 0);
     this.stageRoot.add(flagsListContainer);
 
-    const updateFlagsChecklist = () => {
+    // Рендерим 5 интерактивных зон профиля продавца по высоте содержимого
+    let curSpotY = profileHeader.y + profileHeader.height + 8;
+    const spotW = cardW - 28;
+    const centerX = cardX + cardW / 2;
+    const spotGap = 6;
+
+    const relayoutRightPanel = (leftPanelH: number) => {
+      findingBoxY = scanCounterText.y + scanCounterText.height + 6;
+      findingTitleText.setY(findingBoxY + 8);
+      findingDescText.setY(findingTitleText.y + findingTitleText.height + 4);
+
+      const findingBoxH = Math.max(
+        76,
+        findingDescText.y + findingDescText.height - findingBoxY + 10,
+      );
+      findingBoxBg.clear();
+      findingBoxBg.fillStyle(0x071124, 0.95);
+      findingBoxBg.fillRoundedRect(findingBoxX, findingBoxY, findingBoxW, findingBoxH, 12);
+      findingBoxBg.lineStyle(1.5, 0x334155, 0.9);
+      findingBoxBg.strokeRoundedRect(findingBoxX, findingBoxY, findingBoxW, findingBoxH, 12);
+
+      const listStartY = findingBoxY + findingBoxH + 8;
+      flagsListContainer.setPosition(findingBoxX, listStartY);
       flagsListContainer.removeAll(true);
+
       const flagSpots = HACKED_PROFILE_SPOTS.filter((s) => s.isFlag);
+      let rowTop = 0;
 
       flagSpots.forEach((flag, idx) => {
         const found = this.scannedFlagIds.has(flag.id);
-        const rowY = idx * 42;
+        const rowTxt = this.add.text(
+          10,
+          rowTop + 6,
+          found
+            ? `✓ ${flag.findingTitle[this.locale]}`
+            : `${idx + 1}. ${meta.stage1HiddenClueLabel}`,
+          gameText("11.5px", {
+            fontStyle: "bold",
+            color: found ? "#6ee7b7" : "#64748b",
+            wordWrap: { width: findingBoxW - 20 },
+          }),
+        );
+        const rowH = Math.max(28, rowTxt.height + 12);
         const rowBg = this.add
           .rectangle(
-            (rightW - 36) / 2,
-            rowY + 16,
-            rightW - 36,
-            34,
+            findingBoxW / 2,
+            rowTop + rowH / 2,
+            findingBoxW,
+            rowH,
             found ? 0x064e3b : 0x091326,
             0.9,
           )
           .setStrokeStyle(1, found ? 0x10b981 : 0x1e293b);
 
-        const rowTxt = this.add.text(
-          12,
-          rowY + 8,
-          found
-            ? `✓ ${flag.findingTitle[this.locale]}`
-            : `${idx + 1}. ${
-                this.locale === "ro"
-                  ? "Indiciu ascuns (scanează profilul)"
-                  : "Скрытая улика взлома (просвети профиль)"
-              }`,
-          {
-            fontFamily: "Inter, sans-serif",
-            fontSize: "12px",
-            fontStyle: "bold",
-            color: found ? "#6ee7b7" : "#64748b",
-          },
-        );
         flagsListContainer.add([rowBg, rowTxt]);
+        rowTop += rowH + 5;
       });
 
       if (this.scannedFlagIds.size >= 3) {
+        const nextTxt = this.add
+          .text(
+            findingBoxW / 2,
+            0,
+            meta.nextStageBtn,
+            gameText("13.5px", {
+              fontStyle: "900",
+              color: "#041022",
+              align: "center",
+              wordWrap: { width: findingBoxW - 24 },
+            }),
+          )
+          .setOrigin(0.5);
+        const nextBtnH = Math.max(38, nextTxt.height + 14);
+        const nextBtnY = rowTop + 3 + nextBtnH / 2;
+        nextTxt.setY(nextBtnY);
+
         const nextBtn = this.add
-          .rectangle((rightW - 36) / 2, 152, rightW - 36, 44, 0x00d9ff, 1)
+          .rectangle(findingBoxW / 2, nextBtnY, findingBoxW, nextBtnH, 0x00d9ff, 1)
           .setStrokeStyle(2, 0xbae6fd)
           .setInteractive({ useHandCursor: true });
-
-        const nextTxt = this.add
-          .text((rightW - 36) / 2, 152, meta.nextStageBtn, {
-            fontFamily: "Inter, sans-serif",
-            fontSize: "14px",
-            fontStyle: "900",
-            color: "#041022",
-          })
-          .setOrigin(0.5);
 
         nextBtn.on("pointerover", () => nextBtn.setFillStyle(0x38bdf8, 1));
         nextBtn.on("pointerout", () => nextBtn.setFillStyle(0x00d9ff, 1));
@@ -449,24 +629,74 @@ export class HackedAccountScene extends Phaser.Scene {
         });
 
         flagsListContainer.add([nextBtn, nextTxt]);
+        rowTop += 3 + nextBtnH;
       }
+
+      const rightNeededH = listStartY + rowTop - panelY + 10;
+      const finalPanelH = Math.max(minPanelH, leftPanelH, rightNeededH);
+
+      rightBox.clear();
+      rightBox.fillStyle(0x0c1930, 0.95);
+      rightBox.fillRoundedRect(rightX, panelY, rightW, finalPanelH, 18);
+      rightBox.lineStyle(1.5, 0x1e3a5f, 0.9);
+      rightBox.strokeRoundedRect(rightX, panelY, rightW, finalPanelH, 18);
+
+      cardFrame.clear();
+      cardFrame.fillStyle(0x071022, 1);
+      cardFrame.fillRoundedRect(cardX, panelY, cardW, finalPanelH, 20);
+      cardFrame.lineStyle(2.5, 0x38bdf8, 0.75);
+      cardFrame.strokeRoundedRect(cardX, panelY, cardW, finalPanelH, 20);
     };
 
-    updateFlagsChecklist();
-
-    // Рендерим 5 интерактивных зон профиля продавца
-    HACKED_PROFILE_SPOTS.forEach((spot, index) => {
-      const spotY = cardY + 58 + index * 64;
-      const spotW = cardW - 32;
-      const spotH = 54;
-      const centerX = cardX + cardW / 2;
-
+    HACKED_PROFILE_SPOTS.forEach((spot) => {
       const isAlreadyFound = this.scannedFlagIds.has(spot.id);
+      const tagColW = 92;
+      const textWrapW = spotW - tagColW - 20;
+
+      const labelTxt = this.add.text(
+        cardX + 24,
+        curSpotY + 6,
+        spot.label[this.locale],
+        gameText("12px", {
+          fontStyle: "bold",
+          color: "#f8fafc",
+          wordWrap: { width: textWrapW },
+        }),
+      );
+
+      const subTxt = this.add.text(
+        cardX + 24,
+        labelTxt.y + labelTxt.height + 2,
+        spot.sublabel[this.locale],
+        gameText("10.5px", {
+          color: "#94a3b8",
+          wordWrap: { width: textWrapW },
+        }),
+      );
+
+      const statusTag = this.add
+        .text(
+          0,
+          0,
+          isAlreadyFound ? meta.stage1ClueTag : meta.stage1CheckTag,
+          gameText("10px", {
+            fontStyle: "bold",
+            color: isAlreadyFound ? "#fda4af" : "#38bdf8",
+            align: "center",
+          }),
+        )
+        .setOrigin(0.5);
+
+      const textBottom = subTxt.y + subTxt.height;
+      const spotH = Math.max(44, textBottom - curSpotY + 6, statusTag.height + 16);
+      const spotCenterY = curSpotY + spotH / 2;
+
+      statusTag.setPosition(cardX + cardW - 14 - tagColW / 2, spotCenterY);
 
       const spotBg = this.add
         .rectangle(
           centerX,
-          spotY,
+          spotCenterY,
           spotW,
           spotH,
           isAlreadyFound ? 0x3b0a1e : 0x101f38,
@@ -474,35 +704,6 @@ export class HackedAccountScene extends Phaser.Scene {
         )
         .setStrokeStyle(1.5, isAlreadyFound ? 0xf43f5e : 0x264066)
         .setInteractive({ useHandCursor: true });
-
-      const labelTxt = this.add.text(cardX + 28, spotY - 17, spot.label[this.locale], {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "12.5px",
-        fontStyle: "bold",
-        color: "#f8fafc",
-        wordWrap: { width: spotW - 88 },
-      });
-
-      const subTxt = this.add.text(cardX + 28, spotY + 4, spot.sublabel[this.locale], {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "11px",
-        color: "#94a3b8",
-        wordWrap: { width: spotW - 88 },
-      });
-
-      const statusTag = this.add
-        .text(
-          cardX + cardW - 56,
-          spotY,
-          isAlreadyFound ? "⚠️ УЛИКА" : "РЕНТГЕН",
-          {
-            fontFamily: '"JetBrains Mono", monospace',
-            fontSize: "10px",
-            fontStyle: "bold",
-            color: isAlreadyFound ? "#fda4af" : "#38bdf8",
-          },
-        )
-        .setOrigin(0.5);
 
       spotBg.on("pointerover", () => {
         if (!this.scannedFlagIds.has(spot.id)) {
@@ -523,37 +724,35 @@ export class HackedAccountScene extends Phaser.Scene {
           this.scannedFlagIds.add(spot.id);
           spotBg.setFillStyle(0x3b0a1e, 0.95);
           spotBg.setStrokeStyle(2, 0xf43f5e);
-          statusTag
-            .setText(this.locale === "ro" ? "⚠️ FALS" : "⚠️ УЛИКА")
-            .setColor("#fda4af");
+          statusTag.setText(meta.stage1ClueTag).setColor("#fda4af");
 
-          findingTitleText
-            .setText(spot.findingTitle[this.locale])
-            .setColor("#fda4af");
+          findingTitleText.setText(spot.findingTitle[this.locale]).setColor("#fda4af");
           findingDescText.setText(spot.findingDesc[this.locale]);
 
-          scanCounterText.setText(
-            `${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`,
-          );
-          updateFlagsChecklist();
+          scanCounterText.setText(`${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`);
+          relayoutRightPanel(leftPanelH);
           this.renderHeader();
         } else {
+          this.mistakesCount += 1;
           spotBg.setFillStyle(0x0b2e28, 0.95);
           spotBg.setStrokeStyle(1.5, 0x10b981);
-          statusTag.setText("✓ OK").setColor("#6ee7b7");
+          statusTag.setText(meta.stage1NormTag).setColor("#6ee7b7");
 
-          findingTitleText
-            .setText(spot.findingTitle[this.locale])
-            .setColor("#6ee7b7");
+          findingTitleText.setText(spot.findingTitle[this.locale]).setColor("#6ee7b7");
           findingDescText.setText(spot.findingDesc[this.locale]);
+          relayoutRightPanel(leftPanelH);
         }
       });
 
       this.stageRoot?.add([spotBg, labelTxt, subTxt, statusTag]);
+      curSpotY += spotH + spotGap;
     });
 
+    const leftPanelH = Math.max(minPanelH, curSpotY - panelY + 6);
+    relayoutRightPanel(leftPanelH);
+
     // Прицел рентген-сканера
-    const reticle = this.add.container(cardX + cardW / 2, cardY + cardH / 2);
+    const reticle = this.add.container(cardX + cardW / 2, panelY + leftPanelH / 2);
     const rCircle = this.add.graphics();
     rCircle.lineStyle(2, 0x38bdf8, 0.85);
     rCircle.strokeCircle(0, 0, 22);
@@ -568,7 +767,7 @@ export class HackedAccountScene extends Phaser.Scene {
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       if (this.stage === 1 && this.xrayReticle && this.xrayReticle.scene) {
         const clampedX = Phaser.Math.Clamp(pointer.x, cardX + 28, cardX + cardW - 28);
-        const clampedY = Phaser.Math.Clamp(pointer.y, cardY + 28, cardY + cardH - 28);
+        const clampedY = Phaser.Math.Clamp(pointer.y, panelY + 28, panelY + leftPanelH - 28);
         this.xrayReticle.setPosition(clampedX, clampedY);
       }
     });
@@ -579,98 +778,117 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage2LoginTraps() {
     if (!this.stageRoot) return;
+    const { width } = this.scale;
     const meta = HACKED_ACCOUNT_META[this.locale];
     const currentTrap = HACKED_LOGIN_TRAPS[this.trapIndex];
 
-    const title = this.add.text(36, 122, meta.stage2Title, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "17px",
-      fontStyle: "900",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(36, 146, meta.stage2Subtitle, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "12.5px",
-      color: "#94a3b8",
-      wordWrap: { width: 880 },
-    });
-    this.stageRoot.add([title, subtitle]);
-
-    // Центральный экран туннеля перехвата данных
+    const scopeY = this.renderStageHeading(meta.stage2Title, meta.stage2Subtitle);
     const scopeX = 36;
-    const scopeY = 182;
-    const scopeW = 888;
-    const scopeH = 198;
+    const scopeW = width - 72;
 
     const scopeBg = this.add.graphics();
-    scopeBg.fillStyle(0x050c1a, 0.98);
-    scopeBg.fillRoundedRect(scopeX, scopeY, scopeW, scopeH, 16);
-    scopeBg.lineStyle(2, this.trapSolved ? 0x10b981 : 0xf43f5e, 0.85);
-    scopeBg.strokeRoundedRect(scopeX, scopeY, scopeW, scopeH, 16);
     this.stageRoot.add(scopeBg);
 
     this.tunnelGraphics = this.add.graphics();
     this.stageRoot.add(this.tunnelGraphics);
-    this.drawDataTunnel();
 
     const trapCounter = this.add.text(
       scopeX + 20,
-      scopeY + 14,
-      this.locale === "ro"
-        ? `CAPCANA ${this.trapIndex + 1} DIN ${HACKED_LOGIN_TRAPS.length} · ${currentTrap.trapMechanism.ro}`
-        : `ЛОВУШКА ${this.trapIndex + 1} ИЗ ${HACKED_LOGIN_TRAPS.length} · ${currentTrap.trapMechanism.ru}`,
-      {
-        fontFamily: '"JetBrains Mono", monospace',
-        fontSize: "11.5px",
+      scopeY + 12,
+      `${meta.stage2TrapBadge(this.trapIndex + 1)} · ${currentTrap.trapMechanism[this.locale]}`,
+      gameText("11.5px", {
         fontStyle: "bold",
         color: this.trapSolved ? "#34d399" : "#fda4af",
-      },
+        wordWrap: { width: scopeW - 40 },
+      }),
     );
 
     const quoteTxt = this.add
-      .text(scopeX + scopeW / 2, scopeY + 66, currentTrap.attackerMessage[this.locale], {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "14.5px",
-        fontStyle: "bold",
-        color: "#ffffff",
-        align: "center",
-        wordWrap: { width: scopeW - 60 },
-      })
-      .setOrigin(0.5);
+      .text(
+        scopeX + scopeW / 2,
+        trapCounter.y + trapCounter.height + 10,
+        currentTrap.attackerMessage[this.locale],
+        gameText("14px", {
+          fontStyle: "bold",
+          color: "#ffffff",
+          align: "center",
+          wordWrap: { width: scopeW - 56 },
+        }),
+      )
+      .setOrigin(0.5, 0);
 
-    this.stageRoot.add([trapCounter, quoteTxt]);
+    this.tunnelY = quoteTxt.y + quoteTxt.height + 24;
+    this.drawDataTunnel();
 
-    // Поле обратной связи
+    // Поле обратной связи под линией туннеля
     const feedbackText = this.add
       .text(
         scopeX + scopeW / 2,
-        scopeY + 168,
+        this.tunnelY + 22,
         this.trapSolved
           ? currentTrap.successFeedback[this.locale]
-          : this.locale === "ro"
-            ? "Alege bariera cibernetică potrivită mai jos pentru a opri furtul contului:"
-            : "Выбери подходящий кибер-барьер ниже, чтобы заблокировать кражу доступа:",
-        {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "12.5px",
+          : meta.stage2FeedbackDefault,
+        gameText("12.5px", {
           fontStyle: "bold",
           color: this.trapSolved ? "#6ee7b7" : "#94a3b8",
           align: "center",
-          wordWrap: { width: scopeW - 50 },
-        },
+          wordWrap: { width: scopeW - 56 },
+        }),
       )
-      .setOrigin(0.5);
-    this.stageRoot.add(feedbackText);
+      .setOrigin(0.5, 0);
 
-    // 3 кнопки кибер-барьеров
-    const btnY = 428;
-    const btnW = 284;
-    const btnH = 74;
+    this.stageRoot.add([trapCounter, quoteTxt, feedbackText]);
+
+    const scopeH = Math.max(
+      188,
+      feedbackText.y + feedbackText.height - scopeY + 16,
+    );
+    const drawScopeFrame = (h: number) => {
+      scopeBg.clear();
+      scopeBg.fillStyle(0x050c1a, 0.98);
+      scopeBg.fillRoundedRect(scopeX, scopeY, scopeW, h, 16);
+      scopeBg.lineStyle(2, this.trapSolved ? 0x10b981 : 0xf43f5e, 0.85);
+      scopeBg.strokeRoundedRect(scopeX, scopeY, scopeW, h, 16);
+    };
+    drawScopeFrame(scopeH);
+
+    // 3 кнопки кибер-барьеров (ширина от this.scale.width, высота по тексту)
     const btnGap = 18;
+    const btnW = Math.floor((width - 72 - btnGap * 2) / 3);
 
-    meta.stage2Blockers.forEach((blockerLabel, idx) => {
+    if (this.stage2ShuffledTrapIndex !== this.trapIndex) {
+      this.stage2ShuffledBlockers = shuffle(
+        meta.stage2Blockers.map((blockerLabel, idx) => ({
+          id: `blocker-${idx}`,
+          label: blockerLabel,
+          isCorrect: idx === currentTrap.correctBlockerIndex,
+        })),
+      );
+      this.stage2ShuffledTrapIndex = this.trapIndex;
+    }
+
+    const btnTexts = this.stage2ShuffledBlockers.map((item) =>
+      this.add
+        .text(
+          0,
+          0,
+          item.label,
+          gameText("12.5px", {
+            fontStyle: "bold",
+            color: "#f8fafc",
+            align: "center",
+            wordWrap: { width: btnW - 24 },
+          }),
+        )
+        .setOrigin(0.5),
+    );
+    const maxBtnTextH = Math.max(...btnTexts.map((t) => t.height));
+    const btnH = Math.max(64, maxBtnTextH + 24);
+    const btnY = scopeY + scopeH + 16 + btnH / 2;
+
+    btnTexts.forEach((btnTxt, idx) => {
       const bx = 36 + idx * (btnW + btnGap) + btnW / 2;
-      const isCorrectChoice = idx === currentTrap.correctBlockerIndex;
+      const isCorrectChoice = this.stage2ShuffledBlockers[idx]?.isCorrect ?? false;
 
       const btnBg = this.add
         .rectangle(
@@ -687,16 +905,7 @@ export class HackedAccountScene extends Phaser.Scene {
         )
         .setInteractive({ useHandCursor: true });
 
-      const btnTxt = this.add
-        .text(bx, btnY, blockerLabel, {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "12.5px",
-          fontStyle: "bold",
-          color: "#f8fafc",
-          align: "center",
-          wordWrap: { width: btnW - 24 },
-        })
-        .setOrigin(0.5);
+      btnTxt.setPosition(bx, btnY);
 
       btnBg.on("pointerover", () => {
         if (!this.trapSolved) btnBg.setFillStyle(0x1a335c, 1);
@@ -711,11 +920,17 @@ export class HackedAccountScene extends Phaser.Scene {
           this.trapSolved = true;
           this.renderCurrentStage();
         } else {
+          this.mistakesCount += 1;
           btnBg.setFillStyle(0x4c0519, 0.95);
           btnBg.setStrokeStyle(2, 0xf43f5e);
           feedbackText
             .setText(currentTrap.wrongFeedback[this.locale])
             .setColor("#fda4af");
+          const newScopeH = Math.max(
+            scopeH,
+            feedbackText.y + feedbackText.height - scopeY + 14,
+          );
+          drawScopeFrame(newScopeH);
           this.cameras.main.shake(120, 0.004);
         }
       });
@@ -725,35 +940,28 @@ export class HackedAccountScene extends Phaser.Scene {
 
     if (this.trapSolved) {
       const isLastTrap = this.trapIndex >= HACKED_LOGIN_TRAPS.length - 1;
-      const nextBtn = this.add
-        .rectangle(
-          480,
-          534,
-          440,
-          44,
-          0x00d9ff,
-          1,
-        )
-        .setStrokeStyle(2, 0xbae6fd)
-        .setInteractive({ useHandCursor: true });
-
       const nextTxt = this.add
         .text(
-          480,
-          534,
-          isLastTrap
-            ? meta.nextStageBtn
-            : this.locale === "ro"
-              ? "Următoarea capcană de login →"
-              : "Следующая ловушка входа →",
-          {
-            fontFamily: "Inter, sans-serif",
-            fontSize: "14px",
+          width / 2,
+          0,
+          isLastTrap ? meta.nextStageBtn : meta.stage2NextTrapBtn,
+          gameText("14px", {
             fontStyle: "900",
             color: "#041022",
-          },
+            align: "center",
+          }),
         )
         .setOrigin(0.5);
+
+      const nextBtnW = Math.max(420, nextTxt.width + 48);
+      const nextBtnH = Math.max(42, nextTxt.height + 16);
+      const nextBtnY = btnY + btnH / 2 + 14 + nextBtnH / 2;
+      nextTxt.setY(nextBtnY);
+
+      const nextBtn = this.add
+        .rectangle(width / 2, nextBtnY, nextBtnW, nextBtnH, 0x00d9ff, 1)
+        .setStrokeStyle(2, 0xbae6fd)
+        .setInteractive({ useHandCursor: true });
 
       nextBtn.on("pointerdown", () => {
         if (isLastTrap) {
@@ -774,10 +982,11 @@ export class HackedAccountScene extends Phaser.Scene {
     if (!this.tunnelGraphics) return;
     this.tunnelGraphics.clear();
 
+    const { width } = this.scale;
     const startX = 110;
-    const endX = 850;
-    const midX = 480;
-    const y = 304;
+    const endX = width - 110;
+    const midX = width / 2;
+    const y = this.tunnelY;
 
     const lineColor = this.trapSolved ? 0x10b981 : 0xf43f5e;
     this.tunnelGraphics.lineStyle(3, lineColor, 0.45);
@@ -786,7 +995,7 @@ export class HackedAccountScene extends Phaser.Scene {
     // Барьер посередине
     if (this.trapSolved) {
       this.tunnelGraphics.fillStyle(0x10b981, 0.9);
-      this.tunnelGraphics.fillRoundedRect(midX - 8, y - 22, 16, 44, 6);
+      this.tunnelGraphics.fillRoundedRect(midX - 8, y - 16, 16, 32, 6);
     } else {
       // Бегущие пакеты данных к серверу Тени
       for (let i = 0; i < 4; i++) {
@@ -803,164 +1012,220 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage3ActiveSessions() {
     if (!this.stageRoot) return;
+    const { width } = this.scale;
     const meta = HACKED_ACCOUNT_META[this.locale];
 
-    const title = this.add.text(36, 122, meta.stage3Title, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "17px",
-      fontStyle: "900",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(36, 146, meta.stage3Subtitle, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "12.5px",
-      color: "#94a3b8",
-      wordWrap: { width: 880 },
-    });
-    this.stageRoot.add([title, subtitle]);
+    const startY = this.renderStageHeading(meta.stage3Title, meta.stage3Subtitle);
 
-    this.sessionPulseGraphics = this.add.graphics();
-    this.stageRoot.add(this.sessionPulseGraphics);
-    this.drawSessionActivityWave();
+    // 4 карточки устройств (2x2 сетка, высота каждой строки по содержимому)
+    const startX = 36;
+    const gapX = 20;
+    const gapY = 10;
+    const cardW = Math.floor((width - 72 - gapX) / 2);
 
+    const statusBg = this.add.graphics();
     const statusToast = this.add
       .text(
-        480,
-        504,
+        width / 2,
+        0,
         this.killedSessionIds.size >= 3
-          ? this.locale === "ro"
-            ? "Toate cele 3 sesiuni ale hackerului au fost închise! Accesul străin este blocat."
-            : "Все 3 чужие сессии отключены! Хакер выброшен из аккаунта продавца."
-          : this.locale === "ro"
-            ? `Sesiuni străine închise: ${this.killedSessionIds.size}/3`
-            : `Отключено хакерских сессий: ${this.killedSessionIds.size}/3`,
-        {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "13px",
+          ? meta.stage3AllKilledNotice
+          : meta.stage3KilledCounter(this.killedSessionIds.size, 3),
+        gameText("12.5px", {
           fontStyle: "bold",
           color: this.killedSessionIds.size >= 3 ? "#34d399" : "#38bdf8",
-        },
+          align: "center",
+          wordWrap: { width: width - 160 },
+        }),
       )
-      .setOrigin(0.5);
-    this.stageRoot.add(statusToast);
+      .setOrigin(0.5, 0);
 
-    // 4 карточки устройств (2x2 сетка)
-    const startX = 36;
-    const startY = 182;
-    const cardW = 434;
-    const cardH = 148;
-    const gapX = 20;
-    const gapY = 14;
+    let statusTopY = 0;
+    const updateStatusBanner = (text: string, color: string) => {
+      statusToast.setText(text).setColor(color);
+      statusToast.setY(statusTopY + 6);
+      const boxW = Math.min(width - 72, Math.max(320, statusToast.width + 36));
+      const boxH = statusToast.height + 12;
+      const boxX = (width - boxW) / 2;
 
-    HACKED_SESSIONS.forEach((sess, idx) => {
-      const col = idx % 2;
-      const row = Math.floor(idx / 2);
-      const cx = startX + col * (cardW + gapX);
-      const cy = startY + row * (cardH + gapY);
+      statusBg.clear();
+      statusBg.fillStyle(0x061020, 0.96);
+      statusBg.fillRoundedRect(boxX, statusTopY, boxW, boxH, 10);
+      statusBg.lineStyle(1.5, 0x1e3a5f, 0.9);
+      statusBg.strokeRoundedRect(boxX, statusTopY, boxW, boxH, 10);
 
-      const isKilled = this.killedSessionIds.has(sess.id);
-      const isOwner = !sess.isHacker;
+      this.sessionWaveY = statusTopY + boxH / 2;
+      this.sessionWaveGapLeft = boxX - 12;
+      this.sessionWaveGapRight = boxX + boxW + 12;
+      this.drawSessionActivityWave();
+      return statusTopY + boxH;
+    };
 
-      const cardBg = this.add.graphics();
-      cardBg.fillStyle(
-        isOwner ? 0x092230 : isKilled ? 0x062e24 : 0x260b18,
-        0.95,
-      );
-      cardBg.fillRoundedRect(cx, cy, cardW, cardH, 14);
-      cardBg.lineStyle(
-        2,
-        isOwner ? 0x00d9ff : isKilled ? 0x10b981 : 0xf43f5e,
-        0.9,
-      );
-      cardBg.strokeRoundedRect(cx, cy, cardW, cardH, 14);
+    let rowY = startY;
+    for (let row = 0; row < 2; row++) {
+      const rowItems = HACKED_SESSIONS.slice(row * 2, row * 2 + 2);
 
-      const devTitle = this.add.text(cx + 16, cy + 12, sess.deviceTitle[this.locale], {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "13px",
-        fontStyle: "900",
-        color: "#ffffff",
-        wordWrap: { width: cardW - 32 },
+      const prepared = rowItems.map((sess, col) => {
+        const cx = startX + col * (cardW + gapX);
+        const isKilled = this.killedSessionIds.has(sess.id);
+        const isOwner = !sess.isHacker;
+
+        const devTitle = this.add.text(
+          cx + 16,
+          rowY + 10,
+          sess.deviceTitle[this.locale],
+          gameText("12.5px", {
+            fontStyle: "900",
+            color: "#ffffff",
+            wordWrap: { width: cardW - 32 },
+          }),
+        );
+
+        const locMeta = this.add.text(
+          cx + 16,
+          devTitle.y + devTitle.height + 3,
+          sess.locationMeta[this.locale],
+          gameText("10.5px", {
+            color: isOwner ? "#7dd3fc" : isKilled ? "#6ee7b7" : "#fda4af",
+            wordWrap: { width: cardW - 32 },
+          }),
+        );
+
+        const activityTxt = this.add.text(
+          cx + 16,
+          locMeta.y + locMeta.height + 4,
+          isKilled ? `✓ ${sess.explanation[this.locale]}` : sess.liveActivity[this.locale],
+          gameText("11px", {
+            fontStyle: "bold",
+            color: isKilled ? "#a7f3d0" : "#e2e8f0",
+            wordWrap: { width: cardW - 32 },
+          }),
+        );
+
+        const btnLabel = isOwner
+          ? meta.stage3OwnerBadge
+          : isKilled
+            ? meta.stage3KilledBadge
+            : meta.stage3KillBtn;
+
+        const actionTxt = this.add
+          .text(
+            cx + cardW / 2,
+            0,
+            btnLabel,
+            gameText("11.5px", {
+              fontStyle: "900",
+              color: "#ffffff",
+              align: "center",
+              wordWrap: { width: cardW - 48 },
+            }),
+          )
+          .setOrigin(0.5);
+
+        const btnH = Math.max(30, actionTxt.height + 10);
+        const contentBottom = activityTxt.y + activityTxt.height;
+        const neededCardH = contentBottom - rowY + 8 + btnH + 10;
+
+        return {
+          sess,
+          cx,
+          isKilled,
+          isOwner,
+          devTitle,
+          locMeta,
+          activityTxt,
+          actionTxt,
+          btnH,
+          neededCardH,
+        };
       });
 
-      const locMeta = this.add.text(cx + 16, cy + 34, sess.locationMeta[this.locale], {
-        fontFamily: '"JetBrains Mono", monospace',
-        fontSize: "10.5px",
-        color: isOwner ? "#7dd3fc" : isKilled ? "#6ee7b7" : "#fda4af",
-        wordWrap: { width: cardW - 32 },
+      const rowCardH = Math.max(126, ...prepared.map((p) => p.neededCardH));
+
+      prepared.forEach((p) => {
+        const cardBg = this.add.graphics();
+        cardBg.fillStyle(
+          p.isOwner ? 0x092230 : p.isKilled ? 0x062e24 : 0x260b18,
+          0.95,
+        );
+        cardBg.fillRoundedRect(p.cx, rowY, cardW, rowCardH, 14);
+        cardBg.lineStyle(
+          2,
+          p.isOwner ? 0x00d9ff : p.isKilled ? 0x10b981 : 0xf43f5e,
+          0.9,
+        );
+        cardBg.strokeRoundedRect(p.cx, rowY, cardW, rowCardH, 14);
+
+        const btnFill = p.isOwner ? 0x0f3156 : p.isKilled ? 0x065f46 : 0xe11d48;
+        const btnStroke = p.isOwner ? 0x38bdf8 : p.isKilled ? 0x34d399 : 0xfda4af;
+        const btnY = rowY + rowCardH - 10 - p.btnH / 2;
+
+        const actionBtn = this.add
+          .rectangle(p.cx + cardW / 2, btnY, cardW - 32, p.btnH, btnFill, 1)
+          .setStrokeStyle(1.5, btnStroke)
+          .setInteractive({ useHandCursor: !p.isKilled });
+
+        p.actionTxt.setPosition(p.cx + cardW / 2, btnY);
+
+        actionBtn.on("pointerdown", () => {
+          if (p.isOwner) {
+            this.mistakesCount += 1;
+            updateStatusBanner(p.sess.explanation[this.locale], "#7dd3fc");
+            return;
+          }
+          if (!this.killedSessionIds.has(p.sess.id)) {
+            this.killedSessionIds.add(p.sess.id);
+            this.renderCurrentStage();
+          }
+        });
+
+        this.stageRoot?.add([
+          cardBg,
+          p.devTitle,
+          p.locMeta,
+          p.activityTxt,
+          actionBtn,
+          p.actionTxt,
+        ]);
       });
 
-      const activityTxt = this.add.text(
-        cx + 16,
-        cy + 56,
-        isKilled ? `✓ ${sess.explanation[this.locale]}` : sess.liveActivity[this.locale],
-        {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "11.5px",
-          fontStyle: "bold",
-          color: isKilled ? "#a7f3d0" : "#e2e8f0",
-          wordWrap: { width: cardW - 32 },
-        },
-      );
+      rowY += rowCardH + gapY;
+    }
 
-      const btnFill = isOwner ? 0x0f3156 : isKilled ? 0x065f46 : 0xe11d48;
-      const btnStroke = isOwner ? 0x38bdf8 : isKilled ? 0x34d399 : 0xfda4af;
-      const btnLabel = isOwner
-        ? meta.stage3OwnerBadge
-        : isKilled
-          ? meta.stage3KilledBadge
-          : meta.stage3KillBtn;
+    this.sessionPulseGraphics = this.add.graphics();
+    this.stageRoot.add([this.sessionPulseGraphics, statusBg, statusToast]);
 
-      const actionBtn = this.add
-        .rectangle(cx + cardW / 2, cy + 120, cardW - 32, 34, btnFill, 1)
-        .setStrokeStyle(1.5, btnStroke)
-        .setInteractive({ useHandCursor: !isKilled });
-
-      const actionTxt = this.add
-        .text(cx + cardW / 2, cy + 120, btnLabel, {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "12px",
-          fontStyle: "900",
-          color: "#ffffff",
-        })
-        .setOrigin(0.5);
-
-      actionBtn.on("pointerdown", () => {
-        if (isOwner) {
-          statusToast
-            .setText(sess.explanation[this.locale])
-            .setColor("#7dd3fc");
-          return;
-        }
-        if (!this.killedSessionIds.has(sess.id)) {
-          this.killedSessionIds.add(sess.id);
-          this.renderCurrentStage();
-        }
-      });
-
-      this.stageRoot?.add([
-        cardBg,
-        devTitle,
-        locMeta,
-        activityTxt,
-        actionBtn,
-        actionTxt,
-      ]);
-    });
+    statusTopY = rowY - gapY + 6;
+    const statusBottomY = updateStatusBanner(
+      this.killedSessionIds.size >= 3
+        ? meta.stage3AllKilledNotice
+        : meta.stage3KilledCounter(this.killedSessionIds.size, 3),
+      this.killedSessionIds.size >= 3 ? "#34d399" : "#38bdf8",
+    );
 
     if (this.killedSessionIds.size >= 3) {
+      const nextTxt = this.add
+        .text(
+          width / 2,
+          0,
+          meta.nextStageBtn,
+          gameText("13.5px", {
+            fontStyle: "900",
+            color: "#041022",
+            align: "center",
+          }),
+        )
+        .setOrigin(0.5);
+
+      const nextBtnW = Math.max(410, nextTxt.width + 48);
+      const nextBtnH = Math.max(36, nextTxt.height + 14);
+      const nextBtnY = statusBottomY + 6 + nextBtnH / 2;
+      nextTxt.setY(nextBtnY);
+
       const nextBtn = this.add
-        .rectangle(480, 544, 430, 42, 0x00d9ff, 1)
+        .rectangle(width / 2, nextBtnY, nextBtnW, nextBtnH, 0x00d9ff, 1)
         .setStrokeStyle(2, 0xbae6fd)
         .setInteractive({ useHandCursor: true });
-
-      const nextTxt = this.add
-        .text(480, 544, meta.nextStageBtn, {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "14px",
-          fontStyle: "900",
-          color: "#041022",
-        })
-        .setOrigin(0.5);
 
       nextBtn.on("pointerdown", () => {
         this.stage = 4;
@@ -975,18 +1240,36 @@ export class HackedAccountScene extends Phaser.Scene {
     if (!this.sessionPulseGraphics) return;
     this.sessionPulseGraphics.clear();
 
+    const { width } = this.scale;
     const allClean = this.killedSessionIds.size >= 3;
     const color = allClean ? 0x10b981 : 0xf43f5e;
-    this.sessionPulseGraphics.lineStyle(2, color, 0.35);
-    this.sessionPulseGraphics.beginPath();
+    const amp = allClean ? 3 : 8;
 
-    for (let x = 40; x <= 920; x += 8) {
-      const amp = allClean ? 3 : 10;
-      const y = 504 + Math.sin(x * 0.03 + this.sessionPulsePhase) * amp;
-      if (x === 40) this.sessionPulseGraphics.moveTo(x, y);
-      else this.sessionPulseGraphics.lineTo(x, y);
+    this.sessionPulseGraphics.lineStyle(2, color, 0.35);
+
+    // Левый сегмент до тёмной плашки статуса (не под текстом)
+    const leftEnd = Math.max(40, this.sessionWaveGapLeft);
+    if (leftEnd > 48) {
+      this.sessionPulseGraphics.beginPath();
+      for (let x = 40; x <= leftEnd; x += 6) {
+        const y = this.sessionWaveY + Math.sin(x * 0.03 + this.sessionPulsePhase) * amp;
+        if (x === 40) this.sessionPulseGraphics.moveTo(x, y);
+        else this.sessionPulseGraphics.lineTo(x, y);
+      }
+      this.sessionPulseGraphics.strokePath();
     }
-    this.sessionPulseGraphics.strokePath();
+
+    // Правый сегмент после тёмной плашки статуса (не под текстом)
+    const rightStart = Math.min(width - 40, this.sessionWaveGapRight);
+    if (width - 40 > rightStart + 8) {
+      this.sessionPulseGraphics.beginPath();
+      for (let x = rightStart; x <= width - 40; x += 6) {
+        const y = this.sessionWaveY + Math.sin(x * 0.03 + this.sessionPulsePhase) * amp;
+        if (x === rightStart) this.sessionPulseGraphics.moveTo(x, y);
+        else this.sessionPulseGraphics.lineTo(x, y);
+      }
+      this.sessionPulseGraphics.strokePath();
+    }
   }
 
   // ============================================================================
@@ -994,146 +1277,154 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage4DefenseShields() {
     if (!this.stageRoot) return;
+    const { width } = this.scale;
     const meta = HACKED_ACCOUNT_META[this.locale];
     const round = HACKED_SHIELD_LAYERS[this.layerRoundIndex];
 
-    const title = this.add.text(36, 122, meta.stage4Title, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "17px",
-      fontStyle: "900",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(36, 146, meta.stage4Subtitle, {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "12.5px",
-      color: "#94a3b8",
-      wordWrap: { width: 880 },
-    });
-    this.stageRoot.add([title, subtitle]);
+    const bossY = this.renderStageHeading(meta.stage4Title, meta.stage4Subtitle);
 
     // Панель HP Тени и 3 рубежей защиты
     const bossX = 36;
-    const bossY = 182;
-    const bossW = 888;
-    const bossH = 114;
+    const bossW = width - 72;
 
     const bossBg = this.add.graphics();
-    bossBg.fillStyle(0x1f0918, 0.95);
-    bossBg.fillRoundedRect(bossX, bossY, bossW, bossH, 16);
-    bossBg.lineStyle(2, 0xf43f5e, 0.85);
-    bossBg.strokeRoundedRect(bossX, bossY, bossW, bossH, 16);
     this.stageRoot.add(bossBg);
 
     const bossName = this.add.text(
-      bossX + 22,
-      bossY + 14,
-      `${round.layerBadge[this.locale]} · ${
-        this.locale === "ro"
-          ? `Accesul Umbrei la cont: ${this.shadowHp}% HP`
-          : `Доступ Тени к аккаунту: ${this.shadowHp}% HP`
-      }`,
-      {
-        fontFamily: '"JetBrains Mono", monospace',
-        fontSize: "12px",
+      bossX + 20,
+      bossY + 9,
+      `${round.layerBadge[this.locale]} · ${meta.stage4HpLabel(this.shadowHp)}`,
+      gameText("11.5px", {
         fontStyle: "bold",
         color: "#fda4af",
-      },
+        wordWrap: { width: bossW - 40 },
+      }),
     );
 
     // Полоска HP Тени
+    const hpTrackY = bossName.y + bossName.height + 5;
+    const hpTrackW = Math.min(380, bossW - 44);
     const hpTrack = this.add.graphics();
     hpTrack.fillStyle(0x090d16, 1);
-    hpTrack.fillRoundedRect(bossX + 22, bossY + 38, 380, 12, 6);
+    hpTrack.fillRoundedRect(bossX + 20, hpTrackY, hpTrackW, 10, 5);
     if (this.shadowHp > 0) {
       hpTrack.fillStyle(0xf43f5e, 1);
       hpTrack.fillRoundedRect(
-        bossX + 22,
-        bossY + 38,
-        Math.max(12, (380 * this.shadowHp) / 100),
-        12,
-        6,
+        bossX + 20,
+        hpTrackY,
+        Math.max(12, (hpTrackW * this.shadowHp) / 100),
+        10,
+        5,
       );
     }
 
     const attackTxt = this.add.text(
-      bossX + 22,
-      bossY + 62,
+      bossX + 20,
+      hpTrackY + 15,
       round.shadowThreat[this.locale],
-      {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "13.5px",
+      gameText("13px", {
         fontStyle: "bold",
         color: "#ffffff",
-        wordWrap: { width: bossW - 44 },
-      },
+        wordWrap: { width: bossW - 40 },
+      }),
     );
+    const bossH = attackTxt.y + attackTxt.height - bossY + 10;
+
+    bossBg.fillStyle(0x1f0918, 0.95);
+    bossBg.fillRoundedRect(bossX, bossY, bossW, bossH, 16);
+    bossBg.lineStyle(2, 0xf43f5e, 0.85);
+    bossBg.strokeRoundedRect(bossX, bossY, bossW, bossH, 16);
+
     this.stageRoot.add([bossName, hpTrack, attackTxt]);
 
     // Поле фидбека раунда
     const duelFeedback = this.add
       .text(
-        480,
-        316,
-        this.locale === "ro"
-          ? `Pasul ${this.layerRoundIndex + 1}/3 · Alege măsura de securitate corectă:`
-          : `Рубеж ${this.layerRoundIndex + 1}/3 · Выбери правильную меру защиты аккаунта:`,
-        {
-          fontFamily: "Inter, sans-serif",
-          fontSize: "13px",
+        width / 2,
+        bossY + bossH + 6,
+        meta.stage4StepHint(this.layerRoundIndex + 1),
+        gameText("12.5px", {
           fontStyle: "bold",
           color: "#38bdf8",
-        },
+          align: "center",
+          wordWrap: { width: width - 72 },
+        }),
       )
-      .setOrigin(0.5);
+      .setOrigin(0.5, 0);
     this.stageRoot.add(duelFeedback);
 
-    // 3 карты рубежей защиты
-    const cardW = 282;
-    const cardH = 212;
-    const gap = 21;
+    // 3 карты рубежей защиты (высота по содержимому, резервируем место под 2 строки фидбека)
+    const gap = 18;
+    const cardW = Math.floor((width - 72 - gap * 2) / 3);
+    const cy = Math.max(
+      duelFeedback.y + duelFeedback.height + 8,
+      bossY + bossH + 40,
+    );
 
-    round.cards.forEach((card, idx) => {
+    if (this.stage4ShuffledLayerIndex !== this.layerRoundIndex) {
+      this.stage4ShuffledCards = shuffle(round.cards);
+      this.stage4ShuffledLayerIndex = this.layerRoundIndex;
+    }
+
+    const preparedCards = this.stage4ShuffledCards.map((card, idx) => {
       const cx = 36 + idx * (cardW + gap);
-      const cy = 338;
 
+      const cTitle = this.add.text(
+        cx + 14,
+        cy + 12,
+        card.title[this.locale],
+        gameText("13px", {
+          fontStyle: "900",
+          color: "#7dd3fc",
+          wordWrap: { width: cardW - 28 },
+        }),
+      );
+
+      const cDesc = this.add.text(
+        cx + 14,
+        cTitle.y + cTitle.height + 5,
+        card.desc[this.locale],
+        gameText("11.5px", {
+          color: "#e2e8f0",
+          lineSpacing: 1,
+          wordWrap: { width: cardW - 28 },
+        }),
+      );
+
+      const playTxt = this.add
+        .text(
+          cx + cardW / 2,
+          0,
+          meta.stage4ActivateBtn,
+          gameText("11px", {
+            fontStyle: "bold",
+            color: "#bae6fd",
+            align: "center",
+            wordWrap: { width: cardW - 40 },
+          }),
+        )
+        .setOrigin(0.5);
+
+      const playBtnH = Math.max(28, playTxt.height + 10);
+      const neededCardH = cDesc.y + cDesc.height - cy + 10 + playBtnH + 12;
+
+      return { card, cx, cTitle, cDesc, playTxt, playBtnH, neededCardH };
+    });
+
+    const cardH = Math.max(200, ...preparedCards.map((c) => c.neededCardH));
+
+    preparedCards.forEach(({ card, cx, cTitle, cDesc, playTxt, playBtnH }) => {
       const cardRect = this.add
         .rectangle(cx + cardW / 2, cy + cardH / 2, cardW, cardH, 0x0d1f3a, 0.96)
         .setStrokeStyle(2, 0x00d9ff)
         .setInteractive({ useHandCursor: true });
 
-      const cTitle = this.add.text(cx + 16, cy + 16, card.title[this.locale], {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "13.5px",
-        fontStyle: "900",
-        color: "#7dd3fc",
-        wordWrap: { width: cardW - 32 },
-      });
-
-      const cDesc = this.add.text(cx + 16, cy + 66, card.desc[this.locale], {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "12px",
-        color: "#e2e8f0",
-        lineSpacing: 3,
-        wordWrap: { width: cardW - 32 },
-      });
-
+      const playBtnY = cy + cardH - 12 - playBtnH / 2;
       const playBadge = this.add
-        .rectangle(cx + cardW / 2, cy + cardH - 26, cardW - 32, 30, 0x16325b, 1)
+        .rectangle(cx + cardW / 2, playBtnY, cardW - 28, playBtnH, 0x16325b, 1)
         .setStrokeStyle(1, 0x38bdf8);
 
-      const playTxt = this.add
-        .text(
-          cx + cardW / 2,
-          cy + cardH - 26,
-          this.locale === "ro" ? "ACTIVEAZĂ SCUTUL ⚡" : "УСТАНОВИТЬ РУБЕЖ ⚡",
-          {
-            fontFamily: '"JetBrains Mono", monospace',
-            fontSize: "11px",
-            fontStyle: "bold",
-            color: "#bae6fd",
-          },
-        )
-        .setOrigin(0.5);
+      playTxt.setPosition(cx + cardW / 2, playBtnY);
 
       cardRect.on("pointerover", () => cardRect.setFillStyle(0x163059, 1));
       cardRect.on("pointerout", () => cardRect.setFillStyle(0x0d1f3a, 0.96));
@@ -1156,6 +1447,7 @@ export class HackedAccountScene extends Phaser.Scene {
             }
           });
         } else {
+          this.mistakesCount += 1;
           cardRect.setFillStyle(0x4c0519, 1);
           cardRect.setStrokeStyle(2.5, 0xf43f5e);
           duelFeedback.setText(card.feedback[this.locale]).setColor("#fda4af");
@@ -1172,83 +1464,120 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage5Victory() {
     if (!this.stageRoot) return;
+    const { width } = this.scale;
     const meta = HACKED_ACCOUNT_META[this.locale];
+    const passed = this.mistakesCount <= 2;
 
     const boxX = 56;
-    const boxY = 136;
-    const boxW = 848;
-    const boxH = 432;
+    const boxY = this.headerBottom + 14;
+    const boxW = width - 112;
 
     const bg = this.add.graphics();
-    bg.fillStyle(0x071f1e, 0.96);
-    bg.fillRoundedRect(boxX, boxY, boxW, boxH, 20);
-    bg.lineStyle(2.5, 0x10b981, 0.95);
-    bg.strokeRoundedRect(boxX, boxY, boxW, boxH, 20);
     this.stageRoot.add(bg);
 
     const title = this.add
-      .text(480, boxY + 38, `🛡️ ${meta.victoryTitle}`, {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "21px",
-        fontStyle: "900",
-        color: "#6ee7b7",
-        align: "center",
-      })
-      .setOrigin(0.5);
+      .text(
+        width / 2,
+        boxY + 18,
+        passed ? `🛡️ ${meta.victoryTitle}` : `⚠️ ${meta.victoryRetryNotice}`,
+        gameText("20px", {
+          fontStyle: "900",
+          color: passed ? "#6ee7b7" : "#ffd166",
+          align: "center",
+          wordWrap: { width: boxW - 64 },
+        }),
+      )
+      .setOrigin(0.5, 0);
 
     const sub = this.add
-      .text(480, boxY + 78, meta.victorySubtitle, {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "13px",
-        color: "#cbd5e1",
-        align: "center",
-        wordWrap: { width: boxW - 80 },
-      })
-      .setOrigin(0.5);
+      .text(
+        width / 2,
+        title.y + title.height + 6,
+        meta.victorySubtitle,
+        gameText("12.5px", {
+          color: "#cbd5e1",
+          align: "center",
+          wordWrap: { width: boxW - 80 },
+        }),
+      )
+      .setOrigin(0.5, 0);
 
     this.stageRoot.add([title, sub]);
 
-    meta.victoryRules.forEach((rule, idx) => {
-      const ry = boxY + 122 + idx * 54;
+    let ruleY = sub.y + sub.height + 12;
+    const ruleW = boxW - 72;
+
+    meta.victoryRules.forEach((rule) => {
+      const rTxt = this.add.text(
+        boxX + 48,
+        ruleY + 7,
+        `✓  ${rule}`,
+        gameText("12px", {
+          fontStyle: "bold",
+          color: "#f0fdf4",
+          wordWrap: { width: ruleW - 32 },
+        }),
+      );
+
+      const rH = Math.max(36, rTxt.height + 14);
       const rBg = this.add
-        .rectangle(480, ry + 18, boxW - 72, 44, 0x0a2e2c, 0.9)
+        .rectangle(width / 2, ruleY + rH / 2, ruleW, rH, 0x0a2e2c, 0.9)
         .setStrokeStyle(1, 0x10b981);
 
-      const rTxt = this.add.text(boxX + 52, ry + 8, `✓  ${rule}`, {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "12.5px",
-        fontStyle: "bold",
-        color: "#f0fdf4",
-        wordWrap: { width: boxW - 110 },
-      });
-
       this.stageRoot?.add([rBg, rTxt]);
+      ruleY += rH + 7;
     });
 
-    const finishBtn = this.add
-      .rectangle(480, boxY + boxH - 44, 460, 48, 0x10b981, 1)
-      .setStrokeStyle(2, 0xa7f3d0)
-      .setInteractive({ useHandCursor: true });
-
     const finishTxt = this.add
-      .text(480, boxY + boxH - 44, meta.finishBtn, {
-        fontFamily: "Inter, sans-serif",
-        fontSize: "15px",
-        fontStyle: "900",
-        color: "#022c22",
-      })
+      .text(
+        width / 2,
+        0,
+        passed ? meta.finishBtn : meta.victoryRetryNotice,
+        gameText("14.5px", {
+          fontStyle: "900",
+          color: "#022c22",
+          align: "center",
+        }),
+      )
       .setOrigin(0.5);
 
-    finishBtn.on("pointerover", () => finishBtn.setFillStyle(0x34d399, 1));
-    finishBtn.on("pointerout", () => finishBtn.setFillStyle(0x10b981, 1));
+    const finishBtnW = Math.max(460, finishTxt.width + 48);
+    const finishBtnH = Math.max(44, finishTxt.height + 16);
+    const finishBtnY = ruleY + 6 + finishBtnH / 2;
+    finishTxt.setY(finishBtnY);
+
+    const finishBtn = this.add
+      .rectangle(
+        width / 2,
+        finishBtnY,
+        finishBtnW,
+        finishBtnH,
+        passed ? 0x10b981 : 0xf59e0b,
+        1,
+      )
+      .setStrokeStyle(2, passed ? 0xa7f3d0 : 0xfde68a)
+      .setInteractive({ useHandCursor: true });
+
+    finishBtn.on("pointerover", () =>
+      finishBtn.setFillStyle(passed ? 0x34d399 : 0xfbbf24, 1),
+    );
+    finishBtn.on("pointerout", () =>
+      finishBtn.setFillStyle(passed ? 0x10b981 : 0xf59e0b, 1),
+    );
     finishBtn.on("pointerdown", () => {
       const complete = this.onComplete;
       this.onComplete = undefined;
       this.scene.stop();
-      complete?.(true);
+      complete?.(passed);
     });
 
     this.stageRoot.add([finishBtn, finishTxt]);
+
+    const boxH = finishBtnY + finishBtnH / 2 - boxY + 16;
+    bg.fillStyle(0x071f1e, 0.96);
+    bg.fillRoundedRect(boxX, boxY, boxW, boxH, 20);
+    bg.lineStyle(2.5, passed ? 0x10b981 : 0xf59e0b, 0.95);
+    bg.strokeRoundedRect(boxX, boxY, boxW, boxH, 20);
   }
 
   private closeScene() {

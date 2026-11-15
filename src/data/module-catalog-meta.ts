@@ -22,3 +22,7 @@ export const STAGE_COUNT = 8;
 export const MODULE_MAX_XP = 100; // 4 × 8 + 4 × 12 + 28
 export const TOTAL_STAGE_COUNT = 64;
 export const TOTAL_MAX_XP = 800;
+
+export const PLAYABLE_MODULE_COUNT = 4;
+export const PLAYABLE_STAGE_COUNT = 32;
+export const PLAYABLE_MAX_XP = 400;

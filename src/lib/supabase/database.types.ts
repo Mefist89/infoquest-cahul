@@ -669,6 +669,7 @@ export type Database = {
         }[]
       }
       release_ai_request: { Args: { p_request_id: string; p_refund?: boolean }; Returns: undefined }
+      reset_patrol_progress: { Args: never; Returns: undefined }
       set_user_ip_block: {
         Args: { p_blocked: boolean; p_reason?: string; p_user_id: string }
         Returns: undefined

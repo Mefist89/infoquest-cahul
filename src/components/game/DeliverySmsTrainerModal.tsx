@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -18,15 +18,16 @@ import {
   Zap,
 } from "lucide-react";
 
-import type { PatrolLocale } from "@/data/patrol";
+import { PATROL_NPCS, type PatrolLocale } from "@/data/patrol";
 import {
   DELIVERY_SMS_CASES,
   DELIVERY_SMS_THEORY,
   DELIVERY_SMS_UI,
   type SmsSegment,
 } from "@/data/patrol-delivery-sms";
+import { shuffle } from "./shuffle";
 
-type TrainerStep = "theory" | "practice" | "summary";
+type TrainerStep = "intro" | "theory" | "practice" | "summary";
 
 const MAX_FOCUS_CHARGES = 3;
 
@@ -40,12 +41,14 @@ export function DeliverySmsTrainerModal({
   onComplete: (correct: boolean) => void;
 }) {
   const ui = DELIVERY_SMS_UI[locale];
-  const [step, setStep] = useState<TrainerStep>("theory");
+  const mariaNpc = PATROL_NPCS.find((item) => item.id === "post-maria");
+  const [step, setStep] = useState<TrainerStep>("intro");
   const [caseIndex, setCaseIndex] = useState(0);
   const [foundFlagIds, setFoundFlagIds] = useState<string[]>([]);
   const [checkedNeutralIds, setCheckedNeutralIds] = useState<string[]>([]);
   const [activeSegment, setActiveSegment] = useState<SmsSegment | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [mistakesCount, setMistakesCount] = useState(0);
 
   // Шкала точности детектива (3 заряда внимания ⚡)
   const [focusCharges, setFocusCharges] = useState(MAX_FOCUS_CHARGES);
@@ -55,6 +58,7 @@ export function DeliverySmsTrainerModal({
   } | null>(null);
 
   const currentCase = DELIVERY_SMS_CASES[caseIndex] ?? DELIVERY_SMS_CASES[0];
+  const displayedOptions = useMemo(() => shuffle(currentCase.options), [currentCase]);
   const totalFlagsInCase = currentCase.segments.filter((segment) => segment.isFlag).length;
   const allFlagsFound = foundFlagIds.length >= totalFlagsInCase;
   const isOutOfFocus = step === "practice" && !allFlagsFound && focusCharges <= 0;
@@ -67,7 +71,7 @@ export function DeliverySmsTrainerModal({
   const totalCluesAllCases = totalCases * 3; // 9
   const totalTasks = 1 + totalCases * 4; // 13
 
-  const completedTheoryTasks = step === "theory" ? 0 : 1;
+  const completedTheoryTasks = step === "intro" || step === "theory" ? 0 : 1;
   const completedPreviousCaseTasks = step === "summary" ? totalCases * 4 : caseIndex * 4;
   const currentCaseTasks =
     step === "practice" ? foundFlagIds.length + (currentCaseSolved ? 1 : 0) : 0;
@@ -129,6 +133,7 @@ export function DeliverySmsTrainerModal({
       if (!checkedNeutralIds.includes(segment.id)) {
         setCheckedNeutralIds((prev) => [...prev, segment.id]);
       }
+      setMistakesCount((prev) => prev + 1);
       setFocusCharges((prev) => Math.max(0, prev - 1));
       setFocusNotice({ text: ui.missNotice, positive: false });
     }
@@ -182,14 +187,14 @@ export function DeliverySmsTrainerModal({
   const checkpoints = [
     {
       id: "cp-theory",
-      label: locale === "ro" ? "1. Ghid" : "1. Памятка",
-      done: step !== "theory",
-      active: step === "theory",
-      sub: step === "theory" ? (locale === "ro" ? "4 reguli" : "4 правила") : "✓",
+      label: ui.checkpointLabels[0],
+      done: step !== "intro" && step !== "theory",
+      active: step === "intro" || step === "theory",
+      sub: step === "intro" || step === "theory" ? ui.checkpointRulesSub : "✓",
     },
     {
       id: "cp-sms-1",
-      label: locale === "ro" ? "2. SMS #1 (Vamă)" : "2. SMS №1 (Пошлина)",
+      label: ui.checkpointLabels[1],
       done: step === "summary" || (step === "practice" && (caseIndex > 0 || (caseIndex === 0 && currentCaseSolved))),
       active: step === "practice" && caseIndex === 0,
       sub:
@@ -201,7 +206,7 @@ export function DeliverySmsTrainerModal({
     },
     {
       id: "cp-sms-2",
-      label: locale === "ro" ? "3. SMS #2 (Curier)" : "3. SMS №2 (Курьер)",
+      label: ui.checkpointLabels[2],
       done: step === "summary" || (step === "practice" && (caseIndex > 1 || (caseIndex === 1 && currentCaseSolved))),
       active: step === "practice" && caseIndex === 1,
       sub:
@@ -213,7 +218,7 @@ export function DeliverySmsTrainerModal({
     },
     {
       id: "cp-sms-3",
-      label: locale === "ro" ? "4. SMS #3 (Retur)" : "4. SMS №3 (Возврат)",
+      label: ui.checkpointLabels[3],
       done: step === "summary" || (step === "practice" && caseIndex === 2 && currentCaseSolved),
       active: step === "practice" && caseIndex === 2,
       sub:
@@ -225,10 +230,10 @@ export function DeliverySmsTrainerModal({
     },
     {
       id: "cp-summary",
-      label: locale === "ro" ? "5. Finalizare" : "5. Итог",
+      label: ui.checkpointLabels[4],
       done: step === "summary",
       active: step === "summary",
-      sub: step === "summary" ? "100%" : locale === "ro" ? "Scut" : "Щит",
+      sub: step === "summary" ? "100%" : ui.checkpointShieldSub,
     },
   ];
 
@@ -252,9 +257,7 @@ export function DeliverySmsTrainerModal({
                   {DELIVERY_SMS_THEORY.categoryBadge[locale]}
                 </p>
                 <p className="text-sm font-bold text-gold">
-                  {locale === "ro"
-                    ? "Maria · Oficiul Poștal · Investigație interactivă"
-                    : "Мария · Район Почты · Интерактивное расследование"}
+                  {ui.npcBadge}
                 </p>
               </div>
             </div>
@@ -262,23 +265,15 @@ export function DeliverySmsTrainerModal({
             {/* Сводка оставшихся задач */}
             <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
               <span className="rounded-lg border border-neon/35 bg-neon/10 px-2.5 py-1 text-neon">
-                {locale === "ro"
-                  ? `SMS analizate: ${solvedSmsCount} / ${totalCases}`
-                  : `Разобрано SMS: ${solvedSmsCount} / ${totalCases}`}
+                {ui.smsSolvedCounter(solvedSmsCount, totalCases)}
               </span>
               <span className="rounded-lg border border-gold/40 bg-gold/10 px-2.5 py-1 text-gold">
-                {locale === "ro"
-                  ? `Indicii: ${totalFoundClues} / ${totalCluesAllCases}`
-                  : `Улики: ${totalFoundClues} / ${totalCluesAllCases}`}
+                {ui.cluesFoundCounter(totalFoundClues, totalCluesAllCases)}
               </span>
               <span className="rounded-lg border border-slate-700 bg-slate-800/90 px-2.5 py-1 text-slate-200">
                 {remainingTasks === 0
-                  ? locale === "ro"
-                    ? "Toate sarcinile finalizate!"
-                    : "Все задачи выполнены!"
-                  : locale === "ro"
-                    ? `Sarcini rămase: ${remainingTasks}`
-                    : `Осталось задач: ${remainingTasks}`}
+                  ? ui.allTasksDone
+                  : ui.remainingTasksCounter(remainingTasks)}
               </span>
               <button
                 type="button"
@@ -295,9 +290,7 @@ export function DeliverySmsTrainerModal({
           <div className="mt-2.5">
             <div className="flex items-center justify-between text-sm font-bold text-slate-300">
               <span>
-                {locale === "ro"
-                  ? `Progresul investigației (${completedTasks} din ${totalTasks} pași)`
-                  : `Ход расследования (${completedTasks} из ${totalTasks} шагов)`}
+                {ui.progressStepsLabel(completedTasks, totalTasks)}
               </span>
               <span className="font-mono text-sm font-black text-neon">{progressPercent}%</span>
             </div>
@@ -307,7 +300,7 @@ export function DeliverySmsTrainerModal({
               aria-valuenow={progressPercent}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={locale === "ro" ? "Progresul investigației" : "Прогресс расследования"}
+              aria-label={ui.progressAriaLabel}
             >
               <div
                 className="h-full rounded-full bg-gradient-to-r from-neon via-cyan-300 to-success transition-[width] duration-300"
@@ -348,6 +341,26 @@ export function DeliverySmsTrainerModal({
 
         {/* Основная рабочая область */}
         <div className="flex min-h-0 flex-1 flex-col justify-between overflow-y-auto px-4 py-3 sm:px-6 sm:py-4">
+          {step === "intro" && (
+            <div className="flex h-full flex-col items-center justify-center py-6">
+              <div className="w-full max-w-2xl rounded-3xl border border-neon/40 bg-[#0c1930] p-6 text-center shadow-lg sm:p-8">
+                <p className="text-lg font-black text-gold sm:text-xl">
+                  {mariaNpc?.name[locale]}
+                </p>
+                <p className="mt-4 text-base font-bold leading-relaxed text-white sm:text-lg">
+                  {mariaNpc?.situation[locale]}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStep("theory")}
+                  className="focus-ring mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-neon px-8 text-base font-black text-slate-950 shadow-lg transition hover:brightness-110"
+                >
+                  {ui.introActionBtn}
+                </button>
+              </div>
+            </div>
+          )}
+
           {step === "theory" && (
             <div className="flex h-full flex-col justify-between gap-3">
               <div>
@@ -511,12 +524,12 @@ export function DeliverySmsTrainerModal({
                               <span>{segment.text[locale]}</span>
                               {isFound && (
                                 <span className="shrink-0 rounded-md bg-danger px-2 py-0.5 text-sm font-black uppercase text-white">
-                                  {locale === "ro" ? "Semnal ✓" : "Улика ✓"}
+                                  {ui.segmentFlagBadge}
                                 </span>
                               )}
                               {isNeutralChecked && (
                                 <span className="shrink-0 rounded-md bg-slate-700 px-2 py-0.5 text-sm font-bold text-slate-300">
-                                  {locale === "ro" ? "Neutru" : "Нейтрально"}
+                                  {ui.segmentNeutralBadge}
                                 </span>
                               )}
                             </span>
@@ -547,9 +560,7 @@ export function DeliverySmsTrainerModal({
                         )}
                         {activeSegment.flagTitle
                           ? activeSegment.flagTitle[locale]
-                          : locale === "ro"
-                            ? "Frază neutră (−1 ⚡)"
-                            : "Нейтральная фраза (−1 ⚡)"}
+                          : ui.neutralPhraseTitle}
                       </p>
                       <p className="mt-0.5">{activeSegment.explanation[locale]}</p>
                     </div>
@@ -590,14 +601,10 @@ export function DeliverySmsTrainerModal({
                         <MessageSquareWarning className="size-5" aria-hidden="true" />
                       </span>
                       <h3 className="mt-2 text-base font-black text-white sm:text-lg">
-                        {locale === "ro"
-                          ? `Pasul A: Găsește cele ${totalFlagsInCase} semnale de alarmă în SMS`
-                          : `Этап А: Найди все ${totalFlagsInCase} красных флага в тексте SMS слева`}
+                        {ui.stepAHeading(totalFlagsInCase)}
                       </h3>
                       <p className="mt-1 text-sm leading-relaxed text-slate-300">
-                        {locale === "ro"
-                          ? "Citește fără grabă fiecare frază. În mesaj sunt 3 capcane reale și 2 fraze neutre (fiecare greșeală scade 1 ⚡)."
-                          : "Читай без спешки каждую фразу. В сообщении 3 реальные уловки и 2 нейтральные фразы (промах отнимает 1 заряд ⚡)."}
+                        {ui.stepADesc}
                       </p>
                     </div>
 
@@ -623,9 +630,7 @@ export function DeliverySmsTrainerModal({
                                 <p className="font-black">
                                   {found && flag.flagTitle
                                     ? flag.flagTitle[locale]
-                                    : locale === "ro"
-                                      ? `Indiciul #${idx + 1} (apasă pe fraza suspectă în SMS)`
-                                      : `Улика №${idx + 1} (нажми на подозрительную фразу в SMS)`}
+                                    : ui.unfoundClueLabel(idx + 1)}
                                 </p>
                                 {found && (
                                   <p className="mt-0.5 text-sm text-slate-200">{flag.explanation[locale]}</p>
@@ -638,9 +643,7 @@ export function DeliverySmsTrainerModal({
 
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-300">
                       <span>
-                        {locale === "ro"
-                          ? `Indicii rămase în acest SMS: ${totalFlagsInCase - foundFlagIds.length}`
-                          : `Осталось найти улик в этом SMS: ${totalFlagsInCase - foundFlagIds.length}`}
+                        {ui.remainingCluesLabel(totalFlagsInCase - foundFlagIds.length)}
                       </span>
                       <button
                         type="button"
@@ -666,7 +669,7 @@ export function DeliverySmsTrainerModal({
                       </h3>
 
                       <div className="mt-2.5 space-y-2">
-                        {currentCase.options.map((option, idx) => {
+                        {displayedOptions.map((option, idx) => {
                           const isChosen = selectedOptionId === option.id;
                           const chosenCorrect = isChosen && option.correct;
                           const chosenWrong = isChosen && !option.correct;
@@ -675,7 +678,12 @@ export function DeliverySmsTrainerModal({
                             <button
                               key={option.id}
                               type="button"
-                              onClick={() => setSelectedOptionId(option.id)}
+                              onClick={() => {
+                                setSelectedOptionId(option.id);
+                                if (!option.correct) {
+                                  setMistakesCount((prev) => prev + 1);
+                                }
+                              }}
                               aria-pressed={isChosen}
                               className={`focus-ring block w-full rounded-xl border px-3.5 py-2.5 text-left text-sm font-bold leading-relaxed transition sm:text-sm ${
                                 chosenCorrect
@@ -741,7 +749,9 @@ export function DeliverySmsTrainerModal({
                 <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-success/50 bg-success/15 text-success">
                   <ShieldCheck className="size-8" aria-hidden="true" />
                 </span>
-                <h2 className="mt-3 text-2xl font-black text-success">{ui.summaryTitle}</h2>
+                <h2 className="mt-3 text-2xl font-black text-success">
+                  {mistakesCount <= 2 ? ui.summaryTitle : ui.summaryRetryNotice}
+                </h2>
                 <p className="mt-1 text-sm leading-relaxed text-slate-200">{ui.summarySubtitle}</p>
                 <p className="mt-2.5 inline-block rounded-full border border-neon/40 bg-neon/10 px-4 py-1 text-sm font-black text-neon sm:text-sm">
                   {ui.summaryScoreLabel}
@@ -768,10 +778,12 @@ export function DeliverySmsTrainerModal({
               <div>
                 <button
                   type="button"
-                  onClick={() => onComplete(true)}
+                  onClick={() => onComplete(mistakesCount <= 2)}
                   className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-success px-8 text-base font-black text-slate-950 shadow-lg transition hover:brightness-110"
                 >
-                  <span>{ui.completePatrolBtn}</span>
+                  <span>
+                    {mistakesCount <= 2 ? ui.completePatrolBtn : ui.summaryRetryNotice}
+                  </span>
                   <ArrowRight className="size-5" aria-hidden="true" />
                 </button>
               </div>

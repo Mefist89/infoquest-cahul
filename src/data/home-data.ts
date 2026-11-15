@@ -27,8 +27,6 @@ export const strings = {
       "Protocolul-străjer VIG (Vigilent) s-a trezit, dar nu poate lupta singur. Patrula InfoQuest te recrutează ca detectiv-stagiar. Închide cele 8 fisuri ale scutului și alungă Umbra din rețea.",
     badges: "Insigne",
     finalBadge: "Scutul complet",
-    finalBadgeHint:
-      "Finalizează cele 8 misiuni și colectează toate cele 8 insigne pentru a reface scutul orașului.",
     heroLead: "Un joc educațional bilingv pentru elevi, profesori, familii și întreaga comunitate.",
     heroSub: "Învață să recunoști fraudele, dezinformarea, deepfake-urile și pericolele digitale.",
     missionReady: "Scenariul de bază este disponibil. Parcursul complet al misiunii va fi conectat în etapa următoare.",
@@ -54,8 +52,6 @@ export const strings = {
       "Страж-протокол VIG («Бдительный») пробудился, но в одиночку не справится. Патруль InfoQuest набирает тебя детективом-стажёром. Закрой 8 трещин щита и вытесни Тень из сети.",
     badges: "Бейджи",
     finalBadge: "Полный щит",
-    finalBadgeHint:
-      "Пройди 8 миссий и собери все 8 бейджей, чтобы восстановить щит города.",
     heroLead: "Двуязычная образовательная игра для школьников, учителей, семей и всего сообщества.",
     heroSub: "Научись распознавать мошенничество, дезинформацию, дипфейки и цифровые угрозы.",
     missionReady: "Основной сценарий доступен. Полное прохождение миссии подключим на следующем этапе.",

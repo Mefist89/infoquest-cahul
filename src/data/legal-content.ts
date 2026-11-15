@@ -54,13 +54,14 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "1. Cine administrează proiectul",
           paragraphs: [
             "InfoQuest este un prototip educațional bilingv realizat de echipa proiectului InfoQuest pentru Hackathonul Regional pentru coeziune socială și reziliență informațională.",
-            "Pentru acces la investigație, utilizatorul poate crea un cont prin autentificarea Google administrată de Supabase. Nu solicităm numărul de telefon sau date de plată.",
+            "Pentru acces la investigație, utilizatorul poate crea un cont prin autentificarea Google sau cu un cod unic trimis pe e-mail, administrate de Supabase. Nu solicităm numărul de telefon sau date de plată.",
           ],
         },
         {
           title: "2. Ce informații sunt prelucrate",
           bullets: [
             "La autentificarea cu Google, primim prin Supabase datele de bază aprobate de utilizator: identificatorul contului, numele, adresa de e-mail și, dacă există, imaginea de profil. InfoQuest nu primește parola contului Google.",
+            "La autentificarea prin e-mail (cod din 6 cifre), stocăm numai adresa de e-mail și identificatorul contului în Supabase. E-mailul cu codul unic este trimis printr-un serviciu extern de e-mail (Brevo sau Resend — TODO: de indicat furnizorul ales de echipă). Pentru protecția împotriva roboților la trimiterea codului se folosește Cloudflare Turnstile.",
             "Supabase folosește cookie-uri strict necesare pentru păstrarea și securizarea sesiunii de autentificare.",
             "Limba aleasă (RO sau RU) este salvată local în browser, sub cheia «infoquest.lang», pentru a păstra preferința la următoarea vizită.",
             "Dacă folosești asistentul Chrono, textul introdus este trimis prin serverul InfoQuest către un furnizor AI extern pentru analiza solicitată.",
@@ -107,7 +108,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "6. Furnizori și transferuri",
           paragraphs: [
             "Site-ul este găzduit prin Vercel. În măsura necesară furnizării și protejării site-ului, datele tehnice pot fi prelucrate pe infrastructura furnizorului și în alte jurisdicții, cu garanțiile descrise în politica sa de confidențialitate.",
-            "Autentificarea și stocarea contului sunt furnizate de Supabase, iar verificarea identității este realizată de Google. Acești furnizori pot prelucra datele în conformitate cu propriile politici și garanții privind transferurile internaționale.",
+            "Autentificarea și stocarea contului sunt furnizate de Supabase, verificarea identității prin OAuth este realizată de Google, livrarea e-mailurilor cu codul de acces este asigurată de serviciul SMTP conectat (Brevo sau Resend — TODO: de indicat furnizorul ales de echipă), iar protecția anti-bot este asigurată de Cloudflare Turnstile. Acești furnizori pot prelucra datele în conformitate cu propriile politici și garanții privind transferurile internaționale.",
             "În configurația curentă, funcția Chrono folosește API-ul agregatorului AI BotHub pentru transcriere și analiză. BotHub poate transmite cererea furnizorului modelului selectat. Datele pot fi prelucrate în afara Republicii Moldova; înainte de utilizare trebuie consultate condițiile actuale ale furnizorului.",
           ],
         },
@@ -229,13 +230,14 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "1. Кто управляет проектом",
           paragraphs: [
             "InfoQuest — двуязычный образовательный прототип, созданный командой проекта InfoQuest для Регионального хакатона по социальной сплочённости и информационной устойчивости.",
-            "Для доступа к расследованию пользователь может создать аккаунт через Google-вход, обслуживаемый Supabase. Мы не запрашиваем номер телефона или платёжные данные.",
+            "Для доступа к расследованию пользователь может создать аккаунт через Google-вход или по одноразовому коду на email, обслуживаемые Supabase. Мы не запрашиваем номер телефона или платёжные данные.",
           ],
         },
         {
           title: "2. Какие сведения обрабатываются",
           bullets: [
             "При входе через Google мы получаем через Supabase одобренные пользователем основные данные: идентификатор аккаунта, имя, адрес электронной почты и, при наличии, изображение профиля. InfoQuest не получает пароль от Google.",
+            "При входе по email (6-значный код из письма) мы храним в Supabase только адрес электронной почты и идентификатор аккаунта. Письмо с одноразовым кодом отправляет почтовый сервис (Brevo или Resend — TODO: указать выбранный командой сервис). Для защиты от ботов при запросе кода используется Cloudflare Turnstile.",
             "Supabase использует строго необходимые cookie-файлы для сохранения и защиты сеанса авторизации.",
             "Выбранный язык (RO или RU) сохраняется локально в браузере под ключом «infoquest.lang», чтобы запомнить настройку для следующего посещения.",
             "При использовании помощника Chrono введённый текст передаётся через сервер InfoQuest внешнему AI-провайдеру для выполнения запрошенного анализа.",
@@ -282,7 +284,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           title: "6. Поставщики и международная обработка",
           paragraphs: [
             "Сайт размещён на Vercel. В объёме, необходимом для работы и защиты сайта, технические данные могут обрабатываться на инфраструктуре провайдера и в других юрисдикциях с гарантиями, описанными в его политике конфиденциальности.",
-            "Авторизацию и хранение аккаунта обеспечивает Supabase, а проверку личности выполняет Google. Эти поставщики могут обрабатывать данные согласно собственным политикам и гарантиям международной передачи данных.",
+            "Авторизацию и хранение аккаунта обеспечивает Supabase, проверку личности через OAuth выполняет Google, доставку писем с кодом входа обеспечивает подключённый почтовый сервис (Brevo или Resend — TODO: указать выбранный командой сервис), а защиту от ботов — Cloudflare Turnstile. Эти поставщики могут обрабатывать данные согласно собственным политикам и гарантиям международной передачи данных.",
             "В текущей конфигурации Chrono использует API AI-агрегатора BotHub для распознавания речи и анализа. BotHub может передавать запрос поставщику выбранной модели. Данные могут обрабатываться за пределами Республики Молдова; перед использованием необходимо ознакомиться с актуальными условиями провайдера.",
           ],
         },

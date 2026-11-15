@@ -10,6 +10,7 @@ import {
   DEFAULT_CITY_CONFIG,
   TILE,
 } from "./RoadMapGenerator";
+import { gameText } from "./text-style";
 
 export interface RoadTile {
   id: number;
@@ -333,13 +334,17 @@ export class RoadNetwork {
 
       if (b.label) {
         this.scene.add
-          .text(b.x, b.y - dispH - 10, b.label[locale], {
-            fontSize: "13px",
-            fontStyle: "bold",
-            color: "#00d9ff",
-            backgroundColor: "#060d1fe6",
-            padding: { x: 8, y: 3 },
-          })
+          .text(
+            b.x,
+            b.y - dispH - 10,
+            b.label[locale],
+            gameText("13px", {
+              fontStyle: "bold",
+              color: "#00d9ff",
+              backgroundColor: "#060d1fe6",
+              padding: { x: 8, y: 3 },
+            }),
+          )
           .setOrigin(0.5, 1)
           .setDepth(b.y + 2);
       }

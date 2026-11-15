@@ -3,19 +3,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 import { ArrowLeft, Check, LockKeyhole, ShieldCheck } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
+import { EmailOtpSignIn } from "@/components/auth/EmailOtpSignIn";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { createClient } from "@/lib/supabase/server";
 
 type AuthLocale = "ru" | "ro";
 
 const content = {
   ru: {
     title: "Вход в InfoQuest",
+    heading: "Вход",
+    orEmail: "или по коду из письма",
     description: "Войдите, чтобы начать расследование и сохранить игровой прогресс.",
     back: "Вернуться на главную",
     eyebrow: "Доступ к расследованию",
-    benefits: ["Без отдельного пароля", "Безопасный вход через Google", "Один аккаунт для игрового прогресса"],
+    benefits: ["Без отдельного пароля", "Вход через Google или по коду из письма", "Один аккаунт для игрового прогресса"],
     note: "Мы получим только основные данные профиля: имя, адрес электронной почты и изображение аккаунта.",
     privacy: "Политика конфиденциальности",
     terms: "Условия использования",
@@ -23,10 +27,12 @@ const content = {
   },
   ro: {
     title: "Autentificare în InfoQuest",
+    heading: "Autentificare",
+    orEmail: "sau cu un cod din e-mail",
     description: "Autentifică-te pentru a începe investigația și a salva progresul jocului.",
     back: "Înapoi la pagina principală",
     eyebrow: "Acces la investigație",
-    benefits: ["Fără o parolă separată", "Autentificare sigură prin Google", "Un cont pentru progresul jocului"],
+    benefits: ["Fără o parolă separată", "Autentificare prin Google sau cu un cod din e-mail", "Un cont pentru progresul jocului"],
     note: "Vom primi doar datele de bază ale profilului: numele, adresa de e-mail și imaginea contului.",
     privacy: "Politica de confidențialitate",
     terms: "Termeni și condiții",
@@ -60,6 +66,12 @@ export default async function LoginPage({
   const nextPath = typeof query.next === "string" && query.next.startsWith(`/${locale}/`)
     ? query.next
     : `/${locale}/profile`;
+
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  if (authData.user) {
+    redirect(nextPath);
+  }
 
   return (
     <main className="circuit-bg relative min-h-screen overflow-hidden px-4 py-6 sm:py-10">
@@ -113,10 +125,16 @@ export default async function LoginPage({
               <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-neon/10 text-neon">
                 <LockKeyhole className="size-6" aria-hidden="true" />
               </div>
-              <h2 className="mt-5 text-center text-xl font-bold">Google</h2>
+              <h2 className="mt-5 text-center text-xl font-bold">{t.heading as string}</h2>
               <p className="mt-2 text-center text-sm leading-relaxed text-muted-foreground">{t.note as string}</p>
-              <div className="mt-7">
+              <div className="mt-7 space-y-5">
                 <GoogleSignInButton locale={locale} initialError={query.error === "oauth"} nextPath={nextPath} />
+                <div className="flex items-center gap-3 text-sm uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="h-px flex-1 bg-border/80" aria-hidden="true" />
+                  <span>{t.orEmail as string}</span>
+                  <span className="h-px flex-1 bg-border/80" aria-hidden="true" />
+                </div>
+                <EmailOtpSignIn locale={locale} nextPath={nextPath} />
               </div>
               <p className="mt-6 text-center text-sm leading-relaxed text-muted-foreground">
                 {t.agreement as string}{" "}

@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 
-import { PATROL_NPCS } from "@/data/patrol";
+import { PATROL_NPCS, PATROL_SCENE_META } from "@/data/patrol";
+import { shuffle } from "./shuffle";
+import { gameText } from "./text-style";
 
 export type PatrolLocale = "ru" | "ro";
 
@@ -15,7 +17,13 @@ export class DialogueScene extends Phaser.Scene {
   private locale!: PatrolLocale;
   private onComplete?: (correct: boolean) => void;
   private npcData: (typeof PATROL_NPCS)[0] | undefined;
+  private displayedOptions: (typeof PATROL_NPCS)[0]["options"] = [];
   private isSelecting = false;
+  private optionsContainer?: Phaser.GameObjects.Container;
+  private contentCenterX = 0;
+  private contentWidth = 0;
+  private cardBottom = 0;
+  private situationBottomY = 0;
 
   constructor() {
     super("dialogue");
@@ -26,6 +34,7 @@ export class DialogueScene extends Phaser.Scene {
     this.locale = data.locale;
     this.onComplete = data.onComplete;
     this.npcData = PATROL_NPCS.find((npc) => npc.id === this.npcId);
+    this.displayedOptions = this.npcData ? shuffle(this.npcData.options) : [];
     this.isSelecting = false;
   }
 
@@ -70,20 +79,9 @@ export class DialogueScene extends Phaser.Scene {
     avatarBg.lineStyle(1.5, 0x00d9ff, 0.35);
     avatarBg.strokeRoundedRect(avatarBoxLeft, avatarBoxTop, avatarBoxWidth, avatarBoxHeight, 18);
 
-    const portrait = this.add.image(avatarCenterX, centerY - 22, npc.sprite, "idle");
+    const portrait = this.add.image(avatarCenterX, centerY, npc.sprite, "idle");
     portrait.setScale(0.62);
     portrait.setTint(npc.tint ?? 0xffffff);
-
-    this.add
-      .text(avatarCenterX, avatarBoxTop + avatarBoxHeight - 48, npc.name[this.locale], {
-        fontSize: "17px",
-        fontStyle: "bold",
-        color: "#ffd166",
-        fontFamily: "'Orbitron', sans-serif",
-        align: "center",
-        wordWrap: { width: avatarBoxWidth - 20 },
-      })
-      .setOrigin(0.5);
 
     // Правая колонка внутри карточки: заголовок, описание ситуации и кнопки выбора
     const contentLeft = avatarBoxLeft + avatarBoxWidth + 24;
@@ -93,12 +91,15 @@ export class DialogueScene extends Phaser.Scene {
 
     // Заголовок диалога
     this.add
-      .text(contentCenterX, cardTop + 36, npc.name[this.locale], {
-        fontSize: "21px",
-        fontStyle: "bold",
-        color: "#00d9ff",
-        fontFamily: "'Orbitron', sans-serif",
-      })
+      .text(
+        contentCenterX,
+        cardTop + 36,
+        npc.name[this.locale],
+        gameText("21px", {
+          fontStyle: "bold",
+          color: "#00d9ff",
+        }),
+      )
       .setOrigin(0.5);
 
     const divider = this.add.graphics();
@@ -106,26 +107,35 @@ export class DialogueScene extends Phaser.Scene {
     divider.lineBetween(contentLeft + 12, cardTop + 62, contentRight - 12, cardTop + 62);
 
     // Текст ситуации
-    this.add
-      .text(contentCenterX, cardTop + 82, npc.situation[this.locale], {
-        fontSize: "18px",
-        color: "#e2e8f0",
-        fontFamily: "'Geist', sans-serif",
-        wordWrap: { width: contentWidth - 24 },
-        lineSpacing: 7,
-        align: "center",
-      })
+    const situationText = this.add
+      .text(
+        contentCenterX,
+        cardTop + 82,
+        npc.situation[this.locale],
+        gameText("18px", {
+          color: "#e2e8f0",
+          wordWrap: { width: contentWidth - 24 },
+          lineSpacing: 7,
+          align: "center",
+        }),
+      )
       .setOrigin(0.5, 0);
+
+    this.contentCenterX = contentCenterX;
+    this.contentWidth = contentWidth;
+    this.cardBottom = cardBottom;
+    this.situationBottomY = situationText.y + situationText.height;
+    this.optionsContainer = this.add.container(0, 0);
 
     // Варианты ответа (гарантированно внутри нижней границы карточки)
     const optionHeight = 64;
     const optionSpacing = 14;
     const optionWidth = contentWidth - 12;
-    const optionCount = this.npcData.options.length;
+    const optionCount = this.displayedOptions.length;
     const totalOptionsHeight = optionCount * optionHeight + Math.max(0, optionCount - 1) * optionSpacing;
     const firstOptionY = cardBottom - 24 - totalOptionsHeight + optionHeight / 2;
 
-    this.npcData.options.forEach((option, index) => {
+    this.displayedOptions.forEach((option, index) => {
       const optionY = firstOptionY + index * (optionHeight + optionSpacing);
 
       const bg = this.add.graphics();
@@ -151,14 +161,17 @@ export class DialogueScene extends Phaser.Scene {
       drawBg(false);
 
       const text = this.add
-        .text(contentCenterX, optionY, `${index + 1}. ${option.text[this.locale]}`, {
-          fontSize: "17px",
-          fontStyle: "bold",
-          color: "#ffffff",
-          fontFamily: "'Geist', sans-serif",
-          wordWrap: { width: optionWidth - 36 },
-          align: "center",
-        })
+        .text(
+          contentCenterX,
+          optionY,
+          `${index + 1}. ${option.text[this.locale]}`,
+          gameText("17px", {
+            fontStyle: "bold",
+            color: "#ffffff",
+            wordWrap: { width: optionWidth - 36 },
+            align: "center",
+          }),
+        )
         .setOrigin(0.5);
 
       const hitZone = this.add
@@ -178,6 +191,8 @@ export class DialogueScene extends Phaser.Scene {
       hitZone.on("pointerdown", () => {
         this.selectOption(index);
       });
+
+      this.optionsContainer?.add([bg, text, hitZone]);
     });
 
     // Навигация с клавиатуры (клавиши 1, 2, 3)
@@ -189,13 +204,103 @@ export class DialogueScene extends Phaser.Scene {
   private selectOption(optionIndex: number) {
     if (!this.npcData || this.isSelecting) return;
 
-    const option = this.npcData.options[optionIndex];
+    const option = this.displayedOptions[optionIndex];
     if (!option) return;
 
     this.isSelecting = true;
     const isCorrect = option.correct;
-    this.onComplete?.(isCorrect);
-    this.events.emit("dialogue-complete", isCorrect);
-    this.scene.stop();
+    const meta = PATROL_SCENE_META[this.locale];
+
+    this.optionsContainer?.destroy(true);
+
+    const feedbackStr = isCorrect
+      ? this.npcData.success[this.locale]
+      : this.npcData.fail[this.locale];
+    const boxWidth = this.contentWidth - 12;
+
+    const feedbackText = this.add
+      .text(
+        this.contentCenterX,
+        0,
+        feedbackStr,
+        gameText("15.5px", {
+          fontStyle: "bold",
+          color: isCorrect ? "#d1fae5" : "#fecaca",
+          wordWrap: { width: boxWidth - 36 },
+          align: "center",
+          lineSpacing: 4,
+        }),
+      )
+      .setOrigin(0.5);
+
+    const feedbackBoxH = Math.max(76, feedbackText.height + 28);
+    const btnH = 48;
+    const btnY = this.cardBottom - 26 - btnH / 2;
+    const feedbackCenterY = Math.max(
+      this.situationBottomY + 14 + feedbackBoxH / 2,
+      btnY - btnH / 2 - 14 - feedbackBoxH / 2,
+    );
+    feedbackText.setY(feedbackCenterY);
+
+    const feedbackBg = this.add.graphics();
+    feedbackBg.fillStyle(isCorrect ? 0x064e3b : 0x450a0a, 0.92);
+    feedbackBg.fillRoundedRect(
+      this.contentCenterX - boxWidth / 2,
+      feedbackCenterY - feedbackBoxH / 2,
+      boxWidth,
+      feedbackBoxH,
+      14,
+    );
+    feedbackBg.lineStyle(2, isCorrect ? 0x34d399 : 0xf87171, 0.9);
+    feedbackBg.strokeRoundedRect(
+      this.contentCenterX - boxWidth / 2,
+      feedbackCenterY - feedbackBoxH / 2,
+      boxWidth,
+      feedbackBoxH,
+      14,
+    );
+    this.children.bringToTop(feedbackText);
+
+    const btnLabel = isCorrect ? meta.dialogueNextBtn : meta.dialogueRetryBtn;
+    const btnTxt = this.add
+      .text(
+        this.contentCenterX,
+        btnY,
+        btnLabel,
+        gameText("16px", {
+          fontStyle: "900",
+          color: isCorrect ? "#040916" : "#ffffff",
+          align: "center",
+        }),
+      )
+      .setOrigin(0.5);
+
+    const btnW = Math.max(240, btnTxt.width + 48);
+    const btnBg = this.add
+      .rectangle(
+        this.contentCenterX,
+        btnY,
+        btnW,
+        btnH,
+        isCorrect ? 0x34d399 : 0xef4444,
+        1,
+      )
+      .setStrokeStyle(2, isCorrect ? 0xa7f3d0 : 0xfca5a5)
+      .setInteractive({ useHandCursor: true });
+
+    this.children.bringToTop(btnTxt);
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      this.onComplete?.(isCorrect);
+      this.events.emit("dialogue-complete", isCorrect);
+      this.scene.stop();
+    };
+
+    btnBg.on("pointerdown", finish);
+    this.input.keyboard?.once("keydown-ENTER", finish);
+    this.input.keyboard?.once("keydown-SPACE", finish);
   }
 }

@@ -22,7 +22,7 @@ import {
 import { notFound, redirect } from "next/navigation";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { MODULE_CATALOG, MODULE_COUNT, MODULE_STAGES, STAGE_COUNT, TOTAL_MAX_XP, TOTAL_STAGE_COUNT } from "@/data/module-catalog";
+import { MODULE_CATALOG, MODULE_STAGES, PLAYABLE_MAX_XP, PLAYABLE_MODULE_COUNT, PLAYABLE_STAGE_COUNT, STAGE_COUNT } from "@/data/module-catalog";
 import { ROLE_LABELS, USER_ROLES, isAdministrator, isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import type { QuestRow } from "@/lib/types";
@@ -77,14 +77,14 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
   const activeUsers = users.filter((user) => user.completed_modules > 0 || user.in_progress_modules > 0 || user.completed_stages > 0).length;
   const completedModules = users.reduce((sum, user) => sum + Number(user.completed_modules), 0);
   const completedStages = users.reduce((sum, user) => sum + Number(user.completed_stages), 0);
-  const availableStages = users.length * TOTAL_STAGE_COUNT;
+  const availableStages = users.length * PLAYABLE_STAGE_COUNT;
   const totalXp = users.reduce((sum, user) => sum + Number(user.total_xp), 0);
-  const totalAvailableXp = users.length * TOTAL_MAX_XP;
+  const totalAvailableXp = users.length * PLAYABLE_MAX_XP;
   const completionPercent = totalAvailableXp > 0 ? Math.round((totalXp / totalAvailableXp) * 100) : 0;
   const roleCounts = Object.fromEntries(USER_ROLES.map((role) => [role, users.filter((user) => user.user_role === role).length])) as Record<UserRole, number>;
   const dateFormatter = new Intl.DateTimeFormat(locale === "ro" ? "ro-MD" : "ru-MD", { dateStyle: "medium", timeStyle: "short" });
   const activity = buildMonthlyActivity(users, locale);
-  const moduleTotals = MODULE_CATALOG.map((module) => ({
+  const moduleTotals = MODULE_CATALOG.filter((module) => module.status === "playable").map((module) => ({
     module,
     completed: users.reduce((sum, user) => sum + Number(user.module_breakdown?.find((item) => item.module_id === module.moduleId)?.completed_stages ?? 0), 0),
     maximum: users.length * STAGE_COUNT,
@@ -157,7 +157,7 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
             <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard icon={Users} label={t.users} value={String(users.length)} color="text-neon" detail={`${roleCounts.student} ${ROLE_LABELS.student[locale].toLowerCase()}`} />
               <StatCard icon={Activity} label={t.active} value={String(activeUsers)} color="text-gold" detail={`${users.length ? Math.round((activeUsers / users.length) * 100) : 0}%`} />
-              <StatCard icon={CheckCircle2} label={t.modulesDone} value={String(completedModules)} color="text-success" detail={`${completedModules}/${users.length * MODULE_COUNT}`} />
+              <StatCard icon={CheckCircle2} label={t.modulesDone} value={String(completedModules)} color="text-success" detail={`${completedModules}/${users.length * PLAYABLE_MODULE_COUNT}`} />
               <StatCard icon={Layers3} label={t.stagesDone} value={String(completedStages)} color="text-violet" detail={`${completedStages}/${availableStages}`} />
             </div>
 

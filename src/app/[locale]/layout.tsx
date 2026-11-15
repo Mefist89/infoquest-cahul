@@ -13,7 +13,7 @@ const orbitron = Orbitron({
 });
 
 const rubik = Rubik({
-  subsets: ["cyrillic", "latin"],
+  subsets: ["cyrillic", "latin", "latin-ext"],
   variable: "--font-rubik",
 });
 

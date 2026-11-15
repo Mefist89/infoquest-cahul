@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-import type { PatrolLocale } from "@/data/patrol";
+import { PATROL_NPCS, type PatrolLocale } from "@/data/patrol";
 import {
   FAKE_CALL_DUEL_ROUNDS,
   FAKE_CALL_SCANNER_SPOTS,
@@ -8,6 +8,8 @@ import {
   FAKE_CALL_SWITCH_NODES,
   FAKE_CALL_WAVES,
 } from "@/data/patrol-fake-call";
+import { shuffle } from "./shuffle";
+import { gameText } from "./text-style";
 
 export interface FakeCallSceneData {
   locale: PatrolLocale;
@@ -15,14 +17,14 @@ export interface FakeCallSceneData {
   onClose?: () => void;
 }
 
-type StageId = 1 | 2 | 3 | 4 | 5;
+type StageId = 0 | 1 | 2 | 3 | 4 | 5;
 
 export class FakeCallScene extends Phaser.Scene {
   private locale: PatrolLocale = "ru";
   private onComplete?: (correct: boolean) => void;
   private onClose?: () => void;
 
-  private stage: StageId = 1;
+  private stage: StageId = 0;
   private stageRoot?: Phaser.GameObjects.Container;
   private headerRoot?: Phaser.GameObjects.Container;
 
@@ -35,6 +37,8 @@ export class FakeCallScene extends Phaser.Scene {
   private waveSolved = false;
   private waveGraphics?: Phaser.GameObjects.Graphics;
   private wavePhase = 0;
+  private stage2ShuffledShields: { id: string; title: string; isCorrect: boolean }[] = [];
+  private stage2ShuffledWaveIndex = -1;
 
   // Stage 3: Circuit Switchboard state
   private switchedNodeIds: Set<string> = new Set();
@@ -43,7 +47,10 @@ export class FakeCallScene extends Phaser.Scene {
 
   // Stage 4: Duel vs Shadow state
   private duelRoundIndex = 0;
+  private stage4ShuffledCards: (typeof FAKE_CALL_DUEL_ROUNDS)[0]["cards"] = [];
+  private stage4ShuffledRoundIndex = -1;
   private shadowHp = 100;
+  private mistakesCount = 0;
 
   constructor() {
     super("fake-call");
@@ -54,13 +61,18 @@ export class FakeCallScene extends Phaser.Scene {
     this.onComplete = data.onComplete;
     this.onClose = data.onClose;
 
-    this.stage = 1;
+    this.stage = 0;
     this.scannedFlagIds = new Set();
     this.waveIndex = 0;
     this.waveSolved = false;
+    this.stage2ShuffledShields = [];
+    this.stage2ShuffledWaveIndex = -1;
     this.switchedNodeIds = new Set();
     this.duelRoundIndex = 0;
+    this.stage4ShuffledCards = [];
+    this.stage4ShuffledRoundIndex = -1;
     this.shadowHp = 100;
+    this.mistakesCount = 0;
   }
 
   create() {
@@ -150,29 +162,41 @@ export class FakeCallScene extends Phaser.Scene {
     root.add(headerBg);
 
     // Категория и персонаж
-    const badgeText = this.add.text(28, 20, meta.categoryBadge, {
-      fontSize: "12px",
-      fontStyle: "bold",
-      color: "#00d9ff",
-    });
-    const subText = this.add.text(28, 37, meta.npcBadge, {
-      fontSize: "12px",
-      fontStyle: "bold",
-      color: "#ffd166",
-    });
+    const badgeText = this.add.text(
+      28,
+      20,
+      meta.categoryBadge,
+      gameText("12px", {
+        fontStyle: "bold",
+        color: "#00d9ff",
+      }),
+    );
+    const subText = this.add.text(
+      28,
+      37,
+      meta.npcBadge,
+      gameText("12px", {
+        fontStyle: "bold",
+        color: "#ffd166",
+      }),
+    );
     root.add([badgeText, subText]);
 
     // Счётчик оставшихся задач
     const remainLabel =
       remaining === 0 ? meta.allDoneLabel : `${meta.remainingLabel}: ${remaining} · ${pct}%`;
     const remainBox = this.add
-      .text(width - 145, 28, remainLabel, {
-        fontSize: "12px",
-        fontStyle: "bold",
-        color: remaining === 0 ? "#34d399" : "#e2e8f0",
-        backgroundColor: "#112240",
-        padding: { x: 10, y: 5 },
-      })
+      .text(
+        width - 145,
+        28,
+        remainLabel,
+        gameText("12px", {
+          fontStyle: "bold",
+          color: remaining === 0 ? "#34d399" : "#e2e8f0",
+          backgroundColor: "#112240",
+          padding: { x: 10, y: 5 },
+        }),
+      )
       .setOrigin(1, 0.5);
     root.add(remainBox);
 
@@ -182,11 +206,15 @@ export class FakeCallScene extends Phaser.Scene {
       .setStrokeStyle(1.5, 0x00d9ff, 0.5)
       .setInteractive({ useHandCursor: true });
     const closeTxt = this.add
-      .text(width - 80, 28, meta.closeLabel, {
-        fontSize: "11px",
-        fontStyle: "bold",
-        color: "#00d9ff",
-      })
+      .text(
+        width - 80,
+        28,
+        meta.closeLabel,
+        gameText("11px", {
+          fontStyle: "bold",
+          color: "#00d9ff",
+        }),
+      )
       .setOrigin(0.5);
     closeBg.on("pointerover", () => closeBg.setFillStyle(0x00d9ff, 0.25));
     closeBg.on("pointerout", () => closeBg.setFillStyle(0x162847, 0.95));
@@ -227,11 +255,10 @@ export class FakeCallScene extends Phaser.Scene {
           px + pillW / 2,
           py + 12,
           isDone ? `${stageName} ✓` : stageName,
-          {
-            fontSize: "11px",
+          gameText("11px", {
             fontStyle: "bold",
             color: isActive ? "#ffffff" : isDone ? "#34d399" : "#94a3b8",
-          },
+          }),
         )
         .setOrigin(0.5);
 
@@ -248,7 +275,9 @@ export class FakeCallScene extends Phaser.Scene {
     this.stageRoot = this.add.container(0, 0);
     this.renderHeader();
 
-    if (this.stage === 1) {
+    if (this.stage === 0) {
+      this.buildStage0Intro(this.stageRoot);
+    } else if (this.stage === 1) {
       this.buildStage1Scanner(this.stageRoot);
     } else if (this.stage === 2) {
       this.buildStage2WaveDefense(this.stageRoot);
@@ -261,6 +290,84 @@ export class FakeCallScene extends Phaser.Scene {
     }
   }
 
+  private buildStage0Intro(root: Phaser.GameObjects.Container) {
+    const { width, height } = this.scale;
+    const meta = FAKE_CALL_STAGES_META[this.locale];
+    const npc = PATROL_NPCS.find((item) => item.id === "school-friend");
+    const npcName = npc?.name[this.locale] ?? "";
+    const situation = npc?.situation[this.locale] ?? "";
+
+    const cardW = width - 160;
+    const cardH = 340;
+    const cardX = 80;
+    const cardY = (height + 80 - cardH) / 2;
+
+    const cardBg = this.add.graphics();
+    cardBg.fillStyle(0x0c1930, 0.96);
+    cardBg.fillRoundedRect(cardX, cardY, cardW, cardH, 22);
+    cardBg.lineStyle(2, 0x00d9ff, 0.7);
+    cardBg.strokeRoundedRect(cardX, cardY, cardW, cardH, 22);
+    root.add(cardBg);
+
+    const sprite = this.add.image(width / 2, cardY + 64, "npc-male", "idle").setScale(0.5);
+    const nameTxt = this.add
+      .text(
+        width / 2,
+        cardY + 118,
+        npcName,
+        gameText("20px", {
+          fontStyle: "bold",
+          color: "#ffd166",
+        }),
+      )
+      .setOrigin(0.5);
+
+    const situationTxt = this.add
+      .text(
+        width / 2,
+        cardY + 184,
+        situation,
+        gameText("17px", {
+          fontStyle: "bold",
+          color: "#f8fafc",
+          wordWrap: { width: cardW - 96 },
+          align: "center",
+          lineSpacing: 6,
+        }),
+      )
+      .setOrigin(0.5);
+
+    const btnW = 240;
+    const btnH = 48;
+    const btnX = width / 2;
+    const btnY = cardY + cardH - 54;
+
+    const btnBg = this.add
+      .rectangle(btnX, btnY, btnW, btnH, 0x00d9ff, 1)
+      .setStrokeStyle(2, 0x7dd3fc)
+      .setInteractive({ useHandCursor: true });
+    const btnTxt = this.add
+      .text(
+        btnX,
+        btnY,
+        meta.introActionBtn,
+        gameText("16px", {
+          fontStyle: "900",
+          color: "#040916",
+        }),
+      )
+      .setOrigin(0.5);
+
+    btnBg.on("pointerover", () => btnBg.setFillStyle(0x38bdf8, 1));
+    btnBg.on("pointerout", () => btnBg.setFillStyle(0x00d9ff, 1));
+    btnBg.on("pointerdown", () => {
+      this.stage = 1;
+      this.renderCurrentStage();
+    });
+
+    root.add([sprite, nameTxt, situationTxt, btnBg, btnTxt]);
+  }
+
   // =========================================================================
   // ЭТАП 1: Сканер подмены номера (Caller ID Инспектор)
   // =========================================================================
@@ -268,16 +375,24 @@ export class FakeCallScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const meta = FAKE_CALL_STAGES_META[this.locale];
 
-    const title = this.add.text(28, 114, meta.stage1Title, {
-      fontSize: "18px",
-      fontStyle: "bold",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(28, 138, meta.stage1Subtitle, {
-      fontSize: "13px",
-      color: "#cbd5e1",
-      wordWrap: { width: width - 56 },
-    });
+    const title = this.add.text(
+      28,
+      114,
+      meta.stage1Title,
+      gameText("18px", {
+        fontStyle: "bold",
+        color: "#ffffff",
+      }),
+    );
+    const subtitle = this.add.text(
+      28,
+      138,
+      meta.stage1Subtitle,
+      gameText("13px", {
+        color: "#cbd5e1",
+        wordWrap: { width: width - 56 },
+      }),
+    );
     root.add([title, subtitle]);
 
     // Корпус смартфона слева (x: 34..430, y: 170..565)
@@ -297,12 +412,11 @@ export class FakeCallScene extends Phaser.Scene {
       .text(
         phoneX + phoneW / 2,
         phoneY + 22,
-        this.locale === "ro" ? "APEL DE INTRARE · VERIFICARE" : "ВХОДЯЩИЙ ВЫЗОВ · ПРОВЕРКА СКАНЕРОМ",
-        {
-          fontSize: "11px",
+        meta.stage1IncomingBadge,
+        gameText("11px", {
           fontStyle: "bold",
           color: "#00d9ff",
-        },
+        }),
       )
       .setOrigin(0.5);
     root.add(callHeader);
@@ -321,25 +435,21 @@ export class FakeCallScene extends Phaser.Scene {
       reportX + 18,
       phoneY + 18,
       `${meta.stage1ScanHint}${this.scannedFlagIds.size}/3)`,
-      {
-        fontSize: "15px",
+      gameText("15px", {
         fontStyle: "bold",
         color: "#ffd166",
         wordWrap: { width: reportW - 36 },
-      },
+      }),
     );
     const activeFindingDesc = this.add.text(
       reportX + 18,
-      phoneY + 46,
-      this.locale === "ro"
-        ? "Selectează o zonă de pe ecranul telefonului din stânga pentru a vedea rezultatul scanării."
-        : "Нажми прицелом сканера на любую зону экрана телефона слева, чтобы просветить скрытые данные вызова.",
-      {
-        fontSize: "13px",
+      activeFindingTitle.y + activeFindingTitle.height + 6,
+      meta.stage1Subtitle,
+      gameText("13px", {
         color: "#e2e8f0",
         wordWrap: { width: reportW - 36 },
         lineSpacing: 4,
-      },
+      }),
     );
     root.add([activeFindingTitle, activeFindingDesc]);
 
@@ -372,28 +482,22 @@ export class FakeCallScene extends Phaser.Scene {
           10,
           found
             ? `✓ ${flagSpot.findingTitle[this.locale]}`
-            : this.locale === "ro"
-              ? `○ Indiciul #${idx + 1} (nescanat)`
-              : `○ Улика №${idx + 1} (ещё не просвечена сканером)`,
-          {
-            fontSize: "13px",
+            : meta.stage1UnscannedClue(idx + 1),
+          gameText("13px", {
             fontStyle: "bold",
             color: found ? "#34d399" : "#94a3b8",
-          },
+          }),
         );
         const t2 = this.add.text(
           12,
           30,
           found
             ? flagSpot.findingDesc[this.locale]
-            : this.locale === "ro"
-              ? "Treci cu scanerul peste zonele telefonului"
-              : "Просвети зоны смартфона слева",
-          {
-            fontSize: "11px",
+            : meta.stage1FeedbackDefault,
+          gameText("11px", {
             color: found ? "#d1fae5" : "#64748b",
             wordWrap: { width: reportW - 60 },
-          },
+          }),
         );
 
         c.add([box, t1, t2]);
@@ -408,11 +512,15 @@ export class FakeCallScene extends Phaser.Scene {
       .rectangle(0, 0, reportW - 36, 44, 0x00d9ff, 1)
       .setInteractive({ useHandCursor: true });
     const nextBtnText = this.add
-      .text(0, 0, meta.nextStageBtn, {
-        fontSize: "14px",
-        fontStyle: "bold",
-        color: "#040916",
-      })
+      .text(
+        0,
+        0,
+        meta.nextStageBtn,
+        gameText("14px", {
+          fontStyle: "bold",
+          color: "#040916",
+        }),
+      )
       .setOrigin(0.5);
     nextBtnRect.on("pointerover", () => nextBtnRect.setFillStyle(0x67e8f9, 1));
     nextBtnRect.on("pointerout", () => nextBtnRect.setFillStyle(0x00d9ff, 1));
@@ -451,31 +559,36 @@ export class FakeCallScene extends Phaser.Scene {
       };
       drawSpot(false);
 
-      const labelTxt = this.add.text(sx + 16, sy + 14, spot.label[this.locale], {
-        fontSize: "14px",
-        fontStyle: "bold",
-        color: "#ffffff",
-      });
-      const subTxt = this.add.text(sx + 16, sy + 38, spot.sublabel[this.locale], {
-        fontSize: "12px",
-        color: "#94a3b8",
-      });
+      const labelTxt = this.add.text(
+        sx + 16,
+        sy + 14,
+        spot.label[this.locale],
+        gameText("14px", {
+          fontStyle: "bold",
+          color: "#ffffff",
+        }),
+      );
+      const subTxt = this.add.text(
+        sx + 16,
+        sy + 38,
+        spot.sublabel[this.locale],
+        gameText("12px", {
+          color: "#94a3b8",
+        }),
+      );
       const scanBadge = this.add
         .text(
           sx + sw - 14,
           sy + sh / 2,
           spot.isFlag && this.scannedFlagIds.has(spot.id)
-            ? this.locale === "ro"
-              ? "INDICU ✓"
-              : "УЛИКА ✓"
-            : "🔍 SCAN",
-          {
-            fontSize: "11px",
+            ? meta.stage1ClueBadge
+            : meta.stage1ScanBadge,
+          gameText("11px", {
             fontStyle: "bold",
             color: spot.isFlag && this.scannedFlagIds.has(spot.id) ? "#f87171" : "#00d9ff",
             backgroundColor: "#060d1f",
             padding: { x: 8, y: 4 },
-          },
+          }),
         )
         .setOrigin(1, 0.5);
 
@@ -493,16 +606,18 @@ export class FakeCallScene extends Phaser.Scene {
       hit.on("pointerdown", () => {
         if (spot.isFlag) {
           this.scannedFlagIds.add(spot.id);
-          scanBadge.setText(this.locale === "ro" ? "INDICIU ✓" : "УЛИКА ✓");
+          scanBadge.setText(meta.stage1ClueBadge);
           scanBadge.setColor("#f87171");
         } else {
-          scanBadge.setText(this.locale === "ro" ? "NEUTRU" : "НЕЙТРАЛЬНО");
+          this.mistakesCount += 1;
+          scanBadge.setText(meta.stage1NeutralBadge);
           scanBadge.setColor("#94a3b8");
         }
         drawSpot(true);
         activeFindingTitle.setText(spot.findingTitle[this.locale]);
         activeFindingTitle.setColor(spot.isFlag ? "#f87171" : "#00d9ff");
         activeFindingDesc.setText(spot.findingDesc[this.locale]);
+        activeFindingDesc.setY(activeFindingTitle.y + activeFindingTitle.height + 6);
         rebuildChecklist();
         updateRightChecklist();
         this.renderHeader();
@@ -534,16 +649,24 @@ export class FakeCallScene extends Phaser.Scene {
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const currentWave = FAKE_CALL_WAVES[this.waveIndex] ?? FAKE_CALL_WAVES[0];
 
-    const title = this.add.text(28, 114, meta.stage2Title, {
-      fontSize: "18px",
-      fontStyle: "bold",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(28, 138, meta.stage2Subtitle, {
-      fontSize: "13px",
-      color: "#cbd5e1",
-      wordWrap: { width: width - 56 },
-    });
+    const title = this.add.text(
+      28,
+      114,
+      meta.stage2Title,
+      gameText("18px", {
+        fontStyle: "bold",
+        color: "#ffffff",
+      }),
+    );
+    const subtitle = this.add.text(
+      28,
+      138,
+      meta.stage2Subtitle,
+      gameText("13px", {
+        color: "#cbd5e1",
+        wordWrap: { width: width - 56 },
+      }),
+    );
     root.add([title, subtitle]);
 
     // Экран осциллографа радиоволн
@@ -566,26 +689,27 @@ export class FakeCallScene extends Phaser.Scene {
     const waveCountBadge = this.add.text(
       radarX + 18,
       radarY + 14,
-      this.locale === "ro"
-        ? `Unda sonoră ${this.waveIndex + 1} din ${FAKE_CALL_WAVES.length} · ${currentWave.manipulationType.ro}`
-        : `Звуковая волна ${this.waveIndex + 1} из ${FAKE_CALL_WAVES.length} · ${currentWave.manipulationType.ru}`,
-      {
-        fontSize: "13px",
+      `${meta.stage2WaveCounter(this.waveIndex + 1, FAKE_CALL_WAVES.length)} · ${currentWave.manipulationType[this.locale]}`,
+      gameText("13px", {
         fontStyle: "bold",
         color: "#ffd166",
-      },
+      }),
     );
 
     const quoteBox = this.add
-      .text(radarX + radarW / 2, radarY + 108, currentWave.callerQuote[this.locale], {
-        fontSize: "17px",
-        fontStyle: "bold",
-        color: this.waveSolved ? "#34d399" : "#ffffff",
-        backgroundColor: "#0a1528dd",
-        padding: { x: 16, y: 10 },
-        wordWrap: { width: radarW - 60 },
-        align: "center",
-      })
+      .text(
+        radarX + radarW / 2,
+        radarY + 108,
+        currentWave.callerQuote[this.locale],
+        gameText("17px", {
+          fontStyle: "bold",
+          color: this.waveSolved ? "#34d399" : "#ffffff",
+          backgroundColor: "#0a1528dd",
+          padding: { x: 16, y: 10 },
+          wordWrap: { width: radarW - 60 },
+          align: "center",
+        }),
+      )
       .setOrigin(0.5);
 
     const feedbackText = this.add
@@ -594,16 +718,13 @@ export class FakeCallScene extends Phaser.Scene {
         radarY + radarH - 24,
         this.waveSolved
           ? currentWave.successFeedback[this.locale]
-          : this.locale === "ro"
-            ? "Alege mai jos scutul de frecvență potrivit pentru a neutraliza această manipulare!"
-            : "Выбери ниже правильный частотный щит, чтобы разрушить эту звуковую манипуляцию!",
-        {
-          fontSize: "13px",
+          : meta.stage2FeedbackDefault,
+        gameText("13px", {
           fontStyle: "bold",
           color: this.waveSolved ? "#34d399" : "#00d9ff",
           wordWrap: { width: radarW - 40 },
           align: "center",
-        },
+        }),
       )
       .setOrigin(0.5);
 
@@ -615,9 +736,21 @@ export class FakeCallScene extends Phaser.Scene {
     const shieldH = 86;
     const shieldY = 384;
 
-    meta.stage2Shields.forEach((shieldTitle, idx) => {
+    if (this.stage2ShuffledWaveIndex !== this.waveIndex) {
+      this.stage2ShuffledShields = shuffle(
+        meta.stage2Shields.map((shieldTitle, idx) => ({
+          id: `shield-${idx}`,
+          title: shieldTitle,
+          isCorrect: idx === currentWave.correctShieldIndex,
+        })),
+      );
+      this.stage2ShuffledWaveIndex = this.waveIndex;
+    }
+
+    this.stage2ShuffledShields.forEach((shieldItem, idx) => {
       const sx = radarX + idx * (shieldW + shieldGap);
-      const isCorrectShield = idx === currentWave.correctShieldIndex;
+      const isCorrectShield = shieldItem.isCorrect;
+      const shieldTitle = shieldItem.title;
 
       const sBg = this.add.graphics();
       const drawShield = (hovered: boolean, wrongFlash = false) => {
@@ -650,13 +783,17 @@ export class FakeCallScene extends Phaser.Scene {
       drawShield(false);
 
       const sTxt = this.add
-        .text(sx + shieldW / 2, shieldY + shieldH / 2, `🛡️ ${shieldTitle}`, {
-          fontSize: "14px",
-          fontStyle: "bold",
-          color: "#ffffff",
-          wordWrap: { width: shieldW - 24 },
-          align: "center",
-        })
+        .text(
+          sx + shieldW / 2,
+          shieldY + shieldH / 2,
+          `🛡️ ${shieldTitle}`,
+          gameText("14px", {
+            fontStyle: "bold",
+            color: "#ffffff",
+            wordWrap: { width: shieldW - 24 },
+            align: "center",
+          }),
+        )
         .setOrigin(0.5);
 
       const sHit = this.add
@@ -680,6 +817,7 @@ export class FakeCallScene extends Phaser.Scene {
           nextWaveBtn.setVisible(true);
           this.renderHeader();
         } else {
+          this.mistakesCount += 1;
           drawShield(false, true);
           feedbackText.setText(currentWave.wrongFeedback[this.locale]);
           feedbackText.setColor("#f87171");
@@ -699,15 +837,12 @@ export class FakeCallScene extends Phaser.Scene {
         0,
         0,
         this.waveIndex + 1 < FAKE_CALL_WAVES.length
-          ? this.locale === "ro"
-            ? "Următoarea undă sonoră →"
-            : "Перейти к следующей звуковой волне →"
+          ? meta.stage2NextWaveBtn
           : meta.nextStageBtn,
-        {
-          fontSize: "14px",
+        gameText("14px", {
           fontStyle: "bold",
           color: "#040916",
-        },
+        }),
       )
       .setOrigin(0.5);
 
@@ -762,16 +897,24 @@ export class FakeCallScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const meta = FAKE_CALL_STAGES_META[this.locale];
 
-    const title = this.add.text(28, 114, meta.stage3Title, {
-      fontSize: "18px",
-      fontStyle: "bold",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(28, 138, meta.stage3Subtitle, {
-      fontSize: "13px",
-      color: "#cbd5e1",
-      wordWrap: { width: width - 56 },
-    });
+    const title = this.add.text(
+      28,
+      114,
+      meta.stage3Title,
+      gameText("18px", {
+        fontStyle: "bold",
+        color: "#ffffff",
+      }),
+    );
+    const subtitle = this.add.text(
+      28,
+      138,
+      meta.stage3Subtitle,
+      gameText("13px", {
+        color: "#cbd5e1",
+        wordWrap: { width: width - 56 },
+      }),
+    );
     root.add([title, subtitle]);
 
     this.wireGraphics = this.add.graphics();
@@ -791,28 +934,35 @@ export class FakeCallScene extends Phaser.Scene {
       cardBg.lineStyle(2, isSwitched ? 0x34d399 : 0xf59e0b, 0.85);
       cardBg.strokeRoundedRect(28, y, width - 56, rowH, 16);
 
-      const nodeTitle = this.add.text(46, y + 12, node.title[this.locale], {
-        fontSize: "15px",
-        fontStyle: "bold",
-        color: isSwitched ? "#34d399" : "#ffd166",
-      });
+      const nodeTitle = this.add.text(
+        46,
+        y + 12,
+        node.title[this.locale],
+        gameText("15px", {
+          fontStyle: "bold",
+          color: isSwitched ? "#34d399" : "#ffd166",
+        }),
+      );
 
       const stateText = this.add.text(
         46,
         y + 36,
         isSwitched ? node.safeState[this.locale] : node.unsafeState[this.locale],
-        {
-          fontSize: "13px",
+        gameText("13px", {
           fontStyle: "bold",
           color: isSwitched ? "#d1fae5" : "#fca5a5",
-        },
+        }),
       );
 
-      const explText = this.add.text(46, y + 60, node.explanation[this.locale], {
-        fontSize: "12px",
-        color: "#cbd5e1",
-        wordWrap: { width: width - 310 },
-      });
+      const explText = this.add.text(
+        46,
+        y + 60,
+        node.explanation[this.locale],
+        gameText("12px", {
+          color: "#cbd5e1",
+          wordWrap: { width: width - 310 },
+        }),
+      );
 
       const btnW = 215;
       const btnH = 44;
@@ -828,11 +978,10 @@ export class FakeCallScene extends Phaser.Scene {
           btnX,
           btnY,
           isSwitched ? meta.stage3SwitchedBadge : meta.stage3SwitchBtn,
-          {
-            fontSize: "12px",
+          gameText("12px", {
             fontStyle: "bold",
             color: isSwitched ? "#ffffff" : "#040916",
-          },
+          }),
         )
         .setOrigin(0.5);
 
@@ -855,11 +1004,15 @@ export class FakeCallScene extends Phaser.Scene {
       .rectangle(0, 0, 420, 42, 0x00d9ff, 1)
       .setInteractive({ useHandCursor: true });
     const nextTxt = this.add
-      .text(0, 0, meta.nextStageBtn, {
-        fontSize: "14px",
-        fontStyle: "bold",
-        color: "#040916",
-      })
+      .text(
+        0,
+        0,
+        meta.nextStageBtn,
+        gameText("14px", {
+          fontStyle: "bold",
+          color: "#040916",
+        }),
+      )
       .setOrigin(0.5);
 
     nextRect.on("pointerdown", () => {
@@ -905,21 +1058,29 @@ export class FakeCallScene extends Phaser.Scene {
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const round = FAKE_CALL_DUEL_ROUNDS[this.duelRoundIndex] ?? FAKE_CALL_DUEL_ROUNDS[0];
 
-    const title = this.add.text(28, 114, meta.stage4Title, {
-      fontSize: "18px",
-      fontStyle: "bold",
-      color: "#ffffff",
-    });
-    const subtitle = this.add.text(28, 138, meta.stage4Subtitle, {
-      fontSize: "13px",
-      color: "#cbd5e1",
-      wordWrap: { width: width - 56 },
-    });
+    const title = this.add.text(
+      28,
+      114,
+      meta.stage4Title,
+      gameText("18px", {
+        fontStyle: "bold",
+        color: "#ffffff",
+      }),
+    );
+    const subtitle = this.add.text(
+      28,
+      138,
+      meta.stage4Subtitle,
+      gameText("13px", {
+        color: "#cbd5e1",
+        wordWrap: { width: width - 56 },
+      }),
+    );
     root.add([title, subtitle]);
 
-    // Арена дуэли (y: 170..325)
-    const arenaY = 170;
-    const arenaH = 148;
+    // Арена дуэли (y: 168..324)
+    const arenaY = 168;
+    const arenaH = 156;
     const arenaW = width - 56;
     const arenaBg = this.add.graphics();
     arenaBg.fillStyle(0x060d1f, 0.96);
@@ -930,62 +1091,61 @@ export class FakeCallScene extends Phaser.Scene {
 
     // Спрайты Друга слева и Тени справа
     const friendSprite = this.add
-      .image(92, arenaY + 74, "npc-female", "idle")
-      .setScale(0.45)
-      .setTint(0xffd9e8);
+      .image(92, arenaY + 58, "npc-male", "idle")
+      .setScale(0.45);
     const shadowSprite = this.add
-      .image(width - 92, arenaY + 74, "shadow", "idle")
+      .image(width - 92, arenaY + 58, "shadow", "idle")
       .setScale(0.48);
 
-    // HP Маскировки Тени
+    // HP Маскировки Тени (сдвинута выше, чтобы не касаться пузыря атаки)
     const hpLabel = this.add
       .text(
         width - 165,
-        arenaY + 20,
-        this.locale === "ro"
-          ? `Masca Umbrei: ${this.shadowHp} HP`
-          : `Маскировка Тени: ${this.shadowHp} HP`,
-        {
-          fontSize: "13px",
+        arenaY + 8,
+        meta.stage4HpLabel(this.shadowHp),
+        gameText("13px", {
           fontStyle: "bold",
           color: "#f87171",
-        },
+        }),
       )
       .setOrigin(1, 0);
 
     const hpBar = this.add.graphics();
     hpBar.fillStyle(0x334155, 1);
-    hpBar.fillRoundedRect(width - 305, arenaY + 42, 140, 10, 5);
+    hpBar.fillRoundedRect(width - 305, arenaY + 26, 140, 8, 4);
     if (this.shadowHp > 0) {
       hpBar.fillStyle(0xef4444, 1);
-      hpBar.fillRoundedRect(width - 305, arenaY + 42, (140 * this.shadowHp) / 100, 10, 5);
+      hpBar.fillRoundedRect(width - 305, arenaY + 26, (140 * this.shadowHp) / 100, 8, 4);
     }
 
-    // Реплика атаки Тени по центру арены
+    // Реплика атаки Тени по центру арены (ниже полосы жизней, выше duelFeedback)
     const attackBubble = this.add
-      .text(width / 2, arenaY + 76, round.shadowAttack[this.locale], {
-        fontSize: "14px",
-        fontStyle: "bold",
-        color: "#fecaca",
-        backgroundColor: "#1f1224",
-        padding: { x: 14, y: 10 },
-        wordWrap: { width: arenaW - 310 },
-        align: "center",
-      })
+      .text(
+        width / 2,
+        arenaY + 68,
+        round.shadowAttack[this.locale],
+        gameText("13.5px", {
+          fontStyle: "bold",
+          color: "#fecaca",
+          backgroundColor: "#1f1224",
+          padding: { x: 14, y: 8 },
+          wordWrap: { width: arenaW - 310 },
+          align: "center",
+        }),
+      )
       .setOrigin(0.5);
 
     const duelFeedback = this.add
       .text(
         width / 2,
-        arenaY + arenaH - 18,
-        this.locale === "ro"
-          ? "Alege o carte de contraatac mai jos:"
-          : "Выбери карту контр-приёма ниже:",
-        {
-          fontSize: "12px",
+        arenaY + arenaH - 26,
+        meta.stage4SelectCardHint,
+        gameText("12px", {
           fontStyle: "bold",
           color: "#00d9ff",
-        },
+          wordWrap: { width: arenaW - 40 },
+          align: "center",
+        }),
       )
       .setOrigin(0.5);
 
@@ -997,7 +1157,12 @@ export class FakeCallScene extends Phaser.Scene {
     const cardH = height - 354;
     const cardY = 332;
 
-    round.cards.forEach((card, idx) => {
+    if (this.stage4ShuffledRoundIndex !== this.duelRoundIndex) {
+      this.stage4ShuffledCards = shuffle(round.cards);
+      this.stage4ShuffledRoundIndex = this.duelRoundIndex;
+    }
+
+    this.stage4ShuffledCards.forEach((card, idx) => {
       const cx = 28 + idx * (cardW + cardGap);
 
       const cBg = this.add.graphics();
@@ -1011,35 +1176,42 @@ export class FakeCallScene extends Phaser.Scene {
       drawCard(false);
 
       const cTitle = this.add
-        .text(cx + cardW / 2, cardY + 26, card.title[this.locale], {
-          fontSize: "14px",
-          fontStyle: "bold",
-          color: "#ffd166",
-          wordWrap: { width: cardW - 24 },
-          align: "center",
-        })
+        .text(
+          cx + cardW / 2,
+          cardY + 26,
+          card.title[this.locale],
+          gameText("14px", {
+            fontStyle: "bold",
+            color: "#ffd166",
+            wordWrap: { width: cardW - 24 },
+            align: "center",
+          }),
+        )
         .setOrigin(0.5, 0);
 
       const cDesc = this.add
-        .text(cx + cardW / 2, cardY + 76, card.desc[this.locale], {
-          fontSize: "13px",
-          color: "#e2e8f0",
-          wordWrap: { width: cardW - 28 },
-          align: "center",
-          lineSpacing: 4,
-        })
+        .text(
+          cx + cardW / 2,
+          cardY + 76,
+          card.desc[this.locale],
+          gameText("13px", {
+            color: "#e2e8f0",
+            wordWrap: { width: cardW - 28 },
+            align: "center",
+            lineSpacing: 4,
+          }),
+        )
         .setOrigin(0.5, 0);
 
       const playBadge = this.add
         .text(
           cx + cardW / 2,
           cardY + cardH - 26,
-          this.locale === "ro" ? "⚡ Joacă cartea" : "⚡ Разыграть карту",
-          {
-            fontSize: "12px",
+          meta.stage4PlayCardBtn,
+          gameText("12px", {
             fontStyle: "bold",
             color: "#00d9ff",
-          },
+          }),
         )
         .setOrigin(0.5);
 
@@ -1061,6 +1233,7 @@ export class FakeCallScene extends Phaser.Scene {
             this.renderCurrentStage();
           }
         } else {
+          this.mistakesCount += 1;
           drawCard(false, true);
           duelFeedback.setText(card.feedback[this.locale]);
           duelFeedback.setColor("#f87171");
@@ -1077,22 +1250,33 @@ export class FakeCallScene extends Phaser.Scene {
   private buildStage5Victory(root: Phaser.GameObjects.Container) {
     const { width, height } = this.scale;
     const meta = FAKE_CALL_STAGES_META[this.locale];
+    const passed = this.mistakesCount <= 2;
 
     const title = this.add
-      .text(width / 2, 134, `🛡️ ${meta.victoryTitle}`, {
-        fontSize: "22px",
-        fontStyle: "bold",
-        color: "#34d399",
-      })
+      .text(
+        width / 2,
+        134,
+        passed ? `🛡️ ${meta.victoryTitle}` : `⚠️ ${meta.victoryRetryNotice}`,
+        gameText("22px", {
+          fontStyle: "bold",
+          color: passed ? "#34d399" : "#ffd166",
+          wordWrap: { width: width - 80 },
+          align: "center",
+        }),
+      )
       .setOrigin(0.5);
 
     const subtitle = this.add
-      .text(width / 2, 172, meta.victorySubtitle, {
-        fontSize: "14px",
-        color: "#e2e8f0",
-        wordWrap: { width: width - 100 },
-        align: "center",
-      })
+      .text(
+        width / 2,
+        172,
+        meta.victorySubtitle,
+        gameText("14px", {
+          color: "#e2e8f0",
+          wordWrap: { width: width - 100 },
+          align: "center",
+        }),
+      )
       .setOrigin(0.5);
 
     root.add([title, subtitle]);
@@ -1105,36 +1289,48 @@ export class FakeCallScene extends Phaser.Scene {
     const rulesBg = this.add.graphics();
     rulesBg.fillStyle(0x112240, 0.9);
     rulesBg.fillRoundedRect(boxX, boxY, boxW, boxH, 18);
-    rulesBg.lineStyle(2, 0x34d399, 0.6);
+    rulesBg.lineStyle(2, passed ? 0x34d399 : 0xf59e0b, 0.6);
     rulesBg.strokeRoundedRect(boxX, boxY, boxW, boxH, 18);
     root.add(rulesBg);
 
     meta.victoryRules.forEach((ruleText, idx) => {
       const ry = boxY + 26 + idx * 58;
-      const rTxt = this.add.text(boxX + 24, ry, `✓  ${ruleText}`, {
-        fontSize: "14px",
-        fontStyle: "bold",
-        color: "#f8fafc",
-        wordWrap: { width: boxW - 48 },
-      });
+      const rTxt = this.add.text(
+        boxX + 24,
+        ry,
+        `✓  ${ruleText}`,
+        gameText("14px", {
+          fontStyle: "bold",
+          color: "#f8fafc",
+          wordWrap: { width: boxW - 48 },
+        }),
+      );
       root.add(rTxt);
     });
 
     const finishRect = this.add
-      .rectangle(width / 2, height - 56, 460, 50, 0x34d399, 1)
+      .rectangle(width / 2, height - 56, 460, 50, passed ? 0x34d399 : 0xf59e0b, 1)
       .setInteractive({ useHandCursor: true });
     const finishTxt = this.add
-      .text(width / 2, height - 56, meta.finishBtn, {
-        fontSize: "16px",
-        fontStyle: "bold",
-        color: "#040916",
-      })
+      .text(
+        width / 2,
+        height - 56,
+        passed ? meta.finishBtn : meta.victoryRetryNotice,
+        gameText("16px", {
+          fontStyle: "bold",
+          color: "#040916",
+        }),
+      )
       .setOrigin(0.5);
 
-    finishRect.on("pointerover", () => finishRect.setFillStyle(0x6ee7b7, 1));
-    finishRect.on("pointerout", () => finishRect.setFillStyle(0x34d399, 1));
+    finishRect.on("pointerover", () =>
+      finishRect.setFillStyle(passed ? 0x6ee7b7 : 0xfbbf24, 1),
+    );
+    finishRect.on("pointerout", () =>
+      finishRect.setFillStyle(passed ? 0x34d399 : 0xf59e0b, 1),
+    );
     finishRect.on("pointerdown", () => {
-      this.onComplete?.(true);
+      this.onComplete?.(passed);
       this.scene.stop();
     });
 

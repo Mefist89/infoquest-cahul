@@ -23,7 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { strings, type Lang } from "@/data/home-data";
-import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MODULE_MAX_XP, TOTAL_MAX_XP, type ModuleDefinition as Mission, type ModuleId } from "@/data/module-catalog";
+import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MODULE_MAX_XP, PLAYABLE_MAX_XP, type ModuleDefinition as Mission, type ModuleId } from "@/data/module-catalog";
 import { isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
@@ -123,7 +123,8 @@ function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Miss
 }
 
 function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgress }) {
-  const percent = Math.min(100, Math.round((progress.xp / TOTAL_MAX_XP) * 100));
+  const percent = Math.min(100, Math.round((progress.xp / PLAYABLE_MAX_XP) * 100));
+  const playableMissions = missions.filter((module) => module.status === "playable");
 
   return (
     <div className="relative mx-auto w-full max-w-sm text-center">
@@ -142,8 +143,8 @@ function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgre
         />
       </div>
       <p className="mt-2 text-sm uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
-      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={TOTAL_MAX_XP} aria-label={strings[lang].shieldProgress}>
-        {missions.map((module) => {
+      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={PLAYABLE_MAX_XP} aria-label={strings[lang].shieldProgress}>
+        {playableMissions.map((module) => {
           const moduleXp = progress.modules[module.moduleId]?.xp ?? 0;
           const modulePercent = Math.min(100, Math.round((moduleXp / MODULE_MAX_XP) * 100));
 

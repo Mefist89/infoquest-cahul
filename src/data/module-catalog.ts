@@ -167,6 +167,10 @@ export const MODULE_MAX_XP = MODULE_STAGES.reduce((total, stage) => total + stag
 export const TOTAL_STAGE_COUNT = MODULE_COUNT * STAGE_COUNT;
 export const TOTAL_MAX_XP = MODULE_COUNT * MODULE_MAX_XP;
 
+export const PLAYABLE_MODULE_COUNT = MODULE_CATALOG.filter((module) => module.status === "playable").length;
+export const PLAYABLE_STAGE_COUNT = PLAYABLE_MODULE_COUNT * STAGE_COUNT;
+export const PLAYABLE_MAX_XP = PLAYABLE_MODULE_COUNT * MODULE_MAX_XP;
+
 export const CASE_SLIDES = MODULE_CATALOG.map((module) => ({
   id: module.id,
   description: module.caseDescription,

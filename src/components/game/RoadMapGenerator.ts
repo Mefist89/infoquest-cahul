@@ -1,3 +1,4 @@
+import { PATROL_BUILDING_LABELS } from "@/data/patrol";
 import type { RoadNetwork, RoadNode } from "./RoadNetwork";
 
 export interface CityMapConfig {
@@ -222,7 +223,7 @@ export interface CityVehicleTrack {
 /** Curated city buildings across the 4 districts (School NW, Bank NE, Post SW, Shop SE) */
 export const CITY_BUILDINGS: CityBuildingPlacement[] = [
   // === NW: SCHOOL DISTRICT (x=120..700, y=140..510; NPC at 350, 465) ===
-  { frame: "bldg_school_hall", x: 350, y: 395, scale: 2.35, animatedDoor: true, label: { ru: "ЛИЦЕЙ / ШКОЛА", ro: "LICEU / ȘCOALĂ" } },
+  { frame: "bldg_school_hall", x: 350, y: 395, scale: 2.35, animatedDoor: true, label: PATROL_BUILDING_LABELS.school },
   { frame: "bldg_white_civic", x: 540, y: 400, scale: 2.2, animatedLight: true },
   { frame: "bldg_blue_tall", x: 175, y: 365, scale: 2.15, animatedLight: true },
   { frame: "bldg_red_tall", x: 665, y: 360, scale: 2.15, animatedLight: true },
@@ -230,14 +231,14 @@ export const CITY_BUILDINGS: CityBuildingPlacement[] = [
   { frame: "bldg_kiosk", x: 260, y: 235, scale: 2.15, animatedLight: true },
 
   // === NE: BANK & TECH DISTRICT (x=900..1480, y=140..510; NPC at 1250, 465) ===
-  { frame: "bldg_bank_hq", x: 1250, y: 395, scale: 2.25, animatedDoor: true, label: { ru: "ЦЕНТРАЛЬНЫЙ БАНК", ro: "BANCA CENTRALĂ" } },
+  { frame: "bldg_bank_hq", x: 1250, y: 395, scale: 2.25, animatedDoor: true, label: PATROL_BUILDING_LABELS.bank },
   { frame: "bldg_glass_tower", x: 1035, y: 365, scale: 2.2, animatedLight: true },
   { frame: "bldg_blue_glass_tall", x: 1435, y: 365, scale: 2.2, animatedLight: true },
   { frame: "bldg_blue_tall", x: 925, y: 355, scale: 2.1, animatedLight: true },
   { frame: "bldg_white_civic", x: 1125, y: 225, scale: 2.15, animatedLight: true },
 
   // === SW: POST & RESIDENTIAL DISTRICT (x=120..700, y=680..1080; NPC at 350, 860) ===
-  { frame: "bldg_post_office", x: 350, y: 805, scale: 2.4, animatedDoor: true, label: { ru: "ПОЧТА МОЛДОВЫ", ro: "POȘTA MOLDOVEI" } },
+  { frame: "bldg_post_office", x: 350, y: 805, scale: 2.4, animatedDoor: true, label: PATROL_BUILDING_LABELS.post },
   { frame: "bldg_brick_house", x: 530, y: 805, scale: 2.25, animatedLight: true },
   { frame: "bldg_white_civic", x: 185, y: 815, scale: 2.15, animatedLight: true },
   { frame: "bldg_red_tall", x: 655, y: 980, scale: 2.15, animatedLight: true },
@@ -245,7 +246,7 @@ export const CITY_BUILDINGS: CityBuildingPlacement[] = [
   { frame: "bldg_green_market", x: 495, y: 1035, scale: 2.15, animatedLight: true },
 
   // === SE: SHOP & COMMERCIAL DISTRICT (x=900..1480, y=680..1080; NPC at 1250, 860) ===
-  { frame: "bldg_cyan_shop", x: 1250, y: 805, scale: 2.4, animatedDoor: true, label: { ru: "МАРКЕТ / SHOP", ro: "MAGAZIN / SHOP" } },
+  { frame: "bldg_cyan_shop", x: 1250, y: 805, scale: 2.4, animatedDoor: true, label: PATROL_BUILDING_LABELS.shop },
   { frame: "bldg_green_market", x: 1055, y: 805, scale: 2.25, animatedDoor: true },
   { frame: "bldg_school_hall", x: 1430, y: 815, scale: 2.1, animatedLight: true },
   { frame: "bldg_kiosk", x: 925, y: 810, scale: 2.2, animatedLight: true },

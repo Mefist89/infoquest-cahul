@@ -7,7 +7,8 @@ import { LocaleSwitch } from "@/components/layout/LocaleSwitch";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { PatrolGameLoader } from "@/components/game/PatrolGameLoader";
+import { PatrolControlsHint, PatrolGameLoader } from "@/components/game/PatrolGameLoader";
+import { createClient } from "@/lib/supabase/server";
 
 function isLocale(locale: string): locale is "ru" | "ro" {
   return locale === "ru" || locale === "ro";
@@ -22,6 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function PatrolPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const isAuthenticated = Boolean(authData.user);
 
   return (
     <main className="circuit-bg min-h-screen px-4 py-6 sm:py-10">
@@ -45,15 +50,11 @@ export default async function PatrolPage({ params }: { params: Promise<{ locale:
           <h1 className="mt-2 text-3xl font-black sm:text-4xl">
             {locale === "ro" ? "Patrula orașului digital" : "Патруль цифрового города"}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            {locale === "ro"
-              ? "Mergi prin cartiere cu WASD sau săgeți, apropie-te de locuitori și apasă E pentru dialog."
-              : "Ходи по районам на WASD или стрелках, подходи к жителям и жми E для разговора."}
-          </p>
+          <PatrolControlsHint locale={locale} />
         </section>
 
         <section className="mt-6">
-          <PatrolGameLoader locale={locale} />
+          <PatrolGameLoader locale={locale} isAuthenticated={isAuthenticated} />
         </section>
       </div>
     </main>
