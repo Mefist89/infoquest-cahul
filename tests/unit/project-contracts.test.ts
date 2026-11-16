@@ -622,8 +622,8 @@ describe("repository completeness and SEO", () => {
 
     const profileSectionPage = readFileSync(join(process.cwd(), "src/app/[locale]/profile/[section]/page.tsx"), "utf8");
     expect(profileSectionPage).not.toContain("InfoQuest Dashboard");
-    expect(profileSectionPage).toContain("Cabinet InfoQuest");
-    expect(profileSectionPage).toContain("Кабинет InfoQuest");
+    expect(profileSectionPage).not.toContain("— InfoQuest");
+    expect(profileSectionPage).toContain("return { title: titles[lang][section] }");
 
     const moduleComponents = [
       "src/components/modules/OperatorCallModule.tsx",
