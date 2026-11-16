@@ -15,6 +15,7 @@ export class PatrolScene extends Phaser.Scene {
   private locale: PatrolLocale;
   private onDialogueComplete?: (correct: boolean, npcId: string) => void;
   private onOpenDeliverySmsTrainer?: (npcId: string) => void;
+  private onOverlayChange?: (open: boolean) => void;
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -68,11 +69,13 @@ export class PatrolScene extends Phaser.Scene {
     locale: PatrolLocale,
     onDialogueComplete?: (correct: boolean, npcId: string) => void,
     onOpenDeliverySmsTrainer?: (npcId: string) => void,
+    onOverlayChange?: (open: boolean) => void,
   ) {
     super("patrol");
     this.locale = locale;
     this.onDialogueComplete = onDialogueComplete;
     this.onOpenDeliverySmsTrainer = onOpenDeliverySmsTrainer;
+    this.onOverlayChange = onOverlayChange;
     this.cityConfig = { ...DEFAULT_CITY_CONFIG };
   }
 
@@ -107,6 +110,8 @@ export class PatrolScene extends Phaser.Scene {
     this.uiCamera = uiCamera;
     const hideFromUi = (gameObject: Phaser.GameObjects.GameObject) => uiCamera.ignore(gameObject);
     this.events.on(Phaser.Scenes.Events.ADDED_TO_SCENE, hideFromUi);
+    this.events.on(Phaser.Scenes.Events.PAUSE, () => this.onOverlayChange?.(true));
+    this.events.on(Phaser.Scenes.Events.RESUME, () => this.onOverlayChange?.(false));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.events.off(Phaser.Scenes.Events.ADDED_TO_SCENE, hideFromUi);
     });

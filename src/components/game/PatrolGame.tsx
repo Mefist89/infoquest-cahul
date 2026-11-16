@@ -164,10 +164,11 @@ export function PatrolGame({
         () => {
           setSmsTrainerOpen(true);
         },
+        (open) => {
+          setOverlaySceneOpen(open);
+        },
       );
       sceneRef.current = scene;
-      scene.events.on(Phaser.Scenes.Events.PAUSE, () => setOverlaySceneOpen(true));
-      scene.events.on(Phaser.Scenes.Events.RESUME, () => setOverlaySceneOpen(false));
       // Рисуем холст в 2–3 раза крупнее логического поля 960×600, чтобы текст был чётким.
       const renderScale = computeRenderScale();
       setRenderScale(renderScale);
