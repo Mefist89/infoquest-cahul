@@ -54,6 +54,7 @@ export function PatrolGame({
   const [saveError, setSaveError] = useState(false);
   const [isPortraitTouch, setIsPortraitTouch] = useState(false);
   const [showShadowHelp, setShowShadowHelp] = useState(false);
+  const [overlaySceneOpen, setOverlaySceneOpen] = useState(false);
 
   const byId = useMemo(
     () => new Map<string, (typeof PATROL_NPCS)[number]>(PATROL_NPCS.map((npc) => [npc.id, npc])),
@@ -165,6 +166,8 @@ export function PatrolGame({
         },
       );
       sceneRef.current = scene;
+      scene.events.on(Phaser.Scenes.Events.PAUSE, () => setOverlaySceneOpen(true));
+      scene.events.on(Phaser.Scenes.Events.RESUME, () => setOverlaySceneOpen(false));
       // Рисуем холст в 2–3 раза крупнее логического поля 960×600, чтобы текст был чётким.
       const renderScale = computeRenderScale();
       setRenderScale(renderScale);
@@ -233,6 +236,7 @@ export function PatrolGame({
 
   function retry() {
     setSmsTrainerOpen(false);
+    setOverlaySceneOpen(false);
     setSaveError(false);
     patrolScene()?.resetPatrol();
     patrolScene()?.scene.resume();
@@ -292,42 +296,6 @@ export function PatrolGame({
         </div>
       )}
 
-      <div className="mb-3 flex items-center gap-3 rounded-2xl border border-danger/40 bg-danger/5 px-4 py-3">
-        <Skull className="size-5 shrink-0 animate-pulse text-danger" aria-hidden="true" />
-        <p className="text-sm font-black uppercase tracking-widest text-danger">
-          {meta.shadowTitle}
-        </p>
-        <div
-          className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary"
-          role="progressbar"
-          aria-valuenow={shadow}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={meta.shadowPowerAria}
-        >
-          <div className="h-full rounded-full bg-danger transition-[width] duration-500" style={{ width: `${shadow}%` }} />
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowShadowHelp((v) => !v)}
-          title={meta.shadowExplain}
-          aria-label={meta.shadowExplain}
-          aria-expanded={showShadowHelp}
-          className="focus-ring inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-danger/40 bg-danger/10 text-xs font-black text-danger transition hover:bg-danger/20"
-        >
-          ?
-        </button>
-        <p className="text-sm font-bold text-muted-foreground">
-          {resolvedIds.length}/{PATROL_NPCS.length}
-        </p>
-      </div>
-
-      {showShadowHelp && (
-        <p className="mb-3 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-sm text-foreground">
-          {meta.shadowExplain}
-        </p>
-      )}
-
       {loading ? (
         <PatrolLoadingFrame label={meta.loadingLabel} />
       ) : (
@@ -339,6 +307,45 @@ export function PatrolGame({
             ref={hostRef}
             className="h-full w-full bg-[#060d1f]"
           />
+          {phase === "playing" && !smsTrainerOpen && !overlaySceneOpen && (
+            <div className="pointer-events-auto absolute left-1/2 top-2.5 z-10 w-[min(460px,calc(100%-330px))] -translate-x-1/2">
+              <div className="flex items-center gap-3 rounded-2xl border border-danger/50 bg-[#060d1f]/90 px-4 py-2 shadow-lg backdrop-blur-sm">
+                <Skull className="size-5 shrink-0 animate-pulse text-danger" aria-hidden="true" />
+                <p className="text-sm font-black uppercase tracking-widest text-danger">
+                  {meta.shadowTitle}
+                </p>
+                <div
+                  className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary"
+                  role="progressbar"
+                  aria-valuenow={shadow}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={meta.shadowPowerAria}
+                >
+                  <div className="h-full rounded-full bg-danger transition-[width] duration-500" style={{ width: `${shadow}%` }} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowShadowHelp((v) => !v)}
+                  title={meta.shadowExplain}
+                  aria-label={meta.shadowExplain}
+                  aria-expanded={showShadowHelp}
+                  className="focus-ring inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-danger/40 bg-danger/10 text-xs font-black text-danger transition hover:bg-danger/20"
+                >
+                  ?
+                </button>
+                <p className="text-sm font-bold text-muted-foreground">
+                  {resolvedIds.length}/{PATROL_NPCS.length}
+                </p>
+              </div>
+
+              {showShadowHelp && (
+                <p className="mt-1.5 rounded-xl border border-danger/40 bg-[#060d1f]/95 px-4 py-2.5 text-sm text-foreground shadow-lg backdrop-blur-sm">
+                  {meta.shadowExplain}
+                </p>
+              )}
+            </div>
+          )}
           {smsTrainerOpen && (
             <DeliverySmsTrainerModal
               locale={locale}
