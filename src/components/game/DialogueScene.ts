@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import { PATROL_NPCS, PATROL_SCENE_META } from "@/data/patrol";
 import { shuffle } from "./shuffle";
+import { applyOverlayCamera, viewSize } from "./render-scale";
 import { gameText } from "./text-style";
 
 export type PatrolLocale = "ru" | "ro";
@@ -39,12 +40,13 @@ export class DialogueScene extends Phaser.Scene {
   }
 
   create() {
+    applyOverlayCamera(this);
     if (!this.npcData) {
       this.scene.stop();
       return;
     }
 
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const npc = this.npcData;
 
     // Защитный полноэкранный фон-затемнение

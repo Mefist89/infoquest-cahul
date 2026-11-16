@@ -22,6 +22,7 @@ import { FakeCallScene } from "./FakeCallScene";
 import { HackedAccountScene } from "./HackedAccountScene";
 import { DeliverySmsTrainerModal } from "./DeliverySmsTrainerModal";
 import { PatrolLoadingFrame, usePatrolSpritePrefetch } from "./PatrolStartPanel";
+import { BASE_HEIGHT, BASE_WIDTH, computeRenderScale, setRenderScale } from "./render-scale";
 import { getRubikFontFamily } from "./text-style";
 
 const SHADOW_START = PATROL_SHADOW_START;
@@ -164,11 +165,14 @@ export function PatrolGame({
         },
       );
       sceneRef.current = scene;
+      // Рисуем холст в 2–3 раза крупнее логического поля 960×600, чтобы текст был чётким.
+      const renderScale = computeRenderScale();
+      setRenderScale(renderScale);
       gameRef.current = new Phaser.Game({
         type: Phaser.AUTO,
         parent: hostElement,
-        width: 960,
-        height: 600,
+        width: BASE_WIDTH * renderScale,
+        height: BASE_HEIGHT * renderScale,
         backgroundColor: "#060d1f",
         render: {
           antialias: true,

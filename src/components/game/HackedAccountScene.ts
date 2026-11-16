@@ -9,6 +9,7 @@ import {
   HACKED_SHIELD_LAYERS,
 } from "@/data/patrol-hacked-account";
 import { shuffle } from "./shuffle";
+import { applyOverlayCamera, viewSize } from "./render-scale";
 import { gameText } from "./text-style";
 
 export interface HackedAccountSceneData {
@@ -83,7 +84,8 @@ export class HackedAccountScene extends Phaser.Scene {
   }
 
   create() {
-    const { width, height } = this.scale;
+    applyOverlayCamera(this);
+    const { width, height } = viewSize(this);
 
     // Полноэкранный тёмный фон кибер-лаборатории
     this.add.rectangle(0, 0, width, height, 0x040916, 0.96).setOrigin(0);
@@ -161,7 +163,7 @@ export class HackedAccountScene extends Phaser.Scene {
     this.headerRoot?.destroy(true);
     this.headerRoot = this.add.container(0, 0);
 
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
     const { completed, total } = this.getCompletedTasksCount();
     const pct = Math.round((completed / total) * 100);
@@ -321,7 +323,7 @@ export class HackedAccountScene extends Phaser.Scene {
 
   private renderStageHeading(titleStr: string, subtitleStr: string): number {
     if (!this.stageRoot) return this.headerBottom + 60;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const topY = this.headerBottom + 6;
 
     const title = this.add.text(
@@ -375,7 +377,7 @@ export class HackedAccountScene extends Phaser.Scene {
 
   private renderStage0Intro() {
     if (!this.stageRoot) return;
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
     const npc = PATROL_NPCS.find((item) => item.id === "shop-seller");
     const npcName = npc?.name[this.locale] ?? "";
@@ -474,7 +476,7 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage1ProfileXray() {
     if (!this.stageRoot) return;
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
 
     const panelY = this.renderStageHeading(meta.stage1Title, meta.stage1Subtitle);
@@ -779,8 +781,8 @@ export class HackedAccountScene extends Phaser.Scene {
 
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       if (this.stage === 1 && this.xrayReticle && this.xrayReticle.scene) {
-        const clampedX = Phaser.Math.Clamp(pointer.x, cardX + 28, cardX + cardW - 28);
-        const clampedY = Phaser.Math.Clamp(pointer.y, panelY + 28, panelY + leftPanelH - 28);
+        const clampedX = Phaser.Math.Clamp(pointer.worldX, cardX + 28, cardX + cardW - 28);
+        const clampedY = Phaser.Math.Clamp(pointer.worldY, panelY + 28, panelY + leftPanelH - 28);
         this.xrayReticle.setPosition(clampedX, clampedY);
       }
     });
@@ -791,7 +793,7 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage2LoginTraps() {
     if (!this.stageRoot) return;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
     const currentTrap = HACKED_LOGIN_TRAPS[this.trapIndex];
 
@@ -995,7 +997,7 @@ export class HackedAccountScene extends Phaser.Scene {
     if (!this.tunnelGraphics) return;
     this.tunnelGraphics.clear();
 
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const startX = 110;
     const endX = width - 110;
     const midX = width / 2;
@@ -1025,7 +1027,7 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage3ActiveSessions() {
     if (!this.stageRoot) return;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
 
     const startY = this.renderStageHeading(meta.stage3Title, meta.stage3Subtitle);
@@ -1255,7 +1257,7 @@ export class HackedAccountScene extends Phaser.Scene {
     if (!this.sessionPulseGraphics) return;
     this.sessionPulseGraphics.clear();
 
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const totalHackerSessions = HACKED_SESSIONS.filter((s) => s.isHacker).length;
     const allClean = this.killedSessionIds.size >= totalHackerSessions;
     const color = allClean ? 0x10b981 : 0xf43f5e;
@@ -1293,7 +1295,7 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage4DefenseShields() {
     if (!this.stageRoot) return;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
     const round = HACKED_SHIELD_LAYERS[this.layerRoundIndex];
 
@@ -1482,7 +1484,7 @@ export class HackedAccountScene extends Phaser.Scene {
   // ============================================================================
   private renderStage5Victory() {
     if (!this.stageRoot) return;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const meta = HACKED_ACCOUNT_META[this.locale];
     const passed = this.mistakesCount <= 2;
 

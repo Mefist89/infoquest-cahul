@@ -3,6 +3,7 @@ import { RoadNetwork, RoadGraph, RoadNode } from "./RoadNetwork";
 import { CityMapGenerator, DEFAULT_CITY_CONFIG, CityMapConfig } from "./RoadMapGenerator";
 
 import { PATROL_DISTRICTS, PATROL_NPCS, PATROL_SCENE_META, type PatrolDistrict } from "@/data/patrol";
+import { BASE_HEIGHT, BASE_WIDTH, getRenderScale, viewSize } from "./render-scale";
 import { gameText } from "./text-style";
 
 export type PatrolLocale = "ru" | "ro";
@@ -24,6 +25,7 @@ export class PatrolScene extends Phaser.Scene {
   private nearNpcId: string | null = null;
 
   private fullscreenBtn?: Phaser.GameObjects.Rectangle;
+  private uiCamera?: Phaser.Cameras.Scene2D.Camera;
   private fullscreenIcon?: Phaser.GameObjects.Graphics;
   private settingsBtn?: Phaser.GameObjects.Rectangle;
   private settingsIcon?: Phaser.GameObjects.Text;
@@ -92,6 +94,22 @@ export class PatrolScene extends Phaser.Scene {
     for (const key of ["cp-city", "cp-doors", "cp-lights", "cp-streetlights"]) {
       this.textures.get(key)?.setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
+
+    // Холст больше логического поля в getRenderScale() раз: мир увеличивает основная камера,
+    // а панель (HUD) рисует отдельная камера без прокрутки — так текст остаётся чётким.
+    const renderScale = getRenderScale();
+    this.cameras.main.setZoom(renderScale);
+    const uiCamera = this.cameras
+      .add(0, 0, this.scale.width, this.scale.height)
+      .setOrigin(0, 0)
+      .setZoom(renderScale)
+      .setScroll(0, 0);
+    this.uiCamera = uiCamera;
+    const hideFromUi = (gameObject: Phaser.GameObjects.GameObject) => uiCamera.ignore(gameObject);
+    this.events.on(Phaser.Scenes.Events.ADDED_TO_SCENE, hideFromUi);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off(Phaser.Scenes.Events.ADDED_TO_SCENE, hideFromUi);
+    });
 
     this.roadNetwork = new RoadNetwork(this);
     this.cityConfig = { ...DEFAULT_CITY_CONFIG };
@@ -189,7 +207,8 @@ export class PatrolScene extends Phaser.Scene {
       (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
         if (this.orientationPaused || this.isSettingsOpen) return;
         if (currentlyOver.length > 0) return;
-        this.moveTarget = { x: pointer.worldX, y: pointer.worldY };
+        const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+        this.moveTarget = { x: worldPoint.x, y: worldPoint.y };
         this.lastProgressPos = { x: this.player.x, y: this.player.y };
         this.stuckTimer = 0;
       },
@@ -212,7 +231,7 @@ export class PatrolScene extends Phaser.Scene {
 
     // Кнопка полного экрана
     this.fullscreenBtn = this.add
-      .rectangle(this.scale.width - 85, 30, 42, 42, 0x060d1f, 0.85)
+      .rectangle(viewSize(this).width - 85, 30, 42, 42, 0x060d1f, 0.85)
       .setStrokeStyle(2, 0x00d9ff, 0.9)
       .setDepth(3000)
       .setScrollFactor(0)
@@ -223,14 +242,14 @@ export class PatrolScene extends Phaser.Scene {
 
     this.fullscreenIcon = this.add
       .graphics()
-      .setPosition(this.scale.width - 85, 30)
+      .setPosition(viewSize(this).width - 85, 30)
       .setDepth(3001)
       .setScrollFactor(0);
     this.drawFullscreenCorners(this.fullscreenIcon);
 
     // Кнопка настроек
     this.settingsBtn = this.add
-      .rectangle(this.scale.width - 34, 30, 42, 42, 0x060d1f, 0.85)
+      .rectangle(viewSize(this).width - 34, 30, 42, 42, 0x060d1f, 0.85)
       .setStrokeStyle(2, 0x00d9ff, 0.9)
       .setDepth(3000)
       .setScrollFactor(0)
@@ -241,7 +260,7 @@ export class PatrolScene extends Phaser.Scene {
 
     this.settingsIcon = this.add
       .text(
-        this.scale.width - 34,
+        viewSize(this).width - 34,
         30,
         "⚙",
         gameText("20px", {
@@ -254,6 +273,10 @@ export class PatrolScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.createSettingsPanel();
+
+    [this.hudText, this.fullscreenBtn, this.fullscreenIcon, this.settingsBtn, this.settingsIcon, this.settingsPanel].forEach(
+      (gameObject) => gameObject && this.showOnlyInHud(gameObject),
+    );
 
     // Адаптация размеров холста и HUD при входе/выходе из полноэкранного режима
     this.scale.on("resize", this.handleResize, this);
@@ -274,6 +297,16 @@ export class PatrolScene extends Phaser.Scene {
     };
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanupListeners);
     this.events.once(Phaser.Scenes.Events.DESTROY, cleanupListeners);
+  }
+
+  /** Объект панели виден только HUD-камере (и вместе со всеми вложенными в контейнер). */
+  private showOnlyInHud(gameObject: Phaser.GameObjects.GameObject): void {
+    const uiCamera = this.uiCamera;
+    if (!uiCamera) return;
+    gameObject.cameraFilter = (gameObject.cameraFilter & ~uiCamera.id) | this.cameras.main.id;
+    if (gameObject instanceof Phaser.GameObjects.Container) {
+      gameObject.list.forEach((child) => this.showOnlyInHud(child));
+    }
   }
 
   private drawFullscreenCorners(g: Phaser.GameObjects.Graphics): void {
@@ -310,18 +343,20 @@ export class PatrolScene extends Phaser.Scene {
       const targetHeight = 600;
       const targetWidth = Math.min(1560, Math.max(960, Math.round(targetHeight * (screenW / screenH))));
       this.scale.setParentSize(screenW, screenH);
-      this.scale.setGameSize(targetWidth, targetHeight);
+      this.scale.setGameSize(targetWidth * getRenderScale(), targetHeight * getRenderScale());
     } else {
-      this.scale.setGameSize(960, 600);
+      this.scale.setGameSize(BASE_WIDTH * getRenderScale(), BASE_HEIGHT * getRenderScale());
       this.scale.refresh();
     }
     this.handleResize(this.scale.gameSize);
   }
 
   private handleResize(gameSize: Phaser.Structs.Size): void {
-    const width = gameSize.width;
-    const height = gameSize.height;
-    this.cameras?.main?.setSize(width, height);
+    const renderScale = getRenderScale();
+    this.cameras?.main?.setSize(gameSize.width, gameSize.height);
+    this.uiCamera?.setSize(gameSize.width, gameSize.height);
+    // Позиции HUD — в логических координатах (холст увеличен в renderScale раз).
+    const width = gameSize.width / renderScale;
     this.fullscreenBtn?.setPosition(width - 85, 30);
     this.fullscreenIcon?.setPosition(width - 85, 30);
     this.settingsBtn?.setPosition(width - 34, 30);
@@ -372,7 +407,7 @@ export class PatrolScene extends Phaser.Scene {
   }
 
   private createSettingsPanel(): void {
-    const panelX = this.scale.width - 236;
+    const panelX = viewSize(this).width - 236;
     const panelY = 60;
 
     this.settingsPanel = this.add.container(panelX, panelY);

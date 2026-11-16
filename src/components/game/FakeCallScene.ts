@@ -9,6 +9,7 @@ import {
   FAKE_CALL_WAVES,
 } from "@/data/patrol-fake-call";
 import { shuffle } from "./shuffle";
+import { applyOverlayCamera, viewSize } from "./render-scale";
 import { gameText } from "./text-style";
 
 export interface FakeCallSceneData {
@@ -78,7 +79,8 @@ export class FakeCallScene extends Phaser.Scene {
   }
 
   create() {
-    const { width, height } = this.scale;
+    applyOverlayCamera(this);
+    const { width, height } = viewSize(this);
 
     // Полноэкранный тёмный фон лаборатории киберзащиты
     this.add.rectangle(0, 0, width, height, 0x040916, 0.96).setOrigin(0);
@@ -149,7 +151,7 @@ export class FakeCallScene extends Phaser.Scene {
 
   private renderHeader() {
     this.headerRoot?.destroy(true);
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const { completed, total } = this.getCompletedTasksCount();
     const remaining = Math.max(0, total - completed);
@@ -297,7 +299,7 @@ export class FakeCallScene extends Phaser.Scene {
   }
 
   private buildStage0Intro(root: Phaser.GameObjects.Container) {
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const npc = PATROL_NPCS.find((item) => item.id === "school-friend");
     const npcName = npc?.name[this.locale] ?? "";
@@ -378,7 +380,7 @@ export class FakeCallScene extends Phaser.Scene {
   // ЭТАП 1: Сканер подмены номера (Caller ID Инспектор)
   // =========================================================================
   private buildStage1Scanner(root: Phaser.GameObjects.Container) {
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
 
     const title = this.add.text(
@@ -653,7 +655,7 @@ export class FakeCallScene extends Phaser.Scene {
   // ЭТАП 2: Перехват радиоволн (Сбей манипуляцию в разговоре)
   // =========================================================================
   private buildStage2WaveDefense(root: Phaser.GameObjects.Container) {
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const currentWave = FAKE_CALL_WAVES[this.waveIndex] ?? FAKE_CALL_WAVES[0];
 
@@ -874,7 +876,7 @@ export class FakeCallScene extends Phaser.Scene {
 
   private drawOscilloscopeWave() {
     if (!this.waveGraphics) return;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     const startX = 46;
     const endX = width - 46;
     const centerY = 235;
@@ -902,7 +904,7 @@ export class FakeCallScene extends Phaser.Scene {
   // ЭТАП 3: Коммутатор безопасности (Двухканальная проверка)
   // =========================================================================
   private buildStage3Switchboard(root: Phaser.GameObjects.Container) {
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
 
     const title = this.add.text(
@@ -1034,7 +1036,7 @@ export class FakeCallScene extends Phaser.Scene {
 
   private drawCircuitWires() {
     if (!this.wireGraphics) return;
-    const { width } = this.scale;
+    const { width } = viewSize(this);
     this.wireGraphics.clear();
 
     const startY = 178;
@@ -1062,7 +1064,7 @@ export class FakeCallScene extends Phaser.Scene {
   // ЭТАП 4: Дуэль с телефонным мошенником (Контрольный вопрос)
   // =========================================================================
   private buildStage4Duel(root: Phaser.GameObjects.Container) {
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const round = FAKE_CALL_DUEL_ROUNDS[this.duelRoundIndex] ?? FAKE_CALL_DUEL_ROUNDS[0];
 
@@ -1258,7 +1260,7 @@ export class FakeCallScene extends Phaser.Scene {
   // ЭТАП 5: Финал и сводка правил по категории «Ложные вызовы»
   // =========================================================================
   private buildStage5Victory(root: Phaser.GameObjects.Container) {
-    const { width, height } = this.scale;
+    const { width, height } = viewSize(this);
     const meta = FAKE_CALL_STAGES_META[this.locale];
     const passed = this.mistakesCount <= 2;
 

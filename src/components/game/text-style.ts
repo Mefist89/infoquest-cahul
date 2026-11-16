@@ -1,5 +1,7 @@
 import type Phaser from "phaser";
 
+import { getRenderScale } from "./render-scale";
+
 export function getRubikFontFamily(): string {
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     const fromCssVar = window
@@ -30,6 +32,7 @@ export function gameText(
     ...(fontStyle ? { fontStyle } : {}),
     fontFamily: `${getRubikFontFamily()}, system-ui, -apple-system, Segoe UI, sans-serif`,
     fontSize: typeof size === "number" ? `${size}px` : size,
-    resolution: Math.max(2, Math.min(dpr, 3)),
+    // Холст уже увеличен в getRenderScale() раз — текстура текста должна быть не мельче.
+    resolution: Math.max(getRenderScale(), Math.min(dpr, 3)),
   };
 }
