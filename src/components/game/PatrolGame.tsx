@@ -170,7 +170,11 @@ export function PatrolGame({
         width: 960,
         height: 600,
         backgroundColor: "#060d1f",
-        pixelArt: true,
+        render: {
+          antialias: true,
+          pixelArt: false,
+          roundPixels: true,
+        },
         physics: { default: "arcade", arcade: { debug: false } },
         scale: {
           mode: Phaser.Scale.FIT,

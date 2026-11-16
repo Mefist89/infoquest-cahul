@@ -89,6 +89,10 @@ export class PatrolScene extends Phaser.Scene {
   }
 
   create() {
+    for (const key of ["cp-city", "cp-doors", "cp-lights", "cp-streetlights"]) {
+      this.textures.get(key)?.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+
     this.roadNetwork = new RoadNetwork(this);
     this.cityConfig = { ...DEFAULT_CITY_CONFIG };
 
