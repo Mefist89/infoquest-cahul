@@ -17,6 +17,7 @@ import {
 } from "@/features/patrol/progress";
 
 import { PatrolScene, type PatrolLocale } from "./patrol-scene";
+import { BankCallScene } from "./BankCallScene";
 import { DialogueScene } from "./DialogueScene";
 import { FakeCallScene } from "./FakeCallScene";
 import { HackedAccountScene } from "./HackedAccountScene";
@@ -190,7 +191,7 @@ export function PatrolGame({
           fullscreenTarget: fullscreenElement,
           expandParent: true,
         },
-        scene: [scene, DialogueScene, FakeCallScene, HackedAccountScene],
+        scene: [scene, DialogueScene, BankCallScene, FakeCallScene, HackedAccountScene],
       });
       if (process.env.NODE_ENV !== "production") {
         (window as unknown as { __patrolScene?: PatrolScene }).__patrolScene = scene;

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import * as patrolData from "@/data/patrol";
+import * as patrolBankCallData from "@/data/patrol-bank-call";
 import * as patrolDeliverySmsData from "@/data/patrol-delivery-sms";
 import * as patrolFakeCallData from "@/data/patrol-fake-call";
 import * as patrolHackedAccountData from "@/data/patrol-hacked-account";
@@ -59,6 +60,7 @@ function collectLocalizedStrings(
 function getAllPatrolLocalizedStrings(): LocaleBuckets {
   const buckets: LocaleBuckets = { ru: [], ro: [] };
   collectLocalizedStrings(patrolData, "patrol", buckets);
+  collectLocalizedStrings(patrolBankCallData, "patrol-bank-call", buckets);
   collectLocalizedStrings(patrolFakeCallData, "patrol-fake-call", buckets);
   collectLocalizedStrings(patrolHackedAccountData, "patrol-hacked-account", buckets);
   collectLocalizedStrings(patrolDeliverySmsData, "patrol-delivery-sms", buckets);

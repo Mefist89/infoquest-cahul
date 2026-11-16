@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { shuffle } from "@/components/game/shuffle";
 import { PATROL_NPCS } from "@/data/patrol";
+import {
+  BANK_CALL_META,
+  BANK_DEFENSE_ROUNDS,
+  BANK_PRESSURE_TRAPS,
+} from "@/data/patrol-bank-call";
 import { DELIVERY_SMS_CASES } from "@/data/patrol-delivery-sms";
 import {
   FAKE_CALL_DUEL_ROUNDS,
@@ -101,6 +106,32 @@ describe("shuffle вариантов ответа в 2D-игре «Патрул�
     }
 
     for (const round of HACKED_SHIELD_LAYERS) {
+      const expectedId = round.cards.find((card) => card.correct)?.id;
+      for (let run = 0; run < 20; run += 1) {
+        const shuffled = shuffle(round.cards);
+        const correctItems = shuffled.filter((card) => card.correct);
+        expect(correctItems).toHaveLength(1);
+        expect(correctItems[0]?.id).toBe(expectedId);
+      }
+    }
+
+    for (const trap of BANK_PRESSURE_TRAPS) {
+      const blockerItems = BANK_CALL_META.ru.stage2Blockers.map((label, idx) => ({
+        id: `blocker-${idx}`,
+        label,
+        isCorrect: idx === trap.correctBlockerIndex,
+      }));
+      const expectedId = `blocker-${trap.correctBlockerIndex}`;
+
+      for (let run = 0; run < 20; run += 1) {
+        const shuffled = shuffle(blockerItems);
+        const correctItems = shuffled.filter((item) => item.isCorrect);
+        expect(correctItems).toHaveLength(1);
+        expect(correctItems[0]?.id).toBe(expectedId);
+      }
+    }
+
+    for (const round of BANK_DEFENSE_ROUNDS) {
       const expectedId = round.cards.find((card) => card.correct)?.id;
       for (let run = 0; run < 20; run += 1) {
         const shuffled = shuffle(round.cards);

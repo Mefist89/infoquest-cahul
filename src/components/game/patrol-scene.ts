@@ -566,6 +566,21 @@ export class PatrolScene extends Phaser.Scene {
       this.promptText?.setVisible(false);
     };
 
+    if (activeNpcId === "bank-operator") {
+      this.scene.launch("bank-call", {
+        locale: this.locale,
+        onComplete: finishDialogue,
+        onClose: () => {
+          this.scene.resume();
+          this.nearNpcId = null;
+          this.promptText?.setVisible(false);
+        },
+      });
+      this.scene.bringToTop("bank-call");
+      this.scene.pause();
+      return;
+    }
+
     if (activeNpcId === "school-friend") {
       this.scene.launch("fake-call", {
         locale: this.locale,
