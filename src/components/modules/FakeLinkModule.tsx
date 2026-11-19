@@ -35,7 +35,7 @@ import { ShadowBattleStage } from "./shared/shadow-battle-stage";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { MentorIntro } from "./shared/mentor-intro";
 import { NoTimerToggle } from "./shared/timer-setting";
-import { NextButtonContext } from "./operator-call/stage-support";
+import { NextButtonContext, ActionButton } from "./operator-call/stage-support";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
   return (
@@ -167,21 +167,13 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
               <div className="mt-7">
                 {currentStage === 0 && <MentorIntro imageSrc="/characters/01_woman_purple_blazer_left.png" locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
+                {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
                 {currentStage === 3 && <AudioExampleStage content={t.audioExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
                 {currentStage === 4 && <FindSignalsStage locale={locale} content={t.findSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
                 {currentStage === 5 && <LinkClassifyStage locale={locale} content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <DialogueReactStage locale={locale} content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <OrderStepsStage locale={locale} content={t.orderSteps} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
                 {currentStage === 8 && <ShadowBattleStage locale={locale} content={t.finalBattle} nextLabel={t.finalBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
-                {currentStage !== 3 && currentStage !== 4 && currentStage > 1 && currentStage !== 5 && currentStage !== 6 && currentStage !== 7 && currentStage !== 8 && currentStage < 9 && (
-                  <div className="py-20 text-center">
-                    <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
-                    <button type="button" onClick={() => { completeStage(currentStage); chooseStage(currentStage < 8 ? currentStage + 1 : 8); }} disabled={saving} className="focus-ring mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60">
-                      Завершить этап (Dev)
-                    </button>
-                  </div>
-                )}
               </div>
             </NextButtonContext.Provider>
             {runner.canRetrySave && <SaveRetryButton label={t.result.saveRetry} onRetry={runner.retrySave} disabled={saving} />}
@@ -211,6 +203,39 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
   return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? title : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+}
+
+function VideoExplanationStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["videoExplanation"] | (typeof fakeLinkContent)["ro"]["videoExplanation"]; button: string; saving: boolean; onComplete: () => void }) {
+  return (
+    <div>
+      <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
+        <video
+          key={content.videoUrl}
+          aria-label={content.title}
+          className="aspect-video w-full bg-black object-cover"
+          controls
+          preload="metadata"
+          playsInline
+        >
+          <source src={content.videoUrl} type="video/mp4" />
+          <p>{content.videoFallback}</p>
+        </video>
+        <div className="border-t border-border bg-card p-4">
+          <h3 className="font-bold">{content.title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{content.description}</p>
+        </div>
+      </div>
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+        {content.points.map((point) => (
+          <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-neon" aria-hidden="true" />
+            {point}
+          </li>
+        ))}
+      </ul>
+      <ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton>
+    </div>
+  );
 }
 
 function AudioExampleStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["audioExample"] | (typeof fakeLinkContent)["ro"]["audioExample"]; button: string; saving: boolean; onComplete: () => void }) {

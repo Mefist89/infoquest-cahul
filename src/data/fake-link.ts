@@ -258,6 +258,18 @@ export const fakeLinkContent = {
         listen: "Прослушать текст",
         audioFile: "/3_exemple_ru.mp3",
       },
+      videoExplanation: {
+        title: "Как отличить поддельный сайт от настоящего",
+        description: "Разбираем 6 признаков фишинга, миф о «замке» HTTPS и алгоритм проверки ссылок за 5 шагов.",
+        videoUrl: "/video/fake-link-explain-ru.mp4",
+        videoFallback: "Ваш браузер не поддерживает воспроизведение видео.",
+        points: [
+          "Проверяй точный адрес сайта — часть между «//» и первым «/».",
+          "Замок и HTTPS означают лишь шифрование, но не честность сайта.",
+          "Настоящий банк не просит PIN, CVV или код из SMS на странице входа.",
+          "При малейшем сомнении закрой ссылку и открой официальный сайт вручную.",
+        ],
+      },
     },
     ro: {
       guestRules: [
@@ -515,6 +527,18 @@ export const fakeLinkContent = {
       audioExample: {
         listen: "Ascultă textul",
         audioFile: "/3_exemple_ro.mp3",
+      },
+      videoExplanation: {
+        title: "Cum să distingi un site fals de unul real",
+        description: "Analizăm 6 semnale de phishing, mitul «lacătului» HTTPS și algoritmul de verificare a linkurilor în 5 pași.",
+        videoUrl: "/video/fake-link-explain-ro.mp4",
+        videoFallback: "Browserul tău nu suportă redarea video.",
+        points: [
+          "Verifică adresa exactă a site-ului — partea dintre «//» și primul «/».",
+          "Lacătul și HTTPS înseamnă doar criptare, nu că site-ul este de încredere.",
+          "O bancă reală nu cere PIN, CVV sau codul din SMS pe pagina de autentificare.",
+          "La cea mai mică îndoială, închide linkul și deschide manual site-ul oficial.",
+        ],
       },
     }
   } as const;
