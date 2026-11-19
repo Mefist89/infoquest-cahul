@@ -66,6 +66,16 @@ export function placeholderMetadata(route: PlaceholderRoute, locale: string): Me
   return routeStateMetadata(locale, content.title, content.description);
 }
 
+const routePaths: Record<PlaceholderRoute, string> = {
+  intro: "/intro",
+  map: "/map",
+  results: "/results",
+  "fake-link": "/modules/fake-link",
+  "hacked-account": "/modules/hacked-account",
+  "scam-or-real": "/modules/scam-or-real",
+  "deepfake-detective": "/modules/deepfake-detective",
+};
+
 export function PlaceholderRoutePage({ route, locale }: { route: PlaceholderRoute; locale: string }) {
   const lang = requireRouteLocale(locale);
   const content = placeholders[route];
@@ -75,6 +85,7 @@ export function PlaceholderRoutePage({ route, locale }: { route: PlaceholderRout
   return (
     <RouteStatePage
       locale={lang}
+      routePath={routePaths[route]}
       title={content.title[lang]}
       description={content.description[lang]}
       primaryHref={primaryPath ? `/${lang}${primaryPath}` : undefined}

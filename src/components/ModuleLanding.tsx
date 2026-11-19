@@ -15,15 +15,17 @@ export function ModuleLanding({ module, locale, rules }: { module: SeoModule; lo
   const labels = guestModuleLabels[locale];
   const path = `/modules/${module}`;
   return <>
-    <main className="circuit-bg min-h-screen px-4 py-6 sm:py-10">
+    <main className="circuit-bg min-h-screen overflow-x-clip px-4 py-6 sm:py-10">
       <ModuleStructuredData module={module} locale={locale} />
       <div className="relative mx-auto max-w-4xl">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-4 text-base font-semibold text-neon"><ArrowLeft className="size-5" aria-hidden="true" />{labels.back}</Link>
-          <TextSizeButton locale={locale} />
-          <nav aria-label="Language" className="flex rounded-full border border-border bg-card/70 p-1">
-            {(["ro", "ru"] as const).map(language => <LocaleSwitch key={language} locale={language} href={`/${language}${path}`} aria-current={language === locale ? "page" : undefined} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-base font-bold uppercase ${language === locale ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
-          </nav>
+        <header className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-3 text-sm font-semibold text-neon sm:px-4 sm:text-base"><ArrowLeft className="size-5 shrink-0" aria-hidden="true" />{labels.back}</Link>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <TextSizeButton locale={locale} />
+            <nav aria-label="Language" className="flex rounded-full border border-border bg-card/70 p-1">
+              {(["ro", "ru"] as const).map(language => <LocaleSwitch key={language} locale={language} href={`/${language}${path}`} aria-current={language === locale ? "page" : undefined} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-base font-bold uppercase ${language === locale ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
+            </nav>
+          </div>
         </header>
         <article className="mt-8 min-w-0 rounded-3xl border border-neon/30 bg-card/80 p-6 sm:p-10">
           <ShieldCheck className="size-12 text-neon" aria-hidden="true" />
