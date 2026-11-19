@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ModuleId } from "@/data/module-catalog";
 import { createClient } from "@/lib/supabase/client";
+import { clearGuestModuleProgress, readGuestModuleProgress, saveGuestStageProgress } from "./guest-progress";
 
 export type StageProgress = {
   stage_index: number;
@@ -44,12 +45,16 @@ export function useModuleRunner({
   initialStages,
   initialModule,
   messages,
+  isGuest = false,
+  guestMaxStage,
 }: {
   moduleId: ModuleId;
   stageCount: number;
   initialStages: StageProgress[];
   initialModule: ModuleProgress;
   messages: RunnerMessages;
+  isGuest?: boolean;
+  guestMaxStage?: number;
 }) {
   const initialCompleted = useMemo(
     () => initialStages.filter((stage) => stage.status === "completed").map((stage) => stage.stage_index),
@@ -63,17 +68,120 @@ export function useModuleRunner({
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<RunnerNotice | null>(null);
   const [failedSave, setFailedSave] = useState<{ stageIndex: number; result?: StageResult | null } | null>(null);
+  const syncedGuestRef = useRef(false);
 
-  const unlockedThrough = useMemo(
-    () => Array.from({ length: stageCount }, (_, index) => index + 1)
-      .find((stage) => !completedStages.has(stage)) ?? stageCount,
-    [completedStages, stageCount],
-  );
+  // Восстановление локального прогресса гостя или перенос его в аккаунт после входа.
+  useEffect(() => {
+    const stored = readGuestModuleProgress(moduleId);
+    if (stored.length === 0) return;
+
+    if (isGuest) {
+      const limit = guestMaxStage ?? stageCount;
+      const valid = stored.filter((entry) => entry.stageIndex <= limit);
+      if (valid.length === 0) return;
+      let cancelled = false;
+      void Promise.resolve().then(() => {
+        if (cancelled) return;
+        const completed = new Set(valid.map((entry) => entry.stageIndex));
+        setCompletedStages(completed);
+        setModuleXp(Math.min(100, Math.round((completed.size / stageCount) * 100)));
+        const nextOpen =
+          Array.from({ length: limit }, (_, index) => index + 1).find((stage) => !completed.has(stage)) ??
+          Math.min(stageCount, limit + 1);
+        setCurrentStage(nextOpen);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (syncedGuestRef.current) return;
+    syncedGuestRef.current = true;
+
+    const alreadyCompleted = new Set(initialCompleted);
+    const pending = stored.filter((entry) => !alreadyCompleted.has(entry.stageIndex));
+    if (pending.length === 0) {
+      clearGuestModuleProgress(moduleId);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      setSaving(true);
+      const supabase = createClient();
+      const merged = new Set(alreadyCompleted);
+      let latestXp: number | null = null;
+      let allOk = true;
+
+      for (const entry of pending) {
+        try {
+          const { data, error } = await supabase.rpc("complete_module_stage", {
+            p_module_id: moduleId,
+            p_stage_index: entry.stageIndex,
+            p_correct: entry.result ? Math.trunc(entry.result.correct) : undefined,
+            p_total: entry.result ? Math.trunc(entry.result.total) : undefined,
+          });
+          if (error) {
+            allOk = false;
+            break;
+          }
+          const rpcResult = Array.isArray(data) ? data[0] : null;
+          merged.add(entry.stageIndex);
+          if (rpcResult?.module_xp !== undefined) {
+            latestXp = Number(rpcResult.module_xp);
+          }
+        } catch {
+          allOk = false;
+          break;
+        }
+      }
+
+      if (cancelled) return;
+      if (allOk) {
+        clearGuestModuleProgress(moduleId);
+      }
+      if (merged.size > alreadyCompleted.size) {
+        setCompletedStages(merged);
+        if (latestXp !== null) setModuleXp(latestXp);
+        const nextOpen =
+          Array.from({ length: stageCount }, (_, index) => index + 1).find((stage) => !merged.has(stage)) ?? stageCount;
+        setCurrentStage(nextOpen);
+        setNotice({ kind: "success", text: messages.saved });
+      }
+      setSaving(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [guestMaxStage, initialCompleted, isGuest, messages.saved, moduleId, stageCount]);
+
+  const unlockedThrough = useMemo(() => {
+    const nextIncomplete =
+      Array.from({ length: stageCount }, (_, index) => index + 1).find((stage) => !completedStages.has(stage)) ??
+      stageCount;
+    if (isGuest && guestMaxStage !== undefined) {
+      return Math.min(nextIncomplete, guestMaxStage + 1);
+    }
+    return nextIncomplete;
+  }, [completedStages, guestMaxStage, isGuest, stageCount]);
 
   const completionPercent = Math.round((completedStages.size / stageCount) * 100);
 
   async function completeStage(stageIndex: number, result?: StageResult | null) {
     if (saving) return false;
+    if (isGuest) {
+      saveGuestStageProgress(moduleId, { stageIndex, result });
+      setCompletedStages((previous) => {
+        const next = new Set(previous).add(stageIndex);
+        setModuleXp(Math.min(100, Math.round((next.size / stageCount) * 100)));
+        return next;
+      });
+      setNotice({ kind: "success", text: messages.saved });
+      setFailedSave(null);
+      return true;
+    }
+
     setSaving(true);
     setNotice(null);
     setFailedSave(null);

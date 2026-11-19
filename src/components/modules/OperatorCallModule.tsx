@@ -31,14 +31,16 @@ import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-
 import { FinalStage } from "./operator-call/final-stage";
 import { TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
+import { GuestRegisterGate } from "./shared/guest-register-gate";
 import { MentorIntro } from "./shared/mentor-intro";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { GameSoundToggle, SoundChoiceBanner } from "./operator-call/game-sound-toggle";
 import { NextButtonContext } from "./operator-call/stage-support";
 
 const stageIcons: LucideIcon[] = [BookOpen, Clapperboard, Video, ScanSearch, ListChecks, MessageSquare, ListOrdered, ShieldAlert];
+const GUEST_MAX_STAGE = 4;
 
-export function OperatorCallModule({ content, locale, initialStages, initialModule, isAdmin, badge, nextModule }: { content: typeof operatorCallContent[keyof typeof operatorCallContent]; locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean; badge: string; nextModule: NextModule }) {
+export function OperatorCallModule({ content, locale, initialStages, initialModule, isAdmin, isGuest = false, badge, nextModule }: { content: typeof operatorCallContent[keyof typeof operatorCallContent]; locale: OperatorLocale; initialStages: StageProgress[]; initialModule: ModuleProgress; isAdmin?: boolean; isGuest?: boolean; badge: string; nextModule: NextModule }) {
   const t = content;
   const runner = useModuleRunner({
     moduleId: MODULE_IDS.operatorCall,
@@ -46,8 +48,12 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
     initialStages,
     initialModule,
     messages: { locked: t.locked, saved: t.saved, saveError: t.saveError },
+    isGuest,
+    guestMaxStage: isGuest ? GUEST_MAX_STAGE : undefined,
   });
   const { completedStages, completionPercent, currentStage, firstOpenStage, moduleXp, notice, saving, unlockedThrough } = runner;
+  const loginHref = `/${locale}/login?next=${encodeURIComponent(`/${locale}/modules/operator-call`)}`;
+  const showGuestGate = isGuest && currentStage > GUEST_MAX_STAGE;
 
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
@@ -93,7 +99,13 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
           <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-neon transition hover:border-neon/60">
             <ArrowLeft className="size-4" aria-hidden="true" /> {t.back}
           </Link>
-          <Link href={`/${locale}/profile`} className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-muted-foreground transition hover:border-neon/60 hover:text-foreground">{t.profile}</Link>
+          {isGuest ? (
+            <Link href={loginHref} className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-neon/40 bg-neon/10 px-4 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">
+              {locale === "ro" ? "Autentificare" : "Войти"}
+            </Link>
+          ) : (
+            <Link href={`/${locale}/profile`} className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-muted-foreground transition hover:border-neon/60 hover:text-foreground">{t.profile}</Link>
+          )}
           {isAdmin && (
             <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">
               <ShieldCheck className="size-4" aria-hidden="true" />
@@ -138,12 +150,13 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
                 const number = index + 1;
                 const Icon = stageIcons[index];
                 const done = completedStages.has(number);
-                const locked = !done && number > unlockedThrough;
+                const guestLocked = isGuest && number > GUEST_MAX_STAGE;
+                const locked = !done && (number > unlockedThrough || (guestLocked && number > GUEST_MAX_STAGE + 1));
                 const active = currentStage === number;
                 return (
                   <li key={stage.title}>
-                    <button type="button" data-testid={`stage-nav-${number}`} aria-label={`${number}/8. ${stage.title}. ${locked ? t.locked : done ? t.completed : stage.subtitle}`} onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
-                      <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
+                    <button type="button" data-testid={`stage-nav-${number}`} aria-label={`${number}/8. ${stage.title}. ${locked || guestLocked ? t.locked : done ? t.completed : stage.subtitle}`} onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
+                      <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked || guestLocked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
                       <span className="min-w-0"><span className="block text-sm text-muted-foreground">{number}/8</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
                     </button>
                   </li>
@@ -153,7 +166,14 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
           </aside>
 
           <section className="min-w-0 min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
-            {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
+            {showGuestGate ? (
+              <GuestRegisterGate
+                locale={locale}
+                loginHref={loginHref}
+                completedCount={completedStages.size}
+                onReviewStages={() => chooseStage(GUEST_MAX_STAGE)}
+              />
+            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
               <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
             ) : (<>
             {currentStage === 0 ? (

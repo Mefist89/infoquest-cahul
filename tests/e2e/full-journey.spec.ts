@@ -44,8 +44,6 @@ for (const locale of ["ru", "ro"] as const) {
       expect(await response!.text()).toContain(content.description);
       await expect(page).toHaveURL(new RegExp(`${path}$`));
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText(content.title);
-      await expect(page.locator("article li")).toHaveCount(3);
       await expect(page).toHaveTitle(`${content.title} | InfoQuest`);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new RegExp(`${path}$`));
       await expect(page.locator('link[hreflang="x-default"]')).toHaveAttribute("href", new RegExp(`/ro/modules/${moduleSlug}$`));
@@ -59,11 +57,18 @@ for (const locale of ["ru", "ro"] as const) {
       const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
       expect(JSON.parse(structuredData!)).toMatchObject({ "@type": "Course", name: content.title, isAccessibleForFree: true });
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-      const start = page.getByRole("link", { name: locale === "ru" ? "Начать — войти" : "Începe — intră în cont", exact: true });
-      await expect(start).toHaveAttribute("href", `/${locale}/login?next=${encodeURIComponent(path)}`);
-      await start.click();
-      await expect(page).toHaveURL(new RegExp(`/${locale}/login\\?next=`));
-      await expect(page.getByRole("button", { name: locale === "ru" ? "Продолжить с Google" : "Continuă cu Google" })).toBeVisible();
+      if (moduleSlug === "operator-call") {
+        await expect(page.getByTestId("stage-nav-1")).toBeEnabled();
+        await expect(page.getByTestId("stage-nav-5")).toBeDisabled();
+      } else {
+        await expect(page.getByRole("heading", { level: 1 })).toHaveText(content.title);
+        await expect(page.locator("article li")).toHaveCount(3);
+        const start = page.getByRole("link", { name: locale === "ru" ? "Начать — войти" : "Începe — intră în cont", exact: true });
+        await expect(start).toHaveAttribute("href", `/${locale}/login?next=${encodeURIComponent(path)}`);
+        await start.click();
+        await expect(page).toHaveURL(new RegExp(`/${locale}/login\\?next=`));
+        await expect(page.getByRole("button", { name: locale === "ru" ? "Продолжить с Google" : "Continuă cu Google" })).toBeVisible();
+      }
     }
   });
 }

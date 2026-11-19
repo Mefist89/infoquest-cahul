@@ -1,4 +1,4 @@
-import { ModuleLanding, ModuleStructuredData } from "@/components/ModuleLanding";
+import { ModuleStructuredData } from "@/components/ModuleLanding";
 import { moduleSeo } from "@/data/seo";
 import { publicMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
@@ -30,7 +30,25 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
 
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData.user) return <ModuleLanding module="operator-call" locale={locale} rules={operatorCallContent[locale].guestRules} />;
+  const currentModule = MODULE_CATALOG.find(entry => entry.moduleId === MODULE_IDS.operatorCall)!;
+
+  if (authError || !authData.user) {
+    return (
+      <>
+        <ModuleStructuredData module="operator-call" locale={locale} />
+        <OperatorCallModule
+          badge={currentModule.badge[locale]}
+          nextModule={null}
+          content={operatorCallContent[locale]}
+          locale={locale}
+          initialStages={[]}
+          initialModule={null}
+          isGuest
+        />
+        <SiteFooter lang={locale} />
+      </>
+    );
+  }
 
   const [{ data: stages }, { data: allModuleProgress }, { data: profile }] = await Promise.all([
     supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.operatorCall).order("stage_index"),
@@ -39,7 +57,6 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
   ]);
 
   const moduleProgress = allModuleProgress?.find(row => row.module_id === MODULE_IDS.operatorCall) ?? null;
-  const currentModule = MODULE_CATALOG.find(entry => entry.moduleId === MODULE_IDS.operatorCall)!;
   const next = pickNextModule(MODULE_CATALOG, allModuleProgress ?? [], MODULE_IDS.operatorCall);
   const nextModule = next ? { title: next.title[locale], href: `/${locale}${next.route}` } : null;
 
