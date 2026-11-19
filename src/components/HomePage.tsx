@@ -300,32 +300,32 @@ export default function HomePage() {
             <h1 className="font-display text-4xl font-black uppercase tracking-tight min-[360px]:text-5xl sm:text-6xl"><span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span></h1>
             <p className="mx-auto mt-2 max-w-full text-balance font-display text-sm uppercase tracking-[0.12em] text-neon min-[360px]:text-sm sm:text-lg sm:tracking-[0.25em] lg:mx-0">{t.tagline}</p>
             <p className="mx-auto mt-4 block w-fit max-w-full text-balance rounded-3xl border border-gold/50 px-4 py-2 text-sm font-semibold text-gold sm:rounded-full sm:px-5 sm:text-sm lg:mx-0">{t.motto}</p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-            <Link
-              href={headerProgress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`}
-              className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-neon px-6 text-sm font-extrabold text-primary-foreground shadow-[0_0_28px_color-mix(in_oklab,var(--neon)_38%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--neon)_55%,transparent)]"
-            >
-              {t.startInvestigation}
-              <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
-            </Link>
-            <div className="flex flex-col items-center gap-2">
-            {headerProgress.role === "blocked" ? (
-              <span aria-disabled="true" className="inline-flex min-h-12 cursor-not-allowed items-center gap-3 rounded-xl border border-border bg-secondary/70 px-6 text-sm font-extrabold text-muted-foreground opacity-75">
-                <Lock className="size-5" aria-hidden="true" />
-                <span>{t.aiHelp}</span>
-              </span>
-            ) : (
-              <Link
-                href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`}
-                className="focus-ring group inline-flex min-h-12 items-center gap-3 rounded-xl bg-success px-6 text-sm font-extrabold text-slate-950 shadow-[0_0_28px_color-mix(in_oklab,var(--success)_32%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--success)_50%,transparent)]"
-              >
-                <Bot className="size-5" aria-hidden="true" />
-                {t.aiHelp}
-              </Link>
-            )}
-            {!headerProgress.isAuthenticated && <p className="max-w-64 text-center text-sm text-muted-foreground">{t.aiGuestHint}</p>}
-            {headerProgress.role === "blocked" && <p className="max-w-64 text-center text-sm text-muted-foreground">{t.aiRestricted}</p>}
-            </div>
+            <div className="mx-auto mt-7 flex w-fit max-w-full flex-col items-center gap-2 lg:mx-0">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:flex-nowrap">
+                <Link
+                  href={headerProgress.isAuthenticated ? `/${lang}/profile` : `/${lang}/login`}
+                  className="focus-ring group inline-flex min-h-12 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl bg-neon px-5 text-sm font-extrabold text-primary-foreground shadow-[0_0_28px_color-mix(in_oklab,var(--neon)_38%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--neon)_55%,transparent)]"
+                >
+                  {t.startInvestigation}
+                  <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
+                </Link>
+                {headerProgress.role === "blocked" ? (
+                  <span aria-disabled="true" className="inline-flex min-h-12 shrink-0 cursor-not-allowed items-center gap-2.5 whitespace-nowrap rounded-xl border border-border bg-secondary/70 px-5 text-sm font-extrabold text-muted-foreground opacity-75">
+                    <Lock className="size-5" aria-hidden="true" />
+                    <span>{t.aiHelp}</span>
+                  </span>
+                ) : (
+                  <Link
+                    href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`}
+                    className="focus-ring group inline-flex min-h-12 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl bg-success px-5 text-sm font-extrabold text-slate-950 shadow-[0_0_28px_color-mix(in_oklab,var(--success)_32%,transparent)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_color-mix(in_oklab,var(--success)_50%,transparent)]"
+                  >
+                    <Bot className="size-5" aria-hidden="true" />
+                    {t.aiHelp}
+                  </Link>
+                )}
+              </div>
+              {!headerProgress.isAuthenticated && <p className="text-center text-sm text-muted-foreground">{t.aiGuestHint}</p>}
+              {headerProgress.role === "blocked" && <p className="text-center text-sm text-muted-foreground">{t.aiRestricted}</p>}
             </div>
             <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">{lang === "ru" ? "Расследуй цифровые происшествия, находи доказательства и учись защищать себя и друзей в интернете." : "Investighează incidente digitale, găsește dovezi și învață să te protejezi pe tine și pe prieteni pe internet."}</p>
           </div>
