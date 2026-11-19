@@ -13,7 +13,6 @@ import {
   MessageSquare,
   ShieldCheck,
   Sparkles,
-  Volume2,
   BookOpen,
   Clapperboard,
   Video,
@@ -168,7 +167,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
                 {currentStage === 0 && <MentorIntro imageSrc="/characters/01_woman_purple_blazer_left.png" locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
-                {currentStage === 3 && <AudioExampleStage content={t.audioExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
+                {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
                 {currentStage === 4 && <FindSignalsStage locale={locale} content={t.findSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
                 {currentStage === 5 && <LinkClassifyStage locale={locale} content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <DialogueReactStage locale={locale} content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(6, result)} />}
@@ -238,40 +237,25 @@ function VideoExplanationStage({ content, button, saving, onComplete }: { conten
   );
 }
 
-function AudioExampleStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["audioExample"] | (typeof fakeLinkContent)["ro"]["audioExample"]; button: string; saving: boolean; onComplete: () => void }) {
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-  const [playing, setPlaying] = React.useState(false);
-
-  const toggleAudio = React.useCallback(() => {
-    if (audioRef.current) {
-      if (playing) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setPlaying(!playing);
-    }
-  }, [playing]);
-
-  React.useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const handleEnded = () => setPlaying(false);
-    audio.addEventListener("ended", handleEnded);
-    return () => audio.removeEventListener("ended", handleEnded);
-  }, []);
-
+function VideoExampleStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["videoExample"] | (typeof fakeLinkContent)["ro"]["videoExample"]; button: string; saving: boolean; onComplete: () => void }) {
   return (
-    <div className="py-8 text-center">
-      <audio ref={audioRef} src={content.audioFile} preload="metadata" />
-      <button type="button" onClick={toggleAudio} className="focus-ring mb-8 inline-flex min-h-12 items-center gap-3 rounded-2xl border border-neon/40 bg-neon/10 px-8 py-3 text-sm font-bold text-neon transition hover:bg-neon/20">
-        <Volume2 className={`size-5 ${playing ? "animate-pulse text-success" : ""}`} />
-        {playing ? "..." : content.listen}
-      </button>
-      <br />
-      <button type="button" onClick={onComplete} disabled={saving} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 disabled:opacity-60">
-        {button}
-      </button>
+    <div>
+      <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
+        <iframe
+          key={content.embedUrl}
+          src={content.embedUrl}
+          title={content.title}
+          className="aspect-video w-full border-0 bg-black"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+        <div className="border-t border-border bg-card p-4">
+          <h3 className="font-bold">{content.title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{content.description}</p>
+        </div>
+      </div>
+      <ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton>
     </div>
   );
 }

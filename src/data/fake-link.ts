@@ -254,9 +254,10 @@ export const fakeLinkContent = {
           },
         ],
       },
-      audioExample: {
-        listen: "Прослушать текст",
-        audioFile: "/3_exemple_ru.mp3",
+      videoExample: {
+        title: "Видеопример: опасное сообщение",
+        description: "Посмотри, как выглядит реальная фишинговая ловушка и какие детали её выдают.",
+        embedUrl: "https://www.youtube-nocookie.com/embed/a1Hyk1jokCU",
       },
       videoExplanation: {
         title: "Как отличить поддельный сайт от настоящего",
@@ -524,9 +525,10 @@ export const fakeLinkContent = {
           },
         ],
       },
-      audioExample: {
-        listen: "Ascultă textul",
-        audioFile: "/3_exemple_ro.mp3",
+      videoExample: {
+        title: "Exemplu video: un mesaj periculos",
+        description: "Vezi cum arată o capcană reală de phishing și ce detalii o dau de gol.",
+        embedUrl: "https://www.youtube-nocookie.com/embed/emfsIoDhLWU",
       },
       videoExplanation: {
         title: "Cum să distingi un site fals de unul real",
