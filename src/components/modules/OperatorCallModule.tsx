@@ -155,7 +155,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
                 const active = currentStage === number;
                 return (
                   <li key={stage.title}>
-                    <button type="button" data-testid={`stage-nav-${number}`} aria-label={`${number}/8. ${stage.title}. ${locked || guestLocked ? t.locked : done ? t.completed : stage.subtitle}`} onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
+                    <button type="button" data-testid={`stage-nav-${number}`} aria-label={`${number}/8. ${stage.title}. ${locked ? t.locked : guestLocked ? (locale === "ro" ? "Necesită autentificare" : "Нужен вход") : done ? t.completed : stage.subtitle}`} onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
                       <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${done ? "bg-success/15 text-success" : active ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}>{locked || guestLocked ? <Lock className="size-4" /> : done ? <Check className="size-4" /> : <Icon className="size-4" />}</span>
                       <span className="min-w-0"><span className="block text-sm text-muted-foreground">{number}/8</span><span className="block truncate text-sm font-bold text-foreground">{stage.title}</span></span>
                     </button>
@@ -183,7 +183,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
             )}
             <NextButtonContext.Provider value={
               currentStage < 8 ? (
-                <button type="button" disabled={!completedStages.has(currentStage)} onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-neon/40 disabled:hover:bg-neon/10">
+                <button type="button" disabled={!completedStages.has(currentStage)} onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20 disabled:cursor-not-allowed disabled:border-border disabled:bg-secondary/50 disabled:text-muted-foreground disabled:hover:border-border disabled:hover:bg-secondary/50">
                   {t.next}<ChevronRight className="size-4" aria-hidden="true" />
                 </button>
               ) : null
@@ -212,7 +212,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
 }
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
-  return <div className="min-w-32 rounded-2xl border border-border bg-background/35 p-4"><Icon className="size-4 text-gold" /><p className="mt-3 text-sm uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-display text-xl font-black text-foreground">{value}</p></div>;
+  return <div className="min-w-0 rounded-2xl border border-border bg-background/35 p-3.5 sm:min-w-32 sm:p-4"><Icon className="size-4 text-gold" /><p className="mt-3 break-words text-sm uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-display text-xl font-black text-foreground">{value}</p></div>;
 }
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {

@@ -74,12 +74,12 @@ export function Composer({
         <div className="rounded-xl border border-gold/30 bg-gold/5 p-3 text-sm leading-relaxed text-muted-foreground">
           <p>{t.privacySummary}</p>
           <details className="mt-1">
-            <summary className="focus-ring inline-flex cursor-pointer rounded font-bold text-neon hover:underline">
+            <summary className="focus-ring inline-flex min-h-11 cursor-pointer items-center rounded font-bold text-neon hover:underline">
               {t.privacyMore}
             </summary>
             <div className="mt-2 border-l border-gold/30 pl-3">
               <p>{mode === "analyzer" ? t.privacyNotice : t.chatPrivacyNotice}</p>
-              <Link href={`/${locale}/privacy`} className="mt-2 inline-flex font-bold text-neon hover:underline">
+              <Link href={`/${locale}/privacy`} className="mt-1 inline-flex min-h-11 items-center font-bold text-neon hover:underline">
                 {t.privacyLink}
               </Link>
             </div>
@@ -110,7 +110,7 @@ export function Composer({
                   <div className="flex items-center gap-3">
                     <span className="grid size-12 place-items-center rounded-lg bg-success/10 text-success"><FileAudio className="size-6" /></span>
                     <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{attachment.name}</p><p className="text-sm text-muted-foreground">{(attachment.durationSeconds === undefined ? t.audioSize : t.audioDetails.replace("{seconds}", String(Math.round(attachment.durationSeconds)))).replace("{size}", String(Math.ceil(attachment.file.size / 1024)))}</p></div>
-                    <button type="button" onClick={clearAttachment} aria-label={`${t.removeAttachment}: ${attachment.name}`} className="focus-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
+                    <button type="button" onClick={clearAttachment} aria-label={`${t.removeAttachment}: ${attachment.name}`} className="focus-ring grid size-11 shrink-0 place-items-center rounded-lg text-muted-foreground hover:text-danger"><X className="size-4" aria-hidden="true" /></button>
                   </div>
                   <audio src={attachment.url} controls className="mt-3 w-full" />
                 </div>

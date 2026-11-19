@@ -8,7 +8,7 @@ type GateLocale = "ru" | "ro";
 const copy = {
   ru: {
     eyebrow: "Отличное начало!",
-    title: "Зарегистрируйся, чтобы продолжить с 5-го этапа",
+    title: "Зарегистрируйся, чтобы продолжить с 5\u2011го этапа",
     description:
       "Ты уже прошёл первые 4 этапа модуля без регистрации. Войди или создай аккаунт — мы автоматически сохраним твой прогресс и откроем этапы 5–8 и финальную схватку.",
     benefits: [
@@ -58,9 +58,9 @@ export function GuestRegisterGate({
         <Lock className="size-8" aria-hidden="true" />
       </span>
 
-      <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1 text-sm font-bold text-gold">
-        <Sparkles className="size-4" aria-hidden="true" />
-        {t.eyebrow} · {t.completedLabel(completedCount)}
+      <p className="mt-4 inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-1.5 text-center text-sm font-bold text-gold">
+        <Sparkles className="size-4 shrink-0" aria-hidden="true" />
+        <span>{t.eyebrow} · {t.completedLabel(completedCount)}</span>
       </p>
 
       <h2 className="mt-4 text-2xl font-black text-foreground sm:text-3xl">{t.title}</h2>

@@ -273,17 +273,17 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
     <main className="circuit-bg relative min-h-screen overflow-hidden px-4 py-5 sm:px-6 sm:py-8">
       <div className="pointer-events-none absolute left-0 top-20 size-80 rounded-full bg-success/10 blur-3xl" aria-hidden="true" />
       <div className="relative mx-auto max-w-7xl">
-        <header className="relative mb-5 flex flex-wrap items-center gap-3">
-          <Link href={`/${locale}`} className="focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-card/70 px-3 text-sm font-bold text-neon transition hover:border-neon/60">
-            <ArrowLeft className="size-4" aria-hidden="true" />{t.back}
+        <header className="relative mb-5 flex flex-wrap items-center gap-2 sm:gap-3">
+          <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-3 text-sm font-bold text-neon transition hover:border-neon/60">
+            <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />{t.back}
           </Link>
           <div className="order-3 mx-auto flex w-full justify-center lg:absolute lg:left-1/2 lg:top-1/2 lg:order-none lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2" role="group" aria-label={locale === "ro" ? "Modul Chrono" : "Режим Chrono"}>
-            <div className="flex rounded-2xl border border-neon/25 bg-card/80 p-1.5 shadow-[0_0_24px_rgba(0,217,255,0.08)] backdrop-blur">
-              <button type="button" onClick={() => selectMode("analyzer")} disabled={thinking || listening || starting || preparingAudio} aria-pressed={mode === "analyzer"} className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed ${mode === "analyzer" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><ShieldCheck className="size-4" aria-hidden="true" />{t.analyzer}</button>
-              <button type="button" onClick={() => selectMode("chat")} disabled={thinking || listening || starting || preparingAudio} aria-pressed={mode === "chat"} className={`focus-ring inline-flex min-h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition disabled:cursor-not-allowed ${mode === "chat" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><MessageCircle className="size-4" aria-hidden="true" />{t.chat}</button>
+            <div className="flex w-full rounded-2xl border border-neon/25 bg-card/80 p-1.5 shadow-[0_0_24px_rgba(0,217,255,0.08)] backdrop-blur sm:w-auto">
+              <button type="button" onClick={() => selectMode("analyzer")} disabled={thinking || listening || starting || preparingAudio} aria-pressed={mode === "analyzer"} className={`focus-ring inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-black transition disabled:cursor-not-allowed sm:flex-none sm:px-4 ${mode === "analyzer" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><ShieldCheck className="size-4 shrink-0" aria-hidden="true" />{t.analyzer}</button>
+              <button type="button" onClick={() => selectMode("chat")} disabled={thinking || listening || starting || preparingAudio} aria-pressed={mode === "chat"} className={`focus-ring inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-sm font-black transition disabled:cursor-not-allowed sm:flex-none sm:px-4 ${mode === "chat" ? "bg-neon text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.35)]" : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"}`}><MessageCircle className="size-4 shrink-0" aria-hidden="true" />{t.chat}</button>
             </div>
           </div>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-3">
             <span className="hidden items-center gap-2 rounded-full border border-success/35 bg-success/10 px-3 py-2 text-sm font-bold text-success sm:inline-flex">
               <span className="size-2 animate-pulse rounded-full bg-success" />{t.status}
             </span>
