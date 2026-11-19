@@ -76,7 +76,7 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-3 sm:gap-4 sm:px-4">
-        <a href="#top" onClick={() => setOpen(false)} className="focus-ring flex shrink-0 items-center gap-2 rounded-lg" aria-label="InfoQuest">
+        <a href="#top" onClick={() => setOpen(false)} className="focus-ring flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-lg" aria-label="InfoQuest">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon"><ShieldCheck className="size-5 text-neon" aria-hidden="true" /></span>
           <span className="hidden leading-tight min-[430px]:block">
             <span className="block whitespace-nowrap font-display text-sm font-bold tracking-wider sm:text-base"><span className="text-white">INFO</span><span className="text-[#00D9FF]">QUEST</span></span>
@@ -90,20 +90,35 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           {progress.loading ? (
-            <span className="size-10 shrink-0 animate-pulse rounded-full border border-border bg-card/70" aria-label={lang === "ru" ? "Загрузка профиля" : "Se încarcă profilul"} />
+            <span className="grid size-11 shrink-0 animate-pulse place-items-center rounded-xl border border-border bg-card/70 text-muted-foreground/50" aria-label={lang === "ru" ? "Загрузка профиля" : "Se încarcă profilul"}>
+              <CircleUserRound className="size-5" aria-hidden="true" />
+            </span>
           ) : progress.isAuthenticated ? (
             <>
-              <Link data-testid="home-account" href={`/${lang}/profile`} aria-label={lang === "ru" ? "Профиль" : "Profil"} className="focus-ring inline-flex min-h-10 min-w-10 shrink-0 items-center gap-2 rounded-full border border-neon/35 bg-neon/10 p-1 pr-2 text-neon transition hover:border-neon hover:bg-neon/20 sm:pr-3">
+              <Link data-testid="home-account" href={`/${lang}/profile`} aria-label={lang === "ru" ? "Профиль" : "Profil"} className="focus-ring inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full border border-neon/35 bg-neon/10 p-1 pr-2 text-neon transition hover:border-neon hover:bg-neon/20 sm:pr-3">
                 <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background/70">{progress.avatarUrl ? <Image src={progress.avatarUrl} alt="" fill sizes="32px" className="object-cover" /> : <CircleUserRound className="size-5" aria-hidden="true" />}</span>
                 {progress.displayName && <span className="hidden max-w-36 truncate text-sm font-semibold text-foreground 2xl:inline">{progress.displayName}</span>}
               </Link>
               <div className="hidden md:block"><SignOutButton locale={lang} label={lang === "ru" ? "Выйти" : "Ieșire"} /></div>
             </>
           ) : (
-            <Link href={`/${lang}/login`} aria-label={lang === "ru" ? "Войти" : "Autentificare"} className="focus-ring inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20 sm:px-4 sm:text-sm"><LogIn className="size-4" aria-hidden="true" /><span className="hidden md:inline">{lang === "ru" ? "Войти" : "Autentificare"}</span></Link>
+            <Link href={`/${lang}/login`} aria-label={lang === "ru" ? "Войти" : "Autentificare"} className="focus-ring inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20 sm:px-4 sm:text-sm"><LogIn className="size-4" aria-hidden="true" /><span className="hidden md:inline">{lang === "ru" ? "Войти" : "Autentificare"}</span></Link>
           )}
 
-          <button type="button" onClick={toggleLargeText} aria-pressed={largeText} aria-label={largeTextLabel} title={largeTextLabel} className="focus-ring hidden size-11 shrink-0 place-items-center rounded-full border border-border bg-card/70 text-sm font-black text-neon transition hover:border-neon xl:grid">A+</button>
+          <button
+            type="button"
+            onClick={toggleLargeText}
+            aria-pressed={largeText}
+            aria-label={largeTextLabel}
+            title={largeTextLabel}
+            className={`focus-ring hidden size-11 shrink-0 place-items-center rounded-full border text-sm font-black transition xl:grid ${
+              largeText
+                ? "border-neon bg-neon text-primary-foreground shadow-[0_0_14px_rgba(0,217,255,0.35)]"
+                : "border-border bg-card/70 text-neon hover:border-neon"
+            }`}
+          >
+            A+
+          </button>
 
           <div className="flex rounded-full border border-border bg-card/70 p-1" role="group" aria-label="Language">
             {(["ro", "ru"] as const).map(item => <button key={item} type="button" onClick={() => { setOpen(false); setLang(item); }} aria-pressed={lang === item} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 text-base font-bold uppercase transition sm:px-3 sm:text-base ${lang === item ? "bg-neon text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{item}</button>)}
@@ -119,11 +134,37 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
         </nav>
         <div className="mx-auto mt-3 grid max-w-7xl gap-2 border-t border-border/70 pt-3 sm:grid-cols-2">
           {chronoRestricted ? <div><span aria-disabled="true" className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2 text-base font-semibold text-muted-foreground"><Lock className="size-5" aria-hidden="true" />Chrono</span><p className="mt-1 text-base text-muted-foreground">{t.aiRestricted}</p></div> : <Link href={chronoHref} className="focus-ring flex min-h-12 items-center rounded-xl border border-success/40 bg-success/10 px-4 py-2 text-base font-semibold text-success">Chrono</Link>}
-          <button type="button" onClick={toggleLargeText} aria-pressed={largeText} className="focus-ring flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/70 px-4 py-2 text-left text-base font-semibold text-neon"><span aria-hidden="true" className="font-black">A+</span>{largeTextLabel}</button>
-          <div className="flex min-h-12 gap-2" role="group" aria-label={lang === "ru" ? "Язык меню" : "Limba meniului"}>
-            {(["ro", "ru"] as const).map(item => <button key={item} type="button" aria-pressed={lang === item} onClick={() => setLang(item)} className={`focus-ring min-h-12 flex-1 rounded-xl border px-4 py-2 text-base font-bold uppercase ${lang === item ? "border-neon bg-neon text-primary-foreground" : "border-border bg-card/70 text-muted-foreground"}`}>{item}</button>)}
+          <button
+            type="button"
+            onClick={toggleLargeText}
+            aria-pressed={largeText}
+            className={`focus-ring flex min-h-12 items-center gap-3 rounded-xl border px-4 py-2 text-left text-base font-semibold transition ${
+              largeText
+                ? "border-neon bg-neon/20 text-foreground"
+                : "border-border bg-card/70 text-neon"
+            }`}
+          >
+            <span aria-hidden="true" className="font-black text-neon">A+</span>
+            <span className="flex-1">{largeTextLabel}</span>
+            {largeText && (
+              <span className="rounded-full bg-neon px-2.5 py-0.5 text-sm font-black uppercase text-primary-foreground">
+                {lang === "ru" ? "ВКЛ" : "ACTIV"}
+              </span>
+            )}
+          </button>
+          <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+            <div className="flex min-h-12 gap-1.5" role="group" aria-label={lang === "ru" ? "Язык меню" : "Limba meniului"}>
+              {(["ro", "ru"] as const).map(item => <button key={item} type="button" aria-pressed={lang === item} onClick={() => setLang(item)} className={`focus-ring min-h-12 flex-1 rounded-xl border px-3 py-2 text-sm font-bold uppercase ${lang === item ? "border-neon bg-neon text-primary-foreground" : "border-border bg-card/70 text-muted-foreground"}`}>{item}</button>)}
+            </div>
+            {progress.isAuthenticated ? (
+              <div className="flex gap-1.5">
+                <Link href={`/${lang}/profile`} className="focus-ring flex min-h-12 flex-1 items-center justify-center rounded-xl border border-border bg-card/70 px-3 py-2 text-sm font-semibold">{lang === "ru" ? "Профиль" : "Profil"}</Link>
+                <div className="flex-1 [&_button]:min-h-12 [&_button]:w-full [&_button]:text-sm [&_span]:inline"><SignOutButton locale={lang} label={lang === "ru" ? "Выйти" : "Ieșire"} /></div>
+              </div>
+            ) : (
+              <Link href={`/${lang}/login`} className="focus-ring flex min-h-12 items-center justify-center gap-2 rounded-xl border border-neon/35 bg-neon/10 px-4 py-2 text-sm font-bold text-neon"><LogIn className="size-4" aria-hidden="true" />{lang === "ru" ? "Войти" : "Autentificare"}</Link>
+            )}
           </div>
-          {progress.isAuthenticated ? <><Link href={`/${lang}/profile`} className="focus-ring flex min-h-12 items-center rounded-xl border border-border bg-card/70 px-4 py-2 text-base font-semibold">{lang === "ru" ? "Профиль" : "Profil"}</Link><div className="[&_button]:min-h-12 [&_button]:w-full [&_button]:text-base [&_span]:inline"><SignOutButton locale={lang} label={lang === "ru" ? "Выйти" : "Ieșire"} /></div></> : <Link href={`/${lang}/login`} className="focus-ring flex min-h-12 items-center rounded-xl border border-border bg-card/70 px-4 py-2 text-base font-semibold">{lang === "ru" ? "Войти" : "Autentificare"}</Link>}
         </div>
       </div>
     </header>

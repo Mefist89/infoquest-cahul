@@ -114,7 +114,7 @@ export function ProjectMaterials({ lang }: { lang: FooterLocale }) {
                 key={lang}
                 controls
                 playsInline
-                preload="metadata"
+                preload="none"
                 className="aspect-video w-full bg-black object-contain"
                 aria-label={t.demo}
               >

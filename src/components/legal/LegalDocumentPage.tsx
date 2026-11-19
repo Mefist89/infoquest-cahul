@@ -11,19 +11,19 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
   return (
     <div className="circuit-bg min-h-screen">
       <header className="sticky top-0 z-30 border-b border-neon/15 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <Link href={`/${locale}`} className="focus-ring flex min-w-0 items-center gap-2 rounded-lg">
+        <div className="mx-auto flex max-w-5xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+          <Link href={`/${locale}`} className="focus-ring flex min-h-11 min-w-0 items-center gap-2 rounded-lg">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/50 bg-card glow-neon">
               <ShieldCheck className="size-5 text-neon" aria-hidden="true" />
             </span>
-            <span className="font-display text-sm font-bold tracking-wider text-foreground sm:text-sm">
+            <span className="truncate font-display text-sm font-bold tracking-wider text-foreground">
               INFOQUEST
             </span>
           </Link>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <TextSizeButton locale={locale} />
-          <nav className="flex flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
+          <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((item) => (
               <LocaleSwitch locale={item}
                 key={item}
@@ -43,10 +43,10 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
         </div>
       </header>
 
-      <main className="relative mx-auto max-w-5xl px-4 py-10 sm:py-14">
+      <main className="relative mx-auto max-w-5xl px-4 pb-24 pt-10 sm:py-14">
         <Link
           href={`/${locale}`}
-          className="focus-ring inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-neon transition hover:text-foreground"
+          className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-neon transition hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
           {document.backHome}
@@ -55,7 +55,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
         <article className="mt-7 overflow-hidden rounded-3xl border border-neon/25 bg-card/70 shadow-[0_0_70px_rgba(0,214,255,0.08)] backdrop-blur">
           <header className="border-b border-neon/15 bg-slate-950/25 px-5 py-8 sm:px-10 sm:py-10">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-neon">{document.eyebrow}</p>
-            <h1 className="mt-3 text-3xl font-black text-foreground sm:text-5xl">{document.title}</h1>
+            <h1 className="mt-3 break-words hyphens-auto text-[clamp(1.35rem,5.5vw,3rem)] font-black leading-tight text-foreground">{document.title}</h1>
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">{document.summary}</p>
             <p className="mt-5 text-sm font-semibold uppercase tracking-wide text-gold">{document.updated}</p>
           </header>
@@ -88,7 +88,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
                 {document.links.map((link) => (
                   <li key={link.href}>
                     {link.href.startsWith("/") ? (
-                      <Link href={link.href} className="focus-ring inline-flex items-center gap-2 rounded text-sm font-semibold text-foreground transition hover:text-neon">
+                      <Link href={link.href} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded text-sm font-semibold text-foreground transition hover:text-neon">
                         {link.label}
                       </Link>
                     ) : (
@@ -96,7 +96,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
                         href={link.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="focus-ring inline-flex items-center gap-2 rounded text-sm font-semibold text-foreground transition hover:text-neon"
+                        className="focus-ring inline-flex min-h-11 items-center gap-2 rounded text-sm font-semibold text-foreground transition hover:text-neon"
                       >
                         {link.label}
                         <ExternalLink className="size-3.5" aria-hidden="true" />
@@ -115,7 +115,7 @@ export function LegalDocumentPage({ locale, kind, document }: { locale: LegalLoc
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
           <span>© 2026 InfoQuest</span>
-          <LocaleSwitch locale={alternateLocale} href={`/${alternateLocale}/${kind}`} className="focus-ring rounded font-semibold text-neon hover:text-foreground">
+          <LocaleSwitch locale={alternateLocale} href={`/${alternateLocale}/${kind}`} className="focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 font-semibold text-neon hover:text-foreground">
             {alternateLocale.toUpperCase()}
           </LocaleSwitch>
         </div>

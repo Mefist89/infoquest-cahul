@@ -77,11 +77,12 @@ export default async function LoginPage({
     <main className="circuit-bg relative min-h-screen overflow-hidden px-4 py-6 sm:py-10">
       <div className="pointer-events-none absolute left-1/2 top-24 size-80 -translate-x-1/2 rounded-full bg-neon/10 blur-3xl" aria-hidden="true" />
       <div className="relative mx-auto max-w-5xl">
-        <header className="flex items-center justify-between gap-4">
-          <Link href={`/${locale}`} className="focus-ring inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-neon transition hover:text-foreground">
-            <ArrowLeft className="size-4" aria-hidden="true" />
+        <header className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+          <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-neon transition hover:text-foreground">
+            <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
             {t.back as string}
           </Link>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <TextSizeButton locale={locale} />
           <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
             {(["ro", "ru"] as const).map((language) => (
@@ -95,6 +96,7 @@ export default async function LoginPage({
               </LocaleSwitch>
             ))}
           </nav>
+          </div>
         </header>
 
         <section className="mt-8 grid overflow-hidden rounded-3xl border border-neon/30 bg-card/75 shadow-[0_25px_90px_rgba(0,0,0,0.35)] backdrop-blur-xl md:grid-cols-[1.05fr_0.95fr]">

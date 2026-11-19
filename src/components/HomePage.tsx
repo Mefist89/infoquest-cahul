@@ -204,10 +204,10 @@ function CaseSlider({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/70 px-5 py-4 sm:px-6">
+        <div className="flex items-center justify-between gap-2 border-t border-border/70 px-3 py-3 sm:px-6 sm:py-4">
           <button type="button" onClick={() => move(-1)} aria-label={lang === "ro" ? "Dosarul anterior" : "Предыдущее дело"} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronLeft className="size-5" aria-hidden="true" /></button>
-          <div className="order-last grid w-full grid-cols-4 justify-items-center gap-1 sm:order-none sm:flex sm:w-auto sm:flex-1 sm:flex-wrap sm:justify-center" role="tablist" aria-label={lang === "ro" ? "Alege dosarul" : "Выберите дело"}>
-            {caseSlides.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={active === index} aria-label={`${index + 1}`} onClick={() => selectSlide(index)} className="focus-ring grid size-11 place-items-center rounded-xl hover:bg-neon/10"><span aria-hidden="true" className={`h-2 rounded-full motion-safe:transition-all ${active === index ? "w-7 bg-neon" : "w-2 bg-secondary"}`} /></button>)}
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-0.5 sm:gap-1" role="tablist" aria-label={lang === "ro" ? "Alege dosarul" : "Выберите дело"}>
+            {caseSlides.map((item, index) => <button key={item.id} type="button" role="tab" aria-selected={active === index} aria-label={`${index + 1}`} onClick={() => selectSlide(index)} className="focus-ring grid h-11 min-w-6 flex-1 max-w-11 place-items-center rounded-xl hover:bg-neon/10"><span aria-hidden="true" className={`h-2 rounded-full motion-safe:transition-all ${active === index ? "w-5 bg-neon sm:w-7" : "w-1.5 bg-secondary sm:w-2"}`} /></button>)}
           </div>
           <button type="button" onClick={() => move(1)} aria-label={lang === "ro" ? "Dosarul următor" : "Следующее дело"} className="focus-ring grid size-11 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground transition hover:border-neon/50 hover:text-neon"><ChevronRight className="size-5" aria-hidden="true" /></button>
         </div>
@@ -294,10 +294,10 @@ export default function HomePage() {
   return (
     <>
       <HomeHeader lang={lang} setLang={setLang} progress={headerProgress} />
-      <main id="top" className="circuit-bg overflow-hidden">
+      <main id="top" className="circuit-bg overflow-x-clip">
         <section className="relative mx-auto grid w-full max-w-6xl items-center gap-8 overflow-hidden px-4 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:py-14">
           <div className="relative z-10 min-w-0 text-center lg:text-left">
-            <h1 className="font-display text-4xl font-black uppercase tracking-tight min-[360px]:text-5xl sm:text-6xl"><span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span></h1>
+            <h1 className="max-w-full font-display text-[clamp(2rem,10vw,3.75rem)] font-black uppercase leading-none tracking-tight"><span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span></h1>
             <p className="mx-auto mt-2 max-w-full text-balance font-display text-sm uppercase tracking-[0.12em] text-neon min-[360px]:text-sm sm:text-lg sm:tracking-[0.25em] lg:mx-0">{t.tagline}</p>
             <p className="mx-auto mt-4 block w-fit max-w-full text-balance rounded-3xl border border-gold/50 px-4 py-2 text-sm font-semibold text-gold sm:rounded-full sm:px-5 sm:text-sm lg:mx-0">{t.motto}</p>
             <div className="mx-auto mt-7 flex w-fit max-w-full flex-col items-center gap-2 lg:mx-0">
@@ -336,9 +336,9 @@ export default function HomePage() {
 
         <section id="missions" aria-label="Mission map" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-10">
           <h2 className="home-title">{lang === "ru" ? "Выбери своё первое дело" : "Alege primul tău dosar"}</h2>
-          <div className="mb-7 mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label={lang === "ru" ? "Фильтр дел" : "Filtru dosare"}>
-            <button type="button" aria-pressed={missionFilter === null} onClick={() => setMissionFilter(null)} className={`focus-ring min-h-11 min-w-11 rounded-full border px-4 text-sm font-bold transition ${missionFilter === null ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{lang === "ru" ? "Все" : "Toate"}</button>
-            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId === missionFilter ? null : mission.moduleId)} className={`focus-ring min-h-11 min-w-11 rounded-full border px-4 text-sm font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
+          <div className="-mx-4 mb-6 mt-4 flex flex-nowrap items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mb-7 md:flex-wrap md:justify-center md:overflow-visible md:px-0 md:pb-0" role="group" aria-label={lang === "ru" ? "Фильтр дел" : "Filtru dosare"}>
+            <button type="button" aria-pressed={missionFilter === null} onClick={() => setMissionFilter(null)} className={`focus-ring min-h-11 min-w-11 shrink-0 whitespace-nowrap rounded-full border px-4 text-sm font-bold transition ${missionFilter === null ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{lang === "ru" ? "Все" : "Toate"}</button>
+            {missions.map((mission) => <button key={mission.moduleId} type="button" aria-pressed={missionFilter === mission.moduleId} onClick={() => setMissionFilter(mission.moduleId === missionFilter ? null : mission.moduleId)} className={`focus-ring min-h-11 min-w-11 shrink-0 whitespace-nowrap rounded-full border px-4 text-sm font-bold transition ${missionFilter === mission.moduleId ? "border-neon bg-neon/15 text-neon" : "border-border bg-card/60 text-muted-foreground hover:border-neon/45"}`}>{mission.category[lang]}</button>)}
           </div>
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
@@ -370,8 +370,8 @@ export default function HomePage() {
           <div className="lg:hidden">
             <ShieldProgress lang={lang} progress={headerProgress} />
             <div className="mt-8 space-y-3">
-              {missions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+              {(missionFilter ? missions.filter((mission) => mission.moduleId === missionFilter) : missions).map((mission) => (
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>

@@ -208,3 +208,9 @@
 html[data-font-scale="large"] {
   font-size: 125%;
 }
+
+@media (max-width: 767px) {
+  body {
+    background-attachment: scroll;
+  }
+}

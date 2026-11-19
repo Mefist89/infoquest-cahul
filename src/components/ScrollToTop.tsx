@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 export function ScrollToTop({ locale }: { locale: "ru" | "ro" }) {
   const pathname = usePathname();
-  const isInteractivePage = /^\/(?:ru|ro)\/(?:ai-help|modules|profile|patrol|admin)(?:\/|$)/.test(pathname);
+  const isInteractivePage = /^\/(?:ru|ro)\/(?:ai-help|modules|profile|patrol|admin|login)(?:\/|$)/.test(pathname);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function ScrollToTop({ locale }: { locale: "ru" | "ro" }) {
   if (isInteractivePage) return null;
 
   return (
-    <div className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-6 z-50">
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-50 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))] sm:right-6">
       <button
         type="button"
         onClick={scrollToTop}
