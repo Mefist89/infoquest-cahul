@@ -220,7 +220,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
 }
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
-  return <div className="min-w-0 rounded-2xl border border-border bg-background/35 p-3.5 sm:min-w-32 sm:p-4"><Icon className="size-4 text-gold" /><p className="mt-3 break-words text-sm uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 font-display text-xl font-black text-foreground">{value}</p></div>;
+  return <div className="min-w-0 rounded-2xl border border-border bg-background/35 p-3.5 sm:min-w-32 sm:p-4"><Icon className="size-4 text-gold" /><p className="mt-3 break-words text-sm uppercase tracking-normal text-muted-foreground sm:tracking-wider">{label}</p><p className="mt-1 font-display text-xl font-black text-foreground">{value}</p></div>;
 }
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
