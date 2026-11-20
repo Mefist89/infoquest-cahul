@@ -74,22 +74,30 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
   return (
     <main className="circuit-bg min-h-screen px-4 py-6 sm:py-10">
       <div className="mx-auto max-w-7xl">
-        <header className="flex flex-wrap items-center gap-3">
-          <NoTimerToggle locale={locale} />
-          <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-neon transition hover:border-neon/60">
-            <ArrowLeft className="size-4" aria-hidden="true" /> {t.back}
-          </Link>
-          <Link href={`/${locale}/profile`} className="focus-ring ml-auto inline-flex min-h-11 items-center rounded-xl border border-border bg-card/70 px-4 text-sm font-semibold text-muted-foreground transition hover:border-neon/60 hover:text-foreground">{t.profile}</Link>
-          {isAdmin && (
-            <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">
-              <ShieldCheck className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">{locale === "ro" ? "Administrare" : "Админ"}</span>
+        <header className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+          <div className="flex w-full items-center justify-between gap-2 lg:w-auto lg:flex-1">
+            <Link href={`/${locale}`} className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-card/70 px-3 text-sm font-semibold text-neon transition hover:border-neon/60 sm:gap-2 sm:px-4">
+              <ArrowLeft className="size-4 shrink-0" aria-hidden="true" /> {t.back}
             </Link>
-          )}
-          <TextSizeButton locale={locale} />
-          <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
-            {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/modules/scam-or-real`} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 py-2 text-base font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
-          </nav>
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 lg:order-last">
+              <TextSizeButton locale={locale} />
+              <nav className="flex rounded-full border border-border bg-card/70 p-1" aria-label="Language">
+                {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/modules/scam-or-real`} className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-2.5 py-2 text-base font-bold uppercase sm:px-3 ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
+              </nav>
+            </div>
+          </div>
+          <div className="flex w-full items-center justify-between gap-2 lg:w-auto">
+            <NoTimerToggle locale={locale} />
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              {isAdmin && (
+                <Link href={`/${locale}/admin`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon transition hover:border-neon hover:bg-neon/20">
+                  <ShieldCheck className="size-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">{locale === "ro" ? "Administrare" : "Админ"}</span>
+                </Link>
+              )}
+              <Link href={`/${locale}/profile`} className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-border bg-card/70 px-3 text-sm font-semibold text-muted-foreground transition hover:border-neon/60 hover:text-foreground sm:px-4">{t.profile}</Link>
+            </div>
+          </div>
         </header>
 
         <section className="relative mt-6 overflow-hidden rounded-3xl border border-neon/30 bg-card/80 p-6 shadow-[0_25px_90px_rgba(0,0,0,0.35)] sm:p-8">

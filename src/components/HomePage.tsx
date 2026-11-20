@@ -294,7 +294,7 @@ export default function HomePage() {
   return (
     <>
       <HomeHeader lang={lang} setLang={setLang} progress={headerProgress} />
-      <main id="top" className="circuit-bg overflow-x-clip">
+      <main id="top" className="circuit-bg overflow-x-clip pb-14 sm:pb-16">
         <section className="relative mx-auto grid w-full max-w-6xl items-center gap-8 overflow-hidden px-4 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:py-14">
           <div className="relative z-10 min-w-0 text-center lg:text-left">
             <h1 className="max-w-full font-display text-[clamp(2rem,10vw,3.75rem)] font-black uppercase leading-none tracking-tight"><span className="text-white">Info</span><span className="text-[#00D9FF] text-glow">Quest</span></h1>
