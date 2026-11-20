@@ -73,6 +73,18 @@ export const hackedAccountContent = {
       recovery: "Если пароль уже сменили и войти не получается — нажми „Забыли пароль?“ или „Не удаётся войти?“ в официальном приложении. Не плати тем, кто обещает „вернуть аккаунт“ за деньги, — это тоже мошенники. Предупреди друзей другим способом — позвони им: взломщик управляет аккаунтом.",
       rule: "Увидел чужой вход — смени пароль, выйди на всех чужих устройствах, проверь почту для восстановления, включи двухэтапную проверку и предупреди друзей.",
     },
+    videoExplanation: {
+      title: "Как защищают аккаунт и возвращают доступ",
+      description: "Разбираем признаки взлома, правила сильных паролей, двухэтапную проверку и 5 шагов спасения аккаунта.",
+      videoUrl: "/video/hacked-account-explain-ru.mp4",
+      videoFallback: "Ваш браузер не поддерживает воспроизведение видео.",
+      points: [
+        "Для каждого сайта используй отдельный длинный пароль и включи двухэтапную проверку.",
+        "Увидел чужой вход — сразу смени пароль и закрой все чужие сессии на устройствах.",
+        "Проверь резервную почту, телефон восстановления и удали незнакомые приложения.",
+        "Предупреди друзей другим способом, чтобы они не попались на просьбы о деньгах от твоего имени.",
+      ],
+    },
     breachSigns: {
       prompt: "Осмотри аккаунт и нажимай на всё подозрительное. Ошибка тоже считается — она снижает счёт.",
       levelComplete: "Уровень пройден!",
@@ -357,6 +369,18 @@ export const hackedAccountContent = {
       ],
       recovery: "Dacă parola a fost deja schimbată și nu mai poți intra — apasă „Ai uitat parola?” sau „Nu poți intra?” în aplicația oficială. Nu plăti celor care promit să-ți „recupereze contul” contra bani — și ei sunt escroci. Avertizează-ți prietenii în alt mod — sună-i: contul este controlat de spărgător.",
       rule: "Ai văzut o conectare străină — schimbă parola, ieși de pe toate dispozitivele străine, verifică emailul de recuperare, activează verificarea în doi pași și avertizează-ți prietenii.",
+    },
+    videoExplanation: {
+      title: "Cum e protejat contul și cum recuperezi accesul",
+      description: "Analizăm semnele de spargere, regulile parolelor puternice, verificarea în doi pași și cei 5 pași de salvare a contului.",
+      videoUrl: "/video/hacked-account-explain-ro.mp4",
+      videoFallback: "Browserul tău nu suportă redarea video.",
+      points: [
+        "Folosește pentru fiecare site o parolă lungă diferită și activează verificarea în doi pași.",
+        "Ai observat o conectare străină — schimbă imediat parola și închide toate sesiunile străine.",
+        "Verifică emailul și telefonul de recuperare și elimină aplicațiile necunoscute.",
+        "Avertizează-ți prietenii prin alt mijloc, ca să nu cadă în capcana cererilor de bani în numele tău.",
+      ],
     },
     breachSigns: {
       prompt: "Examinează contul și apasă pe tot ce e suspect. Greșeala contează și ea — îți scade scorul.",
