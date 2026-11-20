@@ -13,6 +13,7 @@ import { canUseAi, type UserRole } from "@/lib/roles";
 type HeaderProgress = {
   loading: boolean;
   isAuthenticated: boolean;
+  isDemoStudent: boolean;
   displayName: string | null;
   avatarUrl: string | null;
   role: UserRole | null;
@@ -29,7 +30,10 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
   const menuLabel = lang === "ru" ? "Меню" : "Meniu";
   const largeTextLabel = lang === "ru" ? "Крупный текст" : "Text mare";
   const navigationLabel = lang === "ru" ? "Главная навигация" : "Navigare principală";
-  const chronoRestricted = progress.isAuthenticated && !canUseAi(progress.role);
+  const chronoRestricted = progress.isAuthenticated && (!canUseAi(progress.role) || progress.isDemoStudent);
+  const chronoRestrictedText = progress.isDemoStudent
+    ? (lang === "ru" ? "Chrono AI недоступен в демо-режиме." : "Chrono AI nu este disponibil în modul demo.")
+    : t.aiRestricted;
   const chronoHref = progress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`;
   const links = [
     ["#how", lang === "ru" ? "Как играть" : "Cum se joacă"],
@@ -133,7 +137,7 @@ export function HomeHeader({ lang, setLang, progress }: { lang: Lang; setLang: (
           {links.map(([href, label]) => <a key={href} href={href} className="focus-ring flex min-h-12 items-center rounded-xl border border-border bg-card/70 px-4 py-2 text-base font-semibold transition hover:border-neon/50 hover:text-neon">{label}</a>)}
         </nav>
         <div className="mx-auto mt-3 grid max-w-7xl gap-2 border-t border-border/70 pt-3 sm:grid-cols-2">
-          {chronoRestricted ? <div><span aria-disabled="true" className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2 text-base font-semibold text-muted-foreground"><Lock className="size-5" aria-hidden="true" />Chrono</span><p className="mt-1 text-base text-muted-foreground">{t.aiRestricted}</p></div> : <Link href={chronoHref} className="focus-ring flex min-h-12 items-center rounded-xl border border-success/40 bg-success/10 px-4 py-2 text-base font-semibold text-success">Chrono</Link>}
+          {chronoRestricted ? <div><span aria-disabled="true" className="flex min-h-12 items-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2 text-base font-semibold text-muted-foreground"><Lock className="size-5" aria-hidden="true" />Chrono</span><p className="mt-1 text-base text-muted-foreground">{chronoRestrictedText}</p></div> : <Link href={chronoHref} className="focus-ring flex min-h-12 items-center rounded-xl border border-success/40 bg-success/10 px-4 py-2 text-base font-semibold text-success">Chrono</Link>}
           <button
             type="button"
             onClick={toggleLargeText}

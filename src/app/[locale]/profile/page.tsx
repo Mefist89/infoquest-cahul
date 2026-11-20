@@ -98,6 +98,7 @@ const copy = {
     stages: "Этапы",
     noScore: "—",
     role: "Роль",
+    schoolClass: "Класс",
     badges: "Коллекция наград",
     badgesHint: "Каждое завершённое расследование открывает отдельный бейдж.",
     earned: "Получено",
@@ -107,6 +108,7 @@ const copy = {
     questsEmpty: "Первый квест ещё разрабатывается. Когда он будет готов, он появится на этой странице.",
     questsSoon: "Скоро",
     aiRestricted: "Chrono недоступен для этого аккаунта.",
+    aiDemoRestricted: "Chrono AI недоступен в демо-режиме для учеников.",
     statuses: { not_started: "Не начато", in_progress: "В процессе", completed: "Пройдено" },
   },
   ro: {
@@ -143,6 +145,7 @@ const copy = {
     stages: "Etape",
     noScore: "—",
     role: "Rol",
+    schoolClass: "Clasa",
     badges: "Colecția de recompense",
     badgesHint: "Fiecare investigație finalizată deblochează o insignă separată.",
     earned: "Obținută",
@@ -152,6 +155,7 @@ const copy = {
     questsEmpty: "Primul quest este încă în dezvoltare. Când va fi gata, va apărea pe această pagină.",
     questsSoon: "În curând",
     aiRestricted: "Chrono nu este disponibil pentru acest cont.",
+    aiDemoRestricted: "Chrono AI nu este disponibil în modul demo pentru elevi.",
     statuses: { not_started: "Neînceput", in_progress: "În desfășurare", completed: "Finalizat" },
   },
 } as const;
@@ -183,11 +187,13 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   if (authError || !authData.user) redirect(`/${locale}/login`);
 
   const user = authData.user;
-  const [{ data: profile }, { data: progressData }, { data: stageProgressData }] = await Promise.all([
+  const [{ data: profile }, { data: progressData }, { data: stageProgressData }, { data: demoStudent }] = await Promise.all([
     supabase.from("profiles").select("display_name, avatar_url, role").eq("id", user.id).maybeSingle(),
     supabase.from("module_progress").select("module_id, status, score, xp, attempts").eq("user_id", user.id),
     supabase.from("module_stage_progress").select("module_id, status").eq("user_id", user.id),
+    supabase.from("demo_students").select("school_class").eq("user_id", user.id).maybeSingle(),
   ]);
+  const isDemoStudent = Boolean(demoStudent);
 
   const progress = (progressData ?? []) as ProgressRow[];
   const stageProgress = (stageProgressData ?? []) as StageProgressRow[];
@@ -242,6 +248,12 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
               <p className="mt-1.5 inline-flex max-w-full flex-wrap gap-x-1 rounded-full border border-neon/30 bg-neon/10 px-2.5 py-1 text-sm leading-relaxed">
                 <span className="text-muted-foreground">{t.role}:</span>
                 <span className="min-w-0 break-words font-bold text-neon">{ROLE_LABELS[userRole][locale]}</span>
+                {demoStudent?.school_class && (
+                  <>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-bold text-gold">{t.schoolClass} {demoStudent.school_class}</span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -252,7 +264,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             <DashboardNavLink href={`/${locale}/profile/missions`} icon={GraduationCap} label={t.missions} active={section === "missions"} />
             <DashboardNavLink href={`/${locale}/profile/achievements`} icon={Trophy} label={t.achievements} active={section === "achievements"} />
             <DashboardNavLink href={`/${locale}/profile/quests`} icon={Compass} label={t.quests} active={section === "quests"} />
-            {canUseAi(userRole) && <DashboardNavLink href={`/${locale}/ai-help`} icon={Bot} label={t.aiHelp} />}
+            {canUseAi(userRole) && !isDemoStudent && <DashboardNavLink href={`/${locale}/ai-help`} icon={Bot} label={t.aiHelp} />}
           </nav>
 
           <div className="mt-5 hidden border-t border-border/60 pt-5 lg:grid lg:gap-2">
@@ -275,6 +287,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
           </header>
 
           {query.ai === "restricted" && userRole === "blocked" && <div role="alert" className="mt-6 rounded-2xl border border-gold/45 bg-gold/10 px-5 py-4 text-sm text-foreground"><strong className="text-gold">{t.role}: {ROLE_LABELS[userRole][locale]}.</strong> {t.aiRestricted}</div>}
+          {query.ai === "demo" && isDemoStudent && <div role="alert" className="mt-6 rounded-2xl border border-gold/45 bg-gold/10 px-5 py-4 text-sm text-foreground"><strong className="text-gold">Demo:</strong> {t.aiDemoRestricted}</div>}
 
           {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8 pb-10">
             <div className="flex flex-wrap items-end justify-between gap-5">

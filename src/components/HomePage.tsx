@@ -56,6 +56,7 @@ type ProgressStatus = "not_started" | "in_progress" | "completed";
 type ModuleProgress = { status: ProgressStatus; xp: number };
 type HeaderProgress = {
   isAuthenticated: boolean;
+  isDemoStudent: boolean;
   loading: boolean;
   xp: number;
   rewards: number;
@@ -67,6 +68,7 @@ type HeaderProgress = {
 
 const emptyProgress: HeaderProgress = {
   isAuthenticated: false,
+  isDemoStudent: false,
   loading: true,
   xp: 0,
   rewards: 0,
@@ -245,9 +247,10 @@ export default function HomePage() {
         return;
       }
 
-      const [{ data: progressData }, { data: profile }] = await Promise.all([
+      const [{ data: progressData }, { data: profile }, { data: demoStudent }] = await Promise.all([
         supabase.from("module_progress").select("module_id, status, xp").eq("user_id", user.id),
         supabase.from("profiles").select("display_name, avatar_url, role").eq("id", user.id).maybeSingle(),
+        supabase.from("demo_students").select("id").eq("user_id", user.id).maybeSingle(),
       ]);
 
       if (!active) return;
@@ -268,6 +271,7 @@ export default function HomePage() {
       const avatarUrl = typeof candidateAvatar === "string" && candidateAvatar.startsWith("https://lh3.googleusercontent.com/") ? candidateAvatar : null;
       setHeaderProgress({
         isAuthenticated: true,
+        isDemoStudent: Boolean(demoStudent),
         loading: false,
         xp: Object.values(moduleProgress).reduce((sum, item) => sum + item.xp, 0),
         rewards: progressRows.filter((item) => item.status === "completed").length,
@@ -309,7 +313,7 @@ export default function HomePage() {
                   {t.startInvestigation}
                   <ArrowRight className="size-4 transition group-hover:translate-x-1" aria-hidden="true" />
                 </Link>
-                {headerProgress.role === "blocked" ? (
+                {headerProgress.role === "blocked" || headerProgress.isDemoStudent ? (
                   <span aria-disabled="true" className="inline-flex min-h-12 shrink-0 cursor-not-allowed items-center gap-2.5 whitespace-nowrap rounded-xl border border-border bg-secondary/70 px-5 text-sm font-extrabold text-muted-foreground opacity-75">
                     <Lock className="size-5" aria-hidden="true" />
                     <span>{t.aiHelp}</span>
@@ -326,6 +330,7 @@ export default function HomePage() {
               </div>
               {!headerProgress.isAuthenticated && <p className="text-center text-sm text-muted-foreground">{t.aiGuestHint}</p>}
               {headerProgress.role === "blocked" && <p className="text-center text-sm text-muted-foreground">{t.aiRestricted}</p>}
+              {headerProgress.isDemoStudent && <p className="text-center text-sm text-muted-foreground">{lang === "ru" ? "Chrono AI недоступен в демо-режиме." : "Chrono AI nu este disponibil în modul demo."}</p>}
             </div>
             <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">{lang === "ru" ? "Расследуй цифровые происшествия, находи доказательства и учись защищать себя и друзей в интернете." : "Investighează incidente digitale, găsește dovezi și învață să te protejezi pe tine și pe prieteni pe internet."}</p>
           </div>
@@ -387,7 +392,7 @@ export default function HomePage() {
         <section id="materials" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14">
           <ProjectMaterials lang={lang} />
         </section>
-        <AiAssistantSection lang={lang} isGuest={!headerProgress.isAuthenticated} restricted={headerProgress.role === "blocked"} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
+        <AiAssistantSection lang={lang} isGuest={!headerProgress.isAuthenticated} restricted={headerProgress.role === "blocked" || headerProgress.isDemoStudent} href={headerProgress.isAuthenticated ? `/${lang}/ai-help` : `/${lang}/login?next=${encodeURIComponent(`/${lang}/ai-help`)}`} />
       </main>
 
       <SiteFooter lang={lang} beforeLegal={<FaqSection lang={lang} />} />

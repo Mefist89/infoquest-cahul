@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  getUser: vi.fn(), from: vi.fn(), profile: vi.fn(), rpc: vi.fn(), access: vi.fn(),
+  getUser: vi.fn(), from: vi.fn(), profile: vi.fn(), demoStudent: vi.fn(), rpc: vi.fn(), access: vi.fn(),
   quota: vi.fn(), acquire: vi.fn(), provider: vi.fn(), chat: vi.fn(), analyze: vi.fn(), transcribe: vi.fn(),
 }));
 
@@ -36,7 +36,10 @@ beforeEach(() => {
   mocks.getUser.mockResolvedValue({ data: { user: { id: "account-one" } }, error: null });
   mocks.access.mockResolvedValue({ data: { is_blocked: false, block_source: null }, error: null });
   mocks.profile.mockResolvedValue({ data: { role: "user" }, error: null });
-  mocks.from.mockReturnValue({ select: () => ({ eq: () => ({ maybeSingle: mocks.profile }) }) });
+  mocks.demoStudent.mockResolvedValue({ data: null, error: null });
+  mocks.from.mockImplementation((table: string) => ({
+    select: () => ({ eq: () => ({ maybeSingle: table === "demo_students" ? mocks.demoStudent : mocks.profile }) }),
+  }));
   mocks.quota.mockResolvedValue({ data: { audio_used: 0, audio_limit: 2, user_daily_used: 0, user_daily_limit: 5 }, error: null });
   mocks.acquire.mockResolvedValue({ data: { decision: "acquired", audio_used: 0, audio_limit: 2, user_daily_used: 1, user_daily_limit: 5 }, error: null });
   mocks.rpc.mockImplementation((name: string) => {
@@ -224,6 +227,20 @@ describe.each(["GET", "POST"] as const)("Chrono %s: проверка досту�
     mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
     expect((await handlers[method](request(method))).status).toBe(401);
     expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.provider).not.toHaveBeenCalled();
+  });
+
+  it("демо-ученик получает 403 demo_restricted без обращения к AI и квотам", async () => {
+    mocks.profile.mockResolvedValue({ data: { role: "student" }, error: null });
+    mocks.demoStudent.mockResolvedValue({ data: { id: "demo-1" }, error: null });
+    const response = await handlers[method](request(method));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({
+      error: "Chrono AI недоступен в демо-режиме.",
+      code: "demo_restricted",
+    });
+    expect(mocks.quota).not.toHaveBeenCalled();
+    expect(mocks.acquire).not.toHaveBeenCalled();
     expect(mocks.provider).not.toHaveBeenCalled();
   });
 });

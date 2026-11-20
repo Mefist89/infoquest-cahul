@@ -46,7 +46,7 @@ function parseChatHistory(value: FormDataEntryValue | null): AiChatMessage[] {
   }
 }
 
-function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService" | "blocked") {
+function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSize" | "audioFormat" | "audioDuration" | "audioSilent" | "transcriptSize" | "service" | "timeout" | "consent" | "auth" | "role" | "demo" | "audioQuota" | "userDailyQuota" | "userMonthlyQuota" | "projectBudget" | "busy" | "quotaService" | "blocked") {
   const messages = {
     ro: {
       key: "Serviciul este temporar indisponibil. Încearcă mai târziu.",
@@ -62,6 +62,7 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSiz
       consent: "Confirmă acordul privind prelucrarea datelor înainte de trimitere.",
       auth: "Autentifică-te în contul InfoQuest pentru a folosi Chrono.",
       role: "Chrono nu este disponibil pentru acest cont.",
+      demo: "Chrono AI nu este disponibil în modul demo.",
       audioQuota: "Ai folosit toate analizele audio pentru azi. Revino mâine.",
       userDailyQuota: "Ai folosit toate verificările pentru azi. Revino mâine.",
       userMonthlyQuota: "Ai atins limita lunară de solicitări Chrono.",
@@ -84,6 +85,7 @@ function errorText(locale: Locale, code: "key" | "input" | "audio" | "requestSiz
       consent: "Подтвердите согласие на обработку данных перед отправкой.",
       auth: "Войдите в аккаунт InfoQuest, чтобы пользоваться Chrono.",
       role: "Chrono недоступен для этого аккаунта.",
+      demo: "Chrono AI недоступен в демо-режиме.",
       audioQuota: "Аудиоанализы на сегодня закончились. Возвращайтесь завтра.",
       userDailyQuota: "Лимит на сегодня исчерпан. Возвращайтесь завтра.",
       userMonthlyQuota: "Достигнут месячный лимит запросов Chrono.",
@@ -137,7 +139,13 @@ export async function GET(request: Request) {
   const accessResponse = await checkAiAccess(request, supabase, requestLocale);
   if (accessResponse) return accessResponse;
 
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle();
+  const [{ data: profile, error: profileError }, { data: demoStudent }] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle(),
+    supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
+  ]);
+  if (demoStudent?.id) {
+    return jsonResponse({ error: errorText(requestLocale, "demo"), code: "demo_restricted" }, 403);
+  }
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {
     return jsonResponse({ error: errorText(requestLocale, "role"), code: "role_required" }, 403);
   }
@@ -176,7 +184,13 @@ export async function POST(request: Request) {
   const accessResponse = await checkAiAccess(request, supabase, requestLocale);
   if (accessResponse) return accessResponse;
 
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle();
+  const [{ data: profile, error: profileError }, { data: demoStudent }] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle(),
+    supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
+  ]);
+  if (demoStudent?.id) {
+    return jsonResponse({ error: errorText(requestLocale, "demo"), code: "demo_restricted" }, 403);
+  }
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {
     return jsonResponse({ error: errorText(requestLocale, "role"), code: "role_required" }, 403);
   }

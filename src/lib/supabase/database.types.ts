@@ -194,6 +194,36 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_students: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          locale: string
+          school_class: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          locale?: string
+          school_class: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          locale?: string
+          school_class?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       module_catalog: {
         Row: {
           created_at: string
@@ -666,6 +696,21 @@ export type Database = {
           shadow_pct: number
           status: string
           total_count: number
+        }[]
+      }
+      register_demo_student: {
+        Args: {
+          p_first_name: string
+          p_last_name: string
+          p_locale?: string
+          p_school_class: string
+        }
+        Returns: {
+          first_name: string
+          last_name: string
+          locale: string
+          school_class: string
+          user_id: string
         }[]
       }
       release_ai_request: { Args: { p_request_id: string; p_refund?: boolean }; Returns: undefined }
