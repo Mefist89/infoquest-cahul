@@ -23,6 +23,7 @@ import { ChatMessageBubble } from "./chat/message-bubble";
 import { QuickExamples } from "./chat/quick-examples";
 import { AudioProcessingCard, ThinkingBubble } from "./chat/thinking-card";
 import { useChronoAudio } from "./chat/use-chrono-audio";
+import { useChronoTts } from "./chat/use-chrono-tts";
 import type { AiLocale, AiMode, AnalyzerInputMode, ApiResult, ChatMessage, QuotaStatus } from "./chat/types";
 import type { ChatContent } from "@/data/chrono-content";
 
@@ -30,6 +31,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
   const router = useRouter();
   const t = content;
   const audio = useChronoAudio({ t });
+  const { speak, stop: stopSpeech } = useChronoTts(locale);
   const { attachment, listening, recordingSeconds, speechError, starting, preparingAudio } = audio;
   const [mode, setMode] = useState<AiMode>("analyzer");
   const [analyzerInputMode, setAnalyzerInputMode] = useState<AnalyzerInputMode>("text");
@@ -113,17 +115,8 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
 
   useEffect(() => () => {
     requestControllerRef.current?.abort();
-    window.speechSynthesis?.cancel();
-  }, []);
-
-  function speak(text: string) {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = locale === "ro" ? "ro-RO" : "ru-RU";
-    utterance.rate = 0.95;
-    window.speechSynthesis.speak(utterance);
-  }
+    stopSpeech();
+  }, [stopSpeech]);
 
   async function submit(event?: FormEvent) {
     event?.preventDefault();
@@ -214,13 +207,13 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
   }
 
   function toggleVoice() {
-    if (voiceEnabled) window.speechSynthesis?.cancel();
+    if (voiceEnabled) stopSpeech();
     setVoiceEnabled((enabled) => !enabled);
   }
 
   function selectMode(nextMode: AiMode) {
     if (nextMode === mode || thinking || listening || starting || preparingAudio) return;
-    window.speechSynthesis?.cancel();
+    stopSpeech();
     setMode(nextMode);
     audio.clearError();
     setRequestError(null);
@@ -230,7 +223,7 @@ export function AiHelpChat({ locale, content }: { locale: AiLocale; content: Cha
   function startNewCheck() {
     requestControllerRef.current?.abort();
     requestControllerRef.current = null;
-    window.speechSynthesis?.cancel();
+    stopSpeech();
     setVoiceEnabled(false);
 
     audio.stopAndDiscard();
