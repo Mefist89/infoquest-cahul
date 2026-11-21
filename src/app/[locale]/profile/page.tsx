@@ -273,9 +273,9 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
           </div>
 
           <div className="mt-2.5 hidden lg:mt-auto lg:block lg:pt-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-1.5 rounded-2xl border border-border/70 bg-card/45 p-1.5">
+            <div className="flex flex-nowrap items-center justify-between gap-1.5 rounded-2xl border border-border/70 bg-card/45 p-1.5">
               <LanguageNav locale={locale} sectionPath={sectionPath} />
-              <SignOutButton locale={locale} label={t.signOut} />
+              <SignOutButton locale={locale} label={t.signOut} iconOnly />
             </div>
           </div>
         </aside>
