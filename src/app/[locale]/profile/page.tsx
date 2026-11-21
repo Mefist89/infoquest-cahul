@@ -233,13 +233,13 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   return (
     <main className="min-h-screen w-full overflow-x-clip bg-[#050e20]">
       <div className="mx-auto grid min-h-screen max-w-[1680px] grid-cols-1 lg:grid-cols-[17.5rem_minmax(0,1fr)]">
-        <aside className="min-w-0 border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
+        <aside className="min-w-0 border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r lg:p-4">
           <Link href={`/${locale}`} className="focus-ring flex items-center gap-3 rounded-xl">
             <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-6" aria-hidden="true" /></span>
             <span><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="text-sm uppercase tracking-[0.15em] text-muted-foreground">{t.center}</span></span>
           </Link>
 
-          <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/45 p-3">
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-border/70 bg-card/45 p-3">
             <div className="relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-neon/35 bg-background font-bold text-neon">
               {safeAvatar ? <Image src={safeAvatar} alt="" fill sizes="48px" className="object-cover" /> : initials}
             </div>
@@ -258,8 +258,8 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             </div>
           </div>
 
-          <p className="mt-7 hidden px-3 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
-          <nav className="mt-4 grid grid-cols-2 gap-2 pb-1 lg:grid-cols-1" aria-label={t.navigation}>
+          <p className="mt-4 hidden px-3 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
+          <nav className="mt-2.5 grid grid-cols-2 gap-1.5 pb-1 lg:grid-cols-1" aria-label={t.navigation}>
             <DashboardNavLink href={`/${locale}/profile`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
             <DashboardNavLink href={`/${locale}/profile/missions`} icon={GraduationCap} label={t.missions} active={section === "missions"} />
             <DashboardNavLink href={`/${locale}/profile/achievements`} icon={Trophy} label={t.achievements} active={section === "achievements"} />
@@ -267,13 +267,13 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             {canUseAi(userRole) && !isDemoStudent && <DashboardNavLink href={`/${locale}/ai-help`} icon={Bot} label={t.aiHelp} />}
           </nav>
 
-          <div className="mt-5 hidden border-t border-border/60 pt-5 lg:grid lg:gap-2">
+          <div className="mt-3 hidden border-t border-border/60 pt-3 lg:grid lg:gap-1.5">
             <Link href={`/${locale}`} className="focus-ring flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-card hover:text-neon"><Home className="size-4" aria-hidden="true" />{t.back}</Link>
             {isAdministrator(userRole) && <Link href={`/${locale}/admin`} className="focus-ring flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-card hover:text-neon"><ShieldCheck className="size-4" aria-hidden="true" />{locale === "ro" ? "Administrare" : "Админ-панель"}</Link>}
           </div>
 
-          <div className="mt-5 hidden lg:mt-auto lg:block lg:pt-5">
-            <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
+          <div className="mt-3 hidden lg:mt-auto lg:block lg:pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
               <LanguageNav locale={locale} sectionPath={sectionPath} />
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
