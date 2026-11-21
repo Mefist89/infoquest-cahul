@@ -36,10 +36,14 @@ type ProviderConfig = {
   baseUrl: string;
   analysisModel: string;
   transcriptionModel: string;
+  reasoningEffort?: string;
 };
 
 type ChatCompletionResponse = {
-  choices?: Array<{ message?: { content?: string | Array<{ type?: string; text?: string }> } }>;
+  choices?: Array<{
+    finish_reason?: string | null;
+    message?: { content?: string | Array<{ type?: string; text?: string }> | null };
+  }>;
   error?: { message?: string };
 };
 
@@ -64,21 +68,36 @@ function getProviderConfig(): ProviderConfig | null {
   const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
   const baseUrl = (process.env.AI_API_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/u, "");
-  const tokenRouter = new URL(baseUrl).hostname === "api.tokenrouter.com";
+  const analysisModel = (process.env.AI_ANALYSIS_MODEL || process.env.OPENAI_ANALYSIS_MODEL || "gpt-5-mini").trim();
+  const transcriptionModel = (process.env.AI_TRANSCRIPTION_MODEL || "gpt-4o-mini-transcribe").trim();
+  const reasoningEffort = process.env.AI_REASONING_EFFORT?.trim() || undefined;
+
+  if (analysisModel.includes("/")) {
+    console.error(`Invalid OpenAI model ID for AI_ANALYSIS_MODEL ("${analysisModel}"): remove proxy prefix before "/"`);
+  }
+  if (transcriptionModel.includes("/")) {
+    console.error(`Invalid OpenAI model ID for AI_TRANSCRIPTION_MODEL ("${transcriptionModel}"): remove proxy prefix before "/"`);
+  }
+
   return {
     apiKey,
     baseUrl,
-    analysisModel: process.env.AI_ANALYSIS_MODEL || process.env.OPENAI_ANALYSIS_MODEL || (tokenRouter ? "openai/gpt-5.5" : "gpt-5-mini"),
-    transcriptionModel: process.env.AI_TRANSCRIPTION_MODEL || (tokenRouter ? "openai/gpt-4o-mini-transcribe" : "gpt-4o-mini-transcribe"),
+    analysisModel,
+    transcriptionModel,
+    reasoningEffort,
   };
 }
 
 function extractChatText(payload: ChatCompletionResponse) {
-  const content = payload.choices?.[0]?.message?.content;
-  if (typeof content === "string") return content;
+  const choice = payload.choices?.[0];
+  const content = choice?.message?.content;
+  if (typeof content === "string" && content.trim()) return content;
   if (Array.isArray(content)) {
     const text = content.map((item) => item.text || "").join("").trim();
     if (text) return text;
+  }
+  if (choice?.finish_reason === "length") {
+    console.error("AI output truncated");
   }
   throw new Error("AI response did not contain output text");
 }
@@ -133,7 +152,8 @@ class OpenAiCompatibleProvider implements AiProvider {
       },
       body: JSON.stringify({
         model: this.config.analysisModel,
-        max_tokens: 700,
+        max_completion_tokens: 2000,
+        ...(this.config.reasoningEffort ? { reasoning_effort: this.config.reasoningEffort } : {}),
         messages: [
           {
             role: "system",
@@ -166,7 +186,8 @@ class OpenAiCompatibleProvider implements AiProvider {
       },
       body: JSON.stringify({
         model: this.config.analysisModel,
-        max_tokens: 500,
+        max_completion_tokens: 1500,
+        ...(this.config.reasoningEffort ? { reasoning_effort: this.config.reasoningEffort } : {}),
         messages: [
           {
             role: "system",

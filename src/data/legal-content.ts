@@ -27,7 +27,8 @@ const sharedLinks = {
     { label: "Politica de confidențialitate Supabase", href: "https://supabase.com/privacy" },
     { label: "Politica de confidențialitate Google", href: "https://policies.google.com/privacy" },
     { label: "Politica de confidențialitate Vercel", href: "https://vercel.com/legal/privacy-policy" },
-    { label: "Informații despre furnizorul AI BotHub", href: "https://bothub.chat/" },
+    { label: "Politica de confidențialitate OpenAI", href: "https://openai.com/policies/row-privacy-policy/" },
+    { label: "Confidențialitatea datelor OpenAI API (Enterprise Privacy)", href: "https://openai.com/enterprise-privacy/" },
     { label: "Proiectul InfoQuest pe GitHub", href: "https://github.com/Mefist89/infoquest-cahul" },
   ],
   ru: [
@@ -35,7 +36,8 @@ const sharedLinks = {
     { label: "Политика конфиденциальности Supabase", href: "https://supabase.com/privacy" },
     { label: "Политика конфиденциальности Google", href: "https://policies.google.com/privacy" },
     { label: "Политика конфиденциальности Vercel", href: "https://vercel.com/legal/privacy-policy" },
-    { label: "Информация об AI-провайдере BotHub", href: "https://bothub.chat/" },
+    { label: "Политика конфиденциальности OpenAI", href: "https://openai.com/policies/row-privacy-policy/" },
+    { label: "Конфиденциальность данных OpenAI API (Enterprise Privacy)", href: "https://openai.com/enterprise-privacy/" },
     { label: "Проект InfoQuest на GitHub", href: "https://github.com/Mefist89/infoquest-cahul" },
   ],
 } satisfies Record<LegalLocale, { label: string; href: string }[]>;
@@ -109,7 +111,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Site-ul este găzduit prin Vercel. În măsura necesară furnizării și protejării site-ului, datele tehnice pot fi prelucrate pe infrastructura furnizorului și în alte jurisdicții, cu garanțiile descrise în politica sa de confidențialitate.",
             "Autentificarea și stocarea contului sunt furnizate de Supabase, verificarea identității prin OAuth este realizată de Google, livrarea e-mailurilor cu codul de acces este asigurată de serviciul SMTP conectat (Brevo sau Resend — TODO: de indicat furnizorul ales de echipă), iar protecția anti-bot este asigurată de Cloudflare Turnstile. Acești furnizori pot prelucra datele în conformitate cu propriile politici și garanții privind transferurile internaționale.",
-            "În configurația curentă, funcția Chrono folosește API-ul agregatorului AI BotHub pentru transcriere și analiză. BotHub poate transmite cererea furnizorului modelului selectat. Datele pot fi prelucrate în afara Republicii Moldova; înainte de utilizare trebuie consultate condițiile actuale ale furnizorului.",
+            "În configurația curentă, funcția Chrono folosește API-ul OpenAI (SUA); textul și fișierele audio sunt transmise către OpenAI pentru recunoașterea vorbirii și analiză. Conform condițiilor OpenAI, datele transmise prin API nu sunt utilizate implicit pentru antrenarea modelelor și pot fi păstrate până la 30 de zile pentru monitorizarea abuzurilor. Datele sunt prelucrate în afara Republicii Moldova.",
           ],
         },
         {
@@ -285,7 +287,7 @@ export const legalContent: Record<LegalLocale, Record<LegalKind, LegalDocument>>
           paragraphs: [
             "Сайт размещён на Vercel. В объёме, необходимом для работы и защиты сайта, технические данные могут обрабатываться на инфраструктуре провайдера и в других юрисдикциях с гарантиями, описанными в его политике конфиденциальности.",
             "Авторизацию и хранение аккаунта обеспечивает Supabase, проверку личности через OAuth выполняет Google, доставку писем с кодом входа обеспечивает подключённый почтовый сервис (Brevo или Resend — TODO: указать выбранный командой сервис), а защиту от ботов — Cloudflare Turnstile. Эти поставщики могут обрабатывать данные согласно собственным политикам и гарантиям международной передачи данных.",
-            "В текущей конфигурации Chrono использует API AI-агрегатора BotHub для распознавания речи и анализа. BotHub может передавать запрос поставщику выбранной модели. Данные могут обрабатываться за пределами Республики Молдова; перед использованием необходимо ознакомиться с актуальными условиями провайдера.",
+            "В текущей конфигурации Chrono использует API OpenAI (США); текст и аудио передаются в OpenAI для распознавания речи и анализа. По условиям OpenAI данные API по умолчанию не используются для обучения моделей и могут храниться до 30 дней для контроля злоупотреблений. Данные обрабатываются за пределами Республики Молдова.",
           ],
         },
         {
