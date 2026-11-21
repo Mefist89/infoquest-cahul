@@ -245,8 +245,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{displayName}</p>
-              <p className="mt-1 inline-flex max-w-full flex-wrap gap-x-1 rounded-full border border-neon/30 bg-neon/10 px-2 py-0.5 text-sm leading-snug">
-                <span className="text-muted-foreground">{t.role}:</span>
+              <p className="mt-1 inline-flex max-w-full flex-wrap gap-x-1 rounded-full border border-neon/30 bg-neon/10 px-2.5 py-0.5 text-sm leading-snug">
                 <span className="min-w-0 break-words font-bold text-neon">{ROLE_LABELS[userRole][locale]}</span>
                 {demoStudent?.school_class && (
                   <>
