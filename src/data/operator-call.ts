@@ -446,6 +446,12 @@ export const operatorCallContent = {
         SAFETY_PHRASES.ro.smsCode,
         "Fii atent, verifică fiecare detaliu și oprește atacul Umbrei.",
       ],
+      audioFiles: [
+        "/audio/operator-call-intro-ro-1.mp3",
+        "/audio/operator-call-intro-ro-2.mp3",
+        "/audio/operator-call-intro-ro-3.mp3",
+        "/audio/operator-call-intro-ro-4.mp3",
+      ],
     },
     stages: [
       { title: "Teorie", subtitle: "Cum funcționează apelul fraudulos" },
