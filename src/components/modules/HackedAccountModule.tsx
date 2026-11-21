@@ -38,13 +38,13 @@ import { ActionButton, NextButtonContext } from "./operator-call/stage-support";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card/60 p-3 sm:p-4">
+    <div className="flex min-w-0 flex-col items-start gap-2.5 rounded-2xl border border-border bg-card/60 p-3.5 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
       <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-neon/10 text-neon sm:size-12">
         <Icon className="size-5 sm:size-6" />
       </div>
-      <div>
-        <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground sm:text-sm">{label}</p>
-        <p className="mt-0.5 text-lg font-black text-foreground sm:text-xl">{value}</p>
+      <div className="min-w-0 w-full">
+        <p className="break-words text-sm font-bold uppercase tracking-normal text-muted-foreground sm:tracking-wider">{label}</p>
+        <p className="mt-0.5 font-display text-lg font-black text-foreground sm:text-xl">{value}</p>
       </div>
     </div>
   );
