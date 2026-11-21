@@ -96,25 +96,25 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
   const sectionLabel = section === "overview" ? t.overview : section === "learning" ? t.learning : section === "quests" ? t.quests : section === "users" ? t.usersSection : t.security;
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,rgba(2,8,23,0.98),rgba(7,20,48,0.96))]">
-      <div className="mx-auto grid min-h-screen max-w-[1680px] lg:grid-cols-[17.5rem_minmax(0,1fr)]">
-        <aside className="border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
+    <main className="min-h-screen overflow-x-clip bg-[linear-gradient(135deg,rgba(2,8,23,0.98),rgba(7,20,48,0.96))]">
+      <div className="mx-auto grid min-h-screen max-w-[1680px] lg:grid-cols-[15.75rem_minmax(0,1fr)]">
+        <aside className="border-b border-border/70 bg-slate-950/80 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r lg:p-3.5">
           <div className="flex items-center gap-3 lg:block">
-            <Link href={`/${locale}`} className="focus-ring flex min-w-0 items-center gap-3 rounded-xl">
-              <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-6" aria-hidden="true" /></span>
-              <span className="min-w-0"><span className="block font-display text-lg font-black">INFO<span className="text-neon">QUEST</span></span><span className="block truncate text-sm uppercase tracking-[0.15em] text-muted-foreground">Control center</span></span>
+            <Link href={`/${locale}`} className="focus-ring flex min-w-0 items-center gap-2.5 rounded-xl">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-neon/40 bg-neon/10 text-neon shadow-[0_0_22px_rgba(0,217,255,0.16)]"><ShieldCheck className="size-5" aria-hidden="true" /></span>
+              <span className="min-w-0"><span className="block font-display text-base font-black">INFO<span className="text-neon">QUEST</span></span><span className="block truncate text-sm uppercase tracking-[0.12em] text-muted-foreground">Control center</span></span>
             </Link>
 
-            <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:mt-7 lg:rounded-2xl lg:border lg:border-border/70 lg:bg-card/45 lg:p-3">
-              <div className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-neon/35 bg-background font-bold text-neon">
-                {avatarIsSafe ? <Image src={adminAvatar} alt="" fill sizes="44px" className="object-cover" /> : adminName.slice(0, 2).toUpperCase()}
+            <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:mt-3 lg:rounded-2xl lg:border lg:border-border/70 lg:bg-card/45 lg:p-2.5">
+              <div className="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl border border-neon/35 bg-background font-bold text-neon">
+                {avatarIsSafe ? <Image src={adminAvatar} alt="" fill sizes="40px" className="object-cover" /> : adminName.slice(0, 2).toUpperCase()}
               </div>
               <div className="hidden min-w-0 lg:block"><p className="truncate text-sm font-bold">{adminName}</p><p className="truncate text-sm text-neon">{t.admin}</p></div>
             </div>
           </div>
 
-          <p className="mt-7 hidden px-3 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground lg:block">{t.navigation}</p>
-          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:grid lg:overflow-visible" aria-label={t.navigation}>
+          <p className="mt-3 hidden px-2.5 text-sm font-bold uppercase tracking-[0.16em] text-muted-foreground lg:block">{t.navigation}</p>
+          <nav className="mt-2 flex gap-1.5 overflow-x-auto pb-1 lg:grid lg:gap-1 lg:overflow-visible" aria-label={t.navigation}>
             <DashboardNavLink href={`/${locale}/admin`} icon={LayoutDashboard} label={t.overview} active={section === "overview"} />
             <DashboardNavLink href={`/${locale}/admin/learning`} icon={GraduationCap} label={t.learning} active={section === "learning"} />
             <DashboardNavLink href={`/${locale}/admin/quests`} icon={Compass} label={t.quests} active={section === "quests"} />
@@ -122,46 +122,48 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
             <DashboardNavLink href={`/${locale}/admin/security`} icon={LockKeyhole} label={t.security} active={section === "security"} />
           </nav>
 
-          <div className="mt-5 hidden border-t border-border/60 pt-5 lg:grid lg:gap-2">
-            <Link href={`/${locale}/profile`} className="focus-ring flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-card hover:text-neon"><ArrowLeft className="size-4" aria-hidden="true" />{t.back}</Link>
-            <Link href={`/${locale}`} className="focus-ring flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-card hover:text-neon"><CircleGauge className="size-4" aria-hidden="true" />{t.home}</Link>
+          <div className="mt-2.5 hidden border-t border-border/60 pt-2.5 lg:grid lg:gap-1">
+            <Link href={`/${locale}/profile`} className="focus-ring flex min-h-10 items-center gap-2.5 rounded-xl px-2.5 text-sm text-muted-foreground transition hover:bg-card hover:text-neon"><ArrowLeft className="size-4" aria-hidden="true" />{t.back}</Link>
+            <Link href={`/${locale}`} className="focus-ring flex min-h-10 items-center gap-2.5 rounded-xl px-2.5 text-sm text-muted-foreground transition hover:bg-card hover:text-neon"><CircleGauge className="size-4" aria-hidden="true" />{t.home}</Link>
           </div>
 
-          <div className="mt-5 hidden lg:mt-auto lg:block lg:pt-5">
-            <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-card/45 p-2">
-              <TextSizeButton locale={locale} />
-              <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">
-                {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring rounded-lg px-2.5 py-2 text-sm font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
-              </nav>
-              <SignOutButton locale={locale} label={t.signOut} />
+          <div className="mt-2.5 hidden lg:mt-auto lg:block lg:pt-2.5">
+            <div className="flex flex-nowrap items-center justify-between gap-1.5 rounded-2xl border border-border/70 bg-card/45 p-1.5">
+              <div className="flex items-center gap-1.5">
+                <TextSizeButton locale={locale} />
+                <nav className="flex rounded-xl bg-background/55 p-1" aria-label="Language">
+                  {(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} aria-current={locale === language ? "page" : undefined} className={`focus-ring inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg px-2 py-1.5 text-sm font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}
+                </nav>
+              </div>
+              <SignOutButton locale={locale} label={t.signOut} iconOnly />
             </div>
           </div>
         </aside>
 
-        <div className="min-w-0 p-4 sm:p-6 xl:p-8">
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-            <div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-5" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">InfoQuest Dashboard</p><p className="font-bold">{sectionLabel}</p></div></div>
+        <div className="min-w-0 p-4 sm:p-5 xl:p-6">
+          <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card/55 px-3.5 py-2.5 backdrop-blur-xl sm:px-4">
+            <div className="flex items-center gap-2.5"><span className="grid size-9 place-items-center rounded-xl bg-neon/10 text-neon"><BarChart3 className="size-4" aria-hidden="true" /></span><div><p className="text-sm text-muted-foreground">InfoQuest Dashboard</p><p className="text-sm font-bold">{sectionLabel}</p></div></div>
             <div className="flex flex-wrap items-center gap-2 lg:hidden">
-              <Link href={`/${locale}/profile`} className="focus-ring grid size-10 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><UserCog className="size-4" aria-hidden="true" /></Link>
+              <Link href={`/${locale}/profile`} className="focus-ring grid size-11 place-items-center rounded-xl border border-border text-muted-foreground" aria-label={t.back}><UserCog className="size-4" aria-hidden="true" /></Link>
               <TextSizeButton locale={locale} />
               <nav className="flex rounded-xl border border-border bg-background/45 p-1" aria-label="Language">{(["ro", "ru"] as const).map((language) => <LocaleSwitch locale={language} key={language} href={`/${language}/admin${sectionPath}`} className={`focus-ring rounded-lg px-2.5 py-2 text-sm font-bold uppercase ${locale === language ? "bg-neon text-primary-foreground" : "text-muted-foreground"}`}>{language}</LocaleSwitch>)}</nav>
               <SignOutButton locale={locale} label={t.signOut} />
             </div>
           </header>
 
-          {section === "overview" && <section id="overview" className="scroll-mt-6 pt-8">
-            <p className="inline-flex items-center gap-2 rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-sm font-bold uppercase tracking-[0.16em] text-neon"><Sparkles className="size-3.5" aria-hidden="true" />{t.title}</p>
-            <h1 className="mt-4 max-w-4xl text-3xl font-black sm:text-4xl xl:text-5xl">{t.greeting}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">{t.description}</p>
+          {section === "overview" && <section id="overview" className="scroll-mt-6 pt-5">
+            <p className="inline-flex items-center gap-2 rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-sm font-bold uppercase tracking-[0.14em] text-neon"><Sparkles className="size-3.5" aria-hidden="true" />{t.title}</p>
+            <h1 className="mt-3 max-w-4xl text-2xl font-black sm:text-3xl xl:text-4xl">{t.greeting}</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">{t.description}</p>
 
-            <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard icon={Users} label={t.users} value={String(users.length)} color="text-neon" detail={`${roleCounts.student} ${ROLE_LABELS.student[locale].toLowerCase()}`} />
               <StatCard icon={Activity} label={t.active} value={String(activeUsers)} color="text-gold" detail={`${users.length ? Math.round((activeUsers / users.length) * 100) : 0}%`} />
               <StatCard icon={CheckCircle2} label={t.modulesDone} value={String(completedModules)} color="text-success" detail={`${completedModules}/${users.length * PLAYABLE_MODULE_COUNT}`} />
               <StatCard icon={Layers3} label={t.stagesDone} value={String(completedStages)} color="text-violet" detail={`${completedStages}/${availableStages}`} />
             </div>
 
-            <div className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_1fr]">
+            <div className="mt-4 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
               <DashboardPanel title={t.activity} hint={t.activityHint} icon={BarChart3}>
                 <ActivityChart items={activity} />
               </DashboardPanel>
@@ -170,9 +172,9 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
               </DashboardPanel>
             </div>
 
-            <div className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_1fr]">
+            <div className="mt-4 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
               <DashboardPanel title={t.moduleOverview} hint={t.moduleOverviewHint} icon={GraduationCap}>
-                <div className="grid gap-4">
+                <div className="grid gap-3">
                   {moduleTotals.map(({ module, completed, maximum }) => {
                     const percent = maximum > 0 ? Math.round((completed / maximum) * 100) : 0;
                     return <ModuleBar key={module.moduleId} label={module.shortTitle[locale]} completed={completed} maximum={maximum} percent={percent} available={module.status === "playable"} statusLabel={module.status === "playable" ? t.available : t.soon} />;
@@ -180,13 +182,13 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
                 </div>
               </DashboardPanel>
 
-              <div className="grid gap-5">
+              <div className="grid gap-4">
                 <DashboardPanel title={t.completion} hint={`${totalXp}/${totalAvailableXp} XP`} icon={CircleGauge}>
-                  <div className="flex items-center gap-5">
-                    <div className="grid size-28 shrink-0 place-items-center rounded-full" style={{ background: `conic-gradient(var(--neon) ${completionPercent}%, color-mix(in oklab, var(--secondary) 85%, transparent) 0)` }}>
-                      <div className="grid size-20 place-items-center rounded-full bg-card"><span className="font-display text-xl font-black text-neon">{completionPercent}%</span></div>
+                  <div className="flex items-center gap-4">
+                    <div className="grid size-24 shrink-0 place-items-center rounded-full" style={{ background: `conic-gradient(var(--neon) ${completionPercent}%, color-mix(in oklab, var(--secondary) 85%, transparent) 0)` }}>
+                      <div className="grid size-[4.25rem] place-items-center rounded-full bg-card"><span className="font-display text-lg font-black text-neon">{completionPercent}%</span></div>
                     </div>
-                    <div><p className="text-sm text-muted-foreground">{t.stagesDone}</p><p className="mt-2 font-display text-2xl font-black">{completedStages}/{availableStages}</p></div>
+                    <div><p className="text-sm text-muted-foreground">{t.stagesDone}</p><p className="mt-1.5 font-display text-xl font-black">{completedStages}/{availableStages}</p></div>
                   </div>
                 </DashboardPanel>
               </div>
@@ -195,38 +197,38 @@ export async function renderAdminDashboard(locale: string, section: AdminSection
             {budget && <AiBudgetPanel budget={budget} locale={locale} />}
           </section>}
 
-          {section === "learning" && <section id="learning" className="scroll-mt-6 py-10">
+          {section === "learning" && <section id="learning" className="scroll-mt-6 py-6">
             <SectionHeading title={t.structure} description={t.structureHint} icon={GraduationCap} />
-            <ol className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {MODULE_STAGES.map((stage) => <li key={stage.kind} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/55 p-4"><span className={`grid size-10 shrink-0 place-items-center rounded-xl border font-display text-sm font-black ${stage.index === STAGE_COUNT ? "border-gold/60 bg-gold/10 text-gold" : "border-neon/40 bg-neon/10 text-neon"}`}>{stage.index}</span><div><p className="text-sm font-semibold">{stage.title[locale]}</p><p className="mt-1 text-sm text-muted-foreground">+{stage.xp} XP</p></div></li>)}
+            <ol className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {MODULE_STAGES.map((stage) => <li key={stage.kind} className="flex items-center gap-2.5 rounded-2xl border border-border/70 bg-card/55 p-3.5"><span className={`grid size-9 shrink-0 place-items-center rounded-xl border font-display text-sm font-black ${stage.index === STAGE_COUNT ? "border-gold/60 bg-gold/10 text-gold" : "border-neon/40 bg-neon/10 text-neon"}`}>{stage.index}</span><div><p className="text-sm font-semibold">{stage.title[locale]}</p><p className="mt-0.5 text-sm text-muted-foreground">+{stage.xp} XP</p></div></li>)}
             </ol>
           </section>}
 
-          {section === "quests" && <section id="quests" className="scroll-mt-6 py-10">
+          {section === "quests" && <section id="quests" className="scroll-mt-6 py-6">
             <SectionHeading title={t.questsTitle} description={t.questsHint} icon={Compass} />
             {quests.length === 0 ? (
-              <div className="mt-5 rounded-2xl border border-dashed border-neon/35 bg-card/45 p-6 sm:p-8">
-                <div className="flex items-start gap-4"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-neon/10 text-neon"><Compass className="size-6" aria-hidden="true" /></span><div><h3 className="font-black">{t.quests}</h3><p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{t.questsEmpty}</p></div></div>
+              <div className="mt-4 rounded-2xl border border-dashed border-neon/35 bg-card/45 p-5 sm:p-6">
+                <div className="flex items-start gap-3.5"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-neon/10 text-neon"><Compass className="size-5" aria-hidden="true" /></span><div><h3 className="font-black">{t.quests}</h3><p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground">{t.questsEmpty}</p></div></div>
               </div>
             ) : (
-              <div className="mt-5 grid gap-4 xl:grid-cols-2">
+              <div className="mt-4 grid gap-3.5 xl:grid-cols-2">
                 {quests.map((quest) => <QuestCard key={quest.id} quest={quest} locale={locale} t={t} />)}
               </div>
             )}
           </section>}
 
-          {section === "users" && <section id="users" className="scroll-mt-6 py-10">
+          {section === "users" && <section id="users" className="scroll-mt-6 py-6">
             <SectionHeading title={t.list} description={t.listHint} icon={UserCog} />
-            <div className="mt-5 grid gap-4">
-              {users.length === 0 && <p className="rounded-2xl border border-border bg-card/70 p-6 text-muted-foreground">{t.noUsers}</p>}
+            <div className="mt-4 grid gap-3.5">
+              {users.length === 0 && <p className="rounded-2xl border border-border bg-card/70 p-5 text-muted-foreground">{t.noUsers}</p>}
               {users.map((user) => <UserCard key={user.user_id} user={user} locale={locale} t={t} access={accessByUser.get(user.user_id)} currentAdminId={authData.user.id} dateFormatter={dateFormatter} />)}
             </div>
           </section>}
 
-          {section === "security" && <section id="security" className="scroll-mt-6 py-10">
+          {section === "security" && <section id="security" className="scroll-mt-6 py-6">
             <SectionHeading title={t.security} description={t.listHint} icon={LockKeyhole} />
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {USER_ROLES.map((role) => <div key={role} className="rounded-2xl border border-border/70 bg-card/55 p-4"><div className={`size-2.5 rounded-full ${roleColors[role]}`} /><p className="mt-4 text-sm text-muted-foreground">{ROLE_LABELS[role][locale]}</p><p className="mt-1 font-display text-2xl font-black">{roleCounts[role]}</p></div>)}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              {USER_ROLES.map((role) => <div key={role} className="rounded-2xl border border-border/70 bg-card/55 p-3.5"><div className={`size-2.5 rounded-full ${roleColors[role]}`} /><p className="mt-3 text-sm text-muted-foreground">{ROLE_LABELS[role][locale]}</p><p className="mt-1 font-display text-xl font-black">{roleCounts[role]}</p></div>)}
             </div>
           </section>}
         </div>
