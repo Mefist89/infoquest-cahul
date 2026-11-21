@@ -91,6 +91,12 @@ export const operatorCallContent = {
         SAFETY_PHRASES.ru.smsCode,
         "Будь внимателен, проверяй каждую деталь — и останови атаку Тени.",
       ],
+      audioFiles: [
+        "/audio/operator-call-intro-ru-1.mp3",
+        "/audio/operator-call-intro-ru-2.mp3",
+        "/audio/operator-call-intro-ru-3.mp3",
+        "/audio/operator-call-intro-ru-4.mp3",
+      ],
     },
     stages: [
       { title: "Теория", subtitle: "Как устроен звонок мошенника" },

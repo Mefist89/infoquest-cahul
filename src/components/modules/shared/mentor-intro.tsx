@@ -5,7 +5,7 @@ import { ChevronRight, Square, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type IntroContent = {
-  name: string; role: string; lines: readonly string[];
+  name: string; role: string; lines: readonly string[]; audioFiles?: readonly string[];
   next: string; start: string; listen: string; listening: string; showAll: string;
 };
 
@@ -19,16 +19,30 @@ export function MentorIntro({ content, locale, imageSrc, onFinish }: {
   const fullyShown = lineShown || reducedMotion;
   const revealLine = useCallback(() => setLineShown(true), []);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const fullText = content.lines[lineIndex];
+  const audioSrc = content.audioFiles?.[lineIndex];
   const lastLine = lineIndex === content.lines.length - 1;
 
   useEffect(() => () => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.onended = audio.onerror = null;
+      audio.pause();
+      audioRef.current = null;
+    }
     const utterance = utteranceRef.current;
     if (utterance) utterance.onend = utterance.onerror = null;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }, []);
 
   function stop() {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.onended = audio.onerror = null;
+      audio.pause();
+      audioRef.current = null;
+    }
     const utterance = utteranceRef.current;
     if (utterance) utterance.onend = utterance.onerror = null;
     utteranceRef.current = null;
@@ -36,10 +50,11 @@ export function MentorIntro({ content, locale, imageSrc, onFinish }: {
     setSpeaking(false);
   }
 
-  function listen() {
-    revealLine();
-    if (speaking) { stop(); return; }
-    if (!("speechSynthesis" in window)) return;
+  function speakWithBrowser() {
+    if (!("speechSynthesis" in window)) {
+      setSpeaking(false);
+      return;
+    }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(fullText);
     utteranceRef.current = utterance;
@@ -52,6 +67,34 @@ export function MentorIntro({ content, locale, imageSrc, onFinish }: {
     };
     setSpeaking(true);
     window.speechSynthesis.speak(utterance);
+  }
+
+  function listen() {
+    revealLine();
+    if (speaking) { stop(); return; }
+    stop();
+    if (audioSrc) {
+      const audio = new Audio(audioSrc);
+      audioRef.current = audio;
+      audio.onended = () => {
+        if (audioRef.current !== audio) return;
+        audioRef.current = null;
+        setSpeaking(false);
+      };
+      audio.onerror = () => {
+        if (audioRef.current !== audio) return;
+        audioRef.current = null;
+        speakWithBrowser();
+      };
+      setSpeaking(true);
+      void audio.play().catch(() => {
+        if (audioRef.current !== audio) return;
+        audioRef.current = null;
+        speakWithBrowser();
+      });
+      return;
+    }
+    speakWithBrowser();
   }
 
   function advance() {
