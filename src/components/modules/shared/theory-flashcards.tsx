@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ChevronRight, Layers, RotateCw, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Layers, RotateCw, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 import type { FlashcardItem } from "@/data/module-flashcards";
@@ -9,21 +9,29 @@ const copy = {
   ru: {
     navTitle: "Карточки",
     navSubtitle: "Ключевые термины",
-    title: "Флэш-карты: запомни термины",
-    hint: "Нажми на карточку, чтобы перевернуть и увидеть объяснение.",
-    tapToFlip: "Нажми, чтобы открыть",
-    tapToBack: "Нажми, чтобы вернуть",
+    hint: "Нажми на карточку, чтобы увидеть объяснение, и листай с 1 по 4.",
+    cardOf: (current: number, total: number) => `Карточка ${current} из ${total}`,
+    termBadge: "Термин",
+    definitionBadge: "Объяснение",
+    tapToFlip: "Нажми, чтобы открыть объяснение",
+    tapToBack: "Нажми, чтобы вернуть термин",
     opened: "Открыто",
+    prev: "Назад",
+    next: "Дальше",
     continueLabel: "Перейти к теории",
   },
   ro: {
     navTitle: "Carduri",
     navSubtitle: "Termeni cheie",
-    title: "Carduri flash: reține termenii",
-    hint: "Apasă pe un card pentru a-l întoarce și a vedea explicația.",
-    tapToFlip: "Apasă pentru a deschide",
-    tapToBack: "Apasă pentru a întoarce",
+    hint: "Apasă pe card pentru a vedea explicația și parcurge toate cele 4 carduri.",
+    cardOf: (current: number, total: number) => `Cardul ${current} din ${total}`,
+    termBadge: "Termen",
+    definitionBadge: "Explicație",
+    tapToFlip: "Apasă pentru a vedea explicația",
+    tapToBack: "Apasă pentru a reveni la termen",
     opened: "Deschise",
+    prev: "Înapoi",
+    next: "Următorul",
     continueLabel: "Mergi la teorie",
   },
 } as const;
@@ -71,16 +79,29 @@ export function TheoryFlashcards({
   onContinue?: () => void;
 }) {
   const t = copy[locale];
-  const [flipped, setFlipped] = useState<Record<string, boolean>>({});
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
   const [seen, setSeen] = useState<Record<string, boolean>>({});
 
+  const card = cards[activeIndex] ?? cards[0];
   const seenCount = Object.values(seen).filter(Boolean).length;
   const allSeen = seenCount === cards.length;
+  const isFirst = activeIndex === 0;
+  const isLast = activeIndex === cards.length - 1;
 
-  function toggleCard(term: string) {
-    setFlipped((prev) => ({ ...prev, [term]: !prev[term] }));
-    setSeen((prev) => (prev[term] ? prev : { ...prev, [term]: true }));
+  function selectCard(index: number) {
+    setActiveIndex(index);
+    setFlipped(false);
   }
+
+  function toggleFlip() {
+    setFlipped((prev) => !prev);
+    if (card) {
+      setSeen((prev) => (prev[card.term] ? prev : { ...prev, [card.term]: true }));
+    }
+  }
+
+  if (!card) return null;
 
   return (
     <div>
@@ -95,14 +116,12 @@ export function TheoryFlashcards({
         </div>
       </div>
 
-      <section className="mt-6 rounded-3xl border border-neon/25 bg-background/35 p-5 sm:p-6" aria-label={t.title}>
+      <section className="mt-6 rounded-3xl border border-neon/25 bg-background/35 p-5 sm:p-7" aria-label={t.navTitle}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-neon/10 text-neon">
-              <Sparkles className="size-4" aria-hidden="true" />
-            </span>
-            <h3 className="text-base font-black text-foreground sm:text-lg">{t.title}</h3>
-          </div>
+          <span className="inline-flex items-center gap-2 font-display text-sm font-black uppercase tracking-wider text-neon">
+            <Sparkles className="size-4" aria-hidden="true" />
+            {t.cardOf(activeIndex + 1, cards.length)}
+          </span>
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-bold ${
               allSeen
@@ -115,69 +134,108 @@ export function TheoryFlashcards({
           </span>
         </div>
 
-        <div className="mt-4 grid gap-3.5 sm:grid-cols-2">
-          {cards.map((card, index) => {
-            const isFlipped = Boolean(flipped[card.term]);
-            const isSeen = Boolean(seen[card.term]);
-            return (
-              <button
-                key={card.term}
-                type="button"
-                onClick={() => toggleCard(card.term)}
-                aria-pressed={isFlipped}
-                className={`focus-ring group flex min-h-36 w-full flex-col justify-between rounded-2xl border p-4 text-left transition duration-200 sm:p-5 ${
-                  isFlipped
-                    ? "border-neon/60 bg-neon/10 shadow-[0_0_24px_rgba(0,217,255,0.14)]"
-                    : isSeen
-                      ? "border-success/35 bg-card/70 hover:border-neon/50"
-                      : "border-border bg-card/65 hover:border-neon/50 hover:bg-card/85"
-                }`}
-              >
-                <div className="flex w-full items-center justify-between gap-2">
-                  <span className="font-display text-sm font-black tracking-wider text-neon/80">
-                    0{index + 1}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
-                    {isSeen && <CheckCircle2 className="size-4 text-success" aria-hidden="true" />}
-                    <RotateCw
-                      className={`size-4 text-neon transition-transform duration-200 ${isFlipped ? "rotate-180" : "group-hover:rotate-45"}`}
-                      aria-hidden="true"
-                    />
-                  </span>
-                </div>
+        <button
+          key={card.term}
+          type="button"
+          onClick={toggleFlip}
+          aria-pressed={flipped}
+          className={`focus-ring group mt-5 flex min-h-64 w-full flex-col items-center justify-between rounded-3xl border-2 p-6 text-center transition duration-200 sm:min-h-72 sm:p-8 ${
+            flipped
+              ? "border-neon/70 bg-neon/10 shadow-[0_0_32px_rgba(0,217,255,0.18)]"
+              : "border-border bg-card/80 shadow-[0_12px_40px_rgba(0,0,0,0.28)] hover:border-neon/55 hover:bg-card"
+          }`}
+        >
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-sm font-bold uppercase tracking-wider ${
+              flipped
+                ? "border-success/45 bg-success/15 text-success"
+                : "border-gold/45 bg-gold/10 text-gold"
+            }`}
+          >
+            {flipped ? t.definitionBadge : t.termBadge}
+          </span>
 
-                {isFlipped ? (
-                  <div className="mt-3">
-                    <p className="text-sm font-black text-neon">{card.term}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-foreground/95">{card.definition}</p>
-                  </div>
-                ) : (
-                  <div className="my-3">
-                    <p className="font-display text-lg font-black text-foreground">{card.term}</p>
-                  </div>
-                )}
+          {flipped ? (
+            <div className="my-5 max-w-xl">
+              <p className="font-display text-lg font-black text-neon sm:text-xl">{card.term}</p>
+              <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">{card.definition}</p>
+            </div>
+          ) : (
+            <div className="my-5 max-w-xl">
+              <p className="font-display text-2xl font-black text-foreground sm:text-3xl">{card.term}</p>
+            </div>
+          )}
 
-                <p className="mt-3 text-sm font-semibold text-muted-foreground">
-                  {isFlipped ? t.tapToBack : t.tapToFlip}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/50 px-4 py-2 text-sm font-semibold text-muted-foreground transition group-hover:border-neon/40 group-hover:text-foreground">
+            <RotateCw
+              className={`size-4 text-neon transition-transform duration-200 ${flipped ? "rotate-180" : "group-hover:rotate-45"}`}
+              aria-hidden="true"
+            />
+            {flipped ? t.tapToBack : t.tapToFlip}
+          </span>
+        </button>
 
-      {onContinue && (
-        <div className="mt-6 flex justify-start">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={onContinue}
-            className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-5 text-base font-black text-primary-foreground shadow-[0_0_24px_rgba(0,217,255,0.28)] transition hover:-translate-y-0.5"
+            disabled={isFirst}
+            onClick={() => selectCard(activeIndex - 1)}
+            className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-card/70 px-4 text-sm font-bold text-foreground transition hover:border-neon/50 hover:text-neon disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {t.continueLabel}
-            <ChevronRight className="size-4" aria-hidden="true" />
+            <ChevronLeft className="size-4" aria-hidden="true" />
+            {t.prev}
           </button>
+
+          <div className="flex items-center gap-1.5" role="tablist" aria-label={t.navTitle}>
+            {cards.map((item, index) => {
+              const isCurrent = index === activeIndex;
+              const isCardSeen = Boolean(seen[item.term]);
+              return (
+                <button
+                  key={item.term}
+                  type="button"
+                  role="tab"
+                  aria-selected={isCurrent}
+                  aria-label={`${index + 1}`}
+                  onClick={() => selectCard(index)}
+                  className="focus-ring grid size-11 place-items-center rounded-xl hover:bg-neon/10"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`h-2.5 rounded-full transition-all ${
+                      isCurrent
+                        ? "w-7 bg-neon"
+                        : isCardSeen
+                          ? "w-2.5 bg-success"
+                          : "w-2.5 bg-secondary"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          {!isLast ? (
+            <button
+              type="button"
+              onClick={() => selectCard(activeIndex + 1)}
+              className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.25)] transition hover:-translate-y-0.5"
+            >
+              {t.next}
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </button>
+          ) : onContinue ? (
+            <button
+              type="button"
+              onClick={onContinue}
+              className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-neon px-4 text-sm font-black text-primary-foreground shadow-[0_0_20px_rgba(0,217,255,0.25)] transition hover:-translate-y-0.5"
+            >
+              {t.continueLabel}
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </button>
+          ) : null}
         </div>
-      )}
+      </section>
     </div>
   );
 }
