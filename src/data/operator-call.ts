@@ -496,7 +496,7 @@ export const operatorCallContent = {
     videoExample: {
       title: "Exemplu de apel al unui escroc (video de pe internet)",
       description: `Numărul și codul din video sunt ascunse. ${SAFETY_PHRASES.ro.smsCode}`,
-      videoUrl: "/video/3video.mp4",
+      videoUrl: "/video/3video_ro.mp4",
       videoFallback: "Browserul tău nu poate reda acest video.",
     },
     callSimulator: {
