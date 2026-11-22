@@ -31,9 +31,11 @@ import { LinkClassifyStage } from "./fake-link/link-classify-stage";
 import { DialogueReactStage } from "./fake-link/dialogue-react-stage";
 import { OrderStepsStage } from "./fake-link/order-steps-stage";
 import { ShadowBattleStage } from "./shared/shadow-battle-stage";
+import { MODULE_FLASHCARDS } from "@/data/module-flashcards";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { ModuleNotice } from "./shared/module-notice";
 import { MentorIntro } from "./shared/mentor-intro";
+import { TheoryFlashcards } from "./shared/theory-flashcards";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { NextButtonContext, ActionButton } from "./operator-call/stage-support";
 
@@ -170,7 +172,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
             }>
               <div className="mt-7">
                 {currentStage === 0 && <MentorIntro imageSrc="/characters/01_woman_purple_blazer_left.png" locale={locale} content={t.intro} onFinish={submitIntro} />}
-                {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
+                {currentStage === 1 && <TheoryStage locale={locale} content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
                 {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => completeStage(3)} />}
                 {currentStage === 4 && <FindSignalsStage locale={locale} content={t.findSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
@@ -190,7 +192,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
   );
 }
 
-function TheoryStage({ content, button, saving, onComplete }: { content: (typeof fakeLinkContent)["ru"]["theory"] | (typeof fakeLinkContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
+function TheoryStage({ locale, content, button, saving, onComplete }: { locale: FakeLinkLocale; content: (typeof fakeLinkContent)["ru"]["theory"] | (typeof fakeLinkContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
   return <div>
     <p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p>
     <div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div>
@@ -199,6 +201,7 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
       <p className="mt-2">{content.recovery}</p>
     </article>
     <p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p>
+    <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["fake-link"][locale]} />
     <div className="mt-8 flex flex-wrap items-center gap-4">
       <button type="button" onClick={onComplete} disabled={saving} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_rgba(0,217,255,0.5)] disabled:opacity-60">{button}</button>
     </div>

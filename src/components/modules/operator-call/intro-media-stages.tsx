@@ -4,9 +4,11 @@ import { CheckCircle2, Play, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import type { operatorCallContent } from "@/data/operator-call";
+import { MODULE_FLASHCARDS } from "@/data/module-flashcards";
+import { TheoryFlashcards } from "../shared/theory-flashcards";
 import { ActionButton } from "./stage-support";
 
-function TheoryStage({ content, button, saving, onComplete }: { content: (typeof operatorCallContent)["ru"]["theory"] | (typeof operatorCallContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
+function TheoryStage({ locale, content, button, saving, onComplete }: { locale: "ru" | "ro"; content: (typeof operatorCallContent)["ru"]["theory"] | (typeof operatorCallContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
   const [playingMp3, setPlayingMp3] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -39,6 +41,8 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
     <div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div>
     <div className="mt-6 grid gap-4 sm:grid-cols-2">{content.notes.map(note => <article key={note} className="rounded-3xl border border-neon/25 bg-background/40 p-5 text-base leading-relaxed text-foreground">{note}</article>)}</div>
     <p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p>
+
+    <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["operator-call"][locale]} />
 
     <div className="mt-8 flex flex-col sm:flex-row justify-center sm:justify-start gap-4">
       {'audioText' in content && 'audioFile' in content && content.audioText && content.audioFile && (

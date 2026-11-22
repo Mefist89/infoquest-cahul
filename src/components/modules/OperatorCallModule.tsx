@@ -200,7 +200,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
             }>
               <div className="mt-7">
                 {currentStage === 0 && <MentorIntro imageSrc="/characters/02_woman_glasses_book_left.png" content={t.intro} locale={locale} onFinish={() => runner.openStage(firstOpenStage)} />}
-                {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => runner.completeStage(1)} />}
+                {currentStage === 1 && <TheoryStage locale={locale} content={t.theory} button={t.continue} saving={saving} onComplete={() => runner.completeStage(1)} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => runner.completeStage(2)} />}
                 {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => runner.completeStage(3)} />}
                 {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.check} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}
