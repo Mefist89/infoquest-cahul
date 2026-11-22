@@ -4,6 +4,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Layers, RotateCw, Sparkles } f
 import { useState } from "react";
 
 import type { FlashcardItem } from "@/data/module-flashcards";
+import { FlashcardArt } from "./flashcard-art";
 
 const copy = {
   ru: {
@@ -139,10 +140,10 @@ export function TheoryFlashcards({
           type="button"
           onClick={toggleFlip}
           aria-pressed={flipped}
-          className={`focus-ring group mt-5 flex min-h-64 w-full flex-col items-center justify-between rounded-3xl border-2 p-6 text-center transition duration-200 sm:min-h-72 sm:p-8 ${
+          className={`focus-ring group mx-auto mt-5 flex min-h-80 w-full max-w-sm flex-col items-center justify-between rounded-[2rem] border-4 p-6 text-center transition duration-200 sm:min-h-96 sm:p-7 ${
             flipped
-              ? "border-neon/70 bg-neon/10 shadow-[0_0_32px_rgba(0,217,255,0.18)]"
-              : "border-border bg-card/80 shadow-[0_12px_40px_rgba(0,0,0,0.28)] hover:border-neon/55 hover:bg-card"
+              ? "border-success/80 bg-card/95 shadow-[0_0_36px_rgba(34,197,94,0.2)]"
+              : "border-neon/80 bg-card/90 shadow-[0_0_36px_rgba(0,217,255,0.2)] hover:border-neon hover:bg-card"
           }`}
         >
           <span
@@ -156,17 +157,18 @@ export function TheoryFlashcards({
           </span>
 
           {flipped ? (
-            <div className="my-5 max-w-xl">
-              <p className="font-display text-lg font-black text-neon sm:text-xl">{card.term}</p>
-              <p className="mt-3 text-base leading-relaxed text-foreground sm:text-lg">{card.definition}</p>
+            <div className="my-5 flex flex-col items-center">
+              <p className="font-display text-xl font-black text-neon sm:text-2xl">{card.term}</p>
+              <p className="mt-4 text-base leading-relaxed text-foreground sm:text-lg">{card.definition}</p>
             </div>
           ) : (
-            <div className="my-5 max-w-xl">
-              <p className="font-display text-2xl font-black text-foreground sm:text-3xl">{card.term}</p>
+            <div className="my-4 flex flex-col items-center gap-4">
+              <FlashcardArt art={card.art} />
+              <p className="font-display text-2xl font-black leading-snug text-foreground sm:text-3xl">{card.term}</p>
             </div>
           )}
 
-          <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/50 px-4 py-2 text-sm font-semibold text-muted-foreground transition group-hover:border-neon/40 group-hover:text-foreground">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/60 px-4 py-2 text-sm font-semibold text-muted-foreground transition group-hover:border-neon/40 group-hover:text-foreground">
             <RotateCw
               className={`size-4 text-neon transition-transform duration-200 ${flipped ? "rotate-180" : "group-hover:rotate-45"}`}
               aria-hidden="true"
