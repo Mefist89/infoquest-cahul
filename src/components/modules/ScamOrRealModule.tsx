@@ -34,7 +34,7 @@ import { useModuleRunner, type ModuleProgress, type StageProgress } from "@/feat
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { MentorIntro } from "./shared/mentor-intro";
 import { NoTimerToggle } from "./shared/timer-setting";
-import { NextButtonContext } from "./operator-call/stage-support";
+import { ActionButton, NextButtonContext } from "./operator-call/stage-support";
 
 function HeaderStat({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
   return (
@@ -170,12 +170,13 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
               <div className="mt-7">
                 {currentStage === 0 && <MentorIntro imageSrc={t.intro.image} locale={locale} content={t.intro} onFinish={submitIntro} />}
                 {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
+                {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
                 {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
                 {currentStage === 5 && <OfferClassifyStage locale={locale} content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <SellerCheckStage locale={locale} content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
                 {currentStage === 8 && <ShadowBattleStage locale={locale} content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
-                {currentStage > 1 && currentStage !== 4 && currentStage !== 5 && currentStage !== 6 && currentStage < 9 && currentStage !== 7 && currentStage !== 8 && (
+                {currentStage === 3 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>
                     <p className="mt-2 text-sm text-muted-foreground">В разработке / În dezvoltare</p>
@@ -208,4 +209,37 @@ function TheoryStage({ content, button, saving, onComplete }: { content: (typeof
 
 function StageHeading({ number, title, subtitle, done }: { number: number; title: string; subtitle: string; done: boolean }) {
   return <div className="flex items-start gap-4"><span className={`grid size-12 shrink-0 place-items-center rounded-2xl border font-display font-black ${done ? "border-success/40 bg-success/10 text-success" : "border-neon/40 bg-neon/10 text-neon"}`}>{done ? <Check className="size-5" /> : number === 0 ? <MessageSquare className="size-5" /> : number}</span><div><p className="text-sm uppercase tracking-[0.16em] text-muted-foreground">{number === 0 ? title : `${number}/8`}</p><h2 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{subtitle}</p></div></div>;
+}
+
+function VideoExplanationStage({ content, button, saving, onComplete }: { content: (typeof scamOrRealContent)["ru"]["videoExplanation"] | (typeof scamOrRealContent)["ro"]["videoExplanation"]; button: string; saving: boolean; onComplete: () => void }) {
+  return (
+    <div>
+      <div className="overflow-hidden rounded-2xl border border-neon/25 bg-slate-950">
+        <video
+          key={content.videoUrl}
+          aria-label={content.title}
+          className="aspect-video w-full bg-black object-cover"
+          controls
+          preload="metadata"
+          playsInline
+        >
+          <source src={content.videoUrl} type="video/mp4" />
+          <p>{content.videoFallback}</p>
+        </video>
+        <div className="border-t border-border bg-card p-4">
+          <h3 className="font-bold">{content.title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{content.description}</p>
+        </div>
+      </div>
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+        {content.points.map((point) => (
+          <li key={point} className="flex gap-3 rounded-xl border border-border bg-background/35 p-4 text-sm">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-neon" aria-hidden="true" />
+            {point}
+          </li>
+        ))}
+      </ul>
+      <ActionButton disabled={saving} onClick={onComplete}>{button}</ActionButton>
+    </div>
+  );
 }

@@ -72,6 +72,18 @@ export const scamOrRealContent = {
       ],
       rule: "Не переводи деньги заранее незнакомцам. Поищи отзывы о продавце на других сайтах, сравни цену с известными магазинами, а если сомневаешься — посоветуйся.",
     },
+    videoExplanation: {
+      title: "Как отличить честную скидку от ловушки",
+      description: "Разбираем главные признаки обмана при покупках онлайн, уловки с предоплатой и правила безопасной проверки продавца.",
+      videoUrl: "/video/scam-or-real-explain-ru.mp4",
+      videoFallback: "Ваш браузер не поддерживает воспроизведение видео.",
+      points: [
+        "Сравни цену в известных магазинах — слишком большая скидка у незнакомца почти всегда ловушка.",
+        "Не отправляй предоплату на личную карту незнакомому продавцу.",
+        "Ищи отзывы о магазине или продавце на сторонних сайтах, а не только на его странице.",
+        "При личной встрече проверяй товар в людном месте и плати только после осмотра.",
+      ],
+    },
     dealSignals: {
       lead: "Перед тобой объявление о продаже телефона. Осмотри страницу и нажми на всё подозрительное.",
       passNote: "Найди все 6 сигналов. Можно ошибиться на ловушках не больше 2 раз. Затем нажми «Проверить».",
@@ -325,6 +337,18 @@ export const scamOrRealContent = {
         { title: "Dacă ai plătit deja", text: "Sună imediat la bancă, la numărul de pe spatele cardului sau din aplicația băncii, și blochează cardul. Apoi anunță poliția (112) și raportează anunțul pe site. Nu-i crede pe cei care promit să-ți „recupereze banii” contra plată — și ei sunt escroci." },
       ],
       rule: "Nu transfera bani în avans străinilor. Caută recenzii despre vânzător pe alte site-uri, compară prețul cu magazinele cunoscute, iar la îndoială — cere sfat.",
+    },
+    videoExplanation: {
+      title: "Cum să distingi o reducere reală de o capcană",
+      description: "Analizăm principalele semne ale înșelătoriilor la cumpărături online, capcana plății în avans și regulile verificării vânzătorului.",
+      videoUrl: "/video/scam-or-real-explain-ro.mp4",
+      videoFallback: "Browserul tău nu suportă redarea video.",
+      points: [
+        "Compară prețul în magazinele cunoscute — o reducere prea mare de la un necunoscut este aproape mereu o capcană.",
+        "Nu trimite bani în avans pe cardul personal al unui vânzător necunoscut.",
+        "Caută recenzii despre magazin sau vânzător pe alte site-uri, nu doar pe pagina lui.",
+        "La întâlnirea față în față, verifică produsul într-un loc public și plătește abia după verificare.",
+      ],
     },
     dealSignals: {
       lead: "În fața ta e un anunț de vânzare a unui telefon. Examinează pagina și apasă pe tot ce e suspect.",
