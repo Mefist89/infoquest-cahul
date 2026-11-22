@@ -140,40 +140,52 @@ export function TheoryFlashcards({
           type="button"
           onClick={toggleFlip}
           aria-pressed={flipped}
-          className={`focus-ring group mx-auto mt-5 flex min-h-80 w-full max-w-sm flex-col items-center justify-between rounded-[2rem] border-4 p-6 text-center transition duration-200 sm:min-h-96 sm:p-7 ${
-            flipped
-              ? "border-success/80 bg-card/95 shadow-[0_0_36px_rgba(34,197,94,0.2)]"
-              : "border-neon/80 bg-card/90 shadow-[0_0_36px_rgba(0,217,255,0.2)] hover:border-neon hover:bg-card"
-          }`}
+          className="focus-ring group mx-auto mt-5 block w-full max-w-[26.5rem] rounded-[2rem] text-center [perspective:1200px]"
         >
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-sm font-bold uppercase tracking-wider ${
-              flipped
-                ? "border-success/45 bg-success/15 text-success"
-                : "border-gold/45 bg-gold/10 text-gold"
+            className={`grid w-full transition-transform duration-500 ease-out motion-reduce:duration-0 [transform-style:preserve-3d] ${
+              flipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]"
             }`}
           >
-            {flipped ? t.definitionBadge : t.termBadge}
-          </span>
+            <span
+              aria-hidden={flipped}
+              className="col-start-1 row-start-1 flex min-h-[25rem] w-full flex-col items-center justify-between rounded-[2rem] border-4 border-neon/80 bg-card/95 p-6 shadow-[0_0_36px_rgba(0,217,255,0.2)] transition-colors group-hover:border-neon group-hover:bg-card [backface-visibility:hidden] [-webkit-backface-visibility:hidden] sm:min-h-[27.5rem] sm:p-7"
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/45 bg-gold/10 px-3.5 py-1 text-sm font-bold uppercase tracking-wider text-gold">
+                {t.termBadge}
+              </span>
 
-          {flipped ? (
-            <div className="my-5 flex flex-col items-center">
-              <p className="font-display text-xl font-black text-neon sm:text-2xl">{card.term}</p>
-              <p className="mt-4 text-base leading-relaxed text-foreground sm:text-lg">{card.definition}</p>
-            </div>
-          ) : (
-            <div className="my-4 flex flex-col items-center gap-4">
-              <FlashcardArt art={card.art} />
-              <p className="font-display text-2xl font-black leading-snug text-foreground sm:text-3xl">{card.term}</p>
-            </div>
-          )}
+              <span className="my-4 flex flex-col items-center gap-4">
+                <FlashcardArt art={card.art} />
+                <span className="font-display text-2xl font-black leading-snug text-foreground sm:text-3xl">
+                  {card.term}
+                </span>
+              </span>
 
-          <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/60 px-4 py-2 text-sm font-semibold text-muted-foreground transition group-hover:border-neon/40 group-hover:text-foreground">
-            <RotateCw
-              className={`size-4 text-neon transition-transform duration-200 ${flipped ? "rotate-180" : "group-hover:rotate-45"}`}
-              aria-hidden="true"
-            />
-            {flipped ? t.tapToBack : t.tapToFlip}
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/60 px-4 py-2 text-sm font-semibold text-muted-foreground transition group-hover:border-neon/40 group-hover:text-foreground">
+                <RotateCw className="size-4 text-neon transition-transform duration-200 group-hover:rotate-45" aria-hidden="true" />
+                {t.tapToFlip}
+              </span>
+            </span>
+
+            <span
+              aria-hidden={!flipped}
+              className="col-start-1 row-start-1 flex min-h-[25rem] w-full flex-col items-center justify-between rounded-[2rem] border-4 border-success/80 bg-card/95 p-6 shadow-[0_0_36px_rgba(34,197,94,0.2)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] sm:min-h-[27.5rem] sm:p-7"
+            >
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-success/45 bg-success/15 px-3.5 py-1 text-sm font-bold uppercase tracking-wider text-success">
+                {t.definitionBadge}
+              </span>
+
+              <span className="my-5 flex flex-col items-center">
+                <span className="font-display text-xl font-black text-neon sm:text-2xl">{card.term}</span>
+                <span className="mt-4 text-base leading-relaxed text-foreground sm:text-lg">{card.definition}</span>
+              </span>
+
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/60 px-4 py-2 text-sm font-semibold text-muted-foreground transition group-hover:border-success/45 group-hover:text-foreground">
+                <RotateCw className="size-4 rotate-180 text-success transition-transform duration-200 group-hover:rotate-[225deg]" aria-hidden="true" />
+                {t.tapToBack}
+              </span>
+            </span>
           </span>
         </button>
 

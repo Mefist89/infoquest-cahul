@@ -18,7 +18,7 @@ export type FlashcardArtId =
 
 export function FlashcardArt({ art }: { art: FlashcardArtId }) {
   return (
-    <div className="grid size-36 place-items-center rounded-3xl border border-neon/25 bg-[radial-gradient(circle_at_50%_40%,rgba(0,217,255,0.18),rgba(6,18,46,0.9))] p-3 shadow-[inset_0_0_24px_rgba(0,217,255,0.12)] sm:size-40">
+    <span className="grid size-40 place-items-center rounded-3xl border border-neon/25 bg-[radial-gradient(circle_at_50%_40%,rgba(0,217,255,0.18),rgba(6,18,46,0.9))] p-3 shadow-[inset_0_0_24px_rgba(0,217,255,0.12)] sm:size-44">
       <svg viewBox="0 0 120 120" className="size-full" aria-hidden="true">
         {art === "vishing" && (
           <g stroke="#08142b" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
@@ -181,6 +181,6 @@ export function FlashcardArt({ art }: { art: FlashcardArtId }) {
           </g>
         )}
       </svg>
-    </div>
+    </span>
   );
 }
