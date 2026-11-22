@@ -31,6 +31,7 @@ import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-
 import { FinalStage } from "./operator-call/final-stage";
 import { TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
+import { ModuleNotice } from "./shared/module-notice";
 import { GuestRegisterGate } from "./shared/guest-register-gate";
 import { MentorIntro } from "./shared/mentor-intro";
 import { NoTimerToggle } from "./shared/timer-setting";
@@ -184,6 +185,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
             ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
               <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
             ) : (<>
+            <ModuleNotice notice={notice} />
             {currentStage === 0 ? (
               <StageHeading number={0} title={t.intro.title} subtitle={t.intro.subtitle} done={false} />
             ) : (
@@ -209,7 +211,6 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
               </div>
             </NextButtonContext.Provider>
 
-            {notice && <p className={`mt-6 rounded-xl border px-4 py-3 text-sm ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>{notice.text}</p>}
             {runner.canRetrySave && <SaveRetryButton label={t.result.saveRetry} onRetry={runner.retrySave} disabled={saving} />}
             </>)}
           </section>

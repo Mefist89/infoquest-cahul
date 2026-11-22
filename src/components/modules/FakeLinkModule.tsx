@@ -32,6 +32,7 @@ import { DialogueReactStage } from "./fake-link/dialogue-react-stage";
 import { OrderStepsStage } from "./fake-link/order-steps-stage";
 import { ShadowBattleStage } from "./shared/shadow-battle-stage";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
+import { ModuleNotice } from "./shared/module-notice";
 import { MentorIntro } from "./shared/mentor-intro";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { NextButtonContext, ActionButton } from "./operator-call/stage-support";
@@ -153,11 +154,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
             {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
               <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
             ) : (<>
-            {notice && (
-              <div className={`mb-6 rounded-2xl border p-4 text-sm font-medium ${notice.kind === "success" ? "border-success/30 bg-success/10 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>
-                {notice.text}
-              </div>
-            )}
+            <ModuleNotice notice={notice} />
 
             {currentStage === 0 ? (
               <StageHeading number={0} title={t.intro.title} subtitle={t.intro.subtitle} done={false} />
