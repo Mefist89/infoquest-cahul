@@ -30,10 +30,12 @@ import { CallSimulatorStage, ClassifyStage } from "./operator-call/call-classify
 import { DialogueStage, OrderingStage } from "./operator-call/dialogue-ordering-stages";
 import { FinalStage } from "./operator-call/final-stage";
 import { TheoryStage, VideoExampleStage, VideoExplanationStage } from "./operator-call/intro-media-stages";
+import { MODULE_FLASHCARDS } from "@/data/module-flashcards";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { ModuleNotice } from "./shared/module-notice";
 import { GuestRegisterGate } from "./shared/guest-register-gate";
 import { MentorIntro } from "./shared/mentor-intro";
+import { FlashcardsNavButton, TheoryFlashcards } from "./shared/theory-flashcards";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { GameSoundToggle, SoundChoiceBanner } from "./operator-call/game-sound-toggle";
 import { NextButtonContext } from "./operator-call/stage-support";
@@ -58,9 +60,11 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
 
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
+  const [showFlashcards, setShowFlashcards] = useState(false);
 
   function chooseStage(stage: number) {
     if (runner.chooseStage(stage)) {
+      setShowFlashcards(false);
       setFeedback(null);
     }
   }
@@ -150,10 +154,11 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
           <aside className="min-w-0 rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
             <p className="px-2 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
-            <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
-              <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
+            <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${!showFlashcards && currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
+              <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${!showFlashcards && currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
               <span className="min-w-0"><span className="block text-sm text-muted-foreground">{t.intro.title}</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
             </button>
+            <FlashcardsNavButton locale={locale} active={showFlashcards} onClick={() => setShowFlashcards(true)} />
             <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {t.stages.map((stage, index) => {
                 const number = index + 1;
@@ -161,7 +166,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
                 const done = completedStages.has(number);
                 const guestLocked = isGuest && number > GUEST_MAX_STAGE;
                 const locked = !done && (number > unlockedThrough || (guestLocked && number > GUEST_MAX_STAGE + 1));
-                const active = currentStage === number;
+                const active = !showFlashcards && currentStage === number;
                 return (
                   <li key={stage.title}>
                     <button type="button" data-testid={`stage-nav-${number}`} aria-label={`${number}/8. ${stage.title}. ${locked ? t.locked : guestLocked ? (locale === "ro" ? "Necesită autentificare" : "Нужен вход") : done ? t.completed : stage.subtitle}`} onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
@@ -175,7 +180,9 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
           </aside>
 
           <section className="min-w-0 min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
-            {showGuestGate ? (
+            {showFlashcards ? (
+              <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["operator-call"][locale]} onContinue={() => { setShowFlashcards(false); runner.openStage(1); }} />
+            ) : showGuestGate ? (
               <GuestRegisterGate
                 locale={locale}
                 loginHref={loginHref}
@@ -200,7 +207,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
             }>
               <div className="mt-7">
                 {currentStage === 0 && <MentorIntro imageSrc="/characters/02_woman_glasses_book_left.png" content={t.intro} locale={locale} onFinish={() => runner.openStage(firstOpenStage)} />}
-                {currentStage === 1 && <TheoryStage locale={locale} content={t.theory} button={t.continue} saving={saving} onComplete={() => runner.completeStage(1)} />}
+                {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={() => runner.completeStage(1)} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => runner.completeStage(2)} />}
                 {currentStage === 3 && <VideoExampleStage content={t.videoExample} button={t.continue} saving={saving} onComplete={() => runner.completeStage(3)} />}
                 {currentStage === 4 && <CallSimulatorStage locale={locale} content={t.callSimulator} check={t.check} saving={saving} feedback={feedback?.stage === 4 ? feedback : null} onSubmit={submitCallSimulator} />}

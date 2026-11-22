@@ -35,7 +35,7 @@ import { MODULE_FLASHCARDS } from "@/data/module-flashcards";
 import { ModuleResult, SaveRetryButton, type NextModule } from "./shared/module-result";
 import { ModuleNotice } from "./shared/module-notice";
 import { MentorIntro } from "./shared/mentor-intro";
-import { TheoryFlashcards } from "./shared/theory-flashcards";
+import { FlashcardsNavButton, TheoryFlashcards } from "./shared/theory-flashcards";
 import { NoTimerToggle } from "./shared/timer-setting";
 import { ActionButton, NextButtonContext } from "./operator-call/stage-support";
 
@@ -64,7 +64,12 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
     initialModule,
     messages: { locked: t.locked, saved: t.saved, saveError: t.saveError },
   });
-  const { completedStages, completionPercent, currentStage, moduleXp, notice, saving, unlockedThrough, chooseStage, completeStage } = runner;
+  const { completedStages, completionPercent, currentStage, moduleXp, notice, saving, unlockedThrough, completeStage } = runner;
+  const [showFlashcards, setShowFlashcards] = React.useState(false);
+
+  function chooseStage(stage: number) {
+    if (runner.chooseStage(stage)) setShowFlashcards(false);
+  }
 
   async function submitIntro() {
     chooseStage(1);
@@ -124,10 +129,11 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
           <aside className="min-w-0 rounded-3xl border border-border bg-card/70 p-4 lg:sticky lg:top-24 lg:self-start">
             <p className="px-2 text-sm font-bold uppercase tracking-[0.18em] text-muted-foreground">{t.progress}</p>
-            <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
-              <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
+            <button type="button" onClick={() => chooseStage(0)} className={`focus-ring mt-3 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${!showFlashcards && currentStage === 0 ? "border-neon/60 bg-neon/10" : "border-border bg-background/25"}`}>
+              <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${!showFlashcards && currentStage === 0 ? "bg-neon/15 text-neon" : "bg-secondary text-muted-foreground"}`}><MessageSquare className="size-4" /></span>
               <span className="min-w-0"><span className="block text-sm text-muted-foreground">{t.intro.title}</span><span className="block truncate text-sm font-bold text-foreground">{t.intro.title}</span></span>
             </button>
+            <FlashcardsNavButton locale={locale} active={showFlashcards} onClick={() => setShowFlashcards(true)} />
             <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {t.stages.slice(1).map((stage, index) => {
                 const number = index + 1;
@@ -135,7 +141,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
                 const Icon = stageIcons[index] || BookOpen;
                 const done = completedStages.has(dbStage);
                 const locked = !done && dbStage > unlockedThrough;
-                const active = currentStage === number;
+                const active = !showFlashcards && currentStage === number;
                 return (
                   <li key={stage.title}>
                     <button type="button" onClick={() => chooseStage(number)} disabled={locked} className={`focus-ring flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${active ? "border-neon/60 bg-neon/10" : done ? "border-success/30 bg-success/5" : "border-border bg-background/25"} disabled:cursor-not-allowed disabled:opacity-45`}>
@@ -149,7 +155,9 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
           </aside>
 
           <section className="min-w-0 min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
-            {currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
+            {showFlashcards ? (
+              <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["scam-or-real"][locale]} onContinue={() => { setShowFlashcards(false); runner.openStage(1); }} />
+            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
               <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
             ) : (<>
             <ModuleNotice notice={notice} />
@@ -168,7 +176,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
             }>
               <div className="mt-7">
                 {currentStage === 0 && <MentorIntro imageSrc={t.intro.image} locale={locale} content={t.intro} onFinish={submitIntro} />}
-                {currentStage === 1 && <TheoryStage locale={locale} content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
+                {currentStage === 1 && <TheoryStage content={t.theory} button={t.continue} saving={saving} onComplete={submitTheory} />}
                 {currentStage === 2 && <VideoExplanationStage content={t.videoExplanation} button={t.continue} saving={saving} onComplete={() => completeStage(2)} />}
                 {currentStage === 4 && <DealSignalsStage locale={locale} content={t.dealSignals} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(4, result)} />}
                 {currentStage === 5 && <OfferClassifyStage locale={locale} content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
@@ -195,12 +203,11 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
   );
 }
 
-function TheoryStage({ locale, content, button, saving, onComplete }: { locale: ScamOrRealLocale; content: (typeof scamOrRealContent)["ru"]["theory"] | (typeof scamOrRealContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
+function TheoryStage({ content, button, saving, onComplete }: { content: (typeof scamOrRealContent)["ru"]["theory"] | (typeof scamOrRealContent)["ro"]["theory"]; button: string; saving: boolean; onComplete: () => void }) {
   return <div>
     <p className="text-base leading-relaxed text-foreground/90 sm:text-lg">{content.lead}</p>
     <div className="mt-6 grid gap-4 sm:grid-cols-2">{content.cards.map((card, index) => <article key={card.title} className="rounded-3xl border border-border bg-background/40 p-5 sm:p-6 shadow-[0_5px_20px_rgba(0,0,0,0.1)] transition hover:border-neon/40 hover:bg-background/60"><span className="text-sm font-black tracking-widest text-neon/60">0{index + 1}</span><h3 className="mt-3 text-lg sm:text-xl font-black text-foreground">{card.title}</h3><p className="mt-2 text-sm sm:text-base leading-relaxed text-muted-foreground">{card.text}</p></article>)}</div>
     <p className="mt-8 rounded-3xl border border-neon/40 bg-neon/10 p-6 sm:p-8 text-lg sm:text-xl font-bold text-neon shadow-[0_0_30px_rgba(0,217,255,0.1)]">{content.rule}</p>
-    <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["scam-or-real"][locale]} />
     <div className="mt-8 flex flex-wrap items-center gap-4">
       <button type="button" onClick={onComplete} disabled={saving} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl bg-neon px-6 text-sm font-black text-primary-foreground shadow-[0_0_28px_rgba(0,217,255,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_0_38px_rgba(0,217,255,0.5)] disabled:opacity-60">{button}</button>
     </div>
