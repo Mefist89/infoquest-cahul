@@ -36,7 +36,7 @@ export default async function AiHelpPage({ params }: { params: Promise<{ locale:
     supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle(),
     supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
-  if (demoStudent) redirect(`/${locale}/profile?ai=demo`);
+  if (demoStudent || authData.user.is_anonymous) redirect(`/${locale}/profile?ai=demo`);
   if (!canUseAi(isUserRole(profile?.role) ? profile.role : null)) redirect(`/${locale}/profile?ai=restricted`);
 
   return <AiHelpChat locale={locale} content={chronoContent[locale]} />;

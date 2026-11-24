@@ -203,7 +203,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
     supabase.from("module_stage_progress").select("module_id, status").eq("user_id", user.id),
     supabase.from("demo_students").select("school_class").eq("user_id", user.id).maybeSingle(),
   ]);
-  const isDemoStudent = Boolean(demoStudent);
+  const isDemoStudent = Boolean(demoStudent) || Boolean(user.is_anonymous);
 
   const progress = (progressData ?? []) as ProgressRow[];
   const stageProgress = (stageProgressData ?? []) as StageProgressRow[];

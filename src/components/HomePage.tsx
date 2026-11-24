@@ -272,7 +272,7 @@ export default function HomePage() {
       ]);
 
       if (!active) return;
-      const isDemoStudent = Boolean(demoStudent);
+      const isDemoStudent = Boolean(demoStudent) || Boolean(user.is_anonymous);
       const catalogIds = new Set<string>(
         missions
           .filter((module) => !isDemoStudent || isDemoAllowedModule(module.moduleId))
@@ -294,7 +294,7 @@ export default function HomePage() {
       const avatarUrl = typeof candidateAvatar === "string" && candidateAvatar.startsWith("https://lh3.googleusercontent.com/") ? candidateAvatar : null;
       setHeaderProgress({
         isAuthenticated: true,
-        isDemoStudent: Boolean(demoStudent),
+        isDemoStudent,
         loading: false,
         xp: Object.values(moduleProgress).reduce((sum, item) => sum + item.xp, 0),
         rewards: progressRows.filter((item) => item.status === "completed").length,

@@ -41,7 +41,7 @@ export default async function FakeLinkPage({ params }: { params: Promise<{ local
 
   const moduleProgress = allModuleProgress?.find(row => row.module_id === MODULE_IDS.fakeLink) ?? null;
   const currentModule = MODULE_CATALOG.find(entry => entry.moduleId === MODULE_IDS.fakeLink)!;
-  const availableCatalog = demoStudent ? MODULE_CATALOG.filter(entry => isDemoAllowedModule(entry.moduleId)) : MODULE_CATALOG;
+  const availableCatalog = (demoStudent || authData.user.is_anonymous) ? MODULE_CATALOG.filter(entry => isDemoAllowedModule(entry.moduleId)) : MODULE_CATALOG;
   const next = pickNextModule(availableCatalog, allModuleProgress ?? [], MODULE_IDS.fakeLink);
   const nextModule = next ? { title: next.title[locale], href: `/${locale}${next.route}` } : null;
 

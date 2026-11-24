@@ -52,7 +52,7 @@ describe("ограничение демо-учеников двумя первы
     const hackedPage = readFileSync(join(process.cwd(), "src/app/[locale]/modules/hacked-account/page.tsx"), "utf8");
     const scamPage = readFileSync(join(process.cwd(), "src/app/[locale]/modules/scam-or-real/page.tsx"), "utf8");
     const migration = readFileSync(
-      join(process.cwd(), "supabase/migrations/20261124120000_restrict_demo_students_to_two_modules.sql"),
+      join(process.cwd(), "supabase/migrations/20261124130000_fix_register_demo_student_and_anonymous_guard.sql"),
       "utf8",
     );
 
@@ -60,7 +60,9 @@ describe("ограничение демо-учеников двумя первы
     expect(hackedPage).toContain("demoRestricted");
     expect(scamPage).toContain('from("demo_students")');
     expect(scamPage).toContain("demoRestricted");
+    expect(migration).toContain("#variable_conflict use_column");
     expect(migration).toContain("p_module_id not in ('operator-call', 'fake-link')");
     expect(migration).toContain("Module is not available in demo mode");
+    expect(migration).toContain("coalesce(u.is_anonymous, false)");
   });
 });

@@ -39,7 +39,7 @@ export default async function HackedAccountPage({ params }: { params: Promise<{ 
     supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
 
-  if (demoStudent) {
+  if (demoStudent || authData.user.is_anonymous) {
     return <ModuleLanding module="hacked-account" locale={locale} rules={hackedAccountContent[locale].guestRules} demoRestricted />;
   }
 

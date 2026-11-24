@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
 
-  if (demoStudent?.id) {
+  if (demoStudent?.id || authData.user.is_anonymous) {
     return jsonError("demo_restricted", 403);
   }
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {

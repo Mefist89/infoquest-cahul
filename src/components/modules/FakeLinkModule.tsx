@@ -174,7 +174,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
             <NextButtonContext.Provider value={
               currentStage > 0 && currentStage < 8 ? (
                 <button type="button" disabled={!completedStages.has(currentStage)} onClick={() => chooseStage(currentStage + 1)} className="focus-ring inline-flex min-h-12 items-center gap-2 rounded-xl border border-neon/40 bg-neon/10 px-5 text-sm font-black text-neon transition hover:border-neon hover:bg-neon/20 disabled:cursor-not-allowed disabled:border-border disabled:bg-secondary/50 disabled:text-muted-foreground disabled:hover:border-border disabled:hover:bg-secondary/50">
-                  {t.continue}<ChevronRight className="size-4" aria-hidden="true" />
+                  {t.next}<ChevronRight className="size-4" aria-hidden="true" />
                 </button>
               ) : null
             }>

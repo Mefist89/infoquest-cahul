@@ -143,7 +143,7 @@ export async function GET(request: Request) {
     supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle(),
     supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
-  if (demoStudent?.id) {
+  if (demoStudent?.id || authData.user.is_anonymous) {
     return jsonResponse({ error: errorText(requestLocale, "demo"), code: "demo_restricted" }, 403);
   }
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {
@@ -188,7 +188,7 @@ export async function POST(request: Request) {
     supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle(),
     supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
-  if (demoStudent?.id) {
+  if (demoStudent?.id || authData.user.is_anonymous) {
     return jsonResponse({ error: errorText(requestLocale, "demo"), code: "demo_restricted" }, 403);
   }
   if (profileError || !canUseAi(isUserRole(profile?.role) ? profile.role : null)) {

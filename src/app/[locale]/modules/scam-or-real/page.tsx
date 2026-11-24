@@ -39,7 +39,7 @@ export default async function ScamOrRealPage({ params }: { params: Promise<{ loc
     supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
 
-  if (demoStudent) {
+  if (demoStudent || authData.user.is_anonymous) {
     return <ModuleLanding module="scam-or-real" locale={locale} rules={scamOrRealContent[locale].guestRules} demoRestricted />;
   }
 

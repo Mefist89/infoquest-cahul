@@ -85,6 +85,7 @@ export async function POST(request: Request) {
 
   const supabase = await createClient();
   const { data: existingAuth } = await supabase.auth.getUser();
+  let createdAnonymousSession = false;
 
   if (!existingAuth.user) {
     const { error: signInError } = await supabase.auth.signInAnonymously({
@@ -109,6 +110,7 @@ export async function POST(request: Request) {
         { status: isAnonDisabled ? 503 : 500, headers: { "Cache-Control": "no-store" } },
       );
     }
+    createdAnonymousSession = true;
   }
 
   const { error: registerError } = await supabase.rpc("register_demo_student", {
@@ -120,6 +122,9 @@ export async function POST(request: Request) {
 
   if (registerError) {
     console.error("register_demo_student RPC failed", registerError.message);
+    if (createdAnonymousSession) {
+      await supabase.auth.signOut().catch(() => {});
+    }
     return NextResponse.json(
       { error: errorMessage(locale, "failed"), code: "register_failed" },
       { status: 500, headers: { "Cache-Control": "no-store" } },

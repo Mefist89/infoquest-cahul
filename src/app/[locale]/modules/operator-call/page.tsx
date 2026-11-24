@@ -58,7 +58,7 @@ export default async function OperatorCallPage({ params }: { params: Promise<{ l
   ]);
 
   const moduleProgress = allModuleProgress?.find(row => row.module_id === MODULE_IDS.operatorCall) ?? null;
-  const availableCatalog = demoStudent ? MODULE_CATALOG.filter(entry => isDemoAllowedModule(entry.moduleId)) : MODULE_CATALOG;
+  const availableCatalog = (demoStudent || authData.user.is_anonymous) ? MODULE_CATALOG.filter(entry => isDemoAllowedModule(entry.moduleId)) : MODULE_CATALOG;
   const next = pickNextModule(availableCatalog, allModuleProgress ?? [], MODULE_IDS.operatorCall);
   const nextModule = next ? { title: next.title[locale], href: `/${locale}${next.route}` } : null;
 
