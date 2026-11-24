@@ -48,6 +48,12 @@ export const fakeLinkContent = {
         "Запомни: всегда проверяй адресную строку перед вводом данных.",
         "Будь внимателен, проверяй каждую деталь — и останови атаку Тени.",
       ],
+      audioFiles: [
+        "/audio/fake-link-intro-ru-1.mp3",
+        "/audio/fake-link-intro-ru-2.mp3",
+        "/audio/fake-link-intro-ru-3.mp3",
+        "/audio/fake-link-intro-ru-4.mp3",
+      ],
     },
     stages: [
       { title: "Вступление", subtitle: "Знакомство" },
