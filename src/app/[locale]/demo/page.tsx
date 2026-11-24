@@ -21,10 +21,10 @@ const content = {
     formHint: "Прогресс и набранные XP сохранятся в твоём кабинете на время урока.",
     benefits: [
       "Почта и пароль не нужны",
-      "Сразу доступны все 4 расследования",
+      "Доступны первые 2 модуля (все 8 задач в каждом)",
       "XP и бейджи сохраняются в профиле",
     ],
-    aiNote: "В демо-режиме AI-помощник Chrono отключён.",
+    aiNote: "В демо-режиме открыты 2 первых модуля, а AI-помощник Chrono отключён.",
   },
   ro: {
     pageTitle: "Acces demo pentru elevi",
@@ -36,10 +36,10 @@ const content = {
     formHint: "Progresul și punctele XP se salvează în cabinetul tău pe durata lecției.",
     benefits: [
       "Nu ai nevoie de e-mail sau parolă",
-      "Ai acces imediat la toate cele 4 investigații",
+      "Ai acces la primele 2 module (toate cele 8 sarcini în fiecare)",
       "Punctele XP și insignele se salvează în profil",
     ],
-    aiNote: "În modul demo, asistentul AI Chrono este dezactivat.",
+    aiNote: "În modul demo sunt deschise primele 2 module, iar asistentul AI Chrono este dezactivat.",
   },
 } as const;
 

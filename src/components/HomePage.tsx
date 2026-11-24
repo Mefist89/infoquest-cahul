@@ -24,6 +24,7 @@ import { useEffect, useMemo, useState } from "react";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { strings, type Lang } from "@/data/home-data";
 import { CASE_SLIDES as caseSlides, MODULE_CATALOG as missions, MODULE_COUNT, MODULE_MAX_XP, PLAYABLE_MAX_XP, type ModuleDefinition as Mission, type ModuleId } from "@/data/module-catalog";
+import { DEMO_MAX_XP, isDemoAllowedModule } from "@/data/module-catalog-meta";
 import { isUserRole, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/Modal";
@@ -78,10 +79,24 @@ const emptyProgress: HeaderProgress = {
   modules: {},
 };
 
-function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Mission; lang: Lang; onClick: () => void; dimmed?: boolean }) {
+function MissionCard({
+  mission,
+  lang,
+  onClick,
+  dimmed = false,
+  isDemoStudent = false,
+}: {
+  mission: Mission;
+  lang: Lang;
+  onClick: () => void;
+  dimmed?: boolean;
+  isDemoStudent?: boolean;
+}) {
   const Icon = icons[mission.icon];
   const t = strings[lang];
-  const locked = mission.status === "soon";
+  const demoLocked = isDemoStudent && mission.status === "playable" && !isDemoAllowedModule(mission.moduleId);
+  const locked = mission.status === "soon" || demoLocked;
+  const lockedLabel = demoLocked ? (lang === "ru" ? "Полный аккаунт" : "Cont complet") : t.soon;
 
   return (
     <button
@@ -98,7 +113,7 @@ function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Miss
         borderColor: `color-mix(in oklab, ${mission.color} ${locked ? "48%" : "100%"}, transparent)`,
         boxShadow: locked ? "none" : `0 0 15px color-mix(in oklab, ${mission.color} 27%, transparent)`,
       }}
-      aria-label={`${mission.title[lang]} — ${locked ? t.soon : t.playable}`}
+      aria-label={`${mission.title[lang]} — ${locked ? lockedLabel : t.playable}`}
     >
       <span className="grid size-8 shrink-0 place-items-center rounded-full border border-gold/70 font-display text-sm font-bold text-gold">
         {mission.id}
@@ -113,7 +128,7 @@ function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Miss
         <span className="block text-sm font-semibold leading-snug text-foreground">{mission.title[lang]}</span>
         <span className={`mt-1 inline-flex items-center gap-1 text-sm font-semibold uppercase tracking-wide ${locked ? "rounded-full bg-secondary px-2 py-0.5 text-foreground/75" : "text-neon"}`}>
           {locked && <Lock className="size-3" aria-hidden="true" />}
-          {locked ? t.soon : `${t.playable} · ${t.openMission}`}
+          {locked ? lockedLabel : `${t.playable} · ${t.openMission}`}
         </span>
       </span>
       {!locked && (
@@ -126,8 +141,11 @@ function MissionCard({ mission, lang, onClick, dimmed = false }: { mission: Miss
 }
 
 function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgress }) {
-  const percent = Math.min(100, Math.round((progress.xp / PLAYABLE_MAX_XP) * 100));
-  const playableMissions = missions.filter((module) => module.status === "playable");
+  const maxXp = progress.isDemoStudent ? DEMO_MAX_XP : PLAYABLE_MAX_XP;
+  const percent = Math.min(100, Math.round((progress.xp / maxXp) * 100));
+  const playableMissions = missions.filter(
+    (module) => module.status === "playable" && (!progress.isDemoStudent || isDemoAllowedModule(module.moduleId)),
+  );
 
   return (
     <div className="relative mx-auto w-full max-w-sm text-center">
@@ -146,7 +164,7 @@ function ShieldProgress({ lang, progress }: { lang: Lang; progress: HeaderProgre
         />
       </div>
       <p className="mt-2 text-sm uppercase tracking-widest text-muted-foreground">{strings[lang].shieldProgress}</p>
-      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={PLAYABLE_MAX_XP} aria-label={strings[lang].shieldProgress}>
+      <div className="mx-auto mt-2 flex max-w-56 gap-1" role="progressbar" aria-valuenow={progress.xp} aria-valuemin={0} aria-valuemax={maxXp} aria-label={strings[lang].shieldProgress}>
         {playableMissions.map((module) => {
           const moduleXp = progress.modules[module.moduleId]?.xp ?? 0;
           const modulePercent = Math.min(100, Math.round((moduleXp / MODULE_MAX_XP) * 100));
@@ -254,7 +272,12 @@ export default function HomePage() {
       ]);
 
       if (!active) return;
-      const catalogIds = new Set<string>(missions.map((module) => module.moduleId));
+      const isDemoStudent = Boolean(demoStudent);
+      const catalogIds = new Set<string>(
+        missions
+          .filter((module) => !isDemoStudent || isDemoAllowedModule(module.moduleId))
+          .map((module) => module.moduleId),
+      );
       const progressRows = (progressData ?? []).filter((item) => catalogIds.has(item.module_id));
       const moduleProgress = Object.fromEntries(
         progressRows.map((item) => [
@@ -348,7 +371,7 @@ export default function HomePage() {
           <div className="hidden grid-cols-[1fr_minmax(280px,380px)_1fr] items-center gap-6 lg:grid">
             <div className="space-y-4">
               {leftMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} isDemoStudent={headerProgress.isDemoStudent} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
             <div className="relative">
@@ -367,7 +390,7 @@ export default function HomePage() {
             </div>
             <div className="space-y-4">
               {rightMissions.map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} dimmed={missionFilter !== null && missionFilter !== mission.moduleId} isDemoStudent={headerProgress.isDemoStudent} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>
@@ -376,7 +399,7 @@ export default function HomePage() {
             <ShieldProgress lang={lang} progress={headerProgress} />
             <div className="mt-8 space-y-3">
               {(missionFilter ? missions.filter((mission) => mission.moduleId === missionFilter) : missions).map((mission) => (
-                <MissionCard key={mission.moduleId} mission={mission} lang={lang} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
+                <MissionCard key={mission.moduleId} mission={mission} lang={lang} isDemoStudent={headerProgress.isDemoStudent} onClick={() => mission.route ? router.push(`/${lang}${mission.route}`) : setSelectedMission(mission)} />
               ))}
             </div>
           </div>

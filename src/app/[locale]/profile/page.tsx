@@ -43,6 +43,12 @@ import {
   STAGE_COUNT,
   type ModuleIcon,
 } from "@/data/module-catalog";
+import {
+  DEMO_MAX_XP,
+  DEMO_MODULE_COUNT,
+  DEMO_STAGE_COUNT,
+  isDemoAllowedModule,
+} from "@/data/module-catalog-meta";
 import { canUseAi, isAdministrator, isUserRole, ROLE_LABELS, type UserRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 
@@ -92,8 +98,10 @@ const copy = {
     allCompleted: "Все доступные расследования пройдены! Новые дела скоро.",
     modules: "Прохождение модулей",
     moduleHint: `Доступно ${PLAYABLE_MODULE_COUNT} расследования`,
+    demoModuleHint: `Демо-режим: доступны ${DEMO_MODULE_COUNT} модуля (все 8 задач в каждом)`,
     open: "Открыть модуль",
     locked: "Скоро",
+    demoLocked: "Полный аккаунт",
     score: "Результат",
     stages: "Этапы",
     noScore: "—",
@@ -139,8 +147,10 @@ const copy = {
     allCompleted: "Toate investigațiile disponibile sunt finalizate! Dosare noi în curând.",
     modules: "Progresul modulelor",
     moduleHint: `Sunt disponibile ${PLAYABLE_MODULE_COUNT} investigații`,
+    demoModuleHint: `Mod demo: sunt disponibile ${DEMO_MODULE_COUNT} module (toate cele 8 sarcini în fiecare)`,
     open: "Deschide modulul",
     locked: "În curând",
+    demoLocked: "Cont complet",
     score: "Rezultat",
     stages: "Etape",
     noScore: "—",
@@ -199,12 +209,18 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   const stageProgress = (stageProgressData ?? []) as StageProgressRow[];
   const byModule = new Map(progress.map((item) => [item.module_id, item]));
   const playableModules = MODULE_CATALOG.filter((module) => module.status === "playable");
+  const accessibleModules = isDemoStudent
+    ? playableModules.filter((module) => isDemoAllowedModule(module.moduleId))
+    : playableModules;
   const soonModules = MODULE_CATALOG.filter((module) => module.status !== "playable");
-  const playableIds = new Set<string>(playableModules.map((module) => module.moduleId));
-  const relevantProgress = progress.filter((item) => playableIds.has(item.module_id));
+  const accessibleIds = new Set<string>(accessibleModules.map((module) => module.moduleId));
+  const maxModules = isDemoStudent ? DEMO_MODULE_COUNT : PLAYABLE_MODULE_COUNT;
+  const maxStages = isDemoStudent ? DEMO_STAGE_COUNT : PLAYABLE_STAGE_COUNT;
+  const maxXp = isDemoStudent ? DEMO_MAX_XP : PLAYABLE_MAX_XP;
+  const relevantProgress = progress.filter((item) => accessibleIds.has(item.module_id));
   const completedStagesByModule = new Map<string, number>();
   stageProgress.forEach((item) => {
-    if (playableIds.has(item.module_id) && item.status === "completed") {
+    if (accessibleIds.has(item.module_id) && item.status === "completed") {
       completedStagesByModule.set(item.module_id, (completedStagesByModule.get(item.module_id) ?? 0) + 1);
     }
   });
@@ -214,7 +230,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   const completedStageCount = Array.from(completedStagesByModule.values()).reduce((sum, count) => sum + Math.min(STAGE_COUNT, count), 0);
   const totalXp = relevantProgress.reduce((sum, item) => sum + Math.max(0, Math.min(MODULE_MAX_XP, item.xp)), 0);
   const bestScore = completedProgress.reduce((best, item) => Math.max(best, item.score), 0);
-  const completionPercent = Math.min(100, Math.round((totalXp / PLAYABLE_MAX_XP) * 100));
+  const completionPercent = Math.min(100, Math.round((totalXp / maxXp) * 100));
   const t = copy[locale];
   const metadata = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string };
   const displayName = profile?.display_name || metadata.full_name || metadata.name || user.email?.split("@")[0] || t.fallbackName;
@@ -222,7 +238,7 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
   const safeAvatar = typeof avatarUrl === "string" && avatarUrl.startsWith("https://lh3.googleusercontent.com/") ? avatarUrl : null;
   const userRole: UserRole = isUserRole(profile?.role) ? profile.role : "user";
   const initials = displayName.trim().slice(0, 2).toUpperCase();
-  const currentModule = playableModules.find((module) => byModule.get(module.moduleId)?.status !== "completed") ?? null;
+  const currentModule = accessibleModules.find((module) => byModule.get(module.moduleId)?.status !== "completed") ?? null;
   const currentProgress = currentModule ? (byModule.get(currentModule.moduleId) ?? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 }) : null;
   const currentStages = currentModule ? (completedStagesByModule.get(currentModule.moduleId) ?? 0) : 0;
   const CurrentModuleIcon = currentModule ? moduleIcons[currentModule.icon] : ShieldCheck;
@@ -295,15 +311,15 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard icon={Sparkles} label={t.xp} value={`${totalXp}/${PLAYABLE_MAX_XP}`} color="text-gold" />
-              <StatCard icon={Check} label={t.completed} value={`${completedCount}/${PLAYABLE_MODULE_COUNT}`} color="text-success" />
-              <StatCard icon={CircleGauge} label={t.stagesDone} value={`${completedStageCount}/${PLAYABLE_STAGE_COUNT}`} color="text-neon" />
+              <StatCard icon={Sparkles} label={t.xp} value={`${totalXp}/${maxXp}`} color="text-gold" />
+              <StatCard icon={Check} label={t.completed} value={`${completedCount}/${maxModules}`} color="text-success" />
+              <StatCard icon={CircleGauge} label={t.stagesDone} value={`${completedStageCount}/${maxStages}`} color="text-neon" />
               <StatCard icon={Award} label={t.bestScore} value={completedCount > 0 ? `${bestScore}%` : t.noScore} color="text-violet" />
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
               <DashboardPanel title={t.shield} hint={t.progressText} icon={ShieldCheck}>
-                <div className="flex items-center gap-4"><ProgressDonut percent={completionPercent} /><div><p className="text-sm uppercase tracking-wider text-muted-foreground">{t.xp}</p><p className="mt-1 font-display text-xl font-black text-gold">{totalXp}</p><p className="mt-2 text-sm text-muted-foreground">{t.stages}: {completedStageCount}/{PLAYABLE_STAGE_COUNT}</p></div></div>
+                <div className="flex items-center gap-4"><ProgressDonut percent={completionPercent} /><div><p className="text-sm uppercase tracking-wider text-muted-foreground">{t.xp}</p><p className="mt-1 font-display text-xl font-black text-gold">{totalXp}</p><p className="mt-2 text-sm text-muted-foreground">{t.stages}: {completedStageCount}/{maxStages}</p></div></div>
               </DashboardPanel>
               <DashboardPanel title={t.currentMission} hint={currentMissionHint} icon={CurrentModuleIcon}>
                 {currentModule && currentProgress ? (
@@ -316,16 +332,17 @@ export async function renderProfileDashboard(locale: string, section: ProfileSec
           </section>}
 
           {section === "missions" && <section id="missions" className="scroll-mt-6 py-6">
-            <SectionHeading title={t.modules} description={t.moduleHint} icon={GraduationCap} />
+            <SectionHeading title={t.modules} description={isDemoStudent ? t.demoModuleHint : t.moduleHint} icon={GraduationCap} />
             <div className="mt-4 grid gap-3.5 xl:grid-cols-2">
               {[...playableModules, ...soonModules].map((module) => {
-                const locked = module.status !== "playable";
+                const demoLocked = isDemoStudent && module.status === "playable" && !isDemoAllowedModule(module.moduleId);
+                const locked = module.status !== "playable" || demoLocked;
                 const item = byModule.get(module.moduleId) ?? { status: "not_started" as const, score: 0, xp: 0, attempts: 0 };
                 const completedStages = Math.min(STAGE_COUNT, completedStagesByModule.get(module.moduleId) ?? 0);
                 const moduleXp = Math.max(0, Math.min(MODULE_MAX_XP, item.xp));
                 const Icon = moduleIcons[module.icon];
                 const statusStyles = item.status === "completed" ? "border-success/45 bg-success/10 text-success" : item.status === "in_progress" ? "border-gold/45 bg-gold/10 text-gold" : "border-border bg-secondary/55 text-muted-foreground";
-                return <article key={module.moduleId} className={`group rounded-2xl border bg-card/55 p-4 transition ${locked ? "border-border/60" : "border-neon/30 hover:-translate-y-0.5 hover:border-neon/60"}`}><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background/60"><Icon className="size-5" style={{ color: module.color }} aria-hidden="true" /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2.5"><h3 className="text-sm font-bold sm:text-base">{module.title[locale]}</h3><span className="font-display text-sm text-gold">0{module.id}</span></div>{!locked && <div className="mt-1.5 flex flex-wrap gap-2 text-sm"><span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-semibold ${statusStyles}`}>{item.status === "completed" ? <Check className="size-3" aria-hidden="true" /> : <Clock3 className="size-3" aria-hidden="true" />}{t.statuses[item.status]}</span><span className="py-0.5 text-muted-foreground">{completedStages}/{STAGE_COUNT} · {moduleXp}/{MODULE_MAX_XP} XP</span></div>}</div></div>{!locked && <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-neon" style={{ width: `${(moduleXp / MODULE_MAX_XP) * 100}%` }} /></div>}<div className="mt-3 flex justify-end">{locked || !module.route ? <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-secondary/45 px-3 text-sm font-bold text-muted-foreground"><Lock className="size-3.5" aria-hidden="true" />{t.locked}</span> : <Link href={`/${locale}${module.route}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon">{t.open}<ChevronRight className="size-3.5" aria-hidden="true" /></Link>}</div></article>;
+                return <article key={module.moduleId} className={`group rounded-2xl border bg-card/55 p-4 transition ${locked ? "border-border/60" : "border-neon/30 hover:-translate-y-0.5 hover:border-neon/60"}`}><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-background/60"><Icon className="size-5" style={{ color: module.color }} aria-hidden="true" /></span><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-2.5"><h3 className="text-sm font-bold sm:text-base">{module.title[locale]}</h3><span className="font-display text-sm text-gold">0{module.id}</span></div>{!locked && <div className="mt-1.5 flex flex-wrap gap-2 text-sm"><span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-semibold ${statusStyles}`}>{item.status === "completed" ? <Check className="size-3" aria-hidden="true" /> : <Clock3 className="size-3" aria-hidden="true" />}{t.statuses[item.status]}</span><span className="py-0.5 text-muted-foreground">{completedStages}/{STAGE_COUNT} · {moduleXp}/{MODULE_MAX_XP} XP</span></div>}</div></div>{!locked && <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-neon" style={{ width: `${(moduleXp / MODULE_MAX_XP) * 100}%` }} /></div>}<div className="mt-3 flex justify-end">{locked || !module.route ? <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-secondary/45 px-3 text-sm font-bold text-muted-foreground"><Lock className="size-3.5" aria-hidden="true" />{demoLocked ? t.demoLocked : t.locked}</span> : <Link href={`/${locale}${module.route}`} className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/30 bg-neon/10 px-3 text-sm font-bold text-neon">{t.open}<ChevronRight className="size-3.5" aria-hidden="true" /></Link>}</div></article>;
               })}
             </div>
           </section>}

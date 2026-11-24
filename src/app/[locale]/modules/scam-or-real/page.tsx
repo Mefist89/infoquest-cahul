@@ -32,11 +32,16 @@ export default async function ScamOrRealPage({ params }: { params: Promise<{ loc
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) return <ModuleLanding module="scam-or-real" locale={locale} rules={scamOrRealContent[locale].guestRules} />;
 
-  const [{ data: stages }, { data: allModuleProgress }, { data: profile }] = await Promise.all([
+  const [{ data: stages }, { data: allModuleProgress }, { data: profile }, { data: demoStudent }] = await Promise.all([
     supabase.from("module_stage_progress").select("stage_index, status, score").eq("user_id", authData.user.id).eq("module_id", MODULE_IDS.scamOrReal).order("stage_index"),
     supabase.from("module_progress").select("module_id, status, xp, score").eq("user_id", authData.user.id),
     supabase.from("profiles").select("role").eq("id", authData.user.id).maybeSingle(),
+    supabase.from("demo_students").select("id").eq("user_id", authData.user.id).maybeSingle(),
   ]);
+
+  if (demoStudent) {
+    return <ModuleLanding module="scam-or-real" locale={locale} rules={scamOrRealContent[locale].guestRules} demoRestricted />;
+  }
 
   const moduleProgress = allModuleProgress?.find(row => row.module_id === MODULE_IDS.scamOrReal) ?? null;
   const currentModule = MODULE_CATALOG.find(entry => entry.moduleId === MODULE_IDS.scamOrReal)!;
