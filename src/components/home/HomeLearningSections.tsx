@@ -23,12 +23,19 @@ import {
 import { useState } from "react";
 
 import { strings, type Lang } from "@/data/home-data";
-import { PLAYABLE_MAX_XP, PLAYABLE_MODULE_COUNT } from "@/data/module-catalog-meta";
+import {
+  DEMO_MAX_XP,
+  DEMO_MODULE_COUNT,
+  isDemoAllowedModule,
+  PLAYABLE_MAX_XP,
+  PLAYABLE_MODULE_COUNT,
+} from "@/data/module-catalog-meta";
 import type { ModuleDefinition, ModuleId } from "@/data/module-catalog";
 
 type ModuleStatus = "not_started" | "in_progress" | "completed";
 export type HomeProgressSummary = {
   isAuthenticated: boolean;
+  isDemoStudent?: boolean;
   xp: number;
   rewards: number;
   modules: Partial<Record<ModuleId, { status: ModuleStatus; xp: number }>>;
@@ -179,14 +186,21 @@ export function SkillsSection({ lang }: { lang: Lang }) {
 
 export function ProgressAndBadges({ lang, progress, missions }: { lang: Lang; progress: HomeProgressSummary; missions: readonly ModuleDefinition[] }) {
   const t = content[lang];
-  const xpPercent = Math.min(100, Math.round((progress.xp / PLAYABLE_MAX_XP) * 100));
-  const nextPlayableMission = missions.find((mission) => mission.status === "playable" && progress.modules[mission.moduleId]?.status !== "completed") ?? null;
+  const maxXp = progress.isDemoStudent ? DEMO_MAX_XP : PLAYABLE_MAX_XP;
+  const maxModules = progress.isDemoStudent ? DEMO_MODULE_COUNT : PLAYABLE_MODULE_COUNT;
+  const xpPercent = Math.min(100, Math.round((progress.xp / maxXp) * 100));
+  const nextPlayableMission = missions.find(
+    (mission) =>
+      mission.status === "playable" &&
+      (!progress.isDemoStudent || isDemoAllowedModule(mission.moduleId)) &&
+      progress.modules[mission.moduleId]?.status !== "completed",
+  ) ?? null;
   const nextRewardText = nextPlayableMission
     ? lang === "ro"
       ? `Finalizează dosarul «${nextPlayableMission.title.ro}» și obține ${nextPlayableMission.badge.ro}`
       : `Пройди дело «${nextPlayableMission.title.ru}» и получи ${nextPlayableMission.badge.ru}`
     : null;
-  return <section id="badges" className="home-panel scroll-mt-24"><div className={`grid gap-4 ${nextRewardText ? "lg:grid-cols-[1.1fr_0.9fr]" : "grid-cols-1"}`}><article className="rounded-2xl border border-neon/30 bg-background/40 p-5"><p className="font-bold">{t.path}: {progress.rewards} / {PLAYABLE_MODULE_COUNT} {t.casesDone}</p><div className="mt-5 flex items-center gap-3"><Sparkles className="size-5 text-gold" aria-hidden="true" /><span className="text-sm text-muted-foreground">XP</span><div className="h-3 flex-1 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-neon shadow-[0_0_14px_rgba(0,217,255,0.45)]" style={{ width: `${xpPercent}%` }} /></div><strong>{progress.xp}/{PLAYABLE_MAX_XP}</strong></div></article>{nextRewardText && <article className="flex items-center gap-4 rounded-2xl border border-gold/45 bg-gold/10 p-5"><span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-gold/50 bg-gold/10 text-gold"><Trophy className="size-7" aria-hidden="true" /></span><div><p className="text-sm font-bold uppercase text-gold">{t.nextReward}</p><p className="mt-2 text-sm font-bold">{nextRewardText}</p></div></article>}</div><h2 className="mt-6 text-lg font-black text-gold">{t.badges}</h2><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">{missions.map((mission) => { const earned = progress.modules[mission.moduleId]?.status === "completed"; return <article key={mission.moduleId} className={`flex flex-col items-center rounded-2xl border p-3 text-center ${earned ? "border-gold/55 bg-gold/10 shadow-[0_0_18px_rgba(255,196,0,0.14)]" : "border-border bg-card/50"}`}><span className={`mx-auto grid size-10 shrink-0 place-items-center rounded-xl ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}>{earned ? <Medal className="size-5" aria-hidden="true" /> : <Lock className="size-4" aria-hidden="true" />}</span><p className={`mt-3 text-sm font-bold leading-snug ${earned ? "text-foreground" : "text-muted-foreground"}`}>{mission.badge[lang]}</p><p className={`mt-auto pt-2 text-sm font-semibold ${earned ? "text-gold" : "text-muted-foreground"}`}>{earned ? t.earned : t.locked}</p></article>; })}</div></section>;
+  return <section id="badges" className="home-panel scroll-mt-24"><div className={`grid gap-4 ${nextRewardText ? "lg:grid-cols-[1.1fr_0.9fr]" : "grid-cols-1"}`}><article className="rounded-2xl border border-neon/30 bg-background/40 p-5"><p className="font-bold">{t.path}: {progress.rewards} / {maxModules} {t.casesDone}</p><div className="mt-5 flex items-center gap-3"><Sparkles className="size-5 text-gold" aria-hidden="true" /><span className="text-sm text-muted-foreground">XP</span><div className="h-3 flex-1 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-neon shadow-[0_0_14px_rgba(0,217,255,0.45)]" style={{ width: `${xpPercent}%` }} /></div><strong>{progress.xp}/{maxXp}</strong></div></article>{nextRewardText && <article className="flex items-center gap-4 rounded-2xl border border-gold/45 bg-gold/10 p-5"><span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-gold/50 bg-gold/10 text-gold"><Trophy className="size-7" aria-hidden="true" /></span><div><p className="text-sm font-bold uppercase text-gold">{t.nextReward}</p><p className="mt-2 text-sm font-bold">{nextRewardText}</p></div></article>}</div><h2 className="mt-6 text-lg font-black text-gold">{t.badges}</h2><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8">{missions.map((mission) => { const earned = progress.modules[mission.moduleId]?.status === "completed"; return <article key={mission.moduleId} className={`flex flex-col items-center rounded-2xl border p-3 text-center ${earned ? "border-gold/55 bg-gold/10 shadow-[0_0_18px_rgba(255,196,0,0.14)]" : "border-border bg-card/50"}`}><span className={`mx-auto grid size-10 shrink-0 place-items-center rounded-xl ${earned ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}>{earned ? <Medal className="size-5" aria-hidden="true" /> : <Lock className="size-4" aria-hidden="true" />}</span><p className={`mt-3 text-sm font-bold leading-snug ${earned ? "text-foreground" : "text-muted-foreground"}`}>{mission.badge[lang]}</p><p className={`mt-auto pt-2 text-sm font-semibold ${earned ? "text-gold" : "text-muted-foreground"}`}>{earned ? t.earned : t.locked}</p></article>; })}</div></section>;
 }
 
 export function AudienceSection({ lang }: { lang: Lang }) {
