@@ -520,7 +520,7 @@ export const operatorCallContent = {
         {
           id: 2,
           phrases: [
-            { text: "Bună ziua, mă numesc Ion, de la compania MinTel.", isThreat: false, explain: "Un salut obișnuit nu conține o cerere periculoasă. Numele companiei nu confirmă încă identitatea apelantului" },
+            { text: "Bună ziua, mă numesc Maria, de la compania MinTel.", isThreat: false, explain: "Un salut obișnuit nu conține o cerere periculoasă. Numele companiei nu confirmă încă identitatea apelantului" },
             { text: "Am detectat o eroare. Pentru siguranță, dictați parola contului personal.", isThreat: true, explain: "Parola oferă acces la cont. Nu o dicta apelantului" }
           ]
         },
