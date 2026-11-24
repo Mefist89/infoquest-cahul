@@ -323,6 +323,12 @@ export const fakeLinkContent = {
         "Reține: verifică mereu bara de adrese înainte de a introduce date.",
         "Fii atent, verifică fiecare detaliu — și oprește atacul Umbrei.",
       ],
+      audioFiles: [
+        "/audio/fake-link-intro-ro-1.mp3",
+        "/audio/fake-link-intro-ro-2.mp3",
+        "/audio/fake-link-intro-ro-3.mp3",
+        "/audio/fake-link-intro-ro-4.mp3",
+      ],
     },
     stages: [
       { title: "Introducere", subtitle: "Cunoaștere" },
