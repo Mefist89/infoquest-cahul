@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 export function ScrollToTop({ locale }: { locale: "ru" | "ro" }) {
   const pathname = usePathname();
-  const isInteractivePage = /^\/(?:ru|ro)\/(?:ai-help|modules|profile|patrol|admin|login|demo)(?:\/|$)/.test(pathname);
+  const isInteractivePage = /^\/(?:ru|ro)\/(?:ai-help|profile|patrol|admin|login|demo)(?:\/|$)/.test(pathname);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
