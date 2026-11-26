@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  ArrowLeft,
   ArrowRight,
   Clock,
   Lightbulb,
+  MapPin,
   Play,
   RotateCcw,
   Sparkles,
@@ -14,11 +16,13 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { setSoundEnabled } from "@/features/sound/sound-settings";
 import { useSoundEnabled } from "@/features/sound/use-sound-enabled";
+import { STREET_STARS, type MissionId } from "./city-map-data";
 import { escapeLabCopy, type EscapeLocale } from "./escape-lab-copy";
+import { RetroCityCanvas } from "./RetroCityCanvas";
 import { Room1HiddenOffice } from "./room1-hidden-office";
 import { Room2CircuitPuzzle } from "./room2-circuit-puzzle";
 import { Room3VirusAction } from "./room3-virus-action";
@@ -27,6 +31,7 @@ import { Room4BossEscape } from "./room4-boss-escape";
 type BestRecord = { stars: number; seconds: number };
 
 const STORAGE_KEY = "infoquest.escapeLab.best.v1";
+const START_POS = { x: 630, y: 475 };
 
 function formatClock(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
@@ -40,11 +45,15 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
   const t = escapeLabCopy[locale];
 
   const [screen, setScreen] = useState<"start" | "playing" | "victory">("start");
-  const [room, setRoom] = useState<1 | 2 | 3 | 4>(1);
+  const [activeMission, setActiveMission] = useState<MissionId | null>(null);
+  const [completedMissions, setCompletedMissions] = useState<Set<MissionId>>(() => new Set());
+  const [collectedStars, setCollectedStars] = useState<Set<string>>(() => new Set());
+  const [cityToast, setCityToast] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [hintSignal, setHintSignal] = useState(0);
   const [secrets, setSecrets] = useState(0);
+  const [playerPos, setPlayerPos] = useState<{ x: number; y: number }>(() => ({ ...START_POS }));
   const [bestRecord, setBestRecord] = useState<BestRecord | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -66,8 +75,38 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
     return () => window.clearInterval(timer);
   }, [screen]);
 
+  const bossUnlocked =
+    completedMissions.has(1) && completedMissions.has(2) && completedMissions.has(3);
+
+  const handlePlayerMove = useCallback((pos: { x: number; y: number }) => {
+    setPlayerPos(pos);
+  }, []);
+
+  const handleCollectStar = useCallback((starId: string) => {
+    setCollectedStars((prev) => {
+      if (prev.has(starId)) return prev;
+      const next = new Set(prev);
+      next.add(starId);
+      return next;
+    });
+  }, []);
+
+  const handleStartMission = useCallback((id: MissionId) => {
+    setHintSignal(0);
+    setCityToast(null);
+    setActiveMission(id);
+  }, []);
+
+  const handleBossLockedHit = useCallback(() => {
+    setCityToast(escapeLabCopy[locale].city.bossLocked);
+  }, [locale]);
+
   function startNewGame() {
-    setRoom(1);
+    setPlayerPos({ ...START_POS });
+    setActiveMission(null);
+    setCompletedMissions(new Set());
+    setCollectedStars(new Set());
+    setCityToast(null);
     setSeconds(0);
     setHintsUsed(0);
     setHintSignal(0);
@@ -75,13 +114,9 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
     setScreen("playing");
   }
 
-  function advanceRoom(next: 2 | 3 | 4) {
-    setHintSignal(0);
-    setRoom(next);
-  }
-
   function finishGame() {
-    const earnedStars = hintsUsed <= 1 && seconds <= 240 ? 3 : hintsUsed <= 3 ? 2 : 1;
+    const earnedStars = hintsUsed <= 1 && seconds <= 300 ? 3 : hintsUsed <= 3 ? 2 : 1;
+    setActiveMission(null);
     setScreen("victory");
     const nextRecord: BestRecord =
       !bestRecord ||
@@ -97,12 +132,30 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
     }
   }
 
+  function completeMission(id: MissionId) {
+    const nextCompleted = new Set(completedMissions);
+    nextCompleted.add(id);
+    setCompletedMissions(nextCompleted);
+    setHintSignal(0);
+
+    if (id === 4) {
+      finishGame();
+      return;
+    }
+
+    setActiveMission(null);
+    const allThreeDone = nextCompleted.has(1) && nextCompleted.has(2) && nextCompleted.has(3);
+    setCityToast(allThreeDone ? t.city.bossUnlockedToast : t.city.missionCompleteToast);
+  }
+
   function triggerHint() {
     setHintsUsed((h) => h + 1);
     setHintSignal((s) => s + 1);
   }
 
-  const finalStars = hintsUsed <= 1 && seconds <= 240 ? 3 : hintsUsed <= 3 ? 2 : 1;
+  const finalStars = hintsUsed <= 1 && seconds <= 300 ? 3 : hintsUsed <= 3 ? 2 : 1;
+  const totalBonusStars = collectedStars.size + secrets;
+  const maxBonusStars = STREET_STARS.length + 1;
 
   if (screen === "start") {
     return (
@@ -117,7 +170,11 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
             onClick={() => setSoundEnabled(!soundEnabled)}
             className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card/75 px-3.5 text-sm font-bold text-foreground transition hover:border-neon/60"
           >
-            {soundEnabled ? <Volume2 className="size-4 text-neon" aria-hidden="true" /> : <VolumeX className="size-4 text-muted-foreground" aria-hidden="true" />}
+            {soundEnabled ? (
+              <Volume2 className="size-4 text-neon" aria-hidden="true" />
+            ) : (
+              <VolumeX className="size-4 text-muted-foreground" aria-hidden="true" />
+            )}
             {soundEnabled ? t.soundOn : t.soundOff}
           </button>
         </div>
@@ -131,11 +188,16 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {t.roomCards.map((card, idx) => (
-            <article key={card.title} className="rounded-2xl border border-neon/25 bg-slate-950/75 p-4 text-left">
+            <article
+              key={card.title}
+              className="rounded-2xl border border-neon/25 bg-slate-950/75 p-4 text-left"
+            >
               <span className="inline-grid size-9 place-items-center rounded-xl border border-neon/40 bg-neon/15 font-display text-base font-black text-neon">
                 {idx + 1}
               </span>
-              <h3 className="mt-3 font-display text-base font-black text-foreground">{card.title}</h3>
+              <h3 className="mt-3 font-display text-base font-black text-foreground">
+                {card.title}
+              </h3>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{card.desc}</p>
             </article>
           ))}
@@ -178,14 +240,25 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
           <Trophy className="size-12" aria-hidden="true" />
         </span>
 
-        <h2 className="mt-5 font-display text-3xl font-black text-success sm:text-4xl">{t.victoryTitle}</h2>
-        <p className="mx-auto mt-2 max-w-xl text-base font-semibold text-foreground sm:text-lg">{t.victorySubtitle}</p>
+        <h2 className="mt-5 font-display text-3xl font-black text-success sm:text-4xl">
+          {t.victoryTitle}
+        </h2>
+        <p className="mx-auto mt-2 max-w-xl text-base font-semibold text-foreground sm:text-lg">
+          {t.victorySubtitle}
+        </p>
 
-        <div className="mt-5 flex justify-center gap-2" aria-label={`${t.starsLabel}: ${finalStars}/3`}>
+        <div
+          className="mt-5 flex justify-center gap-2"
+          aria-label={`${t.starsLabel}: ${finalStars}/3`}
+        >
           {[1, 2, 3].map((n) => (
             <Star
               key={n}
-              className={`size-10 ${n <= finalStars ? "fill-gold text-gold drop-shadow-[0_0_12px_rgba(255,209,102,0.5)]" : "text-slate-600"}`}
+              className={`size-10 ${
+                n <= finalStars
+                  ? "fill-gold text-gold drop-shadow-[0_0_12px_rgba(255,209,102,0.5)]"
+                  : "text-slate-600"
+              }`}
               aria-hidden="true"
             />
           ))}
@@ -194,7 +267,9 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
         <div className="mx-auto mt-6 grid max-w-lg grid-cols-3 gap-3">
           <div className="rounded-2xl border border-border bg-slate-950/75 p-3">
             <p className="text-sm text-muted-foreground">{t.timeLabel}</p>
-            <p className="mt-1 font-display text-xl font-black text-neon tabular-nums">{formatClock(seconds)}</p>
+            <p className="mt-1 font-display text-xl font-black text-neon tabular-nums">
+              {formatClock(seconds)}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-slate-950/75 p-3">
             <p className="text-sm text-muted-foreground">{t.hintsUsedLabel}</p>
@@ -202,7 +277,9 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
           </div>
           <div className="rounded-2xl border border-border bg-slate-950/75 p-3">
             <p className="text-sm text-muted-foreground">{t.secretsLabel}</p>
-            <p className="mt-1 font-display text-xl font-black text-success">{secrets}/1 ★</p>
+            <p className="mt-1 font-display text-xl font-black text-success">
+              {totalBonusStars}/{maxBonusStars} ★
+            </p>
           </div>
         </div>
 
@@ -231,27 +308,31 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
     <div className="space-y-4">
       {/* Top Game HUD */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-neon/35 bg-card/85 p-3.5 backdrop-blur sm:p-4">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {t.roomNames.map((name, idx) => {
-            const num = (idx + 1) as 1 | 2 | 3 | 4;
-            const active = room === num;
-            const done = room > num;
-            return (
-              <span
-                key={name}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-black ${
-                  active
-                    ? "border-neon bg-neon/20 text-neon"
-                    : done
-                      ? "border-success/55 bg-success/15 text-success"
-                      : "border-border bg-slate-950/60 text-muted-foreground"
-                }`}
-              >
-                <span>{num}.</span>
-                <span>{name}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          {activeMission !== null ? (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveMission(null);
+                setHintSignal(0);
+              }}
+              className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/45 bg-neon/10 px-4 text-sm font-black text-neon transition hover:bg-neon/20"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              {t.city.backToCity}
+            </button>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-neon/40 bg-neon/10 px-3.5 py-2 text-sm font-black text-neon">
+                <MapPin className="size-4" aria-hidden="true" />
+                {t.city.missionsDone}: {completedMissions.size}/4
               </span>
-            );
-          })}
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-gold/45 bg-gold/10 px-3.5 py-2 text-sm font-black text-gold">
+                <Star className="size-4 fill-gold" aria-hidden="true" />
+                {t.city.streetStars}: {collectedStars.size}/{STREET_STARS.length}
+              </span>
+            </>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -259,54 +340,97 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
             <Clock className="size-4 text-neon" aria-hidden="true" />
             {formatClock(seconds)}
           </span>
-          <button
-            type="button"
-            onClick={triggerHint}
-            className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-gold/55 bg-gold/15 px-3.5 text-sm font-black text-gold transition hover:bg-gold/25"
-          >
-            <Lightbulb className="size-4" aria-hidden="true" />
-            {t.hintBtn}
-          </button>
+          {activeMission !== null && (
+            <button
+              type="button"
+              onClick={triggerHint}
+              className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-gold/55 bg-gold/15 px-3.5 text-sm font-black text-gold transition hover:bg-gold/25"
+            >
+              <Lightbulb className="size-4" aria-hidden="true" />
+              {t.hintBtn}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setSoundEnabled(!soundEnabled)}
             aria-label={soundEnabled ? t.soundOn : t.soundOff}
             className="focus-ring grid size-11 place-items-center rounded-xl border border-border bg-slate-950/75 text-foreground transition hover:border-neon/60"
           >
-            {soundEnabled ? <Volume2 className="size-4 text-neon" aria-hidden="true" /> : <VolumeX className="size-4 text-muted-foreground" aria-hidden="true" />}
+            {soundEnabled ? (
+              <Volume2 className="size-4 text-neon" aria-hidden="true" />
+            ) : (
+              <VolumeX className="size-4 text-muted-foreground" aria-hidden="true" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Active Room */}
-      {room === 1 && (
-        <Room1HiddenOffice
-          locale={locale}
-          hintSignal={hintSignal}
-          onFindSecret={() => setSecrets((s) => Math.min(1, s + 1))}
-          onSolved={() => advanceRoom(2)}
-        />
+      {/* City Toast Banner */}
+      {activeMission === null && cityToast && (
+        <div
+          role="status"
+          className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm font-black ${
+            bossUnlocked
+              ? "border-gold/65 bg-gold/15 text-gold"
+              : "border-success/55 bg-success/15 text-success"
+          }`}
+        >
+          <span>{cityToast}</span>
+          <button
+            type="button"
+            onClick={() => setCityToast(null)}
+            className="focus-ring rounded-lg px-2 py-1 text-sm font-black opacity-80 hover:opacity-100"
+          >
+            ✕
+          </button>
+        </div>
       )}
-      {room === 2 && (
-        <Room2CircuitPuzzle
+
+      {/* Free-Roam Retro Top-Down City OR Active Character Mini-Mission */}
+      {activeMission === null ? (
+        <RetroCityCanvas
           locale={locale}
-          hintSignal={hintSignal}
-          onSolved={() => advanceRoom(3)}
+          completedMissions={completedMissions}
+          collectedStars={collectedStars}
+          bossUnlocked={bossUnlocked}
+          initialPlayerPos={playerPos}
+          onPlayerMove={handlePlayerMove}
+          onCollectStar={handleCollectStar}
+          onStartMission={handleStartMission}
+          onBossLockedHit={handleBossLockedHit}
         />
-      )}
-      {room === 3 && (
-        <Room3VirusAction
-          locale={locale}
-          hintSignal={hintSignal}
-          onSolved={() => advanceRoom(4)}
-        />
-      )}
-      {room === 4 && (
-        <Room4BossEscape
-          locale={locale}
-          hintSignal={hintSignal}
-          onSolved={finishGame}
-        />
+      ) : (
+        <>
+          {activeMission === 1 && (
+            <Room1HiddenOffice
+              locale={locale}
+              hintSignal={hintSignal}
+              onFindSecret={() => setSecrets((s) => Math.min(1, s + 1))}
+              onSolved={() => completeMission(1)}
+            />
+          )}
+          {activeMission === 2 && (
+            <Room2CircuitPuzzle
+              locale={locale}
+              hintSignal={hintSignal}
+              onSolved={() => completeMission(2)}
+            />
+          )}
+          {activeMission === 3 && (
+            <Room3VirusAction
+              locale={locale}
+              hintSignal={hintSignal}
+              onSolved={() => completeMission(3)}
+            />
+          )}
+          {activeMission === 4 && (
+            <Room4BossEscape
+              locale={locale}
+              hintSignal={hintSignal}
+              onSolved={() => completeMission(4)}
+            />
+          )}
+        </>
       )}
     </div>
   );

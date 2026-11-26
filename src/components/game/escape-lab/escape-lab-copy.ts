@@ -2,11 +2,11 @@ export type EscapeLocale = "ru" | "ro";
 
 export const escapeLabCopy = {
   ru: {
-    badge: "Квест · Экшен · Пазлы · 7–14 лет",
-    title: "Побег из Кибер-Лаборатории Тени",
+    badge: "Ретро-город · Экшен · Пазлы · 7–14 лет",
+    title: "Кибер-Город Тени: Миссии и Побег",
     subtitle:
-      "Тень заперла тебя в секретной лаборатории! Ищи спрятанные вещи, чини цепи, отбивайся от вирусов и взломай 3 финальных замка, чтобы выбраться на свободу.",
-    startBtn: "Начать побег!",
+      "Исследуй ретро-город с видом сверху! Бегай по улицам, собирай звёзды, подходи к 4 персонажам и проходи их мини-миссии: поиск вещей, пазл-провода, лазерный экшен и финал в Штабе Тени.",
+    startBtn: "Войти в город!",
     continueBtn: "Продолжить",
     replayBtn: "Сыграть снова",
     hintBtn: "Подсказка",
@@ -33,6 +33,19 @@ export const escapeLabCopy = {
     secretsLabel: "Секреты",
     starsLabel: "Оценка",
     backToModules: "К миссиям InfoQuest",
+    city: {
+      controlsHint: "Бегай по городу: WASD / стрелки или нажимай прямо на дорогу!",
+      missionsDone: "Миссии",
+      streetStars: "Звёзды города",
+      enterMission: "Начать миссию",
+      replayMission: "Сыграть ещё раз",
+      bossLocked: "Сначала пройди 3 миссии в городе, чтобы снять щит со Штаба Тени!",
+      bossUnlockedToast: "ШТАБ ТЕНИ ОТКРЫТ! Беги в правый нижний квартал к боссу!",
+      missionCompleteToast: "Миссия выполнена! Выбирай следующего персонажа на карте!",
+      backToCity: "Вернуться в город",
+      walkToNpc: "Подойди к персонажу с жёлтым «!» или нажми на него на карте",
+      radarTitle: "КАРТА",
+    },
     room1: {
       title: "Комната 1 · Запертый кабинет",
       goal: "Обыщи кабинет, найди спрятанные предметы и узнай 4-значный код от двери!",
@@ -158,11 +171,11 @@ export const escapeLabCopy = {
     },
   },
   ro: {
-    badge: "Quest · Acțiune · Puzzle · 7–14 ani",
-    title: "Evadare din Cyber-Laboratorul Umbrei",
+    badge: "Oraș retro · Acțiune · Puzzle · 7–14 ani",
+    title: "Cyber-Orașul Umbrei: Misiuni și Evadare",
     subtitle:
-      "Umbra te-a încuiat într-un laborator secret! Caută obiecte ascunse, repară circuite, distruge virușii și deschide cele 3 lacăte finale ca să evadezi.",
-    startBtn: "Începe evadarea!",
+      "Explorează orașul retro văzut de sus! Aleargă pe străzi, adună stele, vorbește cu cele 4 personaje și completează mini-misiunile lor: obiecte ascunse, cabluri, acțiune laser și finalul în Baza Umbrei.",
+    startBtn: "Intră în oraș!",
     continueBtn: "Continuă",
     replayBtn: "Joacă din nou",
     hintBtn: "Indiciu",
@@ -189,6 +202,19 @@ export const escapeLabCopy = {
     secretsLabel: "Secrete",
     starsLabel: "Scor",
     backToModules: "La misiunile InfoQuest",
+    city: {
+      controlsHint: "Explorează orașul: WASD / săgeți sau apasă direct pe drum!",
+      missionsDone: "Misiuni",
+      streetStars: "Stele din oraș",
+      enterMission: "Începe misiunea",
+      replayMission: "Joacă din nou",
+      bossLocked: "Finalizează mai întâi cele 3 misiuni din oraș ca să deschizi Baza Umbrei!",
+      bossUnlockedToast: "BAZA UMBREI E DESCHISĂ! Fugi în cartierul dreapta-jos la boss!",
+      missionCompleteToast: "Misiune completă! Alege următorul personaj de pe hartă!",
+      backToCity: "Înapoi în oraș",
+      walkToNpc: "Apropie-te de un personaj cu «!» sau apasă pe el pe hartă",
+      radarTitle: "HARTĂ",
+    },
     room1: {
       title: "Camera 1 · Biroul încuiat",
       goal: "Caută prin birou, adună obiectele ascunse și află codul din 4 cifre pentru ușă!",
