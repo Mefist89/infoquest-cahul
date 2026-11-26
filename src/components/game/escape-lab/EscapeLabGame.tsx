@@ -21,6 +21,7 @@ import { useCallback, useEffect, useState } from "react";
 import { setSoundEnabled } from "@/features/sound/sound-settings";
 import { useSoundEnabled } from "@/features/sound/use-sound-enabled";
 import { STREET_STARS, type MissionId } from "./city-map-data";
+import { DetectivePlatformer } from "./DetectivePlatformer";
 import { escapeLabCopy, type EscapeLocale } from "./escape-lab-copy";
 import { RetroCityCanvas } from "./RetroCityCanvas";
 import { Room1HiddenOffice } from "./room1-hidden-office";
@@ -46,6 +47,7 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
 
   const [screen, setScreen] = useState<"start" | "playing" | "victory">("start");
   const [activeMission, setActiveMission] = useState<MissionId | null>(null);
+  const [missionPhase, setMissionPhase] = useState<"platformer" | "puzzle">("platformer");
   const [completedMissions, setCompletedMissions] = useState<Set<MissionId>>(() => new Set());
   const [collectedStars, setCollectedStars] = useState<Set<string>>(() => new Set());
   const [cityToast, setCityToast] = useState<string | null>(null);
@@ -94,6 +96,7 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
   const handleStartMission = useCallback((id: MissionId) => {
     setHintSignal(0);
     setCityToast(null);
+    setMissionPhase("platformer");
     setActiveMission(id);
   }, []);
 
@@ -104,6 +107,7 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
   function startNewGame() {
     setPlayerPos({ ...START_POS });
     setActiveMission(null);
+    setMissionPhase("platformer");
     setCompletedMissions(new Set());
     setCollectedStars(new Set());
     setCityToast(null);
@@ -310,17 +314,38 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-neon/35 bg-card/85 p-3.5 backdrop-blur sm:p-4">
         <div className="flex flex-wrap items-center gap-2">
           {activeMission !== null ? (
-            <button
-              type="button"
-              onClick={() => {
-                setActiveMission(null);
-                setHintSignal(0);
-              }}
-              className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/45 bg-neon/10 px-4 text-sm font-black text-neon transition hover:bg-neon/20"
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              {t.city.backToCity}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMission(null);
+                  setMissionPhase("platformer");
+                  setHintSignal(0);
+                }}
+                className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-neon/45 bg-neon/10 px-4 text-sm font-black text-neon transition hover:bg-neon/20"
+              >
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                {t.city.backToCity}
+              </button>
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-black ${
+                  missionPhase === "platformer"
+                    ? "border-gold bg-gold/15 text-gold"
+                    : "border-success/60 bg-success/15 text-success"
+                }`}
+              >
+                {t.platformer.phase1Label}
+              </span>
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-black ${
+                  missionPhase === "puzzle"
+                    ? "border-neon bg-neon/20 text-neon"
+                    : "border-border bg-slate-950/60 text-muted-foreground"
+                }`}
+              >
+                {t.platformer.phase2Label}
+              </span>
+            </>
           ) : (
             <>
               <span className="inline-flex items-center gap-1.5 rounded-xl border border-neon/40 bg-neon/10 px-3.5 py-2 text-sm font-black text-neon">
@@ -398,6 +423,17 @@ export function EscapeLabGame({ locale }: { locale: EscapeLocale }) {
           onCollectStar={handleCollectStar}
           onStartMission={handleStartMission}
           onBossLockedHit={handleBossLockedHit}
+        />
+      ) : missionPhase === "platformer" ? (
+        <DetectivePlatformer
+          key={`plat-${activeMission}`}
+          locale={locale}
+          missionId={activeMission}
+          hintSignal={hintSignal}
+          onComplete={() => {
+            setHintSignal(0);
+            setMissionPhase("puzzle");
+          }}
         />
       ) : (
         <>

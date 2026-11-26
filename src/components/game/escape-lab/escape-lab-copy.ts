@@ -2,10 +2,10 @@ export type EscapeLocale = "ru" | "ro";
 
 export const escapeLabCopy = {
   ru: {
-    badge: "Ретро-город · Экшен · Пазлы · 7–14 лет",
+    badge: "Ретро-город · Платформер · Пазлы · 7–14 лет",
     title: "Кибер-Город Тени: Миссии и Побег",
     subtitle:
-      "Исследуй ретро-город с видом сверху! Бегай по улицам, собирай звёзды, подходи к 4 персонажам и проходи их мини-миссии: поиск вещей, пазл-провода, лазерный экшен и финал в Штабе Тени.",
+      "Бегай по ретро-городу с видом сверху, заходи к 4 персонажам, проходи детективный платформер с прыжками и поиском 3 улик, а затем взламывай замки и побеждай Босса Тени!",
     startBtn: "Войти в город!",
     continueBtn: "Продолжить",
     replayBtn: "Сыграть снова",
@@ -45,6 +45,23 @@ export const escapeLabCopy = {
       backToCity: "Вернуться в город",
       walkToNpc: "Подойди к персонажу с жёлтым «!» или нажми на него на карте",
       radarTitle: "КАРТА",
+    },
+    platformer: {
+      phase1Label: "1. Платформер · Улики",
+      phase2Label: "2. Помощь NPC · Замок",
+      cluesLabel: "Улики",
+      controlsTip: "A / D (← →) — бег · W / Пробел — прыжок и двойной прыжок! Прыгай на ботов сверху!",
+      jumpBtn: "ПРЫЖОК",
+      checkpointToast: "Чекпоинт сохранён! 🚩",
+      needMoreClues: (left: number) =>
+        `Нужно ещё ${left} улик(и)! Следуй за золотой стрелкой детектива 🔍`,
+      allCluesReady: "Все 3 улики собраны! Беги к персонажу в конце уровня!",
+      reachedNpcTitle: "Ты добрался до персонажа со всеми уликами!",
+      enterPuzzleBtn: "Помочь персонажу! →",
+      hintClue: "Подсказка: золотая стрелка вокруг детектива показывает, где спрятана ближайшая улика! Используй двойной прыжок и пружины.",
+      hintNpc: "Подсказка: все 3 улики собраны — беги до конца вправо к персонажу!",
+      stompWord: "БАМ! ⚡",
+      foundClueWord: "+ Улика!",
     },
     room1: {
       title: "Комната 1 · Запертый кабинет",
@@ -171,10 +188,10 @@ export const escapeLabCopy = {
     },
   },
   ro: {
-    badge: "Oraș retro · Acțiune · Puzzle · 7–14 ani",
+    badge: "Oraș retro · Platformer · Puzzle · 7–14 ani",
     title: "Cyber-Orașul Umbrei: Misiuni și Evadare",
     subtitle:
-      "Explorează orașul retro văzut de sus! Aleargă pe străzi, adună stele, vorbește cu cele 4 personaje și completează mini-misiunile lor: obiecte ascunse, cabluri, acțiune laser și finalul în Baza Umbrei.",
+      "Explorează orașul retro văzut de sus, intră la cele 4 personaje, treci platformerul de detectiv cu sărituri și 3 indicii, apoi deschide lacătele și învinge-l pe Boss Umbra!",
     startBtn: "Intră în oraș!",
     continueBtn: "Continuă",
     replayBtn: "Joacă din nou",
@@ -214,6 +231,23 @@ export const escapeLabCopy = {
       backToCity: "Înapoi în oraș",
       walkToNpc: "Apropie-te de un personaj cu «!» sau apasă pe el pe hartă",
       radarTitle: "HARTĂ",
+    },
+    platformer: {
+      phase1Label: "1. Platformer · Indicii",
+      phase2Label: "2. Ajută NPC · Lacăt",
+      cluesLabel: "Indicii",
+      controlsTip: "A / D (← →) — fugi · W / Space — salt și dublu salt! Sari peste roboți de sus!",
+      jumpBtn: "SARI",
+      checkpointToast: "Checkpoint salvat! 🚩",
+      needMoreClues: (left: number) =>
+        `Mai lipsesc ${left} indicii! Urmează săgeata aurie de detectiv 🔍`,
+      allCluesReady: "Toate cele 3 indicii au fost găsite! Fugi la personaj la final!",
+      reachedNpcTitle: "Ai ajuns la personaj cu toate indiciile!",
+      enterPuzzleBtn: "Ajută personajul! →",
+      hintClue: "Indiciu: săgeata aurie din jurul detectivului arată spre cel mai apropiat indiciu! Folosește dublu salt și arcurile.",
+      hintNpc: "Indiciu: ai toate cele 3 indicii — fugi până la capăt spre dreapta la personaj!",
+      stompWord: "BAM! ⚡",
+      foundClueWord: "+ Indiciu!",
     },
     room1: {
       title: "Camera 1 · Biroul încuiat",

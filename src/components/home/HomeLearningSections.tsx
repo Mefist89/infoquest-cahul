@@ -90,7 +90,7 @@ const content = {
     aiWarning: "Не отправляй помощнику пароли, номера банковских карт и другие личные данные.",
     patrolBonusTitle: "Ретро-город «Кибер-Город Тени» (вид сверху)",
     patrolBonusBadge: "7–14 лет · телефон и ПК",
-    patrolBonusText: "Бегай по ретро-городу с машинами и радаром, находи 4 персонажей и проходи их мини-миссии: поиск вещей, пазлы, экшен и босс!",
+    patrolBonusText: "Бегай по ретро-городу с машинами и радаром, заходи к 4 персонажам в детективный платформер с прыжками и уликами, решай пазлы и победи Босса!",
     faqTitle: "Частые вопросы",
     faq: [
       ["Что такое InfoQuest?", "Это двуязычная образовательная игра о цифровой безопасности, мошенничестве и проверке информации."],
@@ -149,7 +149,7 @@ const content = {
     aiWarning: "Nu trimite parole, numere de card bancar sau alte date personale.",
     patrolBonusTitle: "Oraș retro «Cyber-Orașul Umbrei» (vedere de sus)",
     patrolBonusBadge: "7–14 ani · telefon și PC",
-    patrolBonusText: "Explorează orașul retro cu mașini și radar, găsește cele 4 personaje și completează mini-misiunile: obiecte ascunse, puzzle, acțiune și boss!",
+    patrolBonusText: "Explorează orașul retro cu mașini și radar, intră la cele 4 personaje în platformerul de detectiv cu sărituri și indicii, rezolvă puzzle-uri și învinge Boss-ul!",
     faqTitle: "Întrebări frecvente",
     faq: [
       ["Ce este InfoQuest?", "Este un joc educațional bilingv despre siguranță digitală, fraude și verificarea informației."],
