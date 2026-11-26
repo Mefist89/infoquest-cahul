@@ -15,19 +15,42 @@ import {
   VolumeX,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { setSoundEnabled } from "@/features/sound/sound-settings";
 import { useSoundEnabled } from "@/features/sound/use-sound-enabled";
 import { STREET_STARS, type MissionId } from "./city-map-data";
-import { DetectivePlatformer } from "./DetectivePlatformer";
 import { escapeLabCopy, type EscapeLocale } from "./escape-lab-copy";
-import { RetroCityCanvas } from "./RetroCityCanvas";
 import { Room1HiddenOffice } from "./room1-hidden-office";
 import { Room2CircuitPuzzle } from "./room2-circuit-puzzle";
 import { Room3VirusAction } from "./room3-virus-action";
 import { Room4BossEscape } from "./room4-boss-escape";
+
+const RetroCityCanvas = dynamic(
+  () => import("./RetroCityCanvas").then((mod) => mod.RetroCityCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid h-[420px] place-items-center rounded-3xl border-2 border-neon/35 bg-slate-950/90 text-base font-bold text-neon sm:h-[500px]">
+        Phaser 3...
+      </div>
+    ),
+  },
+);
+
+const DetectivePlatformer = dynamic(
+  () => import("./DetectivePlatformer").then((mod) => mod.DetectivePlatformer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid h-[380px] place-items-center rounded-3xl border-2 border-neon/35 bg-slate-950/90 text-base font-bold text-neon">
+        Phaser 3...
+      </div>
+    ),
+  },
+);
 
 type BestRecord = { stars: number; seconds: number };
 
