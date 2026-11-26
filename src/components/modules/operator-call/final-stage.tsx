@@ -1,41 +1,47 @@
 "use client";
 
-import { Check, CheckCircle2, Pause, Play, Skull, User, XCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Heart, ShieldCheck, Skull, Trophy, XCircle } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { operatorCallContent, OperatorLocale } from "@/data/operator-call";
 import type { StageResult } from "@/features/modules/runner/use-module-runner";
-import { answerRetryQuestion, continueRetryPhase, continueRetryProgress, createRetryProgress, findRetryDetail, restartRetryPhase, retryProgressScore, type RetryProgress } from "@/features/modules/runner/retry-progress";
+import {
+  answerRetryQuestion,
+  continueRetryPhase,
+  continueRetryProgress,
+  createRetryProgress,
+  findRetryDetail,
+  restartRetryPhase,
+  retryProgressScore,
+  type RetryProgress,
+} from "@/features/modules/runner/retry-progress";
 import { useNoTimer } from "@/features/modules/runner/use-no-timer";
 import { TimerGameStart } from "../shared/timer-setting";
+import { FinalPhase1Phone, FinalPhase2Phone, FinalPhase3Phone, type VisualScenario } from "./final-phone-phases";
 import { StageRetryFeedback } from "./stage-retry-feedback";
-import { FinalVisualActions } from "./final-visual-actions";
 import { accessibilityText, ActionButton, playSound, ScoreFeedback } from "./stage-support";
-
-function VisualClueButton({ label, selected, foundText, onSelect, className, children }: { label: string; selected: boolean; foundText: string; onSelect: () => void; className: string; children: ReactNode }) {
-  return (
-    <button type="button" disabled={selected} aria-pressed={selected} aria-label={`${label}. ${selected ? foundText : ""}`} onClick={onSelect} className={`focus-ring min-w-11 min-h-11 relative ${className}`}>
-      {children}
-      {selected && <span className="mt-1 block text-base font-black uppercase tracking-wide text-success"><Check className="mr-1 inline size-3" aria-hidden="true" />{foundText}</span>}
-    </button>
-  );
-}
-
-type VisualScenario = {
-  type: "sms" | "call" | "profile";
-  sender?: string;
-  text?: string;
-  fakeLink?: string;
-  caller?: string;
-  number?: string;
-  name?: string;
-  accountType?: string;
-  correctTargets: readonly string[];
-};
 
 const BLITZ_SECONDS = 25;
 
-function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit }: { locale: OperatorLocale; content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"]; check: string; retry: string; saving: boolean; feedback: { score: number; passed?: boolean } | null; onSubmit: (result: StageResult) => void }) {
+function FinalStage({
+  locale,
+  content,
+  check,
+  retry,
+  saving,
+  feedback,
+  onSubmit,
+}: {
+  locale: OperatorLocale;
+  content: (typeof operatorCallContent)["ru"]["final"] | (typeof operatorCallContent)["ro"]["final"];
+  check: string;
+  retry: string;
+  saving: boolean;
+  feedback: { score: number; passed?: boolean } | null;
+  onSubmit: (result: StageResult) => void;
+}) {
+  const reducedMotion = useReducedMotion();
   const noTimer = useNoTimer();
   const [started, setStarted] = useState(false);
   const MAX_PLAYER_HP = 3;
@@ -44,7 +50,10 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   const [playerHp, setPlayerHp] = useState(MAX_PLAYER_HP);
   const [bossHp, setBossHp] = useState(MAX_BOSS_HP);
   const [currentPhase, setCurrentPhase] = useState(0);
-  const phaseIds = useMemo(() => [content.phase1.map(item => item.id), content.phase2.map(item => item.id), content.phase3.map(item => item.id)], [content]);
+  const phaseIds = useMemo(
+    () => [content.phase1.map((item) => item.id), content.phase2.map((item) => item.id), content.phase3.map((item) => item.id)],
+    [content],
+  );
   const [progress, setProgress] = useState(() => createRetryProgress(phaseIds[0]));
   const progressRef = useRef(progress);
   const currentLevel = progress.index;
@@ -52,7 +61,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
   const [bossSelected, setBossSelected] = useState<Set<number>>(new Set());
   const [status, setStatus] = useState<"playing" | "gameover" | "win">("playing");
   const [blitzTimeLeft, setBlitzTimeLeft] = useState(BLITZ_SECONDS);
-  const [shake, setShake] = useState(false);
+  const [shakeKey, setShakeKey] = useState(0);
   const [blitzPaused, setBlitzPaused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const foundDetailsRef = useRef(foundDetails);
@@ -65,12 +74,14 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
     setProgress(next);
   }, []);
 
-  const takeDamage = useCallback((deferGameOver = false) => {
-    setShake(true);
-    setTimeout(() => setShake(false), 400);
-    setPlayerHp(hp => Math.max(0, hp - 1));
-    if (playerHp <= 1 && !deferGameOver) setStatus("gameover");
-  }, [playerHp]);
+  const takeDamage = useCallback(
+    (deferGameOver = false) => {
+      setShakeKey((k) => k + 1);
+      setPlayerHp((hp) => Math.max(0, hp - 1));
+      if (playerHp <= 1 && !deferGameOver) setStatus("gameover");
+    },
+    [playerHp],
+  );
 
   const advanceLevel = useCallback(() => {
     const next = continueRetryProgress(progressRef.current);
@@ -79,7 +90,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
     setBossSelected(new Set());
     if (next.index >= next.questionIds.length) {
       if (currentPhase < 2) {
-        setCurrentPhase(phase => phase + 1);
+        setCurrentPhase((phase) => phase + 1);
         updateProgress(createRetryProgress(phaseIds[currentPhase + 1], next.firstAttempts));
       } else {
         updateProgress(next);
@@ -90,14 +101,17 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
     setBlitzPaused(false);
   }, [currentPhase, phaseIds, updateProgress]);
 
-  const showAnswer = useCallback((correct: boolean, explanation: string, complete = true) => {
-    if (progressRef.current.feedback) return;
-    updateProgress(answerRetryQuestion(progressRef.current, correct, explanation, complete));
-    setBlitzPaused(true);
-    setAnnouncement(correct ? a11y.correct : a11y.wrong);
-    playSound(correct ? "correct" : "wrong");
-    if (!correct) takeDamage(true);
-  }, [a11y.correct, a11y.wrong, takeDamage, updateProgress]);
+  const showAnswer = useCallback(
+    (correct: boolean, explanation: string, complete = true) => {
+      if (progressRef.current.feedback) return;
+      updateProgress(answerRetryQuestion(progressRef.current, correct, explanation, complete));
+      setBlitzPaused(true);
+      setAnnouncement(correct ? a11y.correct : a11y.wrong);
+      playSound(correct ? "correct" : "wrong");
+      if (!correct) takeDamage(true);
+    },
+    [a11y.correct, a11y.wrong, takeDamage, updateProgress],
+  );
 
   useEffect(() => {
     if (!started || noTimer || status !== "playing" || currentPhase !== 1 || blitzPaused || progress.feedback) return;
@@ -110,7 +124,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
 
   useEffect(() => {
     if (status !== "playing" || currentPhase !== 0 || !progress.feedback?.complete) return;
-    const timer = window.setTimeout(advanceLevel, 300);
+    const timer = window.setTimeout(advanceLevel, 380);
     return () => window.clearTimeout(timer);
   }, [advanceLevel, currentPhase, progress.feedback, status]);
 
@@ -121,7 +135,13 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
 
   const handleVisualClick = (targetId: string, isCorrect: boolean) => {
     if (status !== "playing" || progressRef.current.feedback || foundDetails.has(targetId) || foundDetailsRef.current.has(targetId)) return;
-    const result = findRetryDetail(progressRef.current, foundDetailsRef.current, targetId, isCorrect, content.phase1[currentLevel].correctTargets.length);
+    const result = findRetryDetail(
+      progressRef.current,
+      foundDetailsRef.current,
+      targetId,
+      isCorrect,
+      content.phase1[currentLevel].correctTargets.length,
+    );
     if (result.ignored) return;
     updateProgress(result.progress);
     if (isCorrect) {
@@ -150,7 +170,7 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
     const next = new Set(bossSelected).add(optionIndex);
     const complete = correct && next.size >= question.answers.length;
     if (correct) setBossSelected(next);
-    if (complete) setBossHp(hp => Math.max(0, hp - 1));
+    if (complete) setBossHp((hp) => Math.max(0, hp - 1));
     showAnswer(correct, question.explain, complete);
   };
 
@@ -187,97 +207,111 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
 
   if (status === "gameover") {
     return (
-      <div ref={statusRef} tabIndex={-1} role="alert" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-danger/40 rounded-3xl bg-danger/10">
-         <XCircle className="size-16 text-danger mb-4" aria-hidden="true" />
-         <p className="text-2xl font-black mb-8 text-foreground">{content.gameOver}</p>
-         <button type="button" onClick={restart} className="rounded-xl bg-danger px-12 py-4 text-base font-black text-danger-foreground focus-ring min-w-11 min-h-11 hover:scale-105 transition">{retry}</button>
-      </div>
+      <motion.div
+        ref={statusRef}
+        tabIndex={-1}
+        role="alert"
+        initial={reducedMotion ? false : { scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="focus-ring mx-auto flex max-w-lg flex-col items-center rounded-[2rem] border-4 border-danger/60 bg-danger/10 p-8 text-center"
+      >
+        <XCircle className="mb-4 size-16 text-danger" aria-hidden="true" />
+        <p className="mb-8 text-2xl font-black text-foreground">{content.gameOver}</p>
+        <button
+          type="button"
+          onClick={restart}
+          className="focus-ring min-h-12 min-w-11 rounded-2xl bg-danger px-10 py-3.5 text-base font-black text-danger-foreground transition hover:scale-105"
+        >
+          {retry}
+        </button>
+      </motion.div>
     );
   }
 
   if (status === "win") {
     return (
-      <div ref={statusRef} tabIndex={-1} role="status" className="focus-ring flex flex-col items-center animate-in zoom-in text-center p-8 border-2 border-neon/40 rounded-3xl bg-neon/10 shadow-[0_0_40px_rgba(0,217,255,0.15)]">
-         <CheckCircle2 className="size-16 text-neon mb-4" aria-hidden="true" />
-         <p className="text-2xl font-black mb-8 text-foreground">{content.win}</p>
-         {feedback && <ScoreFeedback score={feedback.score} />}
-         <ActionButton disabled={saving} onClick={() => onSubmit(retryProgressScore(progress, phaseIds.reduce((total, ids) => total + ids.length, 0)))} center>{check}</ActionButton>
-      </div>
+      <motion.div
+        ref={statusRef}
+        tabIndex={-1}
+        role="status"
+        initial={reducedMotion ? false : { scale: 0.88, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 280, damping: 20 }}
+        className="focus-ring mx-auto flex max-w-lg flex-col items-center rounded-[2rem] border-4 border-success/75 bg-[linear-gradient(155deg,rgba(34,197,94,0.18),rgba(0,217,255,0.12),rgba(8,22,48,0.96))] p-8 text-center shadow-[0_0_40px_rgba(34,197,94,0.22)]"
+      >
+        <span className="grid size-20 place-items-center rounded-full border-4 border-gold bg-gold/20 text-gold shadow-[0_0_26px_rgba(255,209,102,0.3)]">
+          <Trophy className="size-10" aria-hidden="true" />
+        </span>
+        <p className="mt-5 font-display text-2xl font-black text-foreground">{content.win}</p>
+        {feedback && <ScoreFeedback score={feedback.score} />}
+        <div className="mt-6 w-full">
+          <ActionButton
+            disabled={saving}
+            onClick={() => onSubmit(retryProgressScore(progress, phaseIds.reduce((total, ids) => total + ids.length, 0)))}
+            center
+          >
+            {check}
+          </ActionButton>
+        </div>
+      </motion.div>
     );
   }
-
-  const renderHP = (hp: number, max: number, colorClass: string, label: string) => (
-    <div className="min-w-0" role="progressbar" aria-valuenow={hp} aria-valuemin={0} aria-valuemax={max} aria-label={`${label}: ${hp}/${max}`}>
-      <span className="mb-1 block text-sm font-bold text-foreground">{hp}/{max}</span>
-      <div className="grid w-full grid-flow-col auto-cols-fr gap-1" aria-hidden="true">
-        {Array.from({ length: max }).map((_, i) => (
-          <span key={i} className={`h-3 min-w-0 rounded-full border-2 transition-all duration-300 ${i < hp ? colorClass + ' border-transparent' : 'bg-transparent border-foreground/20'}`} />
-        ))}
-      </div>
-    </div>
-  );
 
   const currentVisual = content.phase1[currentLevel] as VisualScenario;
   const playerHpLabel = locale === "ro" ? "Forța ta" : "Твои силы";
   const bossHpLabel = locale === "ro" ? "Forța escrocului" : "Силы мошенника";
 
   return (
-    <div className={`flex flex-col items-center w-full max-w-2xl mx-auto pb-10 transition-transform ${shake ? 'animate-shake' : ''}`}>
-      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
-      <div className="mb-8 grid w-full gap-4 rounded-2xl border border-border bg-slate-900/50 p-4 sm:grid-cols-2">
-        <div className="min-w-0">
-          <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">{playerHpLabel}</p>
-          {renderHP(playerHp, MAX_PLAYER_HP, "bg-success shadow-[0_0_10px_rgba(34,197,94,0.5)]", playerHpLabel)}
+    <div className="mx-auto flex w-full max-w-2xl flex-col items-center pb-8">
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </p>
+
+      <div className="mb-6 grid w-full gap-3 rounded-3xl border-2 border-neon/30 bg-slate-900/75 p-4 sm:grid-cols-2">
+        <div className="flex items-center gap-3" role="progressbar" aria-valuenow={playerHp} aria-valuemin={0} aria-valuemax={MAX_PLAYER_HP} aria-label={`${playerHpLabel}: ${playerHp}/${MAX_PLAYER_HP}`}>
+          <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-success/50 bg-success/15 text-success">
+            <ShieldCheck className="size-6" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-black uppercase tracking-wider text-muted-foreground">{playerHpLabel} · {playerHp}/{MAX_PLAYER_HP}</p>
+            <div className="mt-1 flex gap-1.5" aria-hidden="true">
+              {Array.from({ length: MAX_PLAYER_HP }).map((_, i) => (
+                <Heart key={i} className={`size-5 transition-all ${i < playerHp ? "fill-success text-success" : "text-slate-600"}`} />
+              ))}
+            </div>
+          </div>
         </div>
+
         {currentPhase === 2 && (
-          <div className="min-w-0 sm:text-right">
-            <p className="text-sm font-black tracking-widest text-muted-foreground uppercase mb-1">{bossHpLabel}</p>
-            {renderHP(bossHp, MAX_BOSS_HP, "bg-danger shadow-[0_0_10px_rgba(239,68,68,0.5)]", bossHpLabel)}
+          <div className="flex items-center gap-3" role="progressbar" aria-valuenow={bossHp} aria-valuemin={0} aria-valuemax={MAX_BOSS_HP} aria-label={`${bossHpLabel}: ${bossHp}/${MAX_BOSS_HP}`}>
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl border border-danger/50 bg-danger/15 text-danger">
+              <Skull className="size-6" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black uppercase tracking-wider text-muted-foreground">{bossHpLabel} · {bossHp}/{MAX_BOSS_HP}</p>
+              <div className="mt-1.5 grid grid-flow-col auto-cols-fr gap-1" aria-hidden="true">
+                {Array.from({ length: MAX_BOSS_HP }).map((_, i) => (
+                  <span key={i} className={`h-3 rounded-full border ${i < bossHp ? "border-transparent bg-danger" : "border-foreground/20"}`} />
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       {currentPhase === 0 && (
-        <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
-          <p className="font-bold text-center text-lg text-neon mb-6">{content.phase1Intro}</p>
-          <div className="w-full max-w-sm bg-slate-100 dark:bg-slate-900 border-4 border-slate-300 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-2xl relative">
-            <div className="bg-slate-200 dark:bg-slate-950 px-6 py-2 flex justify-between items-center text-sm text-slate-700 dark:text-slate-200 font-bold border-b border-slate-300 dark:border-slate-800">
-              <span>09:41</span>
-              <div className="flex gap-1"><span className="w-4 h-2 bg-slate-400 rounded-sm"></span></div>
-            </div>
-
-            <div className="bg-slate-800/10 py-1 text-center border-b border-slate-200 dark:border-slate-800">
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{content.clues}: {foundDetails.size} / {content.phase1[currentLevel].correctTargets.length || 1}</span>
-            </div>
-
-            <div className="p-4 flex flex-col gap-4 min-h-[300px]">
-              {currentVisual.type === "sms" && (
-                <div className="flex flex-col gap-4">
-                  <VisualClueButton label={`${a11y.sender}: ${currentVisual.sender || "MinTel"}`} selected={foundDetails.has("sender")} foundText={a11y.found} onSelect={() => handleVisualClick("sender", currentVisual.correctTargets.includes("sender"))} className={`mt-2 w-full rounded-lg border-2 p-2 text-center text-base font-bold uppercase tracking-wider ${foundDetails.has("sender") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-700 dark:text-slate-200"}`}>{currentVisual.sender || "MinTel"}</VisualClueButton>
-                  <div className="rounded-2xl rounded-tl-sm border-2 border-transparent bg-blue-500 p-3 text-white shadow-md">
-                    <VisualClueButton label={`${a11y.message}: ${currentVisual.text}`} selected={foundDetails.has("text")} foundText={a11y.found} onSelect={() => handleVisualClick("text", currentVisual.correctTargets.includes("text"))} className={`w-full rounded-lg border-2 p-2 text-left text-base leading-relaxed ${foundDetails.has("text") ? "border-success bg-success/20" : "border-transparent"}`}>{currentVisual.text}</VisualClueButton>
-                    <VisualClueButton label={`${a11y.link}: ${currentVisual.fakeLink}`} selected={foundDetails.has("fakeLink")} foundText={a11y.found} onSelect={() => handleVisualClick("fakeLink", currentVisual.correctTargets.includes("fakeLink"))} className={`mt-3 w-full break-all rounded-lg border-2 p-2 text-left font-bold underline ${foundDetails.has("fakeLink") ? "border-success bg-success/20 text-success" : "border-transparent text-blue-100"}`}>{currentVisual.fakeLink}</VisualClueButton>
-                  </div>
-                </div>
-              )}
-              {currentVisual.type === "call" && (
-                <div className="flex flex-col items-center justify-center h-full pt-10">
-                  <VisualClueButton label={a11y.avatar} selected={foundDetails.has("avatar")} foundText={a11y.found} onSelect={() => handleVisualClick("avatar", currentVisual.correctTargets.includes("avatar"))} className={`mb-4 flex min-h-20 w-24 flex-col items-center justify-center rounded-full border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10 text-success" : "border-transparent bg-slate-300 dark:bg-slate-800"}`}><User className="size-10 text-slate-700 dark:text-slate-200" aria-hidden="true" /></VisualClueButton>
-                  <VisualClueButton label={`${a11y.caller}: ${currentVisual.caller}`} selected={foundDetails.has("caller")} foundText={a11y.found} onSelect={() => handleVisualClick("caller", currentVisual.correctTargets.includes("caller"))} className={`mb-1 w-full rounded-lg border-2 p-2 text-xl font-bold ${foundDetails.has("caller") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-800 dark:text-slate-100"}`}>{currentVisual.caller}</VisualClueButton>
-                  <VisualClueButton label={`${a11y.number}: ${currentVisual.number}`} selected={foundDetails.has("number")} foundText={a11y.found} onSelect={() => handleVisualClick("number", currentVisual.correctTargets.includes("number"))} className={`rounded-lg border-2 px-3 py-2 text-lg font-black tracking-wider ${foundDetails.has("number") ? "border-success bg-success/10 text-success" : "border-danger/20 bg-danger/10 text-danger"}`}>{currentVisual.number}</VisualClueButton>
-                  <FinalVisualActions key={currentLevel} locale={locale} kind="call" onAnswer={() => handleVisualClick("answer", false)} />
-                </div>
-              )}
-              {currentVisual.type === "profile" && (
-                <div className="flex flex-col items-center pt-8">
-                  <VisualClueButton label={a11y.avatar} selected={foundDetails.has("avatar")} foundText={a11y.found} onSelect={() => handleVisualClick("avatar", currentVisual.correctTargets.includes("avatar"))} className={`mb-4 flex min-h-24 w-28 flex-col items-center justify-center rounded-full border-4 ${foundDetails.has("avatar") ? "border-success bg-success/10" : "border-neon bg-neon/20"}`}><CheckCircle2 className={`size-12 ${foundDetails.has("avatar") ? "text-success" : "text-neon"}`} aria-hidden="true" /></VisualClueButton>
-                  <VisualClueButton label={`${a11y.profileName}: ${currentVisual.name}`} selected={foundDetails.has("name")} foundText={a11y.found} onSelect={() => handleVisualClick("name", currentVisual.correctTargets.includes("name"))} className={`mb-2 w-full rounded-lg border-2 p-2 text-2xl font-bold ${foundDetails.has("name") ? "border-success bg-success/10 text-success" : "border-transparent text-slate-800 dark:text-slate-100"}`}>{currentVisual.name}</VisualClueButton>
-                  <VisualClueButton label={`${a11y.accountType}: ${currentVisual.accountType}`} selected={foundDetails.has("accountType")} foundText={a11y.found} onSelect={() => handleVisualClick("accountType", currentVisual.correctTargets.includes("accountType"))} className={`mb-6 rounded-xl border-2 px-4 py-2 text-base font-bold ${foundDetails.has("accountType") ? "border-success bg-success/10 text-success" : "border-transparent bg-slate-200 text-slate-700 dark:text-slate-200 dark:bg-slate-800"}`}>{currentVisual.accountType}</VisualClueButton>
-                  <FinalVisualActions key={currentLevel} locale={locale} kind="profile" />
-                </div>
-              )}
-            </div>
-          </div>
+        <div ref={phaseRef} tabIndex={-1} className="focus-ring flex w-full flex-col items-center">
+          <p className="mb-4 text-center text-base font-bold text-neon sm:text-lg">{content.phase1Intro}</p>
+          <FinalPhase1Phone
+            locale={locale}
+            currentLevel={currentLevel}
+            totalLevels={content.phase1.length}
+            visual={currentVisual}
+            cluesLabel={content.clues}
+            foundDetails={foundDetails}
+            shakeKey={shakeKey}
+            onVisualClick={handleVisualClick}
+          />
         </div>
       )}
 
@@ -286,57 +320,44 @@ function FinalStage({ locale, content, check, retry, saving, feedback, onSubmit 
       )}
 
       {currentPhase === 1 && !progress.feedback && (
-        <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in fade-in">
-          <p className="font-bold text-center text-lg text-warning mb-6">{noTimer ? (locale === "ru" ? "Фаза 2: Блиц. Отвечай в своём темпе." : "Faza 2: Blitz. Răspunde în ritmul tău.") : content.phase2Intro}</p>
-          <div className="w-full bg-slate-900 border-2 border-warning/50 rounded-3xl p-6 shadow-[0_0_30px_rgba(234,179,8,0.2)]">
-            <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{currentLevel + 1} / 10</span>
-               {!noTimer && <div className="flex items-center gap-3">
-                 <span role="timer" aria-label={`${blitzTimeLeft} ${locale === "ru" ? "секунд" : "secunde"}`} className={`text-3xl font-black tabular-nums transition-colors ${blitzTimeLeft <= 3 ? 'text-danger animate-pulse' : 'text-warning'}`}>0:{blitzTimeLeft.toString().padStart(2, "0")}</span>
-                 <button type="button" onClick={() => { setBlitzPaused(value => !value); setAnnouncement(blitzPaused ? a11y.resume : a11y.paused); }} aria-pressed={blitzPaused} className="focus-ring min-w-11 inline-flex min-h-11 items-center gap-2 rounded-xl border border-warning/40 bg-background/50 px-3 text-base font-bold text-foreground">
-                   {blitzPaused ? <Play className="size-4" aria-hidden="true" /> : <Pause className="size-4" aria-hidden="true" />}
-                   {blitzPaused ? a11y.resume : a11y.pause}
-                 </button>
-               </div>}
-            </div>
-            <p className="text-xl sm:text-2xl font-bold mb-8 text-foreground">{content.phase2[currentLevel].text}</p>
-            <div className="flex flex-col gap-3">
-              {content.phase2[currentLevel].options.map((opt, i) => (
-                <button key={i} type="button" onClick={() => handleBlitzClick(i)} className="w-full text-left p-4 rounded-xl border border-border bg-background/50 hover:bg-background/80 hover:border-warning/50 transition font-medium text-base focus-ring min-w-11 min-h-14">
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div ref={phaseRef} tabIndex={-1} className="focus-ring flex w-full flex-col items-center">
+          <p className="mb-4 text-center text-base font-bold text-gold sm:text-lg">
+            {noTimer ? (locale === "ru" ? "Фаза 2: Блиц. Отвечай в своём темпе." : "Faza 2: Blitz. Răspunde în ritmul tău.") : content.phase2Intro}
+          </p>
+          <FinalPhase2Phone
+            locale={locale}
+            currentLevel={currentLevel}
+            totalLevels={content.phase2.length}
+            text={content.phase2[currentLevel].text}
+            options={content.phase2[currentLevel].options}
+            noTimer={noTimer}
+            blitzTimeLeft={blitzTimeLeft}
+            blitzPaused={blitzPaused}
+            shakeKey={shakeKey}
+            onTogglePause={() => {
+              setBlitzPaused((value) => !value);
+              setAnnouncement(blitzPaused ? a11y.resume : a11y.paused);
+            }}
+            onSelect={handleBlitzClick}
+          />
         </div>
       )}
 
       {currentPhase === 2 && !progress.feedback && (
-        <div ref={phaseRef} tabIndex={-1} className="focus-ring w-full flex flex-col items-center animate-in zoom-in-95">
-          <p className="font-bold text-center text-lg text-danger mb-6">{content.phase3Intro}</p>
-          <div className="w-full bg-slate-950 border-2 border-danger rounded-3xl p-6 shadow-[0_0_50px_rgba(239,68,68,0.3)] relative overflow-hidden">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-danger/20 blur-[100px] rounded-full pointer-events-none" />
-            <div className="flex items-center gap-6 mb-8">
-               <div className="w-24 h-24 flex items-center justify-center rounded-2xl border-2 border-danger/50 shadow-lg bg-slate-900">
-                 <Skull className="size-12 text-danger animate-pulse" />
-               </div>
-               <div className="relative bg-danger/10 border border-danger/30 rounded-2xl p-4 w-full">
-                  <div className="absolute top-1/2 -left-3 w-4 h-4 bg-slate-950 border-t border-l border-danger/30 transform -rotate-45 -translate-y-1/2" />
-                  <p className="text-lg font-bold text-danger-foreground">{content.phase3[currentLevel].bossText}</p>
-               </div>
-            </div>
-            <div className="flex flex-col gap-3 relative z-10">
-              {content.phase3[currentLevel].options.map((opt, i) => (
-                <button key={i} type="button" aria-pressed={bossSelected.has(i)} onClick={() => handleBossClick(i)} className={`w-full text-left p-4 rounded-xl border transition font-medium text-base focus-ring min-w-11 min-h-14 ${bossSelected.has(i) ? 'border-success bg-success/20 text-success shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'border-danger/20 bg-background/50 hover:bg-danger/20 hover:border-danger/50'}`}>
-                  {opt}
-                  {bossSelected.has(i) && <span className="ml-2 text-base font-black uppercase"><Check className="mr-1 inline size-4" aria-hidden="true" />{a11y.selected}</span>}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div ref={phaseRef} tabIndex={-1} className="focus-ring flex w-full flex-col items-center">
+          <p className="mb-4 text-center text-base font-bold text-danger sm:text-lg">{content.phase3Intro}</p>
+          <FinalPhase3Phone
+            locale={locale}
+            currentLevel={currentLevel}
+            totalLevels={content.phase3.length}
+            bossText={content.phase3[currentLevel].bossText}
+            options={content.phase3[currentLevel].options}
+            bossSelected={bossSelected}
+            shakeKey={shakeKey}
+            onSelect={handleBossClick}
+          />
         </div>
       )}
-
     </div>
   );
 }
