@@ -61,10 +61,23 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
   const [classification, setClassification] = useState<Record<string, "safe" | "danger">>({});
   const [feedback, setFeedback] = useState<{ stage: number; score: number; passed?: boolean } | null>(null);
   const [showFlashcards, setShowFlashcards] = useState(false);
+  const [replayingFinal, setReplayingFinal] = useState(false);
+  const [finalAttemptKey, setFinalAttemptKey] = useState(0);
+
+  function replayFinal() {
+    setFeedback(null);
+    setFinalAttemptKey((k) => k + 1);
+    setReplayingFinal(true);
+  }
 
   function chooseStage(stage: number) {
+    if (stage === STAGE_COUNT && currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !replayingFinal && !showFlashcards) {
+      replayFinal();
+      return;
+    }
     if (runner.chooseStage(stage)) {
       setShowFlashcards(false);
+      setReplayingFinal(false);
       setFeedback(null);
     }
   }
@@ -93,7 +106,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
 
   async function submitFinal(result: StageResult) {
     setFeedback({ stage: 8, score: stageDisplayScore(result) });
-    await runner.completeStage(8, result);
+    if (await runner.completeStage(8, result)) setReplayingFinal(false);
   }
 
   return (
@@ -189,8 +202,8 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
                 completedCount={completedStages.size}
                 onReviewStages={() => chooseStage(GUEST_MAX_STAGE)}
               />
-            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
-              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
+            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !replayingFinal && !saving && notice?.kind !== "error" ? (
+              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} onReplayFinal={replayFinal} />
             ) : (<>
             <ModuleNotice notice={notice} />
             {currentStage === 0 ? (
@@ -214,7 +227,7 @@ export function OperatorCallModule({ content, locale, initialStages, initialModu
                 {currentStage === 5 && <ClassifyStage locale={locale} content={t.classify} answers={classification} setAnswers={setClassification} check={t.check} saving={saving} feedback={feedback?.stage === 5 ? feedback : null} onSubmit={submitClassification} />}
                 {currentStage === 6 && <DialogueStage locale={locale} content={t.dialogue} check={t.check} saving={saving} feedback={feedback?.stage === 6 ? feedback : null} onSubmit={submitDialogue} />}
                 {currentStage === 7 && <OrderingStage locale={locale} content={t.ordering} check={t.continue} retry={t.retry} saving={saving} feedback={feedback?.stage === 7 ? feedback : null} onSubmit={submitOrdering} />}
-                {currentStage === 8 && <FinalStage locale={locale} content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
+                {currentStage === 8 && <FinalStage key={finalAttemptKey} locale={locale} content={t.final} check={t.check} retry={t.retry} saving={saving} feedback={feedback?.stage === 8 ? feedback : null} onSubmit={submitFinal} />}
               </div>
             </NextButtonContext.Provider>
 

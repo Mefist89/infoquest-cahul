@@ -67,9 +67,23 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
   });
   const { completedStages, completionPercent, currentStage, moduleXp, notice, saving, unlockedThrough, completeStage } = runner;
   const [showFlashcards, setShowFlashcards] = React.useState(false);
+  const [replayingFinal, setReplayingFinal] = React.useState(false);
+  const [finalAttemptKey, setFinalAttemptKey] = React.useState(0);
+
+  function replayFinal() {
+    setFinalAttemptKey((k) => k + 1);
+    setReplayingFinal(true);
+  }
 
   function chooseStage(stage: number) {
-    if (runner.chooseStage(stage)) setShowFlashcards(false);
+    if (stage === STAGE_COUNT && currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !replayingFinal && !showFlashcards) {
+      replayFinal();
+      return;
+    }
+    if (runner.chooseStage(stage)) {
+      setShowFlashcards(false);
+      setReplayingFinal(false);
+    }
   }
 
   async function submitIntro() {
@@ -158,8 +172,8 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
           <section className="min-w-0 min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
             {showFlashcards ? (
               <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["scam-or-real"][locale]} onContinue={() => { setShowFlashcards(false); runner.openStage(1); }} />
-            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
-              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
+            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !replayingFinal && !saving && notice?.kind !== "error" ? (
+              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} onReplayFinal={replayFinal} />
             ) : (<>
             <ModuleNotice notice={notice} />
 
@@ -183,7 +197,7 @@ export function ScamOrRealModule({ content, locale, initialStages, initialModule
                 {currentStage === 5 && <OfferClassifyStage locale={locale} content={t.offerClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <HaggleDialogueStage content={t.haggleDialogue} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <SellerCheckStage locale={locale} content={t.sellerCheck} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
-                {currentStage === 8 && <ShadowBattleStage locale={locale} content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
+                {currentStage === 8 && <ShadowBattleStage key={finalAttemptKey} locale={locale} content={t.shopBattle} nextLabel={t.shopBattle.next} retryLabel={t.retry} saving={saving} onComplete={async (result) => { if (await completeStage(8, result)) setReplayingFinal(false); }} />}
                 {currentStage === 3 && (
                   <div className="py-20 text-center">
                     <p className="text-xl font-bold text-muted-foreground">{t.stages[currentStage].title}</p>

@@ -67,9 +67,23 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
   });
   const { completedStages, completionPercent, currentStage, moduleXp, notice, saving, unlockedThrough, completeStage } = runner;
   const [showFlashcards, setShowFlashcards] = React.useState(false);
+  const [replayingFinal, setReplayingFinal] = React.useState(false);
+  const [finalAttemptKey, setFinalAttemptKey] = React.useState(0);
+
+  function replayFinal() {
+    setFinalAttemptKey((k) => k + 1);
+    setReplayingFinal(true);
+  }
 
   function chooseStage(stage: number) {
-    if (runner.chooseStage(stage)) setShowFlashcards(false);
+    if (stage === STAGE_COUNT && currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !replayingFinal && !showFlashcards) {
+      replayFinal();
+      return;
+    }
+    if (runner.chooseStage(stage)) {
+      setShowFlashcards(false);
+      setReplayingFinal(false);
+    }
   }
 
   async function submitIntro() {
@@ -161,8 +175,8 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
           <section className="min-w-0 min-h-[34rem] rounded-3xl border border-border bg-card/75 p-5 sm:p-8">
             {showFlashcards ? (
               <TheoryFlashcards locale={locale} cards={MODULE_FLASHCARDS["fake-link"][locale]} onContinue={() => { setShowFlashcards(false); runner.openStage(1); }} />
-            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !saving && notice?.kind !== "error" ? (
-              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} />
+            ) : currentStage === STAGE_COUNT && completedStages.size === STAGE_COUNT && !replayingFinal && !saving && notice?.kind !== "error" ? (
+              <ModuleResult locale={locale} content={t.result} badge={badge} nextModule={nextModule} moduleXp={moduleXp} onReplayFinal={replayFinal} />
             ) : (<>
             <ModuleNotice notice={notice} />
 
@@ -187,7 +201,7 @@ export function FakeLinkModule({ content, locale, initialStages, initialModule, 
                 {currentStage === 5 && <LinkClassifyStage locale={locale} content={t.linkClassify} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(5, result)} />}
                 {currentStage === 6 && <DialogueReactStage locale={locale} content={t.dialogueReact} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(6, result)} />}
                 {currentStage === 7 && <OrderStepsStage locale={locale} content={t.orderSteps} checkLabel={t.check} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(7, result)} />}
-                {currentStage === 8 && <ShadowBattleStage locale={locale} content={t.finalBattle} nextLabel={t.finalBattle.next} retryLabel={t.retry} saving={saving} onComplete={(result) => completeStage(8, result)} />}
+                {currentStage === 8 && <ShadowBattleStage key={finalAttemptKey} locale={locale} content={t.finalBattle} nextLabel={t.finalBattle.next} retryLabel={t.retry} saving={saving} onComplete={async (result) => { if (await completeStage(8, result)) setReplayingFinal(false); }} />}
               </div>
             </NextButtonContext.Provider>
             {runner.canRetrySave && <SaveRetryButton label={t.result.saveRetry} onRetry={runner.retrySave} disabled={saving} />}

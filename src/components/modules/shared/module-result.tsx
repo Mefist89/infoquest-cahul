@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Award, ArrowRight } from "lucide-react";
+import { Award, ArrowRight, RotateCcw } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 export type NextModule = { title: string; href: string } | null;
@@ -9,8 +9,14 @@ export type ModuleResultContent = {
   title: string; xp: string; nextModule: string; profile: string; allCompleted: string; saveRetry: string;
 };
 
-export function ModuleResult({ locale, content, badge, nextModule, moduleXp }: {
+const replayFinalLabel = {
+  ru: "Пройти 8-й этап ещё раз",
+  ro: "Repetă etapa 8",
+} as const;
+
+export function ModuleResult({ locale, content, badge, nextModule, moduleXp, onReplayFinal }: {
   locale: "ru" | "ro"; content: ModuleResultContent; badge: string; nextModule: NextModule; moduleXp: number;
+  onReplayFinal?: () => void;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => { headingRef.current?.focus(); }, []);
@@ -28,6 +34,16 @@ export function ModuleResult({ locale, content, badge, nextModule, moduleXp }: {
           <span className="min-w-0 break-words">{content.nextModule.replace("{title}", nextModule.title)}</span><ArrowRight className="size-5 shrink-0" aria-hidden="true" />
         </Link>}
         <Link href={`/${locale}/profile`} className={`focus-ring inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 text-base font-bold ${nextModule ? "border border-border text-foreground" : "bg-neon text-primary-foreground"}`}>{content.profile}</Link>
+        {onReplayFinal && (
+          <button
+            type="button"
+            onClick={onReplayFinal}
+            className="focus-ring inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-neon/45 bg-neon/10 px-5 py-3 text-base font-bold text-neon transition hover:border-neon hover:bg-neon/20"
+          >
+            <RotateCcw className="size-4 shrink-0" aria-hidden="true" />
+            {replayFinalLabel[locale]}
+          </button>
+        )}
       </div>
     </div>
   );
